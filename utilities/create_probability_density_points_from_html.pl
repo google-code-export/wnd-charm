@@ -8,9 +8,13 @@ use Getopt::Long;
 my $num_bins = 20;
 #my $bin_width = undef;
 my $normalize = undef;
+my $num_classes = undef;
+my $flags = undef;
 GetOptions( "bins=i"  => \$num_bins,
            # "window_size=f" => \$bin_width,
-            "normalize=s" => \$normalize);
+            "normalize=s" => \$normalize,
+            "num_classes=i" => \$num_classes,
+            "flags=i" => \$flags );
 
 print "Number of bins: $num_bins\n" if( defined $num_bins );
 #print "Window size : $bin_width\n" if( defined $bin_width );
@@ -47,16 +51,21 @@ die "Couldn't find the test results table element in file $output_file\n" if( !@
 # print "Number of splits found: $#table_elements\n";
 
 # step one: figure out the number of classes
+if( !defined $num_classes ) {
+  my $class_structure_elem = $tree->look_down("_tag", "table");
+  die "Couldn't derive number of classes from html file $output_file.\n" if( !$class_structure_elem );
 
-my $class_structure_elem = $tree->look_down("_tag", "table", "id", "classifier_split_params");
-die "Couldn't derive number of classes from html file $output_file.\n" if( !$class_structure_elem );
+#  print $class_structure_elem->as_text . "\n";
 
-my $first_row = $class_structure_elem->look_down("_tag", "tr"); #grab the first one it sees
-die "Couldn't derive number of classes from html file $output_file.\n" if( !$first_row );
+  my $first_row = $class_structure_elem->look_down("_tag", "tr"); #grab the first one it sees
+  die "Couldn't derive number of classes from html file $output_file.\n" if( !$first_row );
 
-my @class_rows = $first_row->look_down("_tag", "td");
-my $num_classes = $#class_rows - 1;
-print "Number of classes detected: $num_classes\n";
+# print $first_row->as_text . "\n";
+
+  my @class_rows = $first_row->look_down("_tag", "td");
+  my $num_classes = $#class_rows - 1;
+}
+print "Number of classes used: $num_classes\n";
 
 my @rows;
 my @row;
@@ -95,6 +104,13 @@ foreach my $split_table_element (@table_elements)
   } else {
     $image_column= $#row;
   }
+  if( $flags =~ /1/ ) {
+# weird wndchrm report discrepancy, use second row when column headers don't match up.
+    @row = $rows[1]->look_down("_tag", "td");
+    $image_column= $#row;
+  }
+
+  print "Image column is $image_column\n\n" if( $DEBUG1 );
 
 
 # The first row is the heading row, so skip it by starting at 1 instead of 0
@@ -131,7 +147,7 @@ foreach my $split_table_element (@table_elements)
       }
       $max = $interpolated_value if( $interpolated_value > $max );
       print "\t\tactual: $actual_class, predicted: $predicted_class, interp val: $interpolated_value\n" if( $DEBUG1 );
-      push @{ ${ $results_hash{ $actual_class } }{ $filename } }, { "split_num" => $split_number, "val" => $interpolated_value, "class" => $predicted_class, "dists" => $normalized_distances };
+      push @{ $results_hash{ $actual_class }->{ $filename } }, { "split_num" => $split_number, "val" => $interpolated_value, "class" => $predicted_class, "dists" => $normalized_distances };
     }
   }
 }
@@ -157,13 +173,13 @@ foreach my $class ( sort keys %results_hash ) {
     # print "\t\tFile \"$file\"\n";
     $stat->clear;
     $norm_stat->clear;
-    foreach my $hash_ref ( @{ ${ $results_hash{ $class } }{ $file } } ) {
-      $interpolated_value = ${ $hash_ref }{ "val" };
+    foreach my $hash_ref ( @{ $results_hash{ $class }->{ $file } } ) {
+      $interpolated_value = $hash_ref->{ "val" };
       $stat->add_data( $interpolated_value );
       $norm_stat->add_data( ( $interpolated_value - $min ) / $range );
-      $predicted_class = ${ $hash_ref }{ "class" };
-      $split_number = ${ $hash_ref }{ "split_num" };
-      $normalized_distances = ${ $hash_ref }{ "dists" };
+      $predicted_class = $hash_ref->{ "class" };
+      $split_number = $hash_ref->{ "split_num" };
+      $normalized_distances = $hash_ref->{ "dists" };
 #      printf "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances ) Interp val: $interpolated_value\n", $split_number;
     }
 #    printf "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n\n",
