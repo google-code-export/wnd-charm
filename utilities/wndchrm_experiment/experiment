@@ -1,0 +1,565 @@
+#!/usr/bin/perl
+# by Chris Coletta Wed Mar 17, 2010
+# The purpose of this script is to generate experimental image sets
+# to perform a `wndchrm test` upon. 
+use strict;
+use warnings;
+use File::Copy;
+
+sub RunExperiment;
+
+if( $#ARGV < 0 ) {
+  print "Insufficient arguments.\n";
+  print "Usage: experiment [-verbose] [-dryrun] <experiment config file>\n";
+  print "Try again!";
+  die;
+}
+
+my $config_file = undef; # = "/home/colettace/data/monkeys/experimental_sets/four_way_twenty_slide/four_way_twenty_slide.experiment";
+my $dryrun = 0;
+my $verbose = 0;
+for( my $z = 0; $z <= $#ARGV; $z++ ) {
+  # print "Arg $z: $ARGV[$z] \n";
+  if( -e $ARGV[$z] ) {
+    $config_file = $ARGV[$z];
+  }
+  elsif( $ARGV[$z] eq '-dryrun' ) {
+    $dryrun = 1;
+    print "Executing dry run only...\n" ;
+  }
+  elsif( $ARGV[$z] eq '-verbose' ) {
+    $verbose = 1;
+    print "Printing debug output\n";
+  }
+  else {
+    print "Don't recognize argument \"$ARGV[$z]\"\n";
+    print "Usage: experiment [-verbose] [-dryrun] <experiment config file>\n";
+    print "Try again!";
+    die;
+  }
+}
+if( !defined $config_file ) {
+  print "You didn't specify an experiment file..\n";
+  print "Usage: experiment [-verbose] [-dryrun] <experiment config file>\n";
+  print "Try again!";
+  die;
+}
+  
+open( CONFIG_FILE, $config_file ) or die "Could not open experiment file: $!";
+
+my $DEBUG1 = 1;
+
+my $experiment_name = undef;
+my $path_to_wndchrm = undef;
+my $source_dir = undef;
+my $target_dir = undef;
+my $tile_scheme = undef;
+my $large_feature_set = undef;
+my $training_images = undef;
+my $test_images = undef;
+my $test_repetitions = undef;
+my $feature_usage_fraction = undef;
+my $html_file = undef;
+my $write_fisher_weights = undef;
+my $training_args = undef;
+my $test_args = undef;
+my $silence_wndchrm = undef;
+my $experiment_repetitions = 1;
+my $pairwise_flag = 0;
+my $path_to_phylip = undef;
+my $phylip_command = undef; # use a separate string for for storing phylip part of wndchrm command
+                            # line because we need to keep track of where it is to copy dend files.
+my %group_info;
+my %class_config_info;
+
+if( $DEBUG1 or $verbose or $dryrun ) {
+  print "Reading in config file $config_file\n";
+}
+while( <CONFIG_FILE> )
+{
+  if( $DEBUG1 or $verbose or $dryrun ) {
+    print $_;
+  }
+  if( $_ =~ /^#/ )
+  {
+    if( $DEBUG1 or $verbose or $dryrun ) {
+      print "\tComment line skipped.\n";
+    }
+    next;
+  }
+  elsif( $_ =~ /^experiment\s+(\S*)/ ) {
+    $experiment_name = $1;
+    print "\tExperiment name: $experiment_name\n" if( $DEBUG1 or $verbose or $dryrun);
+  }
+  elsif( $_ =~ /^path_to_wndchrm\s+(\S*)/ ) {
+    $path_to_wndchrm = $1;
+    print "\tPath to wndchrm: $path_to_wndchrm\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^source_dir\s+(\S*)/ ) {
+    $source_dir = $1;
+    print "\tSource dir: $source_dir\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^target_dir\s+(\S*)/ ) {
+    $target_dir = $1;
+    print "\tTarget dir: $target_dir\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^class\s+(\S+)\s+(\S+)\s+(\S+)$/ )
+  {
+     if( $DEBUG1 or $verbose or $dryrun ) {
+       print "\t$3 images (and associated files) from directory $1 will go into class $2\n";
+     }
+     push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3 };
+  }
+  elsif( $_ =~ /^class\s+(\S+)\s+(\S+)\s+(\S+)\s+group\s+(\S+)$/ )
+  {
+    # Sturcture of hash table %class_config_info:
+    #   - keys %class_config_info = the name of the class in the experiment, into which
+    #       images from multiple directories will go
+    #   - $class_config_info{ "some key" } = reference to an array of hashes
+    #   - @{ $class_config_info{ "some key" } } = an array of hashes containing the configuration
+    #       info for each directory's images.
+    $pairwise_flag = 1; # let the script know that we'll have to do pairwise experiment
+    if( $DEBUG1 or $verbose or $dryrun ) {
+      print "\tclass $2 from dir $1: group $4, num images $3\n";
+    }
+    push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3, group => $4 };
+    push @{ $group_info{$4} }, $2;
+  }
+  elsif( $_ =~ /^tile_scheme\s+(\d)/ ) {
+    $tile_scheme = $1;
+    print "\tTile scheme: $tile_scheme X $tile_scheme\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^large_feature_set/ ) {
+    $large_feature_set = 1;
+    print "\tLarge feature set will be used if sigs need to be trained.\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^training_images\s+(\d*)/ ) {
+    $training_images = $1;
+    print "\tNumber of training images: $training_images\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^test_images\s+(\d*)/ ) {
+    $test_images = $1;
+    print "\tNumber of test_images: $test_images\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^test_repetitions\s+(\d*)/ ) {
+    $test_repetitions = $1;
+    print "\tNumber of test repetitions: $test_repetitions\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^feature_usage_fraction\s+(\d*\.\d+)/ ) {
+    $feature_usage_fraction = $1;
+    print "\tFraction of features to be used: $feature_usage_fraction\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^html_file/ ) {
+    $html_file = 1;
+    print "\tHTML output file will be generated\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^write_fisher_weights/ ) {
+    $write_fisher_weights = 1;
+    print "\tFisher weights file will be generated\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^experiment_repetitions\s+(\d+)/ ) {
+    $experiment_repetitions = $1;
+    print "\tExperiment will be repeated $experiment_repetitions times.\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^additional_test_args\s+(.*)/ ) {
+    $test_args = $1;
+    print "\tThe following additional arguments will be applied at test time: $test_args\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^silence_wndchrm/ ) {
+    $silence_wndchrm = 1;
+    print "\tWNDCHRM will be run in silent mode.\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^path_to_phylip\s+(\S*)/ ) {
+    $path_to_phylip = $1;
+    print "\tPath to phylip: $path_to_phylip\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  else {
+    if( $DEBUG1 or $verbose or $dryrun ) {
+      print "\tCan't read anything from this line... Skipping.\n"
+    }
+  }
+}
+close CONFIG_FILE;
+
+if( !defined $source_dir ) {
+  die "No source dir defined in the experiment file.";
+}
+if( !defined $target_dir ) {
+  die "No target dir defined in the experiment file.";
+  # print "No target dir specified. Using source directory as target dir. No experimental directory will be made.\n";
+}
+if( !defined $path_to_wndchrm ) {
+  die "Cannot continue, no path to wndchrm defined in experiment file.";
+}
+if( defined $tile_scheme ) {
+  $tile_scheme = "-t" . $tile_scheme;
+} else {
+  $tile_scheme = "";
+}
+if( defined $large_feature_set ) {
+  $large_feature_set = "-l";
+} else {
+  $large_feature_set = "";
+}
+if( defined $training_images ) {
+  $training_images = "-i" . $training_images;
+} else {
+  $training_images = "";
+}
+if( defined $test_images ) {
+  $test_images = "-j" . $test_images;
+} else {
+  $test_images = "";
+}
+if( defined $feature_usage_fraction ) {
+  $feature_usage_fraction  = "-f" . $feature_usage_fraction ;
+} else {
+  $feature_usage_fraction  = "";
+}
+if( defined $test_repetitions ) {
+  $test_repetitions = "-n" . $test_repetitions;
+} else {
+  $test_repetitions = "";
+}
+# The html file name and fisher weights file name are now taken care of in the loop,
+#  since the target directory and the experiment name change with subsequent experiment 
+#  repetitions.
+# if( defined $html_file ) {
+#   $html_file = "$target_dir/$experiment_name.html";
+# } else {
+#   $html_file = "";
+# }
+# if( defined $write_fisher_weights ) {
+#   $write_fisher_weights = "-vw$target_dir/$experiment_name.fisher_weights";
+# } else {
+#   $write_fisher_weights = "";
+# }
+if( ! defined $test_args ) {
+  $test_args = "";
+}
+if( defined $path_to_phylip ) {
+  $phylip_command  = "-p" . $path_to_phylip ;
+} else {
+  $phylip_command  = "";
+}
+if( defined $silence_wndchrm ) {
+  $silence_wndchrm  = " > /dev/null 2>&1" ;
+} else {
+  $silence_wndchrm  = "";
+}
+
+##################################################################################
+# Run the appropriate number of experiments, given by the $experiment_repetitions parameter
+##################################################################################
+
+my $DEBUG3 = 0;
+
+# If $experiment_repetitions = 1, then no sub directory is required
+
+if( $DEBUG3 or $verbose or $dryrun ) {
+	print "Number of experiments to be run: $experiment_repetitions \n";
+}
+
+# group_row and group_col are globals that are used by the RunExperiment
+# function to direct pairwise experiment traffic
+my $group_row;
+my $group_col;
+my $original_experiment_name = $experiment_name;
+my $original_target_dir = $target_dir;
+my $reverse_experiment_dir;
+if( $experiment_repetitions == 1 ) {
+  if( $pairwise_flag ){
+    # Make a top level directory to contain the individual experiments
+    $original_target_dir .= "/" . $experiment_name;
+    if( $DEBUG3 or $verbose or $dryrun ) {
+      print "Making top-level organizational directory $target_dir\n";
+    }
+    if( !$dryrun ) { mkdir "$original_target_dir" or print $! };
+    foreach $group_row (sort keys %group_info ) {
+      foreach $group_col (sort keys %group_info ) {
+        next if $group_row eq $group_col;
+        # Check to see that pairwise experiment "X vs Y" wasn't already done by
+        # looking to see if a "Y vs X" directory was created
+        $target_dir = $original_target_dir;
+        $reverse_experiment_dir = $target_dir . "/" . $group_col . "vs" . $group_row . "_" . $group_info{$group_col}[0] . "_VS_" . $group_info{$group_row}[0];
+        if( $DEBUG3 or $verbose or $dryrun ) {
+            print "\tChecking to see if experiment $group_row vs $group_col aready done.\n";
+          print "\tDoes $reverse_experiment_dir exist?\n";
+        }
+        next if -e $reverse_experiment_dir;
+        # The experiment name changes every time
+        $experiment_name = $group_row . "vs" . $group_col . "_" . $group_info{ $group_row }[0] . "_VS_" . $group_info{ $group_col }[0];
+        # Reset the target_dir every time you run, because $target_dir gets
+        # modified in the RunExperiment subroutine
+        if( $DEBUG3 or $verbose or $dryrun ) {
+          print "\tRunning pairwise experiment $group_row vs $group_col: $experiment_name\n";
+        }
+        &RunExperiment( { group_1 => $group_row, group_2 => $group_col } );
+      }
+    }
+  } else {
+    &RunExperiment;
+  }
+}
+elsif( $experiment_repetitions > 1 ) {
+  # Make a top level directory to contain the individual experiments
+  $target_dir .= "/" . $experiment_name;
+  if( $DEBUG3 or $verbose or $dryrun ) {
+    print "Making top-level organizational directory $target_dir\n";
+  }
+  if( !$dryrun ) { mkdir "$target_dir" or print $! };
+  for( my $ii = 1; $ii <= $experiment_repetitions; $ii++ ) {
+    # The experiment name changes every time
+    $experiment_name = $original_experiment_name . "_" . $ii;
+    # Reset the target_dir every time you run, because $target_dir gets
+    # modified in the RunExperiment subroutine
+    $target_dir = $original_target_dir;
+    if( $DEBUG3 or $verbose or $dryrun ) {
+      print "\tRunning experiment $ii: $experiment_name\n";
+    }
+    &RunExperiment;
+  } 
+}
+
+##################################################################################
+# Here's where all the magic happens, the linking the training and the testing
+##################################################################################
+my $DEBUG2 = 0;
+
+sub RunExperiment {
+	if( $DEBUG2 or $verbose or $dryrun ) {
+	  print "\n\n*******************************\nBegin experiment $experiment_name:\n";
+	}
+	my ($args) = @_;
+	if( $pairwise_flag ) {
+	  if( !$args->{group_1} || !$args->{group_2} ) {
+	    die "Internal Error: Pairwise experiment attempted, but the two groups needed weren't properly defined.\n";
+	  } else {
+	    print "\tPairwise analysis between group $args->{group_1} and group $args->{group_2}\n";
+	  }
+	}
+	my $class_name;
+	my $dir_name;
+	my $num_imgs;
+	my @full_file_list;
+	my @tiff_file_list;
+	my $file;
+	my $file_stem;
+	my( $i, $j );
+
+	$target_dir .= "/" . $experiment_name;
+	if( $DEBUG2 or $verbose or $dryrun ) {
+	  print "\tMaking experiment directory $target_dir\n";
+	}
+	if( -e $target_dir ) {
+	  print "\t*******$target_dir exists... skipping...\n\n";
+	  return;
+	}
+	if( !$dryrun ) { mkdir "$target_dir" or print $! };
+	ITERATE_OVER_CLASSES: foreach $class_name ( keys %class_config_info ) {
+	  if( $DEBUG2 or $verbose or $dryrun ){
+	    print "\tClass $class_name:\n";
+	  }
+	  if( $pairwise_flag ) {
+	    # Check the %group_info hash to see if this class $class_name belongs to 
+	    # one of the groups we're checking
+	    my $in_this_group = 0;
+	    my @classes_in_current_groups = ( @{ $group_info{ $args->{group_1} } }, @{ $group_info{ $args->{group_2} } } );
+	    CHECK_IF_CLASS_IN_GROUP: foreach (@classes_in_current_groups) {
+	      if( $class_name eq $_ ) {
+	        $in_this_group = 1;
+	        last CHECK_IF_CLASS_IN_GROUP;
+	      }
+	    }
+	    if( !$in_this_group ) {
+	      if( $DEBUG2 or $verbose or $dryrun ){
+	        print "\t\tSkipping over $class_name because it doesn't belong to groups $args->{group_1} and $args->{group_2}.\n";
+	      }
+	      next ITERATE_OVER_CLASSES;
+	    }
+	  } 
+	  if( $DEBUG2 or $verbose or $dryrun ) {
+	    print "\t\tMaking directory $target_dir/$class_name\n";
+	  }
+	  if( !$dryrun ) { mkdir "$target_dir/$class_name" or print $! };
+	  foreach my $slide ( @{ $class_config_info{$class_name} } ) {
+	    $dir_name = $$slide{dir_name};
+	    $num_imgs = $$slide{img_quant};
+	    if( $DEBUG2 or $verbose or $dryrun ){
+	      print "\t\t Slide \"$dir_name\", Images allocated to class $class_name: $num_imgs\n";
+	    }
+	    print "\t\t\tOpening $source_dir/$dir_name:\n" if( $DEBUG2 or $verbose or $dryrun );
+	    # remember, there could be original tiffs, deconvolved tiffs with H_ or E_ 
+	    # prefixes or suffixes, and also calculated sigs, all in this directory.
+	    # This will even include the "." and ".." paths.
+	    opendir( DIR, "$source_dir/$dir_name" ) or die "Error opening dir $dir_name"; 
+	    @full_file_list = readdir(DIR);
+	    for($i = 0; $i <= $#full_file_list; $i++ ) {
+	      push @tiff_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.tif$/ ) ;
+	    }
+	    die "*******************************************\nFatal Error: No .tif files in directory $source_dir/$dir_name.\n" if $#tiff_file_list == -1;
+	    warn "************************\nWarning: Only $#tiff_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n" if( $#tiff_file_list != ($num_imgs - 1) );
+	    # randomize the file list
+	    for ($i = @tiff_file_list; --$i; ) {
+	      $j = int rand ($i+1);
+	      # print "i: $i j: $j \n";
+	      next if $i == $j;
+	      @tiff_file_list[$i,$j] = @tiff_file_list[$j,$i];
+	    }
+
+	    my @list_of_sigs;
+	    # Note that the loop will bail out without error if the number of images
+	    # asked for exceeds 
+	    for( $i = 0; $i < $num_imgs && $i <= $#tiff_file_list; $i++ ) {
+	      # Unshift the first $num_imgs off the newly randomized list
+	      $file = $tiff_file_list[$i];
+	      if( $DEBUG2 or $verbose or $dryrun ) {
+		print "\t\t\t\tImage $i will be $file\n";
+	      }
+	      if( $file =~ /^(.*)\.tif$/ ) {
+		$file_stem = $1;
+		# copy the file and the sigs associated with the file
+		# need to be done in two operations, because image42* will copy
+		# not only image42.tif and image42_1.sig, but also unexpectedly
+		# image420, image421, etc.
+		if( $DEBUG2 or $verbose or $dryrun ) {
+		  print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file\n";
+		}
+		if( !$dryrun ) {
+		  link( "$source_dir/$dir_name/$file", "$target_dir/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file: $!\n";
+		}
+
+		if( $DEBUG2 or $verbose or $dryrun ) {
+		  print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/$class_name\n";
+		}
+		if( !$dryrun ) {
+		  @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+		  foreach (@list_of_sigs) {
+		    /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+		    link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
+		  }
+		}
+	      }
+	    }
+	    @full_file_list = ();
+	    @tiff_file_list = ();
+	    closedir DIR;
+	  } # end copying images out of slides
+	} # end creating the classes
+	
+	# moved into the loop since target_dir and experiment_name change between iterations.
+	if( defined $html_file && $html_file ne "" ) {
+	  $html_file = "$target_dir/$experiment_name.html";
+	} else {
+	  $html_file = "";
+	}
+	if( defined $write_fisher_weights && $write_fisher_weights ne "" ) {
+	  $write_fisher_weights = "-vw$target_dir/$experiment_name.fisher_weights";
+	} else {
+	  $write_fisher_weights = "";
+	}
+
+	my $cmd;
+	$cmd = "$path_to_wndchrm train -m $tile_scheme $large_feature_set $target_dir $target_dir/$experiment_name.fit $silence_wndchrm";
+	if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm) {
+	  print "\nWndchrm train command: \n$cmd\n";
+	}
+	system( $cmd ) if( !$dryrun );
+
+	$cmd = "$path_to_wndchrm test $test_args $tile_scheme $training_images $test_images $feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $target_dir/$experiment_name.fit $html_file $silence_wndchrm";
+	if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm ) {
+	  print "\nWndchrn test command: \n$cmd\n";
+	}
+	system( $cmd ) if( !$dryrun );
+
+	# clean up by compying dend files if any to experiment dir
+	if( -e "$path_to_phylip/dend_file.txt" ) {
+		print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
+		move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
+	} else {
+		print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
+	}
+	if( -e "$path_to_phylip/drawtree.infile" ) {
+		print "\tMoving  $path_to_phylip/drawtree.infile to $target_dir/${experiment_name}_drawtree.infile\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
+		move( "$path_to_phylip/drawtree.infile", "$target_dir/${experiment_name}_drawtree.infile" ) if !$dryrun;
+	} else {
+		print "*************************\nError: $path_to_phylip/drawtree.infile wasn't created!\n";
+	}
+	if( -e "$path_to_phylip/fitch.infile" ) {
+		print "\tMoving  $path_to_phylip/fitch.infile to $target_dir/${experiment_name}_fitch.infile\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
+		move( "$path_to_phylip/fitch.infile", "$target_dir/${experiment_name}_fitch.infile" ) if !$dryrun;
+	} else {
+		print "*************************\nError: $path_to_phylip/fitch.infile wasn't created!\n";
+	}
+
+}
+
+
+# sub SubtractIntraclassWeights
+# for each class
+#   make a subdirectory in the target directory
+#   make a subsubdirectory for each slide
+#   copy n number of images and sigs into each subsubdirectory
+#   fire off wndchrm train -m and get a sub.fit file
+#   fireoff wndchrm test -vwWEIGHTFILE
+#   check that the weightfile was created, if so pack the path to an array
+# for eack weightfile
+#   open it
+#   
+1;
+
+__END__
+
+# This is a wndchrm experiment file!
+# Lines that begin with a # are treated as a comment
+
+# Experiment name - must be all one word because this becomes the name of a directory
+experiment my_experiment
+
+# Full path to your wndchrm executable
+path_to_wndchrm	/home/colettace/wndchrm_home_directory/wndchrm
+
+# Source directory is the folder where your tiffs and/or sigs live
+source_dir /home/colettace/where/the/images/and/sigs/live
+
+# Target directory is where you want to create your new experiment class dir structure
+# tiffs and sigs will be copied into here
+target_dir /home/colettace/wndchrm/products/go/in/here
+
+# Experiment class definition section
+# directory, class to be assigned, number of images from the directory to go into class
+
+# column 1: the word "class"
+# column 2: path of class 1's images and sigs relative to source dir specified above
+# column 3: the name of the class that these images belong to
+# column 4: the number of images from the source directory that should be copied into the class folder
+
+class	sourcedir1				classA	90
+class	sourcedir2				classB	90
+class	sourcedir3				classC	90
+class	sourcedir4				classA	90
+class	sourcedir5				classB	90
+class	sourcedir6				classC	90
+class 	an_organizing_folder/sourcedir7		classD	60
+class 	an_organizing_folder/sourcedir8		classD	60
+class	an_organizing_folder/sourcedir9		classD	60
+class 	an_organizing_folder/sourcedir10	classD	60
+
+
+# The following parameters are self explanitory 
+tile_scheme	2  		# -t4
+large_feature_set		# use the large feature set
+training_images	89		# -i220
+test_images	1		# -j20
+#test_repetitions	30	# -n5
+path_to_phylip			/home/colettace/src/phylip-3.69
+#html_file			# you must explicitly ask for an html result file
+feature_usage_fraction	1.0	# the fraction must be in the form 0.#, or 1.0
+write_fisher_weights
+experiment_repetitions	2	# Repeat the entire experiment this many times,
+				# generating entirely new training and test sets from the
+				# source image pool. Differs entirely from the -n# wndchrm switch.
+				# The target directory will contain a subdirectory for each
+				# experiment run
+silence_wndchrm			# run_wndchrm in silent mode
+
