@@ -56,7 +56,7 @@ sub main {
     foreach ( keys( %channels ) ) {
       print "\tSignature file $_ contains channel $channels{$_}\n";
     }
-    &WriteCombinedSigFile( { channels => \%channels, outfile => $ARGV[0] } );
+    &WriteCombinedSigFile( \%channels, $ARGV[0] );
   }
 
   elsif( %channel_directories && $ARGV[0] ) {
@@ -126,40 +126,50 @@ sub main {
 # 
 
 sub ProcessFileList (\%$){
-	my ($file_list_ref, $output_dir ) = @_;
+  my $DEBUG1 = 0;
+  print "Processing filelist...\n" if $DEBUG1;
+  my ($file_list_ref, $output_dir ) = @_;
   if( !defined $file_list_ref || !defined $output_dir ) {
     die "Process aborted: internal error processing file list.\n";
   }
   my @file_list_string_tokens = keys %{ $file_list_ref };
   my $num_sigs = $#{ $file_list_ref->{ $file_list_string_tokens[0]} };
+  # TBD: go through all the channels and make sure there is the same number
+  #      of sigs for each channel as a sanity check
+  print "Number of signatures: $num_sigs\n" if $DEBUG1;
   my ( $filename_a, $filename_b );
   my $j;
-  for( $j = 0; $j < $num_sigs; $j++) {
+  # If the channels are the columns in the table, and the signatures are the rows,
+  # we're iterating over the rows.
+  for( $j = 0; $j <= $num_sigs ; $j++) {
+    print "Processing signature set $j...\n" if $DEBUG1;
     # Let's assume, that since all files are ordered by the same algorithm
     # that we don't have to go through the list and identify corresponding
-    # sig files. Just shift 'em off the top, and make sure that other than
+    # sig files. Just shift 'em off the top, and make sure that, other than
     # the string token, their filenames all look the same. Die if not.
     my %channels;
     my $file_name;
     foreach my $string_token ( @file_list_string_tokens ) {
+      print "\tString Token: $string_token\n" if $DEBUG1;
       $file_name = shift @{ $file_list_ref->{$string_token} };
       $channels{ $file_name } = $string_token;
     }
     my @file_names = keys %channels;
     my $output_filename = "";
-    for( $j = 0; $j < $#file_names; $j++ ) {
-      $filename_a = $file_names[$j];
-      $filename_b = $file_names[$j+1];
+    for( my $i = 0; $i < $#file_names; $i++ ) {
+      $filename_a = $file_names[$i];
+      $filename_b = $file_names[$i+1];
+      print "\tComparison $i: making sure $filename_a and $filename_b correspond.\n" if $DEBUG1;
       $filename_a =~ s/.*\///g; # remove path
-      if( $filename_a !~ s/$channels{$file_names[$j]}// ) {
-        die "\n*****************\nERROR: string token $channels{$file_names[$j]} does not exist in file $filename_a.\n";
+      if( $filename_a !~ s/$channels{$file_names[$i]}// ) {
+        die "\n*****************\nERROR: string token $channels{$file_names[$i]} does not exist in file $filename_a.\n";
       }
       $filename_b =~ s/.*\///g;
-      if( $filename_b !~ s/$channels{$file_names[$j+1]}// ) {
-        die "\n*****************\nERROR: string token $channels{$file_names[$j+1]} does not exist in file $filename_b.\n";
+      if( $filename_b !~ s/$channels{$file_names[$i+1]}// ) {
+        die "\n*****************\nERROR: string token $channels{$file_names[$i+1]} does not exist in file $filename_b.\n";
       }
       if( $filename_a ne $filename_b ) {
-        die "\n*****************\nERROR: The files $file_names[$j] and $file_names[$j+1] do not appear to belong together, because when you subtract their respective string tokens, $channels{$file_names[$j]} and $channels{$file_names[$j+1]} respectively, the filenames don't look the same:\n$filename_a\n$filename_b\nPlease check the complement of signature files in their respective directories to make sure each sig file has a corresponding sig file in the other channel.\n\n";
+        die "\n*****************\nERROR: The files $file_names[$i] and $file_names[$i+1] do not appear to belong together, because when you subtract their respective string tokens, $channels{$file_names[$i]} and $channels{$file_names[$i+1]} respectively, the filenames don't look the same:\n$filename_a\n$filename_b\nPlease check the complement of signature files in their respective directories to make sure each sig file has a corresponding sig file in the other channel.\n\n";
       }
     }
     &WriteCombinedSigFile( \%channels, "$output_dir/$filename_a" );
@@ -170,13 +180,18 @@ sub ProcessFileList (\%$){
 # Here's the main chunk of code:
 
 sub WriteCombinedSigFile (\%$) {
-	my ($channels_hash_ref, $outfile ) = @_;
+  my $DEBUG2 = 0;
+  my ($channels_hash_ref, $outfile ) = @_;
   if( !defined $channels_hash_ref || !defined $outfile ) {
     die "Process aborted: Internal error writing sigfile.\n";
   } 
+  if( keys %{ $channels_hash_ref } < 2 ) {
+    die "Process aborted: Internal error. Not enough channels (<2) to combine for outfile $outfile\n";
+  }   
 
   # Step 1: Open the output file:
   open OUT, ">$outfile" or die "\n********************\nERROR: Can't open file for writing $outfile: $!\n";
+  print "\t\tCreating combined channel file $outfile\n" if $DEBUG2;
 
   # Step 2: Dump the contents of each infile into the outfile
   my $count;
@@ -184,7 +199,7 @@ sub WriteCombinedSigFile (\%$) {
   foreach my $infile ( keys %{ $channels_hash_ref } ) {
     $channel_count++;
     open IN, $infile or die "\n********************\nERROR: Can't open file for reading $infile: $!\n";
-    print "\tProcessing file $infile\n";
+    print "\t\tProcessing file $infile\n" if $DEBUG2;
     $count = 0;
     while( <IN> ) {
       # skip the first two lines of each infile, except when first creating outfile.
@@ -203,6 +218,12 @@ sub WriteCombinedSigFile (\%$) {
   }
 
   close OUT;
+  my $phony_image_name = $outfile;
+  if( $phony_image_name =~ s/_\d_\d//g && $phony_image_name =~ s/sig/tif/g ) {
+    open TEMP, ">$phony_image_name" or die "Can't write phone image file $phony_image_name to accompany combined signature file: $!\n";
+    print TEMP "This is a phony image file created to allow WNDCHRM to read the combined signature file $outfile\n";
+    close TEMP;
+  }
 }
 __END__
 
