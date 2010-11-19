@@ -513,7 +513,10 @@ ImageMatrix *ImageMatrix::duplicate()
 {  ImageMatrix *new_matrix;
    new_matrix=new ImageMatrix;
    new_matrix->data=new pix_data[width*height*depth];
-   if (!(new_matrix->data)) return(NULL); /* memory allocation failed */
+	if (!(new_matrix->data)) {
+		fprintf (stderr,"Could not allocate memory for duplicate image\n");
+		return(NULL); /* memory allocation failed */
+	}
    new_matrix->width=width;
    new_matrix->height=height;
    new_matrix->depth=depth;
@@ -531,7 +534,7 @@ void ImageMatrix::to8bits()
    if (bits==8) return;
    max_val=pow(2,bits)-1;
    bits=8;
-   for (int a;a<width*height*depth;a++)
+   for (int a=0;a<width*height*depth;a++)
      data[a].intensity=255*(data[a].intensity/max_val);
 }
 
@@ -552,7 +555,7 @@ void ImageMatrix::flip()
 
 void ImageMatrix::invert()
 {  	   
-   for (int a;a<width*height*depth;a++)
+   for (int a=0;a<width*height*depth;a++)
      data[a].intensity=(pow(2,bits)-1)-data[a].intensity;
 }
 
