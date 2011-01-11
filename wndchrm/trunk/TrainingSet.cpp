@@ -928,53 +928,71 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 */
 
 void TrainingSet::normalize()
-{  int sig_index,samp_index,max_value_index;
-   double *sig_data,min_value,max_value;
-   sig_data=new double[count];
-   for (sig_index=0;sig_index<signature_count;sig_index++)
-   {  for (samp_index=0;samp_index<count;samp_index++)
-        sig_data[samp_index]=samples[samp_index]->data[sig_index].value;
-      qsort(sig_data,count,sizeof(double),compare_two_doubles);
-      max_value_index=count-1;
-      while (sig_data[max_value_index]==INF && max_value_index>0) max_value_index--;  /* make sure the maximum value is not SIG_INF */
-      max_value=sig_data[(int)(0.975*max_value_index)];
-      min_value=sig_data[(int)(0.025*count)];
-      SignatureMaxes[sig_index]=max_value;   /* these values of min and max can be used for normalizing a test vector */
-      SignatureMins[sig_index]=min_value;
-      for (samp_index=0;samp_index<count;samp_index++)
-      { if (samples[samp_index]->data[sig_index].value>=INF) samples[samp_index]->data[sig_index].value=0;
-        else
-        if (samples[samp_index]->data[sig_index].value<min_value) samples[samp_index]->data[sig_index].value=min_value;
-        else
-        if (samples[samp_index]->data[sig_index].value>max_value) samples[samp_index]->data[sig_index].value=max_value;
-        else
-        if (min_value>=max_value) samples[samp_index]->data[sig_index].value=0; /* prevent possible division by zero */
-        else
-        samples[samp_index]->data[sig_index].value=100*(samples[samp_index]->data[sig_index].value-min_value)/(max_value-min_value);
-      }
-//      if (class_num<=1)  /* normalize by the values */
-//      {  double mean_ground=0,stddev_ground=0,mean=0,stddev=0;
-//         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the interpolated values */
-//           mean_ground+=(samples[samp_index]->interpolated_value/((double)count));
-//         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the interpolated values */
-//           stddev_ground+=pow(samples[samp_index]->interpolated_value-mean_ground,2);
-//         stddev_ground=sqrt(stddev_ground/count);
+{  
+  int sig_index, samp_index, max_value_index;
+  double *sig_data, min_value, max_value;
 
-//         for (samp_index=0;samp_index<count;samp_index++) 
-//            if (samples[samp_index]->data[sig_index].value>=INF) samples[samp_index]->data[sig_index].value=0;		 
+  sig_data = new double[ count ];
 
-//         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the original signature values */
-//           mean+=(samples[samp_index]->data[sig_index].value/((double)count));
-//         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the original signature values */
-//           stddev+=pow(samples[samp_index]->data[sig_index].value-mean,2);
-//         stddev=sqrt(stddev/count);		   
-//         for (samp_index=0;samp_index<count;samp_index++)
-//         {  samples[samp_index]->data[sig_index].value-=(mean-mean_ground);
-//			if (stddev>0) samples[samp_index]->data[sig_index].value=mean_ground+(samples[samp_index]->data[sig_index].value-mean_ground)*(stddev_ground/stddev);	  
-//         }		 
-//      }
-   }
-   delete sig_data;
+  for( sig_index = 0; sig_index < signature_count; sig_index++ )
+  {  
+    // Get the values for this particular feature across entire training set
+    for( samp_index = 0; samp_index < count; samp_index++ )
+      sig_data[ samp_index ] = samples[ samp_index ]->data[ sig_index ].value;
+
+    qsort( sig_data, count, sizeof(double), compare_two_doubles );
+    max_value_index = count - 1;
+
+    /* make sure the maximum value is not SIG_INF */
+    while( sig_data[ max_value_index ] == INF && max_value_index > 0 )
+      max_value_index--;
+
+    // Try not to use the absolute lowest and highest signiture value as min and max
+    // Create a buffer for outlying values at both ends of the signiture spectrum
+    max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
+    min_value = sig_data[ (int)( 0.025 * count ) ];
+
+    /* these values of min and max can be used for normalizing a test vector */
+    SignatureMaxes[ sig_index ] = max_value;
+    SignatureMins[ sig_index ] = min_value;
+
+    for( samp_index = 0; samp_index < count; samp_index++ )
+    { 
+      if( samples[ samp_index ]->data[ sig_index ].value >= INF )
+        samples[ samp_index ]->data[ sig_index ].value = 0;
+      else if( samples[ samp_index ]->data[ sig_index ].value < min_value )
+        samples[ samp_index ]->data[ sig_index ].value = 0;
+      else if( samples[ samp_index ]->data[ sig_index ].value > max_value )
+        samples[ samp_index ]->data[ sig_index ].value = 100;
+      else if( min_value >= max_value )
+        samples[ samp_index ]->data[ sig_index ].value = 0; /* prevent possible division by zero */
+      else
+        samples[ samp_index ]->data[ sig_index ].value = 
+          100 * ( samples[ samp_index ]->data[ sig_index ].value - min_value ) / ( max_value-min_value );
+    }
+    //      if (class_num<=1)  /* normalize by the values */
+    //      {  double mean_ground=0,stddev_ground=0,mean=0,stddev=0;
+    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the interpolated values */
+    //           mean_ground+=(samples[samp_index]->interpolated_value/((double)count));
+    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the interpolated values */
+    //           stddev_ground+=pow(samples[samp_index]->interpolated_value-mean_ground,2);
+    //         stddev_ground=sqrt(stddev_ground/count);
+
+    //         for (samp_index=0;samp_index<count;samp_index++) 
+    //            if (samples[samp_index]->data[sig_index].value>=INF) samples[samp_index]->data[sig_index].value=0;		 
+
+    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the original signature values */
+    //           mean+=(samples[samp_index]->data[sig_index].value/((double)count));
+    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the original signature values */
+    //           stddev+=pow(samples[samp_index]->data[sig_index].value-mean,2);
+    //         stddev=sqrt(stddev/count);		   
+    //         for (samp_index=0;samp_index<count;samp_index++)
+    //         {  samples[samp_index]->data[sig_index].value-=(mean-mean_ground);
+    //			if (stddev>0) samples[samp_index]->data[sig_index].value=mean_ground+(samples[samp_index]->data[sig_index].value-mean_ground)*(stddev_ground/stddev);	  
+    //         }		 
+    //      }
+  }
+  delete sig_data;
 }
 
 
