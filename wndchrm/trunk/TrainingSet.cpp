@@ -1013,10 +1013,20 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
 }
 
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split)
-{  int sample_index,sig_index,class_index,group=0;
+{  int sample_index,sig_index,class_index;
    double mean,var,class_dev_from_mean,mean_inner_class_var;
    double *class_mean,*class_var,*class_count;
    double signature_weight_values[MAX_SIGNATURE_NUM],threshold;   
+
+   double FeatureGroupValues[MAX_SIGNATURE_NUM];
+
+   int FeatureGroupCount[MAX_SIGNATURE_NUM];
+   for( int ii = 0; ii < MAX_SIGNATURE_NUM; ii++ ) 
+     FeatureGroupCount[ii] = 0;
+
+   char FeatureGroupNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];
+   int fg_index = 0;
+
    double sum_of_group=0.0;
    char current_name[256]={'\0'},last_name[256]={'\0'},full_last_name[256],feature_string[128];  
    class_mean=new double[class_num+1];
@@ -1119,25 +1129,75 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 	  } /* end of method 1 (Pearson Correlation) */
 	  
       /* add the sums of the scores of each group of features */
-      if (split && split->feature_groups && SignatureNames[sig_index][0]>='A' && SignatureNames[sig_index][0]<='Z')
-      {  strcpy(current_name,SignatureNames[sig_index]);
-         if (strchr(current_name,' ')) *(strchr(current_name,' '))='\0';
-         if ((strcmp(current_name,last_name)!=0) && (sig_index>0))
-         {   int char_index;
-             for (char_index=0;char_index<strlen(full_last_name);char_index++) if (isdigit(full_last_name[char_index])) full_last_name[char_index]=' ';
-             if (strstr(full_last_name,"bin ")) strncpy(strstr(full_last_name,"bin "),"   ",3);
-             if (strncmp(full_last_name,"Feature",7)==0) strcpy(full_last_name,"Feature Statistics");
-             if (strncmp(full_last_name,"Edge",4)==0) strcpy(full_last_name,"Edge Statistics");
-             sprintf(feature_string,"%d. %s: %f\n",group,full_last_name,sum_of_group);
-             strcat(split->feature_groups,feature_string);
-             sum_of_group=0.0;
-             group++;
-         }
-         sum_of_group+=SignatureWeights[sig_index];
-         strcpy(last_name,current_name);
-         strcpy(full_last_name,SignatureNames[sig_index]);
+      if( split && split->feature_groups && 
+          SignatureNames[ sig_index ][ 0 ] >= 'A' && SignatureNames[ sig_index ][ 0 ] <= 'Z' )
+      {
+        strcpy( current_name, SignatureNames[ sig_index ] );
+        if( strchr( current_name, ' ' ) )
+        {
+          *( strchr( current_name,' ' ) ) = '\0';
+        }
+        if( ( strcmp( current_name, last_name ) != 0 ) && ( sig_index > 0 ) )
+        {  
+          int char_index;
+          for( char_index = 0; char_index < strlen( full_last_name ); char_index++ )
+          {
+            if( isdigit( full_last_name[ char_index ] ) )
+              full_last_name[ char_index ] = ' ';
+          }
+          if( strstr( full_last_name, "bin " ) )
+            strncpy( strstr( full_last_name, "bin " ), "   ", 3 );
+          if( strncmp( full_last_name, "Feature", 7 ) == 0 )
+            strcpy( full_last_name, "Feature Statistics" );
+          if( strncmp( full_last_name, "Edge", 4 ) == 0 )
+            strcpy( full_last_name, "Edge Statistics" );
+
+          //sprintf( feature_string, "%d. %s: %f\n", group,full_last_name, sum_of_group );
+          //strcat( split->feature_groups, feature_string );
+          
+          strcpy( FeatureGroupNames[fg_index], full_last_name );
+          FeatureGroupValues[fg_index] = sum_of_group;
+          fg_index++;
+
+          sum_of_group = 0.0;
+        }
+        sum_of_group += SignatureWeights[ sig_index ];
+        FeatureGroupCount[fg_index]++;
+        strcpy( last_name, current_name );
+        strcpy( full_last_name, SignatureNames[ sig_index ] );
       }
    }
+
+   // Insert feature group sorting code here:
+
+   /* copy the feature names and scores into a string. the features will be ordered by their scores */
+
+   double sortedFeatGroupValues[MAX_SIGNATURE_NUM];
+
+   for( sig_index = 0; sig_index < signature_count; sig_index++ )
+      sortedFeatGroupValues[sig_index ] = FeatureGroupValues[ sig_index ];
+
+   qsort( sortedFeatGroupValues, signature_count, sizeof(double), compare_two_doubles );
+
+   if( split && split->feature_names )
+   {  
+     int sig_index2;
+     split->feature_groups[0] = '\0';
+     for( sig_index = signature_count - 1; sig_index >= 0; sig_index-- )
+        for( sig_index2 = 0; sig_index2 < signature_count; sig_index2++ )
+          // This method assumes all weight values are unique
+          if( sortedFeatGroupValues[ sig_index ] == FeatureGroupValues[ sig_index2 ] &&
+              sortedFeatGroupValues[ sig_index ] > 0 )
+          { 
+            sprintf( feature_string, "%d. %s: %f [%d]\n",
+                        signature_count - sig_index,
+                        FeatureGroupNames[ sig_index2 ],
+                        FeatureGroupValues[ sig_index2 ],
+                        FeatureGroupCount[ sig_index2 ] );
+            strcat( split->feature_groups, feature_string );
+            break;                                         /* no need to complete the loop */
+          }
+   }   
 
    /* now set to 0 all signatures that are below the threshold */
    for (sig_index=0;sig_index<signature_count;sig_index++)
@@ -1150,16 +1210,29 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
    if (used_mrmr>0) SetmRMRScores(used_signatures,used_mrmr);  /* filter the most informative features using mrmr */
 
    /* copy the feature names and scores into a string. the features will be ordered by their scores */
-   if (split && split->feature_names)
-   {  int sig_index2;
-      split->feature_names[0]='\0';
-      for (sig_index=signature_count-1;sig_index>=(long)((1-used_signatures)*signature_count)-5;sig_index--)
-        for (sig_index2=0;sig_index2<signature_count;sig_index2++)
-          if (signature_weight_values[sig_index]==SignatureWeights[sig_index2] && signature_weight_values[sig_index]>0)
-          {  sprintf(feature_string,"%d. %s: %f\n",signature_count-sig_index,SignatureNames[sig_index2],SignatureWeights[sig_index2]);
-             strcat(split->feature_names,feature_string);
-             break;                                         /* no need to complete the loop */
-          }
+   if( split && split->feature_names )
+   { 
+     int sig_index2;
+     split->feature_names[0]='\0';
+
+     for( sig_index = signature_count - 1;
+          sig_index >= (long)( ( 1 - used_signatures ) * signature_count ) - 5 ;
+          sig_index-- )
+     {
+       for( sig_index2 = 0; sig_index2 < signature_count; sig_index2++ )
+       {
+         if( signature_weight_values[sig_index] == SignatureWeights[sig_index2] &&
+             signature_weight_values[sig_index] > 0 )
+         {  
+           sprintf( feature_string, "%d. %s: %f\n",
+                      signature_count - sig_index,
+                      SignatureNames[sig_index2],
+                      SignatureWeights[sig_index2] );
+           strcat( split->feature_names, feature_string );
+           break;   // no need to complete the loop
+         }
+       }
+     }
    }
 
    delete class_mean;
@@ -2065,17 +2138,24 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       fprintf(output_file,"</table><br>\n"); 
 	  
       /* add the feature groups */
-      if (splits[split_index].feature_groups)
-      {  strncpy(feature_names,splits[split_index].feature_groups,sizeof(feature_names));
-         feature_names[sizeof(feature_names)-1]='\0';  /* make sure the string is null-terminated */
-         if (features_num>0) fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesGroups_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Feature groups (sum of Fisher scores) </a><br><br>\n",split_index);
-         fprintf(output_file,"<TABLE ID=\"FeaturesGroups_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
-         p_feature_names=strtok(feature_names,"\n");
-         while (p_feature_names)
-         {  fprintf(output_file,"<tr><td>%s</td></tr>\n",p_feature_names);
-            p_feature_names=strtok(NULL,"\n");
-         }
-         fprintf(output_file,"</table><br>\n");
+      if( splits[split_index].feature_groups )
+      {
+        strncpy( feature_names, splits[split_index].feature_groups,
+                 sizeof( feature_names ) );
+
+        feature_names[ sizeof( feature_names ) - 1 ] = '\0'; // make sure the string is null-terminated
+        if( features_num > 0 )
+          fprintf( output_file, "<a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesGroups_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Feature groups analysis (sum of Fisher scores for each family) </a><br><br>\n",split_index);
+        fprintf(output_file,"<TABLE ID=\"FeaturesGroups_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
+        fprintf( output_file,"<tr><td>NOTE: Number of component features in each group is given in brackets</td></tr>\n",p_feature_names );
+        
+        p_feature_names=strtok(feature_names,"\n");
+        while( p_feature_names )
+        {
+          fprintf( output_file,"<tr><td>%s</td></tr>\n",p_feature_names );
+          p_feature_names = strtok( NULL, "\n" );
+        }
+        fprintf(output_file,"</table><br>\n");
       }
 	  
       /* individual image predictions */
