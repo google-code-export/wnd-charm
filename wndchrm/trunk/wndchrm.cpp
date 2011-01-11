@@ -425,7 +425,7 @@ int main(int argc, char *argv[])
     int arg_index=1;
     int tiles=1;
     int tile_areas=0;
-    int method=0;
+    int method=1;
     int report=0;
     int splits_num=1;
     int large_set=0;
@@ -549,7 +549,7 @@ int main(int argc, char *argv[])
            max_training_images=atoi(&(strchr(argv[arg_index],'i')[1+exact_training_images]));
         }
         if (strchr(argv[arg_index],'j')) max_test_images=atoi(&(strchr(argv[arg_index],'j')[1]));
-        if (strchr(argv[arg_index],'w')) method=1;
+        if (strchr(argv[arg_index],'w')) method=0;
         if (strchr(argv[arg_index],'h'))
         {  ShowHelp();
            return(1);
