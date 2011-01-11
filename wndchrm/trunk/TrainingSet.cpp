@@ -777,11 +777,18 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    if (split && split->similarity_matrix && class_num>0) /* update the similarity matrix */
      for (class_index=1;class_index<=class_num;class_index++) split->similarity_matrix[class_num*sample_class+class_index]+=probabilities_sum[class_index];
 
-   /* print the report to a string */
+   /* print the report line to a string (for the final report) */
    if (split && split->individual_images)
    {  char buffer[512],closest_image[512],color[128],one_image_string[MAX_CLASS_NUM*15];
       sprintf(one_image_string,"<tr><td>%d</td>",(int)(test_sample_index/tiles)+1);  /* image index */
-      if (class_num>0) {sprintf(buffer,"<td>%.3f</td>",normalization_factor_avg);strcat(one_image_string, buffer);}  /* normlization factor */
+      if (class_num>0) /* normlization factor */
+      {
+        if( normalization_factor_avg < 0.001 )
+          sprintf( buffer,"<td>%.3e</td>", normalization_factor_avg );
+        else
+          sprintf( buffer,"<td>%.3f</td>", normalization_factor_avg );
+        strcat(one_image_string, buffer);
+      } 
       for (class_index=1;class_index<=class_num;class_index++)
       {  if (class_index==sample_class) sprintf(buffer,"<td><b>%.3f</b></td>",probabilities_sum[class_index]);  /* put the actual class in bold */
          else sprintf(buffer,"<td>%.3f</td>",probabilities_sum[class_index]);
@@ -790,19 +797,35 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
       if (predicted_class==sample_class) sprintf(color,"<font color=\"#00FF00\">Correct</font>");
       else sprintf(color,"<font color=\"#FF0000\">Incorrect</font>");
 
-      /* add the interpolated value of the two top classes */
+      /* add the interpolated value */
       if (interpolate)  
-      {  if (class_num>0)  /* interpolate by the values of the class names */
-         {  double second_highest_prob=-1.0;
-            int second_highest_class;
-//TestSet->samples[test_sample_index]->interpolated_value=0;			
-            for (class_index=1;class_index<=class_num;class_index++)
-//TestSet->samples[test_sample_index]->interpolated_value+=probabilities_sum[class_index]*atof(class_labels[class_index]);
-            if (probabilities_sum[class_index]>second_highest_prob && class_index!=predicted_class) 
-            {  second_highest_prob=probabilities_sum[class_index];
-               second_highest_class=class_index;
-            }
-            TestSet->samples[test_sample_index]->interpolated_value=(second_highest_prob*atof(class_labels[second_highest_class])+probabilities_sum[predicted_class]*atof(class_labels[predicted_class]))/(second_highest_prob+probabilities_sum[predicted_class]);
+      {  
+        if( class_num > 0 )  /* interpolate by the values of the class names */
+        {
+          // Method 1: create an interpolated value based only on the top
+          // two marginal probabilities
+//          double second_highest_prob = -1.0, min_prob = INF;
+//          int second_highest_class;
+//          for( class_index = 1; class_index <= class_num; class_index++ )
+//          if( probabilities_sum[class_index] < min_prob )
+//            min_prob=probabilities_sum[class_index];
+//
+//          /* subtract the min value from all classes to reduce the noise */
+//          for( class_index = 1; class_index <= class_num; class_index++ )
+//            probabilities_sum[class_index] -= min_prob;
+//
+//          for (class_index=1;class_index<=class_num;class_index++)
+//            if (probabilities_sum[class_index]>second_highest_prob && class_index!=predicted_class) 
+//            {  second_highest_prob=probabilities_sum[class_index];
+//               second_highest_class=class_index;
+//            }
+//          TestSet->samples[test_sample_index]->interpolated_value=(second_highest_prob*atof(class_labels[second_highest_class])+probabilities_sum[predicted_class]*atof(class_labels[predicted_class]))/(second_highest_prob+probabilities_sum[predicted_class]);
+          // Method 2: use all the marginal probabilities
+          TestSet->samples[test_sample_index]->interpolated_value=0;			
+          for( class_index = 1; class_index <= class_num; class_index++ )
+            TestSet->samples[ test_sample_index ]->interpolated_value += 
+              probabilities_sum[class_index] * atof( class_labels[ class_index ] );
+
          }
 		 sprintf(interpolated_value,"<td>%.3f</td>",TestSet->samples[test_sample_index]->interpolated_value);
       }
@@ -1368,7 +1391,8 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
      {
        samp_sum+=pow(SignatureWeights[sig_index],2)*pow(test_sample->data[sig_index].value-samples[sample_index]->data[sig_index].value,2);
      }
-     if( samp_sum == 0.0 ) continue; /* ignore images that are 100% identical */
+     //if( samp_sum == 0.0 ) continue; /* ignore images that are 100% identical */
+     if( samp_sum < 0.1 ) continue; // try to weed out matches that got through due to floating point error 
      class_sum[samples[sample_index]->sample_class]+=pow(samp_sum,-5);
      samples_num[samples[sample_index]->sample_class]++;
      /* printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n",
