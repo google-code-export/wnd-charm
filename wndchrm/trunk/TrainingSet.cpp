@@ -1229,7 +1229,9 @@ long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, do
    test_sample->normalize(this);
    for (sample_index=0;sample_index<count;sample_index++)
    {  double dist=distance(test_sample,samples[sample_index],2.0);
-      if (dist<closest_dist && dist>1.0/INF)
+      if ((dist<1/INF) || (strcmp(samples[sample_index]->full_path,test_sample->full_path)==0)) dist=INF;    /* ignore images that are 100% identical */
+//if (strstr(samples[sample_index]->full_path,"1948")==NULL) dist=INF;	  
+      if (dist<closest_dist)
       {  closest_dist=dist;
          most_probable_class=samples[sample_index]->sample_class;
          if (closest_sample) *closest_sample=samples[sample_index];		 
@@ -1270,53 +1272,70 @@ long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, do
 long TrainingSet::classify2(signatures *test_sample, double *probabilities, double *normalization_factor)
 {  int sample_index,class_index,sig_index;
    long most_probable_class;
-   double samp_sum,*class_sum,*samples_num;
+   double samp_sum,*class_sum; //,*samples_num;
    double dist,closest_dist=INF;
+   int *samples_num;
 
    /* normalize the test sample */
    test_sample->normalize(this);
 
    /* allocate and initialize memory */
    class_sum=new double[class_num+1];
-   samples_num=new double[class_num+1];
+   samples_num=new int[class_num+1];
    for (class_index=0;class_index<=class_num;class_index++)
-   {  class_sum[class_index]=0.0;
-      samples_num[class_index]=0.0;
+   {  
+     class_sum[class_index]=0.0;
+     samples_num[class_index]=0;
    }
 
    for (sample_index=0;sample_index<count;sample_index++)
-   {  samp_sum=0.0;
-      for (sig_index=0;sig_index<signature_count;sig_index++)
-        samp_sum+=pow(SignatureWeights[sig_index],1)*pow(test_sample->data[sig_index].value-samples[sample_index]->data[sig_index].value,2);
-      class_sum[samples[sample_index]->sample_class]+=pow(samp_sum,-5);
-      samples_num[samples[sample_index]->sample_class]+=1;
+   {
+     samp_sum=0.0;
+     for (sig_index=0;sig_index<signature_count;sig_index++)
+     {
+       samp_sum+=pow(SignatureWeights[sig_index],2)*pow(test_sample->data[sig_index].value-samples[sample_index]->data[sig_index].value,2);
+     }
+     if( samp_sum == 0.0 ) continue; /* ignore images that are 100% identical */
+     class_sum[samples[sample_index]->sample_class]+=pow(samp_sum,-5);
+     samples_num[samples[sample_index]->sample_class]++;
+     /* printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n",
+         sample_index, samples[sample_index]->sample_class, samp_sum, pow(samp_sum, -5), class_sum[samples[sample_index]->sample_class], samples_num[samples[sample_index]->sample_class]);
+      */
    }
 	 
    for (class_index=1;class_index<=class_num;class_index++)
    {
-      if (samples_num[class_index]==0.0) class_sum[class_index]=INF;   /* no samples for this class */
-      class_sum[class_index]/=samples_num[class_index];    /* find the average distance per sample */
-	  class_sum[class_index]=1/class_sum[class_index];     
-      dist=class_sum[class_index];
-      if (dist<closest_dist)
-      {  closest_dist=dist;
-         most_probable_class=class_index;
-      }
-      if (probabilities) probabilities[class_index]=dist;
+     if( samples_num[class_index]==0 )
+       class_sum[class_index]=INF;   /* no samples for this class */
+     else
+       class_sum[class_index]/=samples_num[class_index];    /* find the average distance per sample */
+     
+     // printf( "Dist to class %d = %e = %e class_sum / %d samples\n", class_index, class_sum[class_index]/=samples_num[class_index], class_sum[class_index], samples_num[class_index] );
+
+     dist=class_sum[class_index];
+     if( dist < closest_dist )
+     {  
+       closest_dist=dist;
+       most_probable_class=class_index;
+     }
    }
    
    /* normalize the marginal probabilities */
    if (probabilities)
-   {  double sum_dists=0;
-      for (class_index=1;class_index<=class_num;class_index++)
-        if (probabilities[class_index]!=0)
-          sum_dists+=1/probabilities[class_index];
-      for (class_index=1;class_index<=class_num;class_index++)
-        if (sum_dists==0) probabilities[class_index]=0;    /* protect from division by zero */
-        else
-          if (probabilities[class_index]==0) probabilities[class_index]=1.0; /* exact match */
-          else probabilities[class_index]=(1/probabilities[class_index])/sum_dists;
-      if (normalization_factor) *normalization_factor=sum_dists;
+   {  
+     double sum_dists=0;
+
+     //printf( "\n\n" );
+
+     for( class_index = 1; class_index <= class_num; class_index++ )
+       sum_dists += class_sum[class_index];
+
+     // printf( "Sum of all distances = %e\n", sum_dists );
+
+     for( class_index = 1; class_index <= class_num; class_index++ )
+       probabilities[class_index]=class_sum[class_index]/sum_dists;
+     
+     if (normalization_factor) *normalization_factor=sum_dists;
    }
 
    delete class_sum;
