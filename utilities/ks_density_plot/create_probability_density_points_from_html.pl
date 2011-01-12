@@ -14,6 +14,7 @@ my $flags = undef;
 my $bandwidth = undef;
 my $input_file = undef;
 my $interp_val_dump_file = undef;
+my $verbose = undef;
 GetOptions( "bins=i"  => \$num_bins,
            # "window_size=f" => \$bin_width,
             "normalize=s" => \$normalize,
@@ -21,7 +22,8 @@ GetOptions( "bins=i"  => \$num_bins,
             "flags=i" => \$flags,
             "bandwidth=s" => \$bandwidth,
             "input_file=s" => \$input_file,
-            "dump_interp_vals=s" => \$interp_val_dump_file );
+            "dump_interp_vals=s" => \$interp_val_dump_file,
+            "verbose=i" => \$verbose );
 
 print "Histogram will be created with number of bins: $num_bins\n" if( defined $num_bins );
 #print "Window size : $bin_width\n" if( defined $bin_width );
@@ -229,12 +231,12 @@ my $distribution_hash;
 
 open( INTERP_VAL_DUMP_FILE, '>', $interp_val_dump_file ) if( defined $interp_val_dump_file );
 
-#print "RESULTS:\n";
+print "RESULTS:\n" if( $verbose );
 foreach my $class ( sort keys %results_hash ) {
-	#print "\tClass \"$class\"\n";
-  foreach my $file (keys %{ $results_hash{ $class } }) {
+	print "\tClass \"$class\"\n" if( $verbose );
+  foreach my $file ( sort keys %{ $results_hash{ $class } } ) {
     @interp_vals = ();
-    # print "\t\tFile \"$file\"\n";
+    print "\t\tFile \"$file\"\n" if( $verbose );
     $stat->clear;
     $norm_stat->clear;
     foreach my $hash_ref ( @{ $results_hash{ $class }->{ $file } } ) {
@@ -244,19 +246,42 @@ foreach my $class ( sort keys %results_hash ) {
       $predicted_class = $hash_ref->{ "class" };
       $split_number = $hash_ref->{ "split_num" };
       $normalized_distances = $hash_ref->{ "dists" };
-#      printf "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances ) Interp val: $interpolated_value\n", $split_number;
+      printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances ) Interp val: $interpolated_value\n", $split_number) if( $verbose );
     } # end iterating over each image's split result
-#    printf "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n\n",
-    $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation; 
-    if( defined $normalize ) {
-      $class_stat->add_data( $norm_stat->mean );
-      $ks_class_stat->add_data( $norm_stat->mean );
-      print INTERP_VAL_DUMP_FILE $class . "," . $norm_stat->mean . "\n" if( defined $interp_val_dump_file );
-    } else {
-      $class_stat->add_data( $stat->mean );
-      $ks_class_stat->add_data( $stat->mean );
-      print INTERP_VAL_DUMP_FILE $class . "," . $stat->mean . "\n" if( defined $interp_val_dump_file );
+    printf( "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n",
+    $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation ) if( $verbose ); 
+    if( defined $normalize ) # Report the interpolated values on the [0,1] interval
+    {
+      # See note below about how taking into account images whose inperpolated
+      # valuse don't change over the splits is a bad idea.
+      if( $norm_stat->count > 1 && $norm_stat->standard_deviation == 0 ) {
+        print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
+      }
+      else
+      {
+        $class_stat->add_data( $norm_stat->mean );
+        $ks_class_stat->add_data( $norm_stat->mean );
+        print INTERP_VAL_DUMP_FILE $class . "," . $norm_stat->mean . "\n" if( defined $interp_val_dump_file );
+      }
     }
+    else # Normal reporting of values
+    {
+      # You do not want to take into account images that the classifier can't classify
+      # The way you tell is that all the marginal probabilities are 1/n, n being the number of classes.
+      # That shows up here when the interpolated values of an image are exactly the same for multiple runs
+      # This is not exactly the best way to do it, for example what if the marg probs are {1.0, 0, 0, 0}
+      # ... this would also yield a std dev of 0. TODO: need to look directly at marg probs.
+      if( $stat->count > 1 && $stat->standard_deviation == 0 ) {
+        print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
+      }
+      else
+      {
+        $class_stat->add_data( $stat->mean );
+        $ks_class_stat->add_data( $stat->mean );
+        print INTERP_VAL_DUMP_FILE $class . "," . $stat->mean . "\n" if( defined $interp_val_dump_file );
+      }
+    }
+    print "\n" if( $verbose );
   } # end iterating over each image
   $class_stat->sort_data;
   $report .= sprintf "Class $class: count= %3d, min=%.4f, max=%.4f, mean=%.4f, std dev=%.4f\n", 
