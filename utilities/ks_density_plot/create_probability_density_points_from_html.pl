@@ -238,10 +238,8 @@ my $PDF;
 my $distribution_hash;
 
 # These are variables concerned with determining whether or not the image was classified ambiguously
-my $random_classification_marg_prob = 1 / $num_classes;
-my $marg_prob_tolerance = $tolerance * $random_classification_marg_prob;
-my $lbound_marg_prob_val = $random_classification_marg_prob - $marg_prob_tolerance;
-my $ubound_marg_prob_val = $random_classification_marg_prob + $marg_prob_tolerance;
+my $random_marg_prob = 1 / $num_classes;
+my $marg_prob_tolerance = $tolerance * $random_marg_prob;
 
 open( INTERP_VAL_DUMP_FILE, '>', $interp_val_dump_file ) if( defined $interp_val_dump_file );
 
@@ -253,40 +251,51 @@ foreach my $class ( sort keys %results_hash ) {
     print "\t\tFile \"$file\"\n" if( $verbose );
     $stat->clear;
     $norm_stat->clear;
-    my $all_normalized_distances = "";
     foreach my $hash_ref ( @{ $results_hash{ $class }->{ $file } } ) {
       $interpolated_value = $hash_ref->{ "val" };
-      $stat->add_data( $interpolated_value );
-      $norm_stat->add_data( ( $interpolated_value - $min ) / $range );
+      $normalized_distances = $hash_ref->{ "dists" };
       $predicted_class = $hash_ref->{ "class" };
       $split_number = $hash_ref->{ "split_num" };
-      $normalized_distances = $hash_ref->{ "dists" };
-      $all_normalized_distances .= $normalized_distances;
-      printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances) Interp val: $interpolated_value\n", $split_number) if( $verbose );
+
+      # You do not want to take into account images that the classifier can't classify.
+      # The way you tell is that all the marginal probabilities are 1/n, n being the number of classes.
+      my $ambiguous_split = 1;
+      if( $tolerance > 0 )
+      {
+        foreach ( split /\s+/, $normalized_distances )
+        {
+          # if you have a single marginal probability that's outside the "dead zone"
+          # of 1/n +/- %10, then this image is fine.
+          if( $_ < ($random_marg_prob - $marg_prob_tolerance) or 
+              $_ > ($random_marg_prob + $marg_prob_tolerance) )
+          {
+            $ambiguous_split = 0;
+            last;
+          }
+        }
+      }
+      if( $ambiguous_split and $tolerance > 0 )
+      {
+        # Report it, but don't count it.
+        printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Norm dists: ( $normalized_distances) Interp val: $interpolated_value *SKIPPED*\n", $split_number) if( $verbose );
+      }
+      else
+      {
+        # Report it AND count it.
+        $stat->add_data( $interpolated_value );
+        $norm_stat->add_data( ( $interpolated_value - $min ) / $range );
+        printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Norm dists: ( $normalized_distances) Interp val: $interpolated_value\n", $split_number) if( $verbose );
+      }
     } # end iterating over each image's split result
 
-    printf( "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n",
-      $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation ) if( $verbose ); 
-
-    # You do not want to take into account images that the classifier can't classify
-    # The way you tell is that all the marginal probabilities are 1/n, n being the number of classes.
-    my $is_ambiguous = 1;
-    foreach ( split /\s+/, $all_normalized_distances )
-    {
-      # if you have a single marginal probability that's outside the "dead zone"
-      # of 1/n +/- %10, then this image is fine.
-      if( $_ < $lbound_marg_prob_val || $_ > $ubound_marg_prob_val )
-      {
-        $is_ambiguous = 0;
-        last;
-      }
-    }
-    if( $is_ambiguous )
+    if( not $stat->count > 0 )
     {
       print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
     }
     else
     {
+      printf( "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n",
+        $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation ) if( $verbose ); 
       if( defined $normalize ) # Report the interpolated values on the [0,1] interval
       {
         $class_stat->add_data( $norm_stat->mean );
