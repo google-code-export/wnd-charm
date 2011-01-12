@@ -15,6 +15,11 @@ my $bandwidth = undef;
 my $input_file = undef;
 my $interp_val_dump_file = undef;
 my $verbose = undef;
+my $tolerance = 0.1; # Used for marginal probability analysis.
+                     # Represents % deviation from 1/n that defines if an
+                     # image was classified as random, i.e.,
+                     # 1/n +/- $tolerance marginal probabilities across all classes
+
 GetOptions( "bins=i"  => \$num_bins,
            # "window_size=f" => \$bin_width,
             "normalize=s" => \$normalize,
@@ -23,7 +28,8 @@ GetOptions( "bins=i"  => \$num_bins,
             "bandwidth=s" => \$bandwidth,
             "input_file=s" => \$input_file,
             "dump_interp_vals=s" => \$interp_val_dump_file,
-            "verbose=i" => \$verbose );
+            "verbose=i" => \$verbose,
+            "tolerance=f" => \$tolerance );
 
 print "Histogram will be created with number of bins: $num_bins\n" if( defined $num_bins );
 #print "Window size : $bin_width\n" if( defined $bin_width );
@@ -69,17 +75,18 @@ if( !defined $input_file )
   die "Couldn't find the test results table element in file $output_file\n" if( !@table_elements );
 # print "Number of splits found: $#table_elements\n";
 
-# step one: figure out the number of classes
+# print "step one: figure out the number of classes\n\n";
   if( !defined $num_classes ) {
     my $class_structure_elem = $tree->look_down("_tag", "table");
     die "Couldn't derive number of classes from html file $output_file.\n" if( !$class_structure_elem );
 
-#  print $class_structure_elem->as_text . "\n";
+    # print $class_structure_elem->as_HTML . "\n";
 
-    my $first_row = $class_structure_elem->look_down("_tag", "tr"); #grab the first one it sees
+    # Grab the first row that doesn't contain the caption
+    my $first_row = $class_structure_elem->look_down( "_tag", "tr", sub{ not $_[0]->look_down( '_tag', 'caption' ) } );
     die "Couldn't derive number of classes from html file $output_file.\n" if( !$first_row );
 
-# print $first_row->as_text . "\n";
+#print $first_row->as_text . "\n";
 
     my @class_rows = $first_row->look_down("_tag", "td");
     $num_classes = $#class_rows - 1;
@@ -152,7 +159,8 @@ if( !defined $input_file )
 #      print "\tFound file $filename\n";
 
         $normalized_distances = "";
-        for( my $j = 3; $j <= ( 3 + $num_classes ); $j++ ) {
+        # Skip the first two columns, which should be the Image No. and the Normalization Factor
+        for( my $j = 2; $j <= ( 2 + $num_classes ); $j++ ) {
           $normalized_distances .= $row[$j]->as_text . "  ";
         }
         $actual_class = $row[ $image_column - 4 ]->as_text;
@@ -229,6 +237,12 @@ my $histogram;
 my $PDF;
 my $distribution_hash;
 
+# These are variables concerned with determining whether or not the image was classified ambiguously
+my $random_classification_marg_prob = 1 / $num_classes;
+my $marg_prob_tolerance = $tolerance * $random_classification_marg_prob;
+my $lbound_marg_prob_val = $random_classification_marg_prob - $marg_prob_tolerance;
+my $ubound_marg_prob_val = $random_classification_marg_prob + $marg_prob_tolerance;
+
 open( INTERP_VAL_DUMP_FILE, '>', $interp_val_dump_file ) if( defined $interp_val_dump_file );
 
 print "RESULTS:\n" if( $verbose );
@@ -239,6 +253,7 @@ foreach my $class ( sort keys %results_hash ) {
     print "\t\tFile \"$file\"\n" if( $verbose );
     $stat->clear;
     $norm_stat->clear;
+    my $all_normalized_distances = "";
     foreach my $hash_ref ( @{ $results_hash{ $class }->{ $file } } ) {
       $interpolated_value = $hash_ref->{ "val" };
       $stat->add_data( $interpolated_value );
@@ -246,35 +261,39 @@ foreach my $class ( sort keys %results_hash ) {
       $predicted_class = $hash_ref->{ "class" };
       $split_number = $hash_ref->{ "split_num" };
       $normalized_distances = $hash_ref->{ "dists" };
-      printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances ) Interp val: $interpolated_value\n", $split_number) if( $verbose );
+      $all_normalized_distances .= $normalized_distances;
+      printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Normalized dists: ( $normalized_distances) Interp val: $interpolated_value\n", $split_number) if( $verbose );
     } # end iterating over each image's split result
+
     printf( "\t\t\t---> Tested %d times, mean %.3f, std dev %.3f. Normalized to [0,1]: mean: %.4f, std_dev: %.4f\n",
-    $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation ) if( $verbose ); 
-    if( defined $normalize ) # Report the interpolated values on the [0,1] interval
+      $stat->count, $stat->mean, $stat->standard_deviation, $norm_stat->mean, $norm_stat->standard_deviation ) if( $verbose ); 
+
+    # You do not want to take into account images that the classifier can't classify
+    # The way you tell is that all the marginal probabilities are 1/n, n being the number of classes.
+    my $is_ambiguous = 1;
+    foreach ( split /\s+/, $all_normalized_distances )
     {
-      # See note below about how taking into account images whose inperpolated
-      # valuse don't change over the splits is a bad idea.
-      if( $norm_stat->count > 1 && $norm_stat->standard_deviation == 0 ) {
-        print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
+      # if you have a single marginal probability that's outside the "dead zone"
+      # of 1/n +/- %10, then this image is fine.
+      if( $_ < $lbound_marg_prob_val || $_ > $ubound_marg_prob_val )
+      {
+        $is_ambiguous = 0;
+        last;
       }
-      else
+    }
+    if( $is_ambiguous )
+    {
+      print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
+    }
+    else
+    {
+      if( defined $normalize ) # Report the interpolated values on the [0,1] interval
       {
         $class_stat->add_data( $norm_stat->mean );
         $ks_class_stat->add_data( $norm_stat->mean );
         print INTERP_VAL_DUMP_FILE $class . "," . $norm_stat->mean . "\n" if( defined $interp_val_dump_file );
       }
-    }
-    else # Normal reporting of values
-    {
-      # You do not want to take into account images that the classifier can't classify
-      # The way you tell is that all the marginal probabilities are 1/n, n being the number of classes.
-      # That shows up here when the interpolated values of an image are exactly the same for multiple runs
-      # This is not exactly the best way to do it, for example what if the marg probs are {1.0, 0, 0, 0}
-      # ... this would also yield a std dev of 0. TODO: need to look directly at marg probs.
-      if( $stat->count > 1 && $stat->standard_deviation == 0 ) {
-        print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
-      }
-      else
+      else # Normal reporting of values
       {
         $class_stat->add_data( $stat->mean );
         $ks_class_stat->add_data( $stat->mean );
