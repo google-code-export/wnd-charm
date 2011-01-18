@@ -1209,19 +1209,19 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
       }
    }
 
-   // Insert feature group sorting code here:
+   // Feature group sorting code:
 
-   /* copy the feature names and scores into a string. the features will be ordered by their scores */
-
-   double sortedFeatGroupValues[MAX_SIGNATURE_NUM];
-
-   for( sig_index = 0; sig_index < signature_count; sig_index++ )
-      sortedFeatGroupValues[sig_index ] = FeatureGroupValues[ sig_index ];
-
-   qsort( sortedFeatGroupValues, signature_count, sizeof(double), compare_two_doubles );
-
-   if( split && split->feature_names )
+   if( split && split->feature_names && split->feature_groups )
    {  
+     /* copy the feature names and scores into a string. the features will be ordered by their scores */
+
+     double sortedFeatGroupValues[MAX_SIGNATURE_NUM];
+
+     for( sig_index = 0; sig_index < signature_count; sig_index++ )
+        sortedFeatGroupValues[sig_index ] = FeatureGroupValues[ sig_index ];
+
+     qsort( sortedFeatGroupValues, signature_count, sizeof(double), compare_two_doubles );
+
      int sig_index2;
      split->feature_groups[0] = '\0';
      for( sig_index = signature_count - 1; sig_index >= 0; sig_index-- )
