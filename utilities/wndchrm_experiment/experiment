@@ -1,7 +1,19 @@
 #!/usr/bin/perl
 # by Chris Coletta Wed Mar 17, 2010
-# The purpose of this script is to generate experimental image sets
-# to perform a `wndchrm test` upon. 
+# 
+# The purpose of this script is to be a harness for the compiled wndchrm binary
+# that executes many different types of WND-CHARM experiments and automates the 
+# various tasks associated with setting up the experiment.
+# This script will parse a text file which is in a certain format (see comments at end of
+# this file for a description of the format) that describes and fully defines all aspects of
+# the experimental set up. The text file can be saved as a record of exactly what was done,
+# encouraging consistency and repeatability from experiment to experiment.
+ 
+# You can also test out configurations before actually carrying out experiments by
+# specifying -dryrun on the command line when running this script
+
+# Use -verbose to view debug output
+
 use strict;
 use warnings;
 use File::Copy;
@@ -72,6 +84,8 @@ my $silence_wndchrm = undef;
 my $experiment_repetitions = 1;
 my $pairwise_flag = 0;
 my $path_to_phylip = undef;
+my $weighted_nearest_neighbor = undef;
+my $self_set = undef;
 my $phylip_command = undef; # use a separate string for for storing phylip part of wndchrm command
                             # line because we need to keep track of where it is to copy dend files.
 my %group_info;
@@ -197,6 +211,14 @@ while( <CONFIG_FILE> )
     $path_to_phylip = $1;
     print "\tPath to phylip: $path_to_phylip\n" if( $DEBUG1 or $verbose or $dryrun );
   }
+  elsif( $_ =~ /^weighted_nearest_neighbor/ ) {
+    $weighted_nearest_neighbor = 1;
+    print "\tUsing WNN (Weighted Nearest Neighbor)\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^self_set/ ) {
+    $self_set = 1;
+    print "\tUsing the entire training set as the test set.\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
   else {
     if( $DEBUG1 or $verbose or $dryrun ) {
       print "\tCan't read anything from this line... Skipping.\n"
@@ -270,6 +292,11 @@ if( defined $silence_wndchrm ) {
   $silence_wndchrm  = " > /dev/null 2>&1" ;
 } else {
   $silence_wndchrm  = "";
+}
+if( defined $weighted_nearest_neighbor ) {
+  $weighted_nearest_neighbor  = " -w" ;
+} else {
+  $weighted_nearest_neighbor  = "";
 }
 
 ##################################################################################
@@ -503,6 +530,11 @@ sub RunExperiment {
 	    } 
 	    $html_file = "$target_dir/${experiment_name}_f$fraction_string.html";
 	    $new_fit_filename = "${experiment_name}_f$fraction_string.fit";
+	    if( defined $self_set && $self_set ne "" ) {
+	      $self_set = "$new_fit_filename";
+	    } else {
+	      $self_set = "";
+	    }
 	    if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm ) {
 	      print "\tChanging the name of $old_fit_filename to $new_fit_filename so the dendrogram will be named correctly.\n";
 	    }
@@ -512,7 +544,7 @@ sub RunExperiment {
 	    }
 	    # Reset for next time through loop
 	    $old_fit_filename = $new_fit_filename;
-	    $cmd = "$path_to_wndchrm test $test_args $tile_scheme $training_images $test_images -f$feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $target_dir/$new_fit_filename $html_file $silence_wndchrm";
+	    $cmd = "$path_to_wndchrm test $weighted_nearest_neighbor $test_args $tile_scheme $training_images $test_images -f$feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $self_set $target_dir/$new_fit_filename $html_file $silence_wndchrm";
 	    if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm ) {
 	      print "\nWndchrn test command: \n$cmd\n";
 	    }
@@ -530,28 +562,37 @@ sub RunExperiment {
 	    move( "$target_dir/$new_fit_filename", "$target_dir/$original_fit_filename" ) 
 	      or die "***********************\nError: Can't move $new_fit_filename to $original_fit_filename. $!\n";
 	  }
-	}
+	} # END code that runs a battery of wndchrm tests where feature fraction is varied
 	else
 	{ 
-	  # moved into the loop since target_dir and experiment_name change between iterations.
+	  # BEGIN standard wndchrm test code
+	  # target_dir and experiment_name change between iterations.
 	  if( defined $html_file && $html_file ne "" ) {
 	    $html_file = "$target_dir/$experiment_name.html";
 	  } else {
 	    $html_file = "";
 	  }
-	  $cmd = "$path_to_wndchrm test $test_args $tile_scheme $training_images $test_images $feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $target_dir/$experiment_name.fit $html_file $silence_wndchrm";
+	  if( defined $self_set && $self_set ne "" ) {
+	    $self_set = "$target_dir/$experiment_name.fit";
+	  } else {
+	    $self_set = "";
+	  }
+	  $cmd = "$path_to_wndchrm test $test_args $weighted_nearest_neighbor $tile_scheme $training_images $test_images $feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $self_set $target_dir/$experiment_name.fit $html_file $silence_wndchrm";
 	  if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm ) {
 	    print "\nWndchrn test command: \n$cmd\n";
 	  }
-	  system( $cmd ) if( !$dryrun );
-	  # clean up by compying dend files if any to experiment dir
-	  if( -e "$path_to_phylip/dend_file.txt" ) {
-		print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
-		move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
-	  } else {
-		print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
-	  }
-	}
+	  if( !$dryrun )
+	  {
+	    system( $cmd );
+	    # clean up by compying dend files if any to experiment dir
+	    if( -e "$path_to_phylip/dend_file.txt" ) {
+	  	print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
+	  	move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
+	    } else {
+	  	print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
+	    }
+	  } # END if( !$dryrun )
+	} # END running standard WND-CHARM test experiment
 
 
 }
@@ -589,7 +630,8 @@ source_dir /home/colettace/where/the/images/and/sigs/live
 target_dir /home/colettace/wndchrm/products/go/in/here
 
 # Experiment class definition section
-# directory, class to be assigned, number of images from the directory to go into class
+
+# For a standard WND-CHARM experiment, this is how you define the image classes:
 
 # column 1: the word "class"
 # column 2: path of class 1's images and sigs relative to source dir specified above
@@ -608,20 +650,122 @@ class	an_organizing_folder/sourcedir9		classD	60
 class 	an_organizing_folder/sourcedir10	classD	60
 
 
-# The following parameters are self explanitory 
-tile_scheme	2  		# -t4
-large_feature_set		# use the large feature set
-training_images	89		# -i220
-test_images	1		# -j20
-#test_repetitions	30	# -n5
-path_to_phylip			/home/colettace/src/phylip-3.69
-#html_file			# you must explicitly ask for an html result file
-feature_usage_fraction	1.0	# the fraction must be in the form 0.#, or 1.0
-write_fisher_weights
-experiment_repetitions	2	# Repeat the entire experiment this many times,
-				# generating entirely new training and test sets from the
-				# source image pool. Differs entirely from the -n# wndchrm switch.
-				# The target directory will contain a subdirectory for each
-				# experiment run
-silence_wndchrm			# run_wndchrm in silent mode
+# For a pairwise comparison WND-CHARM experiment,
+#   use the above class definition format, but also include the word group
+#   followed by a group identifier. Example:
 
+class	sourcedir1				classA	90	group	1
+class	sourcedir2				classB	90	group	2
+class	sourcedir3				classC	90	group	3
+class	sourcedir4				classA	90	group	1
+class	sourcedir5				classB	90	group	2
+class	sourcedir6				classC	90	group	3
+class 	an_organizing_folder/sourcedir7		classD	60	group	4
+class 	an_organizing_folder/sourcedir8		classD	60	group	4
+class	an_organizing_folder/sourcedir9		classD	60	group	4
+class 	an_organizing_folder/sourcedir10	classD	60	group	4
+
+# Note how the group numbers (column 6) correspond with the assigned class name (col 3).
+# In addition to 1 vs. 1 pairwise experiments, you can put multiple classes in a group,
+# to do pairwise experiments on the groups instead of individual classes.
+# This enables the user to perform 2 vs. 2, 3 vs. 3, experiments, and so on.
+
+
+# The following is an explanation of the available experiment parameters
+
+# Section 1a: WND-CHARM classifier TRAINING parameters that have wndchrm command line equivalents
+
+# tile_scheme	<n>
+#    Equivalent to the "-t" wndchrm command line argument
+#    Tells WND-CHARM to break training and test images up into a matrix of n x n subimages 
+tile_scheme	2
+
+# large_feature_set
+#    Equivalent to the "-l" wndchrm command line argument
+#    Use the large feature set when calculating sigs
+large_feature_set
+
+
+# Section 1b: WND-CHARM classifier TESTING parameters that have wndchrm command line equivalents
+
+# training_images <n>
+#    Equivalent of the "-i" command line argument
+#    Specify the number of images per class to form the classifier training set
+training_images	89
+
+# test_images	<n>
+#    Equivalent to the "-j" command line argument
+#    Specify the number of images per class that should form the test set
+test_images	1
+
+# test_repetitions	<n>
+#    Equivalent to the "-n" command line argument
+#    Specify the number of training set/test set splits when testing the classifier
+test_repetitions	30
+
+# feature_usage_fraction	<f>
+#    Equivalent to the "-f" command line argument
+#    A number on the interval from ( 0.0, 1.0 ] that specifies the
+#    how many of the top ranking image features to use when classifying
+#    the images in the test set.
+feature_usage_fraction	1.0
+
+# path_to_phylip	/unix/full/path/to/phylip/base
+#    Equivalent of the "-p" command line argument
+#    Create a dendrogram of the test data using the class similarity values
+#    Specify the path to the base directory where the phylip program is
+#    All intermediate files associated with creating the dendrogram will be
+#    copied to the experiment output directory
+path_to_phylip			/home/colettace/src/phylip-3.69
+
+# html_file			
+#    Equivalent of specifying a path and file name for the html report
+#    Note that you must explicitly ask for an html result file,
+#    else one will not be generated. Output goes to experiment output directory
+html_file
+
+# write_fisher_weights
+#    Equivalent to the -w/path/to/fisher/weights/file on the command line
+#    Write out the fisher weights to a file, whose name is determined programmatically
+#    File is written to the experiment output directory.
+write_fisher_weights
+
+# weighted_nearest_neighbor
+#    Equivalent to the "-w" command line argument
+#    Use the alternative Weighted Nearest Neighbor algorithm to calculate distances from test image
+#    to training set images, instead of default WND (Weighted Neighbor Distance)
+
+# self_set
+#    Use the entire training set as the test set
+#    Equivalent of specifying the training set twice on the command line
+self_set
+
+# additional_test_args <stuff>
+#    Any native wndchrm functionality not implemented above can be passed through
+#    to the command line using this parameter
+additional_test_args -v-/path/to/artifact/weights 
+
+
+# Section 2: WND-CHARM classifier TESTING functionality NOT INCLUDED in the wndchrm binary
+
+# vary_feature_fraction	start	<a>	finish	<b>	increment	<c>
+#    Perform WND-CHARM test experiments where the feature usage fraction is a
+#    parameter that is varied
+#    example:
+vary_feature_fraction	start	0.1	finish	1.0	increment 0.1
+
+
+# experiment_repetitions	<n>
+#    Repeat the entire experiment this many times, randomly generating entirely new training sets
+#    (and test sets) from the source image pool. Differs entirely from the -n# wndchrm switch.
+#    This is useful when you have a large pool of images from which to create new
+#    training sets, especially when the number of images in each source pool is different.
+#    This is the equivalent of running wndchrm train n times, with each time randomly
+#    selecting a new set of images to include in the classifier (.fit) file.
+#    The target directory will contain a subdirectory for each experiment run
+experiment_repetitions	30
+
+# silence_wndchrm
+#    Run_wndchrm in silent mode
+#    This directs all output to the bit bucket ( >/dev/null)
+silence_wndchrm
