@@ -1,3 +1,6 @@
+EXTRA_DIST = SVNREV
+distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
+
 noinst_LIBRARIES=libimfit.a
 
 libimfit_a_SOURCES = \
@@ -70,6 +73,5 @@ bin_PROGRAMS=wndchrm
 wndchrm_SOURCES = wndchrm.cpp
 
 wndchrm_LDADD = -lm -ltiff -L. -limfit -lfftw3
-
 
 
