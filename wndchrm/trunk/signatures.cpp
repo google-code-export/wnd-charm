@@ -1055,9 +1055,9 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(EdgeFourier,"Edge Fourier Transform");
 
   CompGroupB(EdgeWavelet,"Edge Wavelet Transform");
-printf("5.5\n");  
+//printf("5.5\n");  
   CompGroupC(EdgeWavelet,"Edge Wavelet Transform");
-printf("6\n");
+//printf("6\n");
   delete FourierTransform;
   delete WaveletSelector;
   delete ChebyshevTransform;
@@ -1069,7 +1069,7 @@ printf("6\n");
   delete EdgeFourier;
   delete EdgeWavelet;
   delete FourierChebyshev;
-printf("7\n");  
+//printf("7\n");  
 }
 
 
