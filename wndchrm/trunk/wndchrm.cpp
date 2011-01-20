@@ -53,7 +53,7 @@ void randomize()
 
 /* displays an error message and stops the program */
 int show_error(char *error_message, int stop)
-{  printf("Oy Vey!  %s\n",error_message);
+{  printf("Error: %s\n",error_message);
    if (stop) exit(0);
    return(0);
 }
@@ -75,6 +75,7 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
   double class_avg_similarity[MAX_CLASS_NUM];
   DIR *class_dir;
   struct dirent *ent;
+  int tmp_print_to_screen;
 
   if (tiles<=0) tiles=1;
   for (class_index=0;class_index<MAX_CLASS_NUM;class_index++)
@@ -119,20 +120,35 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
   {  ts->normalize();
      ts->SetFisherScores(max_features,used_mrmr,NULL);
   }
-      
+
+// Label the columns
+	if (print_to_screen) {
+		printf("Image\t",image_files[file_index]);
+		if (ts->class_num==0) { /* continouos values */
+			printf("value\n");
+		} else {
+			for (class_index=1;class_index<=ts->class_num;class_index++) {
+				printf("p(%s)\t",ts->class_labels[class_index]);
+			}
+			printf("Class\tp\n");
+		}
+	}
+	tmp_print_to_screen = print_to_screen;
+	print_to_screen = 0;
   /* start classifying the files */
   for (file_index=0;file_index<number_of_files;file_index++)
   {  int tile_index=1;
      /* open the image file */
-     if (print_to_screen) printf("Opening image file '%s' \n",image_files[file_index]);
      matrix=new ImageMatrix;
      res=matrix->OpenImage(image_files[file_index], downsample, bounding_rect, mean, stddev);
      if (res==0)   /* failed to open the image */
      {  char error_message[256];
         delete matrix;
-        sprintf(error_message,"Cannot open file '%s' \n",image_files[file_index]);
+        sprintf(error_message,"Error opening '%s'\n",image_files[file_index]);
         show_error(error_message,0);
         continue;
+     } else {
+	     if (tmp_print_to_screen) printf("%s\t",image_files[file_index]);
      }
 
      TestSet=new TrainingSet(tiles*tiles,1);   /* a set of tiles (or just one tile) of the image to classify */
@@ -154,11 +170,11 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
           if (strrchr(image_files[file_index],'.')) *strrchr(image_files[file_index],'.')='\0';  /* remove the extension */
           sprintf(sig_file_name,"%s_%d_%d.sig",image_files[file_index],tile_index_x,tile_index_y);	
           if (overwrite || image_signatures->LoadFromFile(sig_file_name)<1) /* compute the signatures if sigs have not been computed */
-          {  if (print_to_screen) printf("Computing signatures - tile %d of %d...\n",tile_index++,tiles*tiles);
+          {  // if (print_to_screen) printf("Computing signatures - tile %d of %d...\n",tile_index++,tiles*tiles);
              image_signatures->ScoresTrainingSet=ts;    /* so that only the needed signatures will be computed */
              if (ts->signature_count>2500) image_signatures->ComputeGroups(tile_matrix,ts->color_features);
              else image_signatures->compute(tile_matrix,ts->color_features);
-          }
+         }
           delete tile_matrix;
    
           /* classify */
@@ -168,21 +184,21 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
      if (tiles>1) delete matrix;	
      if (ts->class_num==0) /* continouos values */
 	 {  double value=ts->ClassifyImage(TestSet,0,method,tiles*tiles,tile_areas,TilesTrainingSets,max_tile,rank,NULL,probabilities_sum);
-        printf("Predicted value: %f \n",value);
+        printf("%f\n",value);
 	 }
      else /* discrete classes */
 	 {  res=(long)(ts->ClassifyImage(TestSet,0,method,tiles*tiles,tile_areas,TilesTrainingSets,max_tile,1,NULL,probabilities_sum));
         class_predictions[res]++;files_read++;
         /* print results */
         for (class_index=1;class_index<=ts->class_num;class_index++)
-        {  printf("%s: %f \n",ts->class_labels[class_index],probabilities_sum[class_index]);
+        {  printf("%f\t",probabilities_sum[class_index]);
            class_avg_similarity[class_index]+=probabilities_sum[class_index];
            if (probabilities_sum[class_index]>max_probability)
            {  max_probability=probabilities_sum[class_index];
               res=class_index;
            }
         }
-        printf("The resulting class is: %s (%f)\n",ts->class_labels[res],probabilities_sum[res]);
+        printf("%s\t%f\n",ts->class_labels[res],probabilities_sum[res]);
         delete TestSet;
      }
   }
