@@ -86,6 +86,7 @@ my $pairwise_flag = 0;
 my $path_to_phylip = undef;
 my $weighted_nearest_neighbor = undef;
 my $self_set = undef;
+my $specify_train_test_split = undef;
 my $phylip_command = undef; # use a separate string for for storing phylip part of wndchrm command
                             # line because we need to keep track of where it is to copy dend files.
 my %group_info;
@@ -143,6 +144,22 @@ while( <CONFIG_FILE> )
     }
     push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3, group => $4 };
     push @{ $group_info{$4} }, $2;
+  }
+  elsif( $_ =~ /^training_image\s+(\S+)\s+dir\s+(\S+)\s+class\s+(\S+)/ )
+  {
+    $specify_train_test_split = 1; # let the script know that the user is specifying train test splits
+    if( $DEBUG1 or $verbose or $dryrun ) {
+      print "\ttraining image $1 from dir $2 will go into class $3\n";
+    }
+    push @{ $class_config_info{$3}->{training_set} }, { name => $1, dir => $2 };
+  }
+  elsif( $_ =~ /^test_image\s+(\S+)\s+dir\s+(\S+)\s+class\s+(\S+)/ )
+  {
+    $specify_train_test_split = 1; # let the script know that the user is specifying train test splits
+    if( $DEBUG1 or $verbose or $dryrun ) {
+      print "\ttest image $1 from dir $2 will go into class $3\n";
+    }
+    push @{ $class_config_info{$3}->{test_set} }, { name => $1, dir => $2 };
   }
   elsif( $_ =~ /^tile_scheme\s+(\d)/ ) {
     $tile_scheme = $1;
@@ -349,7 +366,12 @@ if( $experiment_repetitions == 1 ) {
       }
     }
   } else {
-    &RunExperiment;
+    if( defined $specify_train_test_split ) {
+      &RunExperimentTrainTestSplitsSpecified;
+    }
+    else {
+      &RunExperiment;
+    }
   }
 }
 elsif( $experiment_repetitions > 1 ) {
@@ -378,125 +400,125 @@ elsif( $experiment_repetitions > 1 ) {
 my $DEBUG2 = 0;
 
 sub RunExperiment {
-	if( $DEBUG2 or $verbose or $dryrun ) {
-	  print "\n\n*******************************\nBegin experiment $experiment_name:\n";
-	}
-	my ($args) = @_;
-	if( $pairwise_flag ) {
-	  if( !$args->{group_1} || !$args->{group_2} ) {
-	    die "Internal Error: Pairwise experiment attempted, but the two groups needed weren't properly defined.\n";
-	  } else {
-	    print "\tPairwise analysis between group $args->{group_1} and group $args->{group_2}\n";
-	  }
-	}
-	my $class_name;
-	my $dir_name;
-	my $num_imgs;
-	my @full_file_list;
-	my @tiff_file_list;
-	my $file;
-	my $file_stem;
-	my( $i, $j );
+  if( $DEBUG2 or $verbose or $dryrun ) {
+    print "\n\n*******************************\nBegin experiment $experiment_name:\n";
+  }
+  my ($args) = @_;
+  if( $pairwise_flag ) {
+    if( !$args->{group_1} || !$args->{group_2} ) {
+      die "Internal Error: Pairwise experiment attempted, but the two groups needed weren't properly defined.\n";
+    } else {
+      print "\tPairwise analysis between group $args->{group_1} and group $args->{group_2}\n";
+    }
+  }
+  my $class_name;
+  my $dir_name;
+  my $num_imgs;
+  my @full_file_list;
+  my @tiff_file_list;
+  my $file;
+  my $file_stem;
+  my( $i, $j );
 
-	$target_dir .= "/" . $experiment_name;
-	if( $DEBUG2 or $verbose or $dryrun ) {
-	  print "\tMaking experiment directory $target_dir\n";
-	}
-	if( -e $target_dir ) {
-	  print "\t*******$target_dir exists... skipping...\n\n";
-	  return;
-	}
-	if( !$dryrun ) { mkdir "$target_dir" or print $! };
-	ITERATE_OVER_CLASSES: foreach $class_name ( keys %class_config_info ) {
-	  if( $DEBUG2 or $verbose or $dryrun ){
-	    print "\tClass $class_name:\n";
-	  }
-	  if( $pairwise_flag ) {
-	    # Check the %group_info hash to see if this class $class_name belongs to 
-	    # one of the groups we're checking
-	    my $in_this_group = 0;
-	    my @classes_in_current_groups = ( @{ $group_info{ $args->{group_1} } }, @{ $group_info{ $args->{group_2} } } );
-	    CHECK_IF_CLASS_IN_GROUP: foreach (@classes_in_current_groups) {
-	      if( $class_name eq $_ ) {
-	        $in_this_group = 1;
-	        last CHECK_IF_CLASS_IN_GROUP;
-	      }
-	    }
-	    if( !$in_this_group ) {
-	      if( $DEBUG2 or $verbose or $dryrun ){
-	        print "\t\tSkipping over $class_name because it doesn't belong to groups $args->{group_1} and $args->{group_2}.\n";
-	      }
-	      next ITERATE_OVER_CLASSES;
-	    }
-	  } 
-	  if( $DEBUG2 or $verbose or $dryrun ) {
-	    print "\t\tMaking directory $target_dir/$class_name\n";
-	  }
-	  if( !$dryrun ) { mkdir "$target_dir/$class_name" or print $! };
-	  foreach my $slide ( @{ $class_config_info{$class_name} } ) {
-	    $dir_name = $$slide{dir_name};
-	    $num_imgs = $$slide{img_quant};
-	    if( $DEBUG2 or $verbose or $dryrun ){
-	      print "\t\t Slide \"$dir_name\", Images allocated to class $class_name: $num_imgs\n";
-	    }
-	    print "\t\t\tOpening $source_dir/$dir_name:\n" if( $DEBUG2 or $verbose or $dryrun );
-	    # remember, there could be original tiffs, deconvolved tiffs with H_ or E_ 
-	    # prefixes or suffixes, and also calculated sigs, all in this directory.
-	    # This will even include the "." and ".." paths.
-	    opendir( DIR, "$source_dir/$dir_name" ) or die "Error opening dir $dir_name"; 
-	    @full_file_list = readdir(DIR);
-	    for($i = 0; $i <= $#full_file_list; $i++ ) {
-	      push @tiff_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.tif$/ ) ;
-	    }
-	    die "*******************************************\nFatal Error: No .tif files in directory $source_dir/$dir_name.\n" if $#tiff_file_list == -1;
-	    warn "************************\nWarning: Only $#tiff_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n" if( $#tiff_file_list != ($num_imgs - 1) );
-	    # randomize the file list
-	    for ($i = @tiff_file_list; --$i; ) {
-	      $j = int rand ($i+1);
-	      # print "i: $i j: $j \n";
-	      next if $i == $j;
-	      @tiff_file_list[$i,$j] = @tiff_file_list[$j,$i];
-	    }
+  $target_dir .= "/" . $experiment_name;
+  if( $DEBUG2 or $verbose or $dryrun ) {
+    print "\tMaking experiment directory $target_dir\n";
+  }
+  if( -e $target_dir ) {
+    print "\t*******$target_dir exists... skipping...\n\n";
+    return;
+  }
+  if( !$dryrun ) { mkdir "$target_dir" or print $! };
+  ITERATE_OVER_CLASSES: foreach $class_name ( sort keys %class_config_info ) {
+    if( $DEBUG2 or $verbose or $dryrun ){
+      print "\tClass $class_name:\n";
+    }
+    if( $pairwise_flag ) {
+      # Check the %group_info hash to see if this class $class_name belongs to 
+      # one of the groups we're checking
+      my $in_this_group = 0;
+      my @classes_in_current_groups = ( @{ $group_info{ $args->{group_1} } }, @{ $group_info{ $args->{group_2} } } );
+      CHECK_IF_CLASS_IN_GROUP: foreach (@classes_in_current_groups) {
+        if( $class_name eq $_ ) {
+          $in_this_group = 1;
+          last CHECK_IF_CLASS_IN_GROUP;
+        }
+      }
+      if( !$in_this_group ) {
+        if( $DEBUG2 or $verbose or $dryrun ){
+          print "\t\tSkipping over $class_name because it doesn't belong to groups $args->{group_1} and $args->{group_2}.\n";
+        }
+        next ITERATE_OVER_CLASSES;
+      }
+    } # END if $pairwise_flag 
+    if( $DEBUG2 or $verbose or $dryrun ) {
+      print "\t\tMaking directory $target_dir/$class_name\n";
+    }
+    if( !$dryrun ) { mkdir "$target_dir/$class_name" or print $! };
+    foreach my $slide ( @{ $class_config_info{$class_name} } ) {
+      $dir_name = $$slide{dir_name};
+      $num_imgs = $$slide{img_quant};
+      if( $DEBUG2 or $verbose or $dryrun ){
+        print "\t\t Slide \"$dir_name\", Images allocated to class $class_name: $num_imgs\n";
+      }
+      print "\t\t\tOpening $source_dir/$dir_name:\n" if( $DEBUG2 or $verbose or $dryrun );
+      # remember, there could be original tiffs, deconvolved tiffs with H_ or E_ 
+      # prefixes or suffixes, and also calculated sigs, all in this directory.
+      # This will even include the "." and ".." paths.
+      opendir( DIR, "$source_dir/$dir_name" ) or die "Error opening dir $dir_name"; 
+      @full_file_list = readdir(DIR);
+      for($i = 0; $i <= $#full_file_list; $i++ ) {
+        push @tiff_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.tif$/ ) ;
+      }
+      die "*******************************************\nFatal Error: No .tif files in directory $source_dir/$dir_name.\n" if $#tiff_file_list == -1;
+      warn "************************\nWarning: Only $#tiff_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n" if( $#tiff_file_list != ($num_imgs - 1) );
+      # randomize the file list
+      for ($i = @tiff_file_list; --$i; ) {
+        $j = int rand ($i+1);
+        # print "i: $i j: $j \n";
+        next if $i == $j;
+        @tiff_file_list[$i,$j] = @tiff_file_list[$j,$i];
+      }
 
-	    my @list_of_sigs;
-	    # Note that the loop will bail out without error if the number of images
-	    # asked for exceeds 
-	    for( $i = 0; $i < $num_imgs && $i <= $#tiff_file_list; $i++ ) {
-	      # Unshift the first $num_imgs off the newly randomized list
-	      $file = $tiff_file_list[$i];
-	      if( $DEBUG2 or $verbose or $dryrun ) {
-		print "\t\t\t\tImage $i will be $file\n";
-	      }
-	      if( $file =~ /^(.*)\.tif$/ ) {
-		$file_stem = $1;
-		# copy the file and the sigs associated with the file
-		# need to be done in two operations, because image42* will copy
-		# not only image42.tif and image42_1.sig, but also unexpectedly
-		# image420, image421, etc.
-		if( $DEBUG2 or $verbose or $dryrun ) {
-		  print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file\n";
-		}
-		if( !$dryrun ) {
-		  link( "$source_dir/$dir_name/$file", "$target_dir/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file: $!\n";
-		}
+      my @list_of_sigs;
+      # Note that the loop will bail out without error if the number of images
+      # asked for exceeds 
+      for( $i = 0; $i < $num_imgs && $i <= $#tiff_file_list; $i++ ) {
+        # Unshift the first $num_imgs off the newly randomized list
+        $file = $tiff_file_list[$i];
+        if( $DEBUG2 or $verbose or $dryrun ) {
+          print "\t\t\t\tImage $i will be $file\n";
+        }
+        if( $file =~ /^(.*)\.tif$/ ) {
+          $file_stem = $1;
+          # copy the file and the sigs associated with the file
+          # need to be done in two operations, because image42* will copy
+          # not only image42.tif and image42_1.sig, but also unexpectedly
+          # image420, image421, etc.
+          if( $DEBUG2 or $verbose or $dryrun ) {
+            print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file\n";
+          }
+          if( !$dryrun ) {
+            link( "$source_dir/$dir_name/$file", "$target_dir/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file: $!\n";
+          }
 
-		if( $DEBUG2 or $verbose or $dryrun ) {
-		  print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/$class_name\n";
-		}
-		if( !$dryrun ) {
-		  @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
-		  foreach (@list_of_sigs) {
-		    /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
-		    link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
-		  }
-		}
-	      }
-	    }
-	    @full_file_list = ();
-	    @tiff_file_list = ();
-	    closedir DIR;
-	  } # end copying images out of slides
-	} # end creating the classes
+          if( $DEBUG2 or $verbose or $dryrun ) {
+            print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/$class_name\n";
+          }
+          if( !$dryrun ) {
+            @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+            foreach (@list_of_sigs) {
+              /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+              link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
+            }
+          }
+        } # END if $file =~ /.tif/
+      }
+      @full_file_list = ();
+      @tiff_file_list = ();
+      closedir DIR;
+    } # end copying images out of slides
+  } # end creating the classes
 	
 	if( defined $write_fisher_weights && $write_fisher_weights ne "" ) {
 	  $write_fisher_weights = "-vw$target_dir/$experiment_name.fisher_weights";
@@ -596,6 +618,242 @@ sub RunExperiment {
 
 
 }
+##################################################################################
+# This is the code that lets you specify the train test split
+##################################################################################
+my $DEBUG6 = 0;
+
+sub RunExperimentTrainTestSplitsSpecified {
+  if( $DEBUG6 or $verbose or $dryrun ) {
+    print "\n\n*******************************\nBegin specified train/test split experiment $experiment_name:\n";
+  }
+  my $class_name;
+  my $dir_name;
+  my $num_imgs;
+  my @tiff_file_list;
+  my $file;
+  my $file_stem;
+  my( $i, $j );
+
+  $target_dir .= "/" . $experiment_name;
+  if( $DEBUG6 or $verbose or $dryrun ) {
+    print "\tMaking experiment directory $target_dir\n";
+  }
+  if( -e $target_dir ) {
+    print "\t*******$target_dir exists... skipping...\n\n";
+    return;
+  }
+  if( !$dryrun ) { mkdir "$target_dir" or print $! };
+
+  if( $DEBUG6 or $verbose or $dryrun ) {
+    print "\tMaking directory $target_dir/training_set\n";
+  }
+  if( !$dryrun ) { mkdir "$target_dir/training_set" or print $! };
+  
+  if( $DEBUG6 or $verbose or $dryrun ) {
+    print "\tMaking directory $target_dir/test_set\n";
+  }
+  if( !$dryrun ) { mkdir "$target_dir/test_set" or print $! };
+
+  ITERATE_OVER_CLASSES: foreach $class_name ( sort keys %class_config_info ) {
+    if( $DEBUG6 or $verbose or $dryrun ){
+      print "\tClass $class_name:\n";
+    }
+
+    # First do the training set
+    if( $DEBUG6 or $verbose or $dryrun ) {
+      print "\t\tMaking training set directory $target_dir/training_set/$class_name\n";
+    }
+    if( !$dryrun ) { mkdir "$target_dir/training_set/$class_name" or print $! };
+    my @tiff_file_list = @{ $class_config_info{ $class_name }->{training_set} };
+    if( $DEBUG6 or $verbose or $dryrun ){
+      print "\t\tImages allocated to $class_name training set: $#tiff_file_list\n";
+    }
+
+    my @list_of_sigs;
+    # Note that the loop will bail out without error if the number of images
+    # asked for exceeds 
+    for( $i = 0; $i <= $#tiff_file_list; $i++ ) {
+      # Unshift the first $num_imgs off the list
+      $file = $tiff_file_list[$i]->{name};
+      $dir_name = $tiff_file_list[$i]->{dir};
+      if( $DEBUG6 or $verbose or $dryrun ) {
+        print "\t\t\t\tImage $i will be $file\n";
+      }
+      if( $file =~ /^(.*)\.tif$/ )
+      {
+        $file_stem = $1;
+        # copy the file and the sigs associated with the file
+        # need to be done in two operations, because image42* will copy
+        # not only image42.tif and image42_1.sig, but also unexpectedly
+        # image420, image421, etc.
+        if( $DEBUG6 or $verbose or $dryrun ) {
+          print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/training_set/$class_name/$file\n";
+        }
+        if( !$dryrun ) {
+          link( "$source_dir/$dir_name/$file", "$target_dir/training_set/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/training_set/$class_name/$file: $!\n";
+        }
+
+        if( $DEBUG6 or $verbose or $dryrun ) {
+          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/training_set/$class_name\n";
+        }
+        if( !$dryrun ) {
+          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+          foreach (@list_of_sigs) {
+            /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+            link( "$source_dir/$dir_name/$1", "$target_dir/training_set/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/training_set/$class_name/$1: $!\n";
+          }
+        }
+      } # END if $file =~ /.tif/
+    }
+    @tiff_file_list = ();
+    # Next do the test set
+    if( $DEBUG6 or $verbose or $dryrun ) {
+      print "\t\tMaking test set directory $target_dir/test_set/$class_name\n";
+    }
+    if( !$dryrun ) { mkdir "$target_dir/test_set/$class_name" or print $! };
+    @tiff_file_list = @{ $class_config_info{ $class_name }->{test_set} };
+    if( $DEBUG6 or $verbose or $dryrun ){
+      print "\t\tImages allocated to $class_name test set: $#tiff_file_list\n";
+    }
+
+    # my @list_of_sigs;
+    # Note that the loop will bail out without error if the number of images
+    # asked for exceeds 
+    for( $i = 0; $i <= $#tiff_file_list; $i++ ) {
+      # Unshift the first $num_imgs off the list
+      $file = $tiff_file_list[$i]->{name};
+      $dir_name = $tiff_file_list[$i]->{dir};
+      if( $DEBUG6 or $verbose or $dryrun ) {
+        print "\t\t\t\tImage $i will be $file\n";
+      }
+      if( $file =~ /^(.*)\.tif$/ ) {
+        $file_stem = $1;
+        # copy the file and the sigs associated with the file
+        # need to be done in two operations, because image42* will copy
+        # not only image42.tif and image42_1.sig, but also unexpectedly
+        # image420, image421, etc.
+        if( $DEBUG6 or $verbose or $dryrun ) {
+          print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/test_set/$class_name/$file\n";
+        }
+        if( !$dryrun ) {
+          link( "$source_dir/$dir_name/$file", "$target_dir/test_set/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/test_set/$class_name/$file: $!\n";
+        }
+
+        if( $DEBUG6 or $verbose or $dryrun ) {
+          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/test_set/$class_name\n";
+        }
+        if( !$dryrun ) {
+          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+          foreach (@list_of_sigs) {
+            /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+            link( "$source_dir/$dir_name/$1", "$target_dir/test_set/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/test_set/$class_name/$1: $!\n";
+          }
+        }
+      } # END if $file =~ /.tif/
+    }
+    @tiff_file_list = ();
+  } # end creating the classes
+	
+	if( defined $write_fisher_weights && $write_fisher_weights ne "" ) {
+	  $write_fisher_weights = "-vw$target_dir/$experiment_name.fisher_weights";
+	} else {
+	  $write_fisher_weights = "";
+	}
+
+	my $cmd;
+	$cmd = "$path_to_wndchrm train -m $tile_scheme $large_feature_set $target_dir/training_set $target_dir/training_set/${experiment_name}_training_set.fit $silence_wndchrm";
+	if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm) {
+	  print "\nWndchrm train training set command: \n$cmd\n";
+	}
+	system( $cmd ) if( !$dryrun );
+	$cmd = "$path_to_wndchrm train -m $tile_scheme $large_feature_set $target_dir/test_set $target_dir/test_set/${experiment_name}_test_set.fit $silence_wndchrm";
+	if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm) {
+	  print "\nWndchrm train test set command: \n$cmd\n";
+	}
+	system( $cmd ) if( !$dryrun );
+
+
+  if( defined $start_fraction && defined $finish_fraction && defined $fraction_increment_interval ) {
+	  # The name of the dendrogram is dictated by the name of the .fit file submitted to WND-CHRM
+	  # so we'll need to change the name of the .fit file each time through the loop
+	  my $original_fit_filename = "$experiment_name.fit";
+	  my $old_fit_filename = $original_fit_filename;
+	  my $new_fit_filename;
+	  for( $feature_usage_fraction = $start_fraction; $feature_usage_fraction <= $finish_fraction; $feature_usage_fraction += $fraction_increment_interval ) {
+	    if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm ) {
+	      print "\n\tExecuting wndchrn test command for feature fraction $feature_usage_fraction\n";
+	    }
+	    my $fraction_string;
+	    if( $feature_usage_fraction =~ /\d?\.(\d+)/ ) {
+	      $fraction_string = $1;
+	    } else {
+	      die "\n\n*****************************\nINTERNAL ERROR\nSomething wrong with the feature usage fraction interval: $feature_usage_fraction\n";
+	    } 
+	    $html_file = "$target_dir/${experiment_name}_f$fraction_string.html";
+	    $new_fit_filename = "${experiment_name}_f$fraction_string.fit";
+	    if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm ) {
+	      print "\tChanging the name of $old_fit_filename to $new_fit_filename so the dendrogram will be named correctly.\n";
+	    }
+	    if( !$dryrun ) {
+	      move( "$target_dir/training_set/$old_fit_filename", "$target_dir/training_set/$new_fit_filename" ) 
+	        or die "***********************\nError: Can't move $old_fit_filename to $new_fit_filename. $!\n";
+	    }
+	    # Reset for next time through loop
+	    $old_fit_filename = $new_fit_filename;
+      my $training_set_fit_name = "$target_dir/training_set/$experiment_name.fit";
+      my $test_set_fit_name = "$target_dir/test_set/$experiment_name.fit";;
+
+	    $cmd = "$path_to_wndchrm test $weighted_nearest_neighbor $test_args $tile_scheme $training_images $test_images -f$feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $training_set_fit_name $test_set_fit_name $html_file $silence_wndchrm";
+	    if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm ) {
+	      print "\nWndchrn test command: \n$cmd\n";
+	    }
+	    system( $cmd ) if( !$dryrun );
+	    # clean up by compying dend files if any to experiment dir
+	    if( -e "$path_to_phylip/dend_file.txt" ) {
+	  	  print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_f${feature_usage_fraction}_dend_file.txt\n" if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm);
+	 	  move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_f${feature_usage_fraction}_dend_file.txt" ) if !$dryrun;
+	    } else {
+		  print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
+	    }
+	  } # end iterate over different veature values
+	  # Change the name of the fit file back to the original name
+	  if( !$dryrun ) {
+	    move( "$target_dir/$new_fit_filename", "$target_dir/$original_fit_filename" ) 
+	      or die "***********************\nError: Can't move $new_fit_filename to $original_fit_filename. $!\n";
+	  }
+	} # END code that runs a battery of wndchrm tests where feature fraction is varied
+	else
+	{ 
+	  # BEGIN standard wndchrm test code
+	  # target_dir and experiment_name change between iterations.
+	  if( defined $html_file && $html_file ne "" ) {
+	    $html_file = "$target_dir/$experiment_name.html";
+	  } else {
+	    $html_file = "";
+	  }
+    my $training_set_fit_name = "$target_dir/training_set/${experiment_name}_training_set.fit";
+    my $test_set_fit_name = "$target_dir/test_set/${experiment_name}_test_set.fit";;
+
+	  $cmd = "$path_to_wndchrm test $test_args $weighted_nearest_neighbor $tile_scheme $training_images $test_images $feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $training_set_fit_name $test_set_fit_name $html_file $silence_wndchrm";
+	  if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm ) {
+	    print "\nWndchrn test command: \n$cmd\n";
+	  }
+	  if( !$dryrun )
+	  {
+	    system( $cmd );
+	    # clean up by compying dend files if any to experiment dir
+	    if( -e "$path_to_phylip/dend_file.txt" ) {
+	  	print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG6 or $verbose or $dryrun or $silence_wndchrm);
+	  	move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
+	    } else {
+	  	print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
+	    }
+	  } # END if( !$dryrun )
+	} # END running standard WND-CHARM test experiment
+
+
+}
 
 
 # sub SubtractIntraclassWeights
@@ -644,11 +902,14 @@ class	sourcedir3				classC	90
 class	sourcedir4				classA	90
 class	sourcedir5				classB	90
 class	sourcedir6				classC	90
-class 	an_organizing_folder/sourcedir7		classD	60
-class 	an_organizing_folder/sourcedir8		classD	60
+class an_organizing_folder/sourcedir7		classD	60
+class an_organizing_folder/sourcedir8		classD	60
 class	an_organizing_folder/sourcedir9		classD	60
-class 	an_organizing_folder/sourcedir10	classD	60
+class an_organizing_folder/sourcedir10	classD	60
 
+#########################################################
+# SYNTAX FOR SPECIFYING A PAIRWISE EXPERIMENT
+#########################################################
 
 # For a pairwise comparison WND-CHARM experiment,
 #   use the above class definition format, but also include the word group
@@ -660,16 +921,56 @@ class	sourcedir3				classC	90	group	3
 class	sourcedir4				classA	90	group	1
 class	sourcedir5				classB	90	group	2
 class	sourcedir6				classC	90	group	3
-class 	an_organizing_folder/sourcedir7		classD	60	group	4
-class 	an_organizing_folder/sourcedir8		classD	60	group	4
+class an_organizing_folder/sourcedir7		classD	60	group	4
+class an_organizing_folder/sourcedir8		classD	60	group	4
 class	an_organizing_folder/sourcedir9		classD	60	group	4
-class 	an_organizing_folder/sourcedir10	classD	60	group	4
+class an_organizing_folder/sourcedir10	classD	60	group	4
 
 # Note how the group numbers (column 6) correspond with the assigned class name (col 3).
 # In addition to 1 vs. 1 pairwise experiments, you can put multiple classes in a group,
 # to do pairwise experiments on the groups instead of individual classes.
 # This enables the user to perform 2 vs. 2, 3 vs. 3, experiments, and so on.
 
+
+#########################################################
+# SPECIFYING INDIVIDUAL IMAGES FOR THE TRAINING AND TEST SETS
+#########################################################
+
+# If you need to specify which individual images should go into the training set and test set,
+# list each individual image on its own line using the following syntax:
+
+# For a training image:
+# training_image  Image123.tif  dir the_containing_directory  class the_class_name
+
+# So it's the word "training_image", followed by the name of the image, followed by
+# the word "dir", followed by the directory that contains the image, followed by
+# the word class, followed by the name of the class that the image belongs to in this
+# experiment
+
+# For a test image:
+# test_image  Image123.tif  dir the_containing_directory  class the_class_name
+
+# in other words, its the same as specifying a training image, just substituting
+# the word "training_image" for "test_image"
+
+# Here are some more examples of how to specify individual images for training and testing
+test_image	Image964.tif	dir	009	class	009
+test_image	Image971.tif	dir	009	class	009
+test_image	Image972.tif	dir	009	class	009
+test_image	Image978.tif	dir	009	class	009
+test_image	Image981.tif	dir	009	class	009
+test_image	Image983.tif	dir	009	class	009
+test_image	Image993.tif	dir	009	class	009
+training_image	Image001.tif	dir	000	class	000
+training_image	Image003.tif	dir	000	class	000
+training_image	Image004.tif	dir	000	class	000
+training_image	Image005.tif	dir	000	class	000
+training_image	Image007.tif	dir	000	class	000
+training_image	Image008.tif	dir	000	class	000
+
+#########################################################
+# AVAILABLE EXPERIMENT PARAMETERS
+#########################################################
 
 # The following is an explanation of the available experiment parameters
 
