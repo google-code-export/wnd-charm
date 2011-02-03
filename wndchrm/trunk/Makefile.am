@@ -72,6 +72,6 @@ bin_PROGRAMS=wndchrm
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
 
 
