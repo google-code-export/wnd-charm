@@ -149,9 +149,9 @@ int TrainingSet::SaveToFile(char *filename)
 {  int sample_index, class_index, sig_index;
    FILE *file;
    if (!(file=fopen(filename,"w"))) return(0);
-   fprintf(file,"%d\n",class_num);
-   fprintf(file,"%d\n",signature_count);
-   fprintf(file,"%d\n",count);
+   fprintf(file,"%ld\n",class_num);
+   fprintf(file,"%ld\n",signature_count);
+   fprintf(file,"%ld\n",count);
    /* write the signature names */
    for (sig_index=0;sig_index<signature_count;sig_index++)
      fprintf(file,"%s\n",SignatureNames[sig_index]);
@@ -163,7 +163,7 @@ int TrainingSet::SaveToFile(char *filename)
    {
       for (sig_index=0;sig_index<signature_count;sig_index++)
         if (samples[sample_index]->data[sig_index].value==(int)(samples[sample_index]->data[sig_index].value))
-      fprintf(file,"%d ",(int)(samples[sample_index]->data[sig_index].value));      /* make the file smaller */
+      fprintf(file,"%ld ",(long)(samples[sample_index]->data[sig_index].value));      /* make the file smaller */
 //        else fprintf(file,"%.6f ",samples[sample_index]->data[sig_index].value);
       else fprintf(file,"%.5e ",samples[sample_index]->data[sig_index].value);
       if (class_num==0) fprintf(file,"%f\n",samples[sample_index]->sample_value);  /* if the class is 0, save the continouos value of the sample */
@@ -682,10 +682,11 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
    for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
    for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++)
-   {  if (print_to_screen) 
-      {  printf("Classifying image '%s' ",TestSet->samples[tile_index]->full_path);
-         if (TestSet->count/tiles>1) printf("(%d/%d)",1+test_sample_index/tiles,TestSet->count/tiles);   /* so that no image index will be displayed when using the "classify" option */
-         printf("...\n");
+   {  if (print_to_screen)
+      {
+      	printf("Classifying image '%s' ",TestSet->samples[tile_index]->full_path);
+         if (TestSet->count/tiles>1) printf("(%d/%ld)",1+test_sample_index/tiles,(long)TestSet->count/tiles);   /* so that no image index will be displayed when using the "classify" option */
+         printf("...\t");
       }
       test_signature=TestSet->samples[tile_index]->duplicate();
       if (tile_areas==0 || tiles==1) ts_selector=this;
@@ -693,10 +694,15 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
       if (class_num==0) /* interpolate the value here */
 	  {  val=ts_selector->InterpolateValue(test_signature,method,rank,&closest_sample,&dist);
          value=value+val/(double)tiles;
+         if (print_to_screen) printf ("%.3g\n",val);
       }
 	  else
 	  {  if (method==WNN) predicted_class=ts_selector->WNNclassify(test_signature, probabilities,&normalization_factor,&closest_sample);
          if (method==WND) predicted_class=ts_selector->classify2(test_signature, probabilities,&normalization_factor);
+         if (print_to_screen) {
+	         for (class_index=1;class_index<=class_num;class_index++) printf ("%.3f\t",probabilities[class_index]);
+	         printf ("%.3g\n",normalization_factor);
+         }
 //if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
       }
 
@@ -780,7 +786,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    /* print the report line to a string (for the final report) */
    if (split && split->individual_images)
    {  char buffer[512],closest_image[512],color[128],one_image_string[MAX_CLASS_NUM*15];
-      sprintf(one_image_string,"<tr><td>%d</td>",(int)(test_sample_index/tiles)+1);  /* image index */
+      sprintf(one_image_string,"<tr><td>%d</td>",test_sample_index/tiles)+1;  /* image index */
       if (class_num>0) /* normlization factor */
       {
         if( normalization_factor_avg < 0.001 )
@@ -878,12 +884,12 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
    for (test_sample_index=0;test_sample_index<TestSet->count;test_sample_index+=tiles)
    if (class_num==0)   /* continouos values */
    {  double value=ClassifyImage(TestSet,test_sample_index,method,tiles,tile_areas,TilesTrainingSets,max_tile,rank,split,NULL);
-      if (print_to_screen) printf("Actual value : %f     Predicted value : %f     (%d/%d)\n",TestSet->samples[test_sample_index]->sample_value,value,(test_sample_index)/tiles+1,TestSet->count/tiles);
+      if (print_to_screen) printf("Actual value : %f     Predicted value : %f     (%d/%ld)\n",TestSet->samples[test_sample_index]->sample_value,value,(test_sample_index)/tiles+1,TestSet->count/tiles);
    }
    else  /* discrete classes */
    {  long predicted_class=(long)(ClassifyImage(TestSet,test_sample_index,method,tiles,tile_areas,TilesTrainingSets,max_tile,rank,split,NULL));
       if (predicted_class==TestSet->samples[test_sample_index]->sample_class) accurate_prediction++;
-      if (print_to_screen) printf("Actual class ID: %d     Predicted class ID: %d      Ac: %f   (%d/%d)\n",TestSet->samples[test_sample_index]->sample_class,predicted_class,(double)(accurate_prediction)/(double)(test_sample_index/tiles+1),accurate_prediction,(test_sample_index)/tiles+1);   
+      if (print_to_screen) printf("Actual class ID: %d     Predicted class ID: %ld      Ac: %f   (%ld/%d)\n",TestSet->samples[test_sample_index]->sample_class,predicted_class,(double)(accurate_prediction)/(double)(test_sample_index/tiles+1),accurate_prediction,(test_sample_index)/tiles+1);   
    }
 
    /* normalize the similarity matrix */
@@ -1020,11 +1026,11 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
       for (sample_index=0;sample_index<count;sample_index++)
       {  fprintf(mrmr_file,"%d",samples[sample_index]->sample_class);
 	     for (sig_index=0;sig_index<signature_count;sig_index++)
-           if (SignatureWeights[sig_index]>0) fprintf(mrmr_file,",%.0f",samples[sample_index]->data[sig_index]);
+           if (SignatureWeights[sig_index]>0) fprintf(mrmr_file,",%.0f",samples[sample_index]->data[sig_index].value);
          fprintf(mrmr_file,"\n");
       }
 	  fclose(mrmr_file);
-      sprintf(buffer,"./mrmr -i mrmr_sigs.csv -n %d -s %d -v %d > mrmr_output",(long)(used_mrmr*used_signatures*signature_count),count,signature_count);
+      sprintf(buffer,"./mrmr -i mrmr_sigs.csv -n %ld -s %ld -v %ld > mrmr_output",(long)(used_mrmr*used_signatures*signature_count),count,signature_count);
       printf("%s\n",buffer);
 	  system(buffer);	  
       remove("mrmr_sigs.csv");
@@ -1230,7 +1236,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
           if( sortedFeatGroupValues[ sig_index ] == FeatureGroupValues[ sig_index2 ] &&
               sortedFeatGroupValues[ sig_index ] > 0 )
           { 
-            sprintf( feature_string, "%d. %s: %f [%d]\n",
+            sprintf( feature_string, "%ld. %s: %f [%d]\n",
                         signature_count - sig_index,
                         FeatureGroupNames[ sig_index2 ],
                         FeatureGroupValues[ sig_index2 ],
@@ -1265,7 +1271,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
          if( signature_weight_values[sig_index] == SignatureWeights[sig_index2] &&
              signature_weight_values[sig_index] > 0 )
          {  
-           sprintf( feature_string, "%d. %s: %f\n",
+           sprintf( feature_string, "%ld. %s: %f\n",
                       signature_count - sig_index,
                       SignatureNames[sig_index2],
                       SignatureWeights[sig_index2] );
@@ -1838,7 +1844,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    fprintf(output_file,"<hr/><CENTER>\n");
    
    /* print the number of samples table */
-   fprintf(output_file,"<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\">\" \n <caption>%d Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
+   fprintf(output_file,"<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\">\" \n <caption>%ld Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
    for (class_index=0;class_index<=class_num;class_index++)
      fprintf(output_file,"<td>%s</td>\n",class_labels[class_index]);
    fprintf(output_file,"<td>total</td></tr>\n");
@@ -1969,7 +1975,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
            sum+=splits[split_index].confusion_matrix[class_index*class_num+class_index2];
 		 if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
 		 else strcpy(bgcolor,"");  
-         if ((double)((long)(sum/split_num))==sum/split_num) fprintf(output_file,"<td%s>%d</td>\n",bgcolor,(long)(sum/*/split_num*/));
+         if ((double)((long)(sum/split_num))==sum/split_num) fprintf(output_file,"<td%s>%ld</td>\n",bgcolor,(long)(sum/*/split_num*/));
          else fprintf(output_file,"<td%s>%.0f</td> ",bgcolor,sum/*/split_num*/);
          if (tsvfile) fprintf(tsvfile,"%.0f\t",sum/*/split_num*/);     /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 
       }
@@ -2002,7 +2008,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
            sum+=splits[split_index].similarity_matrix[class_index*class_num+class_index2];
          avg_similarity_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
          fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
-         if (tsvfile) fprintf(tsvfile,"%.2f\t");              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
+         if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
       }
       fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
       if (tsvfile) fprintf(tsvfile,"\n");                     /* end of the line in the tsv file      */	  
@@ -2170,7 +2176,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       a=0;
       while (feature_names[a]!='\0') /* first count the features */
         features_num+=(feature_names[a++]=='\n');
-      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %d features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
+      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %ld features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
       fprintf(output_file,"<TABLE ID=\"FeaturesUsed_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
       p_feature_names=strtok(feature_names,"\n");
       while (p_feature_names)
@@ -2221,7 +2227,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
          if (class_num==0) fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
          else fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
          fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
-         fprintf(output_file,splits[split_index].individual_images);
+         fprintf(output_file,"%s",splits[split_index].individual_images);
          fprintf(output_file,"</table><br><br>\n");
       }
    }

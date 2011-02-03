@@ -28,7 +28,7 @@ static char const rcsid[] =
 
 #include "mapkit_generic.h"
 
-char *mapkit_error_msg[5] = {
+const char *mapkit_error_msg[5] = {
   "ok",
   "fill >= max. admissible size",
   "malloc failed",

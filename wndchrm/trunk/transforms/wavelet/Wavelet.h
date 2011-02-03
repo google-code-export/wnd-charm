@@ -64,8 +64,8 @@ public:
 
 	int _builtin:1;
 
-	char* family_name;
-	char* short_name;
+	const char* family_name;
+	const char* short_name;
 
 //protected:
 	void transform1D(DataGrid * data);

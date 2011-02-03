@@ -62,13 +62,13 @@ class signatures
     void *ScoresTrainingSet;            /* a pointer to a training set with computed Fisher scores (to avoid computing 0-scored signatures)                 */
     signatures();                       /* constructor                                 */
     signatures *duplicate();            /* create an identical signature vector object */
-    void Add(char *name, double value);
+    void Add(const char *name, double value);
     void Clear();
     void compute(ImageMatrix *matrix, int compute_colors);
-    void CompGroupA(ImageMatrix *matrix, char *transform_label);
-    void CompGroupB(ImageMatrix *matrix, char *transform_label);
-    void CompGroupC(ImageMatrix *matrix, char *transform_label);
-    void CompGroupD(ImageMatrix *matrix, char *transform_label);
+    void CompGroupA(ImageMatrix *matrix, const char *transform_label);
+    void CompGroupB(ImageMatrix *matrix, const char *transform_label);
+    void CompGroupC(ImageMatrix *matrix, const char *transform_label);
+    void CompGroupD(ImageMatrix *matrix, const char *transform_label);
     void ComputeGroups(ImageMatrix *matrix, int compute_colors);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */

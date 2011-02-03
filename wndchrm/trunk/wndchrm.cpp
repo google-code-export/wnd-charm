@@ -52,7 +52,7 @@ void randomize()
 }
 
 /* displays an error message and stops the program */
-int show_error(char *error_message, int stop)
+int show_error(const char *error_message, int stop)
 {  printf("Error: %s\n",error_message);
    if (stop) exit(0);
    return(0);
@@ -168,7 +168,7 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
           else tile_matrix=matrix;
           /* try to read a .sig file */
           if (strrchr(image_files[file_index],'.')) *strrchr(image_files[file_index],'.')='\0';  /* remove the extension */
-          sprintf(sig_file_name,"%s_%d_%d.sig",image_files[file_index],tile_index_x,tile_index_y);	
+          sprintf(sig_file_name,"%s_%ld_%ld.sig",image_files[file_index],tile_index_x,tile_index_y);	
           if (overwrite || image_signatures->LoadFromFile(sig_file_name)<1) /* compute the signatures if sigs have not been computed */
           {  // if (print_to_screen) printf("Computing signatures - tile %d of %d...\n",tile_index++,tiles*tiles);
              image_signatures->ScoresTrainingSet=ts;    /* so that only the needed signatures will be computed */
@@ -339,8 +339,8 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
        for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
        for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
        if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
-       if (ts->class_num==0) printf("Average Pearson Correlation (%d splits): %f\n",split_num,avg_pearson/(double)split_num);
-       else printf("Average accuracy (%d splits): %f\n",split_num,avg_accuracy/(double)split_num);
+       if (ts->class_num==0) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
+       else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
 	}
 	
     strcpy(dataset_name,filename);
@@ -430,7 +430,7 @@ void ShowHelp()
    printf("examples:\n=========\n \t train: \n \t wndchrm train /path/to/dataset dataset.fit \n \t wndchrm train -mcl /path/to/dataset dataset.fit \n \t test: \n \t wndchrm test -f0.1 dataset.fit \n \t wndchrm test -f0.2 -i50 -j20 -n5 -p/path/to/phylip3.65 dataset.fit report.html \n");
    printf("\t classify: \n \t wndchrm classify dataset.fit /path/to/image.tiff \n \t wndchrm classify -f0.2 -cl dataset.fit /path/to/image.tiff \n");
    printf("\nA detailed description of wndchrm can be found in: Shamir, L., Orlov, N., Eckley, D.M., Macura, T., Johnston, J., Goldberg, I., Wndchrm - an open source utility for biological image analysis, BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
-   printf("\nIf you have more questions about this software, please email me (lior shamir) at <shamirl [at] mail [dot] nih [dot] gov> \n\n");
+   printf("\nIf you have more questions about this software, please email me (Ilya Goldberg) at <igg [at] nih [dot] gov> \n\n");
    return;
 }
 
@@ -474,7 +474,7 @@ int main(int argc, char *argv[])
     int image_similarities=0;        /* generate a dendrogram showing the similarity of the images */
     int max_tile=0;                  /* use only the closest tile                                  */
 	int overwrite=0;                 /* force overwriting of pre-computed .sig files               */
-	
+	char *char_p,*char_p2;
     /* read parameters */
     if (argc<2)
     {  ShowHelp();
@@ -543,26 +543,33 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'l')) large_set=1;
         if (strchr(argv[arg_index],'c')) colors=1;
         if (strchr(argv[arg_index],'d')) downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
-        if (strchr(argv[arg_index],'f')) 
-		{   strcpy(arg,argv[arg_index]);
-            if (p=strchr(arg,':'))
-			{  used_mrmr=atof(&p[1]);
-               *p='\0';
-			}
-		    max_features=atof(&(strchr(arg,'f')[1]));
+        if (char_p = strchr(argv[arg_index],'f')) {
+            if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2++);
+		    max_features=atof(char_p++);
 		}
-        if (strchr(argv[arg_index],'r')) split_ratio=atof(&(strchr(argv[arg_index],'r')[1]));
+        if (char_p = strchr(argv[arg_index],'r')) {
+           split_ratio=atof(char_p++);
+        }
         if (strchr(argv[arg_index],'q')) first_n=atoi(&(strchr(argv[arg_index],'q')[1]));
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
         if (strchr(argv[arg_index],'A')) assess_features=200; 
-        if (strchr(argv[arg_index],'t'))
-        {  tile_areas=(strchr(argv[arg_index],'t')[1]=='#');
-           max_tile=(strchr(argv[arg_index],'t')[1+tile_areas]=='^');		
-           tiles=atoi(&(strchr(argv[arg_index],'t')[1+tile_areas+max_tile]));
-        }
-        if (strchr(argv[arg_index],'i'))
-        {  exact_training_images=(strchr(argv[arg_index],'i')[1]=='#');
-           max_training_images=atoi(&(strchr(argv[arg_index],'i')[1+exact_training_images]));
+        if (char_p = strchr(argv[arg_index],'t')) {
+			if (*(char_p+1)=='#') {
+				tile_areas = 1;
+				char_p++;
+				if (*(char_p+1)=='^') {
+					max_tile = 1;
+					char_p++;
+				}
+			}
+           tiles=atoi(char_p++);
+       }
+        if (char_p = strchr(argv[arg_index],'i')) {
+			if (*(char_p+1)=='#') {
+				exact_training_images = 1;
+				char_p++;
+			}
+           max_training_images=atoi(char_p++);
         }
         if (strchr(argv[arg_index],'j')) max_test_images=atoi(&(strchr(argv[arg_index],'j')[1]));
         if (strchr(argv[arg_index],'w')) method=0;
@@ -596,8 +603,7 @@ int main(int argc, char *argv[])
        {  int ignore_group=0;
           filename=argv[arg_index++];
           /* check if there is a test set feature file */
-          if (arg_index<argc && strstr(argv[arg_index],".htm")==NULL)
-          test_set_path=argv[arg_index++];
+          if (arg_index<argc && strstr(argv[arg_index],".htm")==NULL) test_set_path=argv[arg_index++];
           /* check if there is a report file name */
           if (arg_index<argc)
           {  strcpy(report_file_buffer,argv[arg_index]);
