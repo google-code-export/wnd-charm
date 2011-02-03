@@ -544,11 +544,11 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'c')) colors=1;
         if (strchr(argv[arg_index],'d')) downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
         if (char_p = strchr(argv[arg_index],'f')) {
-            if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2++);
-		    max_features=atof(char_p++);
+            if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2+1);
+		    max_features=atof(char_p+1);
 		}
         if (char_p = strchr(argv[arg_index],'r')) {
-           split_ratio=atof(char_p++);
+           split_ratio=atof(char_p+1);
         }
         if (strchr(argv[arg_index],'q')) first_n=atoi(&(strchr(argv[arg_index],'q')[1]));
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
@@ -562,14 +562,14 @@ int main(int argc, char *argv[])
 					char_p++;
 				}
 			}
-           tiles=atoi(char_p++);
+           tiles=atoi(char_p+1);
        }
         if (char_p = strchr(argv[arg_index],'i')) {
 			if (*(char_p+1)=='#') {
 				exact_training_images = 1;
 				char_p++;
 			}
-           max_training_images=atoi(char_p++);
+           max_training_images=atoi(char_p+1);
         }
         if (strchr(argv[arg_index],'j')) max_test_images=atoi(&(strchr(argv[arg_index],'j')[1]));
         if (strchr(argv[arg_index],'w')) method=0;
