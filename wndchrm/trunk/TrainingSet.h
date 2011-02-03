@@ -72,6 +72,7 @@ public:
    long class_num;                                                 /* number of classes                         */
 //   char class_labels[MAX_CLASS_NUM][MAX_CLASS_NAME_LENGTH];        /* labels of the classes                     */
    char **class_labels;                                            /* labels of the classes                     */
+   long *class_nsamples;                                           /* sample counts in each class               */
    long count;                                                     /* the number of samples in the training set */
    long signature_count;                                           /* the number of signatures (< MAX_SIGNATURE_NUM) */
    long color_features;                                            /* color signatures are used                 */
@@ -87,7 +88,7 @@ public:
    int SaveWeightVector(char *filename);                           /* save the weights of the features into a file */
    double LoadWeightVector(char *filename, double factor);         /* load the weights of the features from a file and assign them to the features of the training set */
    void SetAttrib(TrainingSet *set);                               /* copy the attributes from one training set to another */   
-   void split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int max_train_samples, int max_test_samples,int exact_max_train); /* random split to train and test */
+   void split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples,int exact_max_train); /* random split to train and test */
    void SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
    void RemoveClass(long class_index);                             /* remove a class                            */
    int AddSample(signatures *new_sample);                          /* add signatures computed from one image    */

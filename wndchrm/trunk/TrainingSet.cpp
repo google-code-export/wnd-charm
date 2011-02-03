@@ -99,10 +99,14 @@ TrainingSet::TrainingSet(long samples_num, long class_num)
    color_features=0;     /* by default - no color features are used */
    signature_count=0;
    class_labels=new char*[class_num+1];
+   class_nsamples = new long[class_num+1];
    for (sample_index=0;sample_index<=class_num;sample_index++)
    {  class_labels[sample_index]=new char[MAX_CLASS_NAME_LENGTH];
       strcpy(class_labels[sample_index],"");
+      class_nsamples[sample_index] = 0;
    }
+   
+   
    
 //   for (sample_index=0;sample_index<MAX_CLASS_NUM;sample_index++)
 //     strcpy(class_labels[sample_index],"");
@@ -135,6 +139,7 @@ int TrainingSet::AddSample(signatures *new_sample)
 //   if (new_sample->sample_class>class_num) return(0);
    samples[count]=new_sample;
    signature_count=new_sample->count;
+   class_nsamples[new_sample->sample_class]++;
    count++;
    return(1);
 }
@@ -230,7 +235,15 @@ int TrainingSet::ReadFromFile(char *filename)
       strcpy(one_sample->full_path,buffer);                     /* copy the full path to the signatures object      */
       AddSample(one_sample);
    }
+   
    fclose(file);
+	if (print_to_screen) {
+		printf ("Samples per class in %s\n",filename);
+		for (sample_index=1;sample_index<=class_num;sample_index++) {
+			printf ("%s\t%ld\n",class_labels[sample_index],class_nsamples[sample_index]);
+		}
+	}
+
    return(1);
 }
 
@@ -241,8 +254,10 @@ int TrainingSet::ReadFromFile(char *filename)
 void TrainingSet::RemoveClass(long class_index)
 {  long index,deleted_count=0;
    /* remove the class label */
-   for (index=class_index;index<class_num;index++)
+   for (index=class_index;index<class_num;index++) {
      strcpy(class_labels[index],class_labels[index+1]);
+     class_nsamples[index] = class_nsamples[index+1];
+   }
    /* remove the samples of that class */
    for (index=0;index<count;index++)
    { if (samples[index]->sample_class==class_index)
@@ -322,18 +337,25 @@ void TrainingSet::SetAttrib(TrainingSet *set)
 
 /*  split
     split randomly into a training set and a test set
-    ratio -double- the ratio of the number of test set (e.g., 0.1 means 10% of the data are test data).
+    ratio -double- the fraction of images to use for training (e.g., 0.1 means 10% of the data are train data).
+                   If the ratio is 0, use train_samples as the number for training
+                   If its > 0.0 and <= 1.0, use this fraction of each class for training (allows unbalanced training)
+    TrainSet -TrainingSet *- Where to store the training samples after the split.
+    TestSet -TrainingSet *- Where to store the test samples after the split.
+                   If TestSet->count > 0, then the test set has come from a file, and is left unmodified
     tiles -unsigned short- indicates the number of tiles to which each image was divided into. This means that
                            when splitting to train and test, all tiles of that one image will be either in the
                            test set or training set.
-    max_train_samples -int- the maximum number of samples to use for training (0 to ignore and use the proportional part of the set)
-    max_test_samples -int- the maximum namber of samples for the test set (0 to ignore and use the proportional part of the set)
-    exact_max_train -int- if 1 then the class is removed if its number of samples does not reach the "max_train_samples". (ignored if 0)
+    train_samples -int- the number of samples to use for training (if ratio is 0)
+    test_samples -int- the number of samples to use for testing (if TestSet->count == 0)
+    exact_max_train -int- if 1 then the class is removed if its number of samples does not reach the "train_samples". (ignored if 0)
+    N.B.: It is a fatal error for train_samples+test_samples to be greater than the number of images in the class.
+    Range-checking must occur outside of this call.
 */
-void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int max_train_samples, int max_test_samples, int exact_max_train)
+void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples, int exact_max_train)
 {  long *class_samples;
    int class_index,sig_index,tile_index;
-   int number_of_test_samples;
+   int number_of_test_samples, number_of_train_samples;
    long class_counts[MAX_CLASS_NUM];
    class_samples = new long[count];
    
@@ -341,7 +363,9 @@ void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet,
    SetAttrib(TestSet); 
    if (tiles<1) tiles=1;    /* make sure the number of tiles is valid */
 //class_num=250; /* FERET */   
-   TrainSet->class_num=TestSet->class_num=class_num;   
+   TrainSet->class_num=TestSet->class_num=class_num;
+   number_of_test_samples = test_samples;
+   if (TestSet->count > 0) number_of_test_samples = 0; // test already has samples from a file
    for (class_index=1;class_index<=class_num+(class_num==0);class_index++)
    {  int sample_index,sample_count=0;
       int class_samples_count=0;
@@ -351,11 +375,19 @@ void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet,
           class_samples[class_samples_count++]=sample_index;	  
       class_samples_count/=tiles;
 	  class_counts[class_index]=class_samples_count;
-      /* add the samples to the test set */
-      number_of_test_samples=(int)(class_samples_count*ratio);
-	  if (max_train_samples>0) number_of_test_samples=max(0,class_samples_count-max_train_samples);	  
-      if (max_test_samples>0 && number_of_test_samples>max_test_samples) number_of_test_samples=max_test_samples;
-      for (sample_index=0;sample_index<number_of_test_samples;sample_index++)
+	  // Determine number of training samples.
+      if (ratio > 0.0 && ratio <= 1.0) // unbalanced training
+     	 number_of_train_samples=floor( (ratio * (float)class_samples_count) + 0.5 );
+      else
+     	 number_of_train_samples=train_samples; // balanced training
+      /* add the samples to the training set */
+      if (number_of_train_samples + number_of_test_samples > class_samples_count) {
+		printf("While splitting class %s, training images (%d) + testing images (%d) is greater than total images in the class (%d)\n",
+			class_labels[class_index], number_of_train_samples, number_of_test_samples, class_samples_count);
+		exit (-1);
+      }
+//printf ("getting %d training images from class %s\n", number_of_train_samples, class_labels[class_index]);
+      for (sample_index=0;sample_index<number_of_train_samples;sample_index++)
       {  long rand_index;
          rand_index=rand() % class_samples_count;            /* find a random sample  */
 
@@ -369,19 +401,22 @@ void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet,
 //if (b==0) break;
 
          for (tile_index=0;tile_index<tiles;tile_index++)    /* add all the tiles of that image */
-           TestSet->AddSample(samples[class_samples[rand_index*tiles+tile_index]]->duplicate());   /* add the random sample */		   
+           TrainSet->AddSample(samples[class_samples[rand_index*tiles+tile_index]]->duplicate());   /* add the random sample */		   
          /* remove the index */
          memmove(&(class_samples[rand_index*tiles]),&(class_samples[rand_index*tiles+tiles]),sizeof(long)*(tiles*(class_samples_count-rand_index)));
          class_samples_count--;
       }
 	  
-      /* now add the remaining samples to the Train Set */	  	  
-      for (sample_index=0;sample_index<class_samples_count*tiles && (sample_count<max_train_samples*tiles || max_train_samples<=0);sample_index++)
+      /* now add the remaining samples to the Test Set up to the maximum */
+      // Here we're adding samples, so we multiply the counter by samples per image
+      sample_count = number_of_test_samples * tiles;
+//printf ("getting %d testing samples from class %s\n", sample_count, class_labels[class_index]);
+      for (sample_index=0;sample_count>0;sample_index++)
 //if (strstr(samples[class_samples[sample_index]]->full_path,"_fa") || strstr(samples[class_samples[sample_index]]->full_path,"_fb") || strstr(samples[class_samples[sample_index]]->full_path,"_hr") || strstr(samples[class_samples[sample_index]]->full_path,"_hl") || strstr(samples[class_samples[sample_index]]->full_path,"_pr"))	  	/* FERET */
 //if (strstr(samples[class_samples[sample_index]]->full_path,"_fa")) /* FERET */
 //if (strstr(samples[class_samples[sample_index]]->full_path,"_fa") || strstr(samples[class_samples[sample_index]]->full_path,"_fb") || strstr(samples[class_samples[sample_index]]->full_path,"_rc") || strstr(samples[class_samples[sample_index]]->full_path,"_rb") || strstr(samples[class_samples[sample_index]]->full_path,"_ql") || strstr(samples[class_samples[sample_index]]->full_path,"_qr"))	  	/* FERET */
-      {  TrainSet->AddSample(samples[class_samples[sample_index]]->duplicate());
-         sample_count++;
+      {  TestSet->AddSample(samples[class_samples[sample_index]]->duplicate());
+         sample_count--;
       }
    }
 
@@ -389,7 +424,7 @@ void TrainingSet::split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet,
    class_index=class_num;
    if (exact_max_train)
    while (class_index>0)
-   {  if (class_counts[class_index]<=max_train_samples-max_test_samples)
+   {  if (class_counts[class_index]<=train_samples-test_samples)
       {  TrainSet->RemoveClass(class_index);
 	     TestSet->RemoveClass(class_index);
 	     RemoveClass(class_index);
@@ -435,39 +470,59 @@ int TrainingSet::AddAllSignatures(char *filename, int tiles)
    double values[MAX_FILES_IN_CLASS];
    int res,samp_class=1;
    if (class_num==0) samp_class=0;   /* for continouos values */  
-   while (samp_class<=class_num)
-   {  int file_index,files_in_class_count=0;
-      sprintf(buffer,"%s/%s",filename,class_labels[samp_class]);
-      if (class_dir=opendir(buffer)) /* read the files and make sure they are sorted */
-      { while (ent = readdir(class_dir))
-	      if (strstr(ent->d_name,".sig"))  /* read only the .sig files which store image feature data */
-            strcpy(files_in_class[files_in_class_count++],ent->d_name);
-        closedir(class_dir);
-        qsort(files_in_class,files_in_class_count,sizeof(files_in_class[0]), comp_strings);
-        for (file_index=0;file_index<files_in_class_count;file_index++)
-        {  strcpy(sig_file_name,files_in_class[file_index]);  
-		   sprintf(files_in_class[file_index],"%s/%s",buffer,sig_file_name);		
-        }
-      }
-	  
-	  else  /* read the sig files of the images read from a file */
-	  {  file_index=0;
-         input_file=fopen(filename,"r");
-         char *p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file);
-         while (p_line)
-         {  while (p_line && strchr(p_line,'.')==NULL) p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file); /* skip empty lines */
-            if (!p_line) break;
-            strtok(sig_file_name," \n\t");
-			double value=atof(strtok(NULL," \n\t"));
-			*strrchr(sig_file_name,'.')='\0';
-			for (int tile_y=0;tile_y<tiles;tile_y++)			
-              for (int tile_x=0;tile_x<tiles;tile_x++)
-              {  sprintf(files_in_class[file_index],"%s_%d_%d.sig",sig_file_name,tile_x,tile_y);
-                 values[file_index]=value;
-                 file_index++;
-              }
-			p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file);
-         }
+   while (samp_class<=class_num) {
+		char *str_ptr;
+		int indx_x,indx_y;
+		int file_index,files_in_class_count=0;
+		sprintf(buffer,"%s/%s",filename,class_labels[samp_class]);
+		if (class_dir=opendir(buffer)) {/* read the files and make sure they are sorted */
+			while (ent = readdir(class_dir)) {
+				if ( (str_ptr = strstr(ent->d_name,".sig")) )  {
+				/* read only the .sig files which store image feature data relevant for this run */
+					// Get the rotation, tile_x and tile_y from the name: name_r_x_y, where _r maybe missing.
+					// Read back from .sig through numbers and '_'
+					str_ptr--;
+					while (str_ptr > ent->d_name && (isdigit(*str_ptr) || *str_ptr == '_') ) str_ptr--;
+					str_ptr++;
+					// base filename may have ended in a number
+					while (str_ptr && isdigit(*str_ptr) ) str_ptr++;
+					// At this point, we're at the end of string, or at '_'.
+					indx_x = indx_y = -1;
+					if (str_ptr > ent->d_name) {
+						sscanf (str_ptr,"_%d_%d.sig",&indx_x,&indx_y);
+					}
+					if (indx_x > -1 && indx_y > -1 && indx_x < tiles && indx_y < tiles) {
+//						printf("Adding sig %s\n",ent->d_name);
+						strcpy(files_in_class[files_in_class_count++],ent->d_name);
+					} else {
+//						printf("Ignoring sig %s (%d,%d tiles:%d)\n",ent->d_name,indx_x,indx_y, tiles);
+					}
+				}
+			}
+			closedir(class_dir);
+			qsort(files_in_class,files_in_class_count,sizeof(files_in_class[0]), comp_strings);
+			for (file_index=0;file_index<files_in_class_count;file_index++) {
+				strcpy(sig_file_name,files_in_class[file_index]);  
+				sprintf(files_in_class[file_index],"%s/%s",buffer,sig_file_name);		
+			}
+		} else {  /* read the sig files of the images read from a file */
+			file_index=0;
+			input_file=fopen(filename,"r");
+			char *p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file);
+			while (p_line) {
+				while (p_line && strchr(p_line,'.')==NULL) p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file); /* skip empty lines */
+				if (!p_line) break;
+				strtok(sig_file_name," \n\t");
+				double value=atof(strtok(NULL," \n\t"));
+				*strrchr(sig_file_name,'.')='\0';
+				for (int tile_y=0;tile_y<tiles;tile_y++)			
+					for (int tile_x=0;tile_x<tiles;tile_x++) {
+						sprintf(files_in_class[file_index],"%s_%d_%d.sig",sig_file_name,tile_x,tile_y);
+						values[file_index]=value;
+						file_index++;
+					}
+				p_line=fgets(sig_file_name,sizeof(sig_file_name),input_file);
+			}
          files_in_class_count=file_index;
          fclose(input_file);
       }
@@ -538,24 +593,24 @@ int TrainingSet::LoadFromDir(char *filename, int tiles, int multi_processor, int
    else if (!(input_file=fopen(filename,"r"))) return(0);  /* read the images from a file */
    
    samp_class=1;
-   while (samp_class<=class_num)
-   {  int file_index,files_in_class_count=0;
-      char *p_line=(char *)1; 
-      /* constract the path of the class files */
-      if (!input_file)  /* read from dir */
-      {  strcpy(buffer,filename);
-		 strcat(buffer,"/");
-         strcat(buffer,class_labels[samp_class]);
-         /* get the file names */
-         class_dir=opendir(buffer);
-         while (ent = readdir(class_dir))
-         {  if (ent->d_name[0]=='.') continue;          /* ignore the '.' and '..' entries */
-            if (!IsSupportedFormat(ent->d_name)) continue;
-           strcpy(files_in_class[files_in_class_count++],ent->d_name);
-        }
-        closedir(class_dir);
-        qsort(files_in_class,files_in_class_count,sizeof(files_in_class[0]), comp_strings);		
-      }
+   while (samp_class<=class_num) {
+		int file_index,files_in_class_count=0;
+		char *p_line=(char *)1; 
+	/* constract the path of the class files */
+		if (!input_file) { /* read from dir */
+			strcpy(buffer,filename);
+			strcat(buffer,"/");
+			strcat(buffer,class_labels[samp_class]);
+		/* get the file names */
+			class_dir=opendir(buffer);
+			while (ent = readdir(class_dir)) {
+				if (ent->d_name[0]=='.') continue;          /* ignore the '.' and '..' entries */
+				if (!IsSupportedFormat(ent->d_name)) continue;
+				strcpy(files_in_class[files_in_class_count++],ent->d_name);
+			}
+		closedir(class_dir);
+		qsort(files_in_class,files_in_class_count,sizeof(files_in_class[0]), comp_strings);		
+		}
 
 	  /* process the files in the directory */
       file_index=0;
