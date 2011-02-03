@@ -65,13 +65,20 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
 	transforms/wavelet/wt.h
+	
 
 AM_CPPFLAGS = -fPIC
 
-bin_PROGRAMS=wndchrm
+bin_PROGRAMS=wndchrm util/color_deconvolution
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
 
+util_color_deconvolution_SOURCES = 	\
+	util/readTiffData.c \
+	util/readTIFF.h \
+	util/color_deconvolution.c
+
+util_color_deconvolution_LDADD = -lm -ltiff
 

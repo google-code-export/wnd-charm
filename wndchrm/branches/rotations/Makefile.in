@@ -31,7 +31,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = wndchrm$(EXEEXT)
+bin_PROGRAMS = wndchrm$(EXEEXT) util/color_deconvolution$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -66,23 +66,31 @@ libimfit_a_OBJECTS = $(am_libimfit_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am_util_color_deconvolution_OBJECTS = readTiffData.$(OBJEXT) \
+	color_deconvolution.$(OBJEXT)
+util_color_deconvolution_OBJECTS =  \
+	$(am_util_color_deconvolution_OBJECTS)
+util_color_deconvolution_DEPENDENCIES =
+am__dirstamp = $(am__leading_dot)dirstamp
 am_wndchrm_OBJECTS = wndchrm.$(OBJEXT)
 wndchrm_OBJECTS = $(am_wndchrm_OBJECTS)
-wndchrm_DEPENDENCIES =
+wndchrm_DEPENDENCIES = libimfit.a
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libimfit_a_SOURCES) $(wndchrm_SOURCES)
-DIST_SOURCES = $(libimfit_a_SOURCES) $(wndchrm_SOURCES)
+SOURCES = $(libimfit_a_SOURCES) $(util_color_deconvolution_SOURCES) \
+	$(wndchrm_SOURCES)
+DIST_SOURCES = $(libimfit_a_SOURCES) \
+	$(util_color_deconvolution_SOURCES) $(wndchrm_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -253,12 +261,18 @@ libimfit_a_SOURCES = \
 
 AM_CPPFLAGS = -fPIC
 wndchrm_SOURCES = wndchrm.cpp
-wndchrm_LDADD = -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
+util_color_deconvolution_SOURCES = \
+	util/readTiffData.c \
+	util/readTIFF.h \
+	util/color_deconvolution.c
+
+util_color_deconvolution_LDADD = -lm -ltiff
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .o .obj
+.SUFFIXES: .c .cpp .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -339,6 +353,12 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+util/$(am__dirstamp):
+	@$(MKDIR_P) util
+	@: > util/$(am__dirstamp)
+util/color_deconvolution$(EXEEXT): $(util_color_deconvolution_OBJECTS) $(util_color_deconvolution_DEPENDENCIES) util/$(am__dirstamp)
+	@rm -f util/color_deconvolution$(EXEEXT)
+	$(LINK) $(util_color_deconvolution_OBJECTS) $(util_color_deconvolution_LDADD) $(LIBS)
 wndchrm$(EXEEXT): $(wndchrm_OBJECTS) $(wndchrm_DEPENDENCIES) 
 	@rm -f wndchrm$(EXEEXT)
 	$(CXXLINK) $(wndchrm_OBJECTS) $(wndchrm_LDADD) $(LIBS)
@@ -367,6 +387,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WaveletMedium.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chevishev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmatrix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_deconvolution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/complex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convolution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gabor.Po@am__quote@
@@ -374,11 +395,54 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapkit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapkit_generic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/radon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readTiffData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signatures.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tamura.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zernike.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+readTiffData.o: util/readTiffData.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT readTiffData.o -MD -MP -MF $(DEPDIR)/readTiffData.Tpo -c -o readTiffData.o `test -f 'util/readTiffData.c' || echo '$(srcdir)/'`util/readTiffData.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/readTiffData.Tpo $(DEPDIR)/readTiffData.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/readTiffData.c' object='readTiffData.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o readTiffData.o `test -f 'util/readTiffData.c' || echo '$(srcdir)/'`util/readTiffData.c
+
+readTiffData.obj: util/readTiffData.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT readTiffData.obj -MD -MP -MF $(DEPDIR)/readTiffData.Tpo -c -o readTiffData.obj `if test -f 'util/readTiffData.c'; then $(CYGPATH_W) 'util/readTiffData.c'; else $(CYGPATH_W) '$(srcdir)/util/readTiffData.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/readTiffData.Tpo $(DEPDIR)/readTiffData.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/readTiffData.c' object='readTiffData.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o readTiffData.obj `if test -f 'util/readTiffData.c'; then $(CYGPATH_W) 'util/readTiffData.c'; else $(CYGPATH_W) '$(srcdir)/util/readTiffData.c'; fi`
+
+color_deconvolution.o: util/color_deconvolution.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT color_deconvolution.o -MD -MP -MF $(DEPDIR)/color_deconvolution.Tpo -c -o color_deconvolution.o `test -f 'util/color_deconvolution.c' || echo '$(srcdir)/'`util/color_deconvolution.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/color_deconvolution.Tpo $(DEPDIR)/color_deconvolution.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/color_deconvolution.c' object='color_deconvolution.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o color_deconvolution.o `test -f 'util/color_deconvolution.c' || echo '$(srcdir)/'`util/color_deconvolution.c
+
+color_deconvolution.obj: util/color_deconvolution.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT color_deconvolution.obj -MD -MP -MF $(DEPDIR)/color_deconvolution.Tpo -c -o color_deconvolution.obj `if test -f 'util/color_deconvolution.c'; then $(CYGPATH_W) 'util/color_deconvolution.c'; else $(CYGPATH_W) '$(srcdir)/util/color_deconvolution.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/color_deconvolution.Tpo $(DEPDIR)/color_deconvolution.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/color_deconvolution.c' object='color_deconvolution.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o color_deconvolution.obj `if test -f 'util/color_deconvolution.c'; then $(CYGPATH_W) 'util/color_deconvolution.c'; else $(CYGPATH_W) '$(srcdir)/util/color_deconvolution.c'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -958,6 +1022,7 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f util/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
