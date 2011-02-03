@@ -65,7 +65,7 @@ typedef enum
 mapkit_error;
 
 /* Constants */
-extern char *mapkit_error_msg[5];
+extern const char *mapkit_error_msg[5];
 
 /* Macros */
 
