@@ -65,7 +65,6 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
 	transforms/wavelet/wt.h
-	
 
 AM_CPPFLAGS = -fPIC
 

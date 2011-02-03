@@ -88,7 +88,7 @@ signatures *signatures::duplicate()
    name -char *- the name of the signature (e.g. Multiscale Histogram bin 3)
    value -double- the value to add
 */
-void signatures::Add(char *name,double value)
+void signatures::Add(const char *name,double value)
 {
    if (name && NamesTrainingSet)
    {  if (strchr(name,'\n')) *(strchr(name,'\n'))='\0';  /* prevent end of lines inside the features names */      
@@ -427,7 +427,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
      matrix->zernike2D(vec,&output_size);
      x=0;y=0;
      for (a=0;a<output_size;a++)
-     {  sprintf(buffer,"ZernikeMoments Z_%02d_%02d",y,x);
+     {  sprintf(buffer,"ZernikeMoments Z_%02d_%02d",(int)y,(int)x);
         Add(buffer,vec[a]);
         if (x>=y) x=1-(y++ % 2);
         else x+=2;
@@ -435,7 +435,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
     x=0;y=0;
     FourierTransform->zernike2D(vec,&output_size);
     for (a=0;a<output_size;a++)
-    {  sprintf(buffer,"ZernikeMoments_FFT Z_%02d_%02d",y,x);
+    {  sprintf(buffer,"ZernikeMoments_FFT Z_%02d_%02d",(int)y,(int)x);
        Add(buffer,vec[a]);
        if (x>=y) x=1-(y++ % 2);
        else x+=2;
@@ -560,7 +560,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupA(ImageMatrix *matrix, char *transform_label)
+void signatures::CompGroupA(ImageMatrix *matrix, const char *transform_label)
 {  int a;
    char buffer[80];
    double vec[7]={0,0,0,0,0,0,0};
@@ -639,7 +639,7 @@ void signatures::CompGroupA(ImageMatrix *matrix, char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupB(ImageMatrix *matrix, char *transform_label)
+void signatures::CompGroupB(ImageMatrix *matrix, const char *transform_label)
 {  int a;
    double vec[72];
    char buffer[80];
@@ -680,7 +680,7 @@ void signatures::CompGroupB(ImageMatrix *matrix, char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupC(ImageMatrix *matrix, char *transform_label)
+void signatures::CompGroupC(ImageMatrix *matrix, const char *transform_label)
 {  int a;
    double vec[48];
    char buffer[80];
@@ -756,7 +756,7 @@ void signatures::CompGroupC(ImageMatrix *matrix, char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupD(ImageMatrix *matrix, char *transform_label)
+void signatures::CompGroupD(ImageMatrix *matrix, const char *transform_label)
 {  int color_index;
    char buffer[80];
    double color_hist[COLORS_NUM+1];
@@ -1127,7 +1127,7 @@ void signatures::ComputeFromDouble(double *data, int width, int height, int dept
    int tile_x,tile_y - for computing tiles separately 
    int overwrite - 1 for forceably overwritting existing .sig files
 */
-FILE *signatures::FileOpen(char *path, int tile_x, int tile_y, int overwrite)
+FILE *signatures::FileOpen(char *path, int rot_idx, int tile_x, int tile_y, int overwrite)
 {  char filename[512],buffer[512];
    FILE *ret;
    if (path) strcpy(filename,path);
@@ -1136,10 +1136,21 @@ FILE *signatures::FileOpen(char *path, int tile_x, int tile_y, int overwrite)
       strcpy(filename,full_path);
       p_point=strrchr(filename,'.');
       if (p_point) *p_point='\0';
-      if (tile_x!=-1) sprintf(buffer,"%s_%d_%d",filename,tile_x,tile_y);
+      if (tile_x!=-1) {
+      	if (rot_idx > 0) sprintf(buffer,"%s_%d_%d_%d",filename,rot_idx,tile_x,tile_y);
+      	else sprintf(buffer,"%s_%d_%d",filename,tile_x,tile_y);
+      }
       strcat(buffer,".sig");
       strcpy(filename,buffer);
    }
+   /*
+     FIXME: this sets up a race condition.
+       another process can try open-for-read between this process' open-for-read and open-for-write,
+       resulting in the other process also failing open-for-read and opening this same file for write.
+       Solution: The sig file acts as a lockfile.  The existence test and the file creation have to be in one atomic transaction.
+       If we are able to get a file handle this way, it means that the file did not previously exist, and no other process has it open.
+       If we cannot get the handle, it means some other process has this file opened.
+   */
    if (ret=fopen(filename,"r"))
    {  struct stat ft;
       fclose(ret);

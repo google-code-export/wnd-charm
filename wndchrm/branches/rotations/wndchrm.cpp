@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <math.h>
 
 #define MAX_SPLITS 100
 #define MAX_SAMPLES 190000
@@ -52,8 +53,8 @@ void randomize()
 }
 
 /* displays an error message and stops the program */
-int show_error(char *error_message, int stop)
-{  printf("Oy Vey!  %s\n",error_message);
+int show_error(const char *error_message, int stop)
+{  printf("Error: %s\n",error_message);
    if (stop) exit(0);
    return(0);
 }
@@ -75,6 +76,7 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
   double class_avg_similarity[MAX_CLASS_NUM];
   DIR *class_dir;
   struct dirent *ent;
+  int tmp_print_to_screen;
 
   if (tiles<=0) tiles=1;
   for (class_index=0;class_index<MAX_CLASS_NUM;class_index++)
@@ -119,20 +121,35 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
   {  ts->normalize();
      ts->SetFisherScores(max_features,used_mrmr,NULL);
   }
-      
+
+// Label the columns
+	if (print_to_screen) {
+		printf("Image\t",image_files[file_index]);
+		if (ts->class_num==0) { /* continouos values */
+			printf("value\n");
+		} else {
+			for (class_index=1;class_index<=ts->class_num;class_index++) {
+				printf("p(%s)\t",ts->class_labels[class_index]);
+			}
+			printf("Class\tp\n");
+		}
+	}
+	tmp_print_to_screen = print_to_screen;
+	print_to_screen = 0;
   /* start classifying the files */
   for (file_index=0;file_index<number_of_files;file_index++)
   {  int tile_index=1;
      /* open the image file */
-     if (print_to_screen) printf("Opening image file '%s' \n",image_files[file_index]);
      matrix=new ImageMatrix;
      res=matrix->OpenImage(image_files[file_index], downsample, bounding_rect, mean, stddev);
      if (res==0)   /* failed to open the image */
      {  char error_message[256];
         delete matrix;
-        sprintf(error_message,"Cannot open file '%s' \n",image_files[file_index]);
+        sprintf(error_message,"Error opening '%s'\n",image_files[file_index]);
         show_error(error_message,0);
         continue;
+     } else {
+	     if (tmp_print_to_screen) printf("%s\t",image_files[file_index]);
      }
 
      TestSet=new TrainingSet(tiles*tiles,1);   /* a set of tiles (or just one tile) of the image to classify */
@@ -152,13 +169,13 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
           else tile_matrix=matrix;
           /* try to read a .sig file */
           if (strrchr(image_files[file_index],'.')) *strrchr(image_files[file_index],'.')='\0';  /* remove the extension */
-          sprintf(sig_file_name,"%s_%d_%d.sig",image_files[file_index],tile_index_x,tile_index_y);	
+          sprintf(sig_file_name,"%s_%ld_%ld.sig",image_files[file_index],tile_index_x,tile_index_y);	
           if (overwrite || image_signatures->LoadFromFile(sig_file_name)<1) /* compute the signatures if sigs have not been computed */
-          {  if (print_to_screen) printf("Computing signatures - tile %d of %d...\n",tile_index++,tiles*tiles);
+          {  // if (print_to_screen) printf("Computing signatures - tile %d of %d...\n",tile_index++,tiles*tiles);
              image_signatures->ScoresTrainingSet=ts;    /* so that only the needed signatures will be computed */
              if (ts->signature_count>2500) image_signatures->ComputeGroups(tile_matrix,ts->color_features);
              else image_signatures->compute(tile_matrix,ts->color_features);
-          }
+         }
           delete tile_matrix;
    
           /* classify */
@@ -168,21 +185,21 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
      if (tiles>1) delete matrix;	
      if (ts->class_num==0) /* continouos values */
 	 {  double value=ts->ClassifyImage(TestSet,0,method,tiles*tiles,tile_areas,TilesTrainingSets,max_tile,rank,NULL,probabilities_sum);
-        printf("Predicted value: %f \n",value);
+        printf("%f\n",value);
 	 }
      else /* discrete classes */
 	 {  res=(long)(ts->ClassifyImage(TestSet,0,method,tiles*tiles,tile_areas,TilesTrainingSets,max_tile,1,NULL,probabilities_sum));
         class_predictions[res]++;files_read++;
         /* print results */
         for (class_index=1;class_index<=ts->class_num;class_index++)
-        {  printf("%s: %f \n",ts->class_labels[class_index],probabilities_sum[class_index]);
+        {  printf("%f\t",probabilities_sum[class_index]);
            class_avg_similarity[class_index]+=probabilities_sum[class_index];
            if (probabilities_sum[class_index]>max_probability)
            {  max_probability=probabilities_sum[class_index];
               res=class_index;
            }
         }
-        printf("The resulting class is: %s (%f)\n",ts->class_labels[res],probabilities_sum[res]);
+        printf("%s\t%f\n",ts->class_labels[res],probabilities_sum[res]);
         delete TestSet;
      }
   }
@@ -204,25 +221,28 @@ int classify_image(char *filename,char *image_filename, double max_features, dou
   return(1);
 }
 
-int compute_features(char *root_dir, char *output_file,int class_num, int tiles,  int multi_process, int large_set, int colors, int downsample, double mean, double stddev,rect *bounding_rect, int overwrite)
+int compute_features(char *root_dir, char *output_file,int class_num, int rotations, int tiles,  int multi_process, int large_set, int colors, int downsample, double mean, double stddev,rect *bounding_rect, int overwrite)
 {  TrainingSet *ts;
    int res;
    ts=new TrainingSet(MAX_SAMPLES,class_num);
-   res=ts->LoadFromDir(root_dir,tiles,multi_process,large_set,colors,downsample,mean,stddev,bounding_rect,overwrite);
+   res=ts->LoadFromDir(root_dir,rotations,tiles,multi_process,large_set,colors,downsample,mean,stddev,bounding_rect,overwrite);
    if (res==0) {char buffer[512];sprintf(buffer,"Cannot read from '%s'",root_dir); show_error(buffer,0);}  /* error message after "LoadFromDir" failed */
    else ts->SaveToFile(output_file);
    return(res);
 }
 
-int split_and_test(char *filename, char *report_file_name, int class_num, int method, int tiles, double split_ratio, double max_features, double used_mrmr, long split_num,
+int split_and_test(char *filename, char *report_file_name, int class_num, int method, int samples_per_image, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
 				int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int phylip_algorithm,int export_tsv,
 				long first_n, char *weight_file_buffer, char weight_vector_action, int N, char *test_set_path, int ignore_group, int tile_areas, int max_tile, int image_similarities)
-{    TrainingSet *ts,*train,*test,**TilesTrainingSets=NULL;
+{    TrainingSet *ts,*train,*test,*test_fit=NULL,**TilesTrainingSets=NULL;
      data_split splits[MAX_SPLITS];
      char dataset_name[128],group_name[64];
      FILE *output_file;
      int split_index,tile_index;
      char error_message[256];
+     int max_balanced_samples,max_balanced_i;
+     int max_balanced_j;
+     int class_index, smallest_class=0;
 
      ts=new TrainingSet(MAX_SAMPLES,class_num);
      if (!ts->ReadFromFile(filename))
@@ -237,38 +257,119 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
        while (ts->class_num>N)
          ts->RemoveClass(ts->class_num);
 
+	/*
+	  Bounds checking on samples.
+	  -i switch is in images, but training happens on samples.
+	  -t (and -R) switches provide samples per image (tiles*tiles*rotations).
+	  Enforce balanced classes, with option to force unbalanced classes
+	    Calculate maximum number of training images (samples) for a balanced classifier (Ib = images in the smallest class)
+	    -rN: ratio assumes balanced classes, force unbalanced with -r#.  Meaning is fraction of samples to be used for *testing*.
+	    -iN: Number of training images used is min (iN,Ib). i#N drops classes with less than N images, resulting in a balanced classifier.
+	         -r is ignored if both -i and -r are specified.
+	    -jN: Parameter is ignored if a separate test .fit is supplied.  All samples in the test .fit are used for testing in each split
+	         Balanced testing is enforced (jN = min (jN,Ib-iN).  Program terminates if jN <= 0).
+	         Unbalanced testing can be done by using unbalanced test samples in the test .fit
+	         If -r#, testing is still balanced (jN = min (jN,Ib-iN), where iN is rN*Ib)
+	*/
+	
+	max_balanced_samples=MAX_SAMPLES;
+	for (class_index = 1; class_index <= ts->class_num; class_index++) {
+		if (ts->class_nsamples[class_index] < max_balanced_samples) {
+			max_balanced_samples = ts->class_nsamples[class_index];
+			smallest_class = class_index;
+		}
+	}
+	max_balanced_i = max_balanced_samples / samples_per_image;
+
+	// Check provided parameters against balanced testing/training
+	if (max_training_images > 0) { // N.B.: -i overrides -r
+		if (max_training_images > max_balanced_i && test_set_path) {
+			printf ("WARNING: Specified training images (%d) exceeds maximum for balanced training (%d).  %d images will be used for training.  Use -r# instead of -i to over-ride balanced training.\n",
+				max_training_images,max_balanced_i,max_balanced_i);
+			max_training_images = max_balanced_i;
+		} else if (max_training_images >= max_balanced_i && test_set_path == NULL) { // No images left for testing unless we have a test .fit
+			printf ("ERROR: Specified training images (%d) exceeds maximum for balanced training (%d).  No images left for testing.\n",max_training_images,max_balanced_i-1);
+			printf ("  Use -iN with N < %d.\n",max_balanced_i);
+			printf ("  Or, use -rN with 1.0 < N > 0.0\n");
+			printf ("  Or, use -r#N to over-ride balanced training.\n");
+			printf ("Exiting - no testing performed\n");
+			exit (-1);
+		}
+		split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
+	} else { // -i unspecified, use split_ratio (default or specified - already set in main)
+		max_training_images = floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
+		if (max_training_images >= max_balanced_i && test_set_path == NULL) { // rounding error left no test images
+			printf ("ERROR: No images left for testing using specified -r=%f.\n",split_ratio);
+			printf ("  Use -rN with N < %f\n", ((float)max_balanced_i - 1.0) / (float)max_balanced_i);
+			printf ("  Or, use -iN with N < %d.\n",max_balanced_i);
+			printf ("Exiting - no testing performed\n");
+			exit (-1);
+		}
+		// If an exact split ratio was specified, then use it.
+		// Otherwise, the same number of training images is used in each class, specified by max_training_images
+		if (balanced_splits) split_ratio = 0.0;
+	}
+	// Note that checks above leave max_training_images < max_balanced_i
+	
+	if (max_test_images > 0) { // -jN specified
+		if (test_set_path) {
+			printf ("WARNING: The -j%d parameter is ignored when a test .fit file is specified (%s).\n",max_test_images,test_set_path);
+		} else if ( max_test_images > (max_balanced_i - max_training_images) ) { // -jN always balanced unless test .fit
+			if (max_balanced_i - max_training_images > 0) {
+				printf ("WARNING: Insufficient images for balanced training (%d) and specified testing (%d).  %d images will be used for testing.\n",
+					max_training_images,max_test_images,max_balanced_i - max_training_images);
+				max_test_images = max_balanced_i - max_training_images;
+			}
+		}
+	} else { // -jN not specified
+		max_test_images = max_balanced_i - max_training_images;
+	}
+
+	// Open and read the test set if one was specified.
+	if (test_set_path) {
+		test_fit = new TrainingSet(ts->count,ts->class_num);
+		if (!test_fit->ReadFromFile(test_set_path)) return(show_error("Cannot open test set file",1));
+		else if (N>0) while (test->class_num>N) test->RemoveClass(test->class_num); /* cut the number of classes also in the test file */
+		max_test_images = test_fit->count / samples_per_image;
+	}
+
+/*
+	In ts-split(),
+      if (test->count > 0) number_of_test_samples = 0; // test already has samples from a file
+      // if ratio is 0, use the max_train_samples and max_test_samples (balanced training and testing)
+      // if ratio is > 0 and <= 1, use ratio (unbalanced training)      
+*/
+printf ("samples_per_image=%d,max_training_images=%d,max_test_images=%d,split_ratio=%f\n",samples_per_image,max_training_images,max_test_images,split_ratio);
      for (split_index=0;split_index<split_num;split_index++)
      { double accuracy;
        double feature_weight_distance=-1.0;
 
        train=new TrainingSet(ts->count,ts->class_num);
-       test=new TrainingSet(ts->count,ts->class_num);
+       if (test_fit) test = test_fit;
+       else test=new TrainingSet(ts->count,ts->class_num);
        splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].similarity_normalization=new double[ts->class_num+1];
        splits[split_index].feature_names=new char[ts->signature_count*80];
        if (tile_areas)
-       {  splits[split_index].tile_area_accuracy=new double[tiles*tiles];
-          for (tile_index=0;tile_index<tiles*tiles;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
+       {  splits[split_index].tile_area_accuracy=new double[samples_per_image];
+          for (tile_index=0;tile_index<samples_per_image;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
        }
        else splits[split_index].tile_area_accuracy=NULL;
        if (ts->signature_count>2500) splits[split_index].feature_groups=new char[ts->signature_count*80];
        else splits[split_index].feature_groups=NULL;
 
-       ts->split(split_ratio*(test_set_path==NULL),train,test,tiles*tiles,max_training_images,max_test_images,exact_training_images);
-       if (test_set_path)
-         if (!test->ReadFromFile(test_set_path)) return(show_error("Cannot open test set file",0));
-         else if (N>0) while (test->class_num>N) test->RemoveClass(test->class_num); /* cut the number of classes also in the test file */
-
-       if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(tiles*tiles))*(1+test->count/(tiles*tiles))];
+       ts->split(split_ratio,train,test,samples_per_image,max_training_images,max_test_images,exact_training_images);
+printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
+       if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
        else splits[split_index].image_similarities=NULL;
 
 //int temp=train->class_num;
 //train->class_num=1;
        if (tile_areas)  /* split into several datasets such that each dataset contains tiles of the same location */
-       {  TilesTrainingSets=new TrainingSet*[tiles*tiles];
-          train->SplitAreas(tiles*tiles, TilesTrainingSets);
-          for (tile_index=0;tile_index<tiles*tiles;tile_index++)
+       {  TilesTrainingSets=new TrainingSet*[samples_per_image];
+          train->SplitAreas(samples_per_image, TilesTrainingSets);
+          for (tile_index=0;tile_index<samples_per_image;tile_index++)
           {  TilesTrainingSets[tile_index]->normalize();
              TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
           }
@@ -283,23 +384,23 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
            show_error("Could not write weight vector",1);
        if (weight_vector_action=='r' || weight_vector_action=='+' || weight_vector_action=='-')
        {  feature_weight_distance=train->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));
-          if (tile_areas) for (tile_index=0;tile_index<tiles*tiles;tile_index++) feature_weight_distance=TilesTrainingSets[tile_index]->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));	   
+          if (tile_areas) for (tile_index=0;tile_index<samples_per_image;tile_index++) feature_weight_distance=TilesTrainingSets[tile_index]->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));	   
           if (feature_weight_distance<0) show_error("Could not load weight vector",1);
        }
-       if (report) splits[split_index].individual_images=new char[(int)((test->count/(tiles*tiles))*(class_num*15))];
+       if (report) splits[split_index].individual_images=new char[(int)((test->count/(samples_per_image))*(class_num*15))];
        else splits[split_index].individual_images=NULL;
        if (ignore_group)   /* assign to zero all features of the group */
        {  if (!(ts->IgnoreFeatureGroup(ignore_group,group_name)))
-          {  delete ts;delete train;delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].similarity_matrix;delete splits[split_index].feature_names;delete splits[split_index].feature_groups;delete splits[split_index].individual_images;
+          {  delete ts;delete train;if (!test_fit) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].similarity_matrix;delete splits[split_index].feature_names;delete splits[split_index].feature_groups;delete splits[split_index].individual_images;
              return(0);
 		  }
        }
-       accuracy=train->Test(test,method,tiles*tiles,tile_areas,TilesTrainingSets,max_tile,first_n,&(splits[split_index]));
+       accuracy=train->Test(test,method,samples_per_image,tile_areas,TilesTrainingSets,max_tile,first_n,&(splits[split_index]));
 
        splits[split_index].feature_weight_distance=feature_weight_distance;
        splits[split_index].accuracy=accuracy;
        splits[split_index].method=method;
-       splits[split_index].pearson_coefficient=test->pearson(tiles*tiles,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
+       splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
        if (!report && !ignore_group)   /* print the accuracy and confusion and similarity matrices */
        {  ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
@@ -309,12 +410,12 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
        }
 
      if (TilesTrainingSets)    /* delete the training sets allocated for the different areas */
-     {  for (tile_index=0;tile_index<tiles*tiles;tile_index++)
+     {  for (tile_index=0;tile_index<samples_per_image;tile_index++)
         delete TilesTrainingSets[tile_index];
         delete TilesTrainingSets;
      }
 	 delete train;
-	 delete test;
+	 if (!test_fit) delete test;
     } 
     printf("\n\n");
 	if (!report)    /* print the average accuracy */
@@ -323,8 +424,8 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
        for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
        for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
        if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
-       if (ts->class_num==0) printf("Average Pearson Correlation (%d splits): %f\n",split_num,avg_pearson/(double)split_num);
-       else printf("Average accuracy (%d splits): %f\n",split_num,avg_accuracy/(double)split_num);
+       if (ts->class_num==0) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
+       else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
 	}
 	
     strcpy(dataset_name,filename);
@@ -346,7 +447,7 @@ int split_and_test(char *filename, char *report_file_name, int class_num, int me
 		  }
 	   }
 	   else output_file=stdout;     
-	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,tiles,max_training_images,phylib_path,phylip_algorithm,export_tsv,test_set_path,image_similarities);   
+	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,max_training_images,phylib_path,phylip_algorithm,export_tsv,test_set_path,image_similarities);   
 	   if (output_file!=stdout) fclose(output_file);
 	   /* copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files */
 	   if (export_tsv || phylib_path)
@@ -391,6 +492,7 @@ void ShowHelp()
    printf("<image_filename> is the full path to the classified image. \n");    
    printf("\noptions:\n========\n");
    printf("m - allow running multiple instances of this program (to be used on multiple-processor machines).\n");
+   printf("R - Add rotations to training images (0,90,180,270 degrees).\n");
    printf("t[#][^]N - split the image into NxN tiles. The default is 1. If the '#' is specified, each tile location is used as a seperate dataset (for testing only). If '^' is specified only the closest tile is used. \n");
    printf("l - Use a large image feature set.\n");
    printf("c - Compute color features.\n");
@@ -399,7 +501,7 @@ void ShowHelp()
    printf("o - force overwriting pre-computed .sig files.\n");   
    printf("w - Classify with wnn instead of wnd. \n");
    printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
-   printf("rN - the split ratio of the dataset to training/test subsets (0,1). The default is 0.25. \n");
+   printf("r[#]N - Fraction of images/samples to be used for training (0,1). The default is 0.75 of the smallest class. if '#' is specified, force unbalanced training\n");
    printf("i[#]N - Set a maximal number of training images (for each class). If the '#' is specified then the class is ignored if it doesn't have at least N samples.\n");
    printf("jN - Set a maximal number of test images (for each class). \n");
    printf("nN - Number of repeated random splits. The default is 1.\n");
@@ -414,7 +516,7 @@ void ShowHelp()
    printf("examples:\n=========\n \t train: \n \t wndchrm train /path/to/dataset dataset.fit \n \t wndchrm train -mcl /path/to/dataset dataset.fit \n \t test: \n \t wndchrm test -f0.1 dataset.fit \n \t wndchrm test -f0.2 -i50 -j20 -n5 -p/path/to/phylip3.65 dataset.fit report.html \n");
    printf("\t classify: \n \t wndchrm classify dataset.fit /path/to/image.tiff \n \t wndchrm classify -f0.2 -cl dataset.fit /path/to/image.tiff \n");
    printf("\nA detailed description of wndchrm can be found in: Shamir, L., Orlov, N., Eckley, D.M., Macura, T., Johnston, J., Goldberg, I., Wndchrm - an open source utility for biological image analysis, BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
-   printf("\nIf you have more questions about this software, please email me (lior shamir) at <shamirl [at] mail [dot] nih [dot] gov> \n\n");
+   printf("\nIf you have more questions about this software, please email me (Ilya Goldberg) at <igg [at] nih [dot] gov> \n\n");
    return;
 }
 
@@ -424,6 +526,7 @@ int main(int argc, char *argv[])
     int multi_processor=0;
     int arg_index=1;
     int tiles=1;
+    int rotations=1;
     int tile_areas=0;
     int method=1;
     int report=0;
@@ -431,7 +534,7 @@ int main(int argc, char *argv[])
     int large_set=0;
     int colors=0;
     int downsample=100;
-    double split_ratio=0.25;
+    double split_ratio=0.75;
     double max_features=0.15;
     double used_mrmr=0.0;
     int max_training_images=0;
@@ -458,7 +561,8 @@ int main(int argc, char *argv[])
     int image_similarities=0;        /* generate a dendrogram showing the similarity of the images */
     int max_tile=0;                  /* use only the closest tile                                  */
 	int overwrite=0;                 /* force overwriting of pre-computed .sig files               */
-	
+	char *char_p,*char_p2;
+	int balanced_splits=1;           /* when 1, use balanced training.  Override with -r#          */
     /* read parameters */
     if (argc<2)
     {  ShowHelp();
@@ -527,26 +631,38 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'l')) large_set=1;
         if (strchr(argv[arg_index],'c')) colors=1;
         if (strchr(argv[arg_index],'d')) downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
-        if (strchr(argv[arg_index],'f')) 
-		{   strcpy(arg,argv[arg_index]);
-            if (p=strchr(arg,':'))
-			{  used_mrmr=atof(&p[1]);
-               *p='\0';
-			}
-		    max_features=atof(&(strchr(arg,'f')[1]));
+        if (char_p = strchr(argv[arg_index],'f')) {
+            if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2+1);
+		    max_features=atof(char_p+1);
 		}
-        if (strchr(argv[arg_index],'r')) split_ratio=atof(&(strchr(argv[arg_index],'r')[1]));
+        if (char_p = strchr(argv[arg_index],'r')) {
+			if (*(char_p+1)=='#') {
+				balanced_splits = 0;
+				char_p++;
+			}
+           split_ratio=atof(char_p+1);
+        }
         if (strchr(argv[arg_index],'q')) first_n=atoi(&(strchr(argv[arg_index],'q')[1]));
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
         if (strchr(argv[arg_index],'A')) assess_features=200; 
-        if (strchr(argv[arg_index],'t'))
-        {  tile_areas=(strchr(argv[arg_index],'t')[1]=='#');
-           max_tile=(strchr(argv[arg_index],'t')[1+tile_areas]=='^');		
-           tiles=atoi(&(strchr(argv[arg_index],'t')[1+tile_areas+max_tile]));
-        }
-        if (strchr(argv[arg_index],'i'))
-        {  exact_training_images=(strchr(argv[arg_index],'i')[1]=='#');
-           max_training_images=atoi(&(strchr(argv[arg_index],'i')[1+exact_training_images]));
+        if (strchr(argv[arg_index],'R')) rotations=4;
+        if (char_p = strchr(argv[arg_index],'t')) {
+			if (*(char_p+1)=='#') {
+				tile_areas = 1;
+				char_p++;
+				if (*(char_p+1)=='^') {
+					max_tile = 1;
+					char_p++;
+				}
+			}
+           tiles=atoi(char_p+1);
+       }
+        if (char_p = strchr(argv[arg_index],'i')) {
+			if (*(char_p+1)=='#') {
+				exact_training_images = 1;
+				char_p++;
+			}
+           max_training_images=atoi(char_p+1);
         }
         if (strchr(argv[arg_index],'j')) max_test_images=atoi(&(strchr(argv[arg_index],'j')[1]));
         if (strchr(argv[arg_index],'w')) method=0;
@@ -564,7 +680,7 @@ int main(int argc, char *argv[])
 	 if (test && report && arg_index==argc-1) show_error("a report html file must be specified",1);
 	 if (tiles<=0) show_error("number of tiles (t) must be an integer greater than 0",1);
 	 if (downsample<1 || downsample>100) show_error("downsample size (d) must be an integer between 1 to 100",1);
-	 if (split_ratio<0 || split_ratio>1) show_error("split ratio (r) must be between 0 to 1",1);
+	 if (split_ratio<0 || split_ratio>1) show_error("training fraction (r) must be > 0 and < 1",1);
 	 if (splits_num<1 || splits_num>MAX_SPLITS) show_error("splits num out of range",1);
      if (weight_vector_action!='\0' && weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='-' && weight_vector_action!='+') show_error("-v must be followed with either 'w' (write) or 'r' (read) ",1);
 
@@ -574,14 +690,13 @@ int main(int argc, char *argv[])
      { if (train)
        {  root_dir=argv[arg_index++];
           filename=argv[arg_index];
-          compute_features(root_dir, filename,MAX_CLASS_NUM, tiles, multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite);
+          compute_features(root_dir, filename,MAX_CLASS_NUM, rotations, tiles, multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite);
        }
        if (test)
        {  int ignore_group=0;
           filename=argv[arg_index++];
           /* check if there is a test set feature file */
-          if (arg_index<argc && strstr(argv[arg_index],".htm")==NULL)
-          test_set_path=argv[arg_index++];
+          if (arg_index<argc && strstr(argv[arg_index],".htm")==NULL) test_set_path=argv[arg_index++];
           /* check if there is a report file name */
           if (arg_index<argc)
           {  strcpy(report_file_buffer,argv[arg_index]);
@@ -589,7 +704,7 @@ int main(int argc, char *argv[])
              report=1;   /* assume that the user wanted a report if a report file was specified */
           }
           for (ignore_group=0;ignore_group<=assess_features;ignore_group++)
-           split_and_test(filename, report_file, MAX_CLASS_NUM, method, tiles, split_ratio, max_features, used_mrmr,splits_num,report,max_training_images,
+           split_and_test(filename, report_file, MAX_CLASS_NUM, method, rotations*tiles*tiles, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 		                  exact_training_images,max_test_images,phylib_path,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 						  test_set_path,ignore_group,tile_areas,max_tile,image_similarities);
        }

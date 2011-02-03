@@ -103,6 +103,7 @@ class ImageMatrix
    void flip();                                    /* flip an image horizonatally          */
    void invert();                                  /* invert the intensity of an image     */
    void Downsample(double x_ratio, double y_ratio);/* down sample an image                 */
+   ImageMatrix *Rotate(double angle);              /* rotate an image by 90,180,270 degrees*/
    void convolve(ImageMatrix *filter);
    void BasicStatistics(double *mean, double *median, double *std, double *min, double *max, double *histogram, int bins);
    void GetColorStatistics(double *hue_avg, double *hue_std, double *sat_avg, double *sat_std, double *val_avg, double *val_std, double *max_color, double *colors);
