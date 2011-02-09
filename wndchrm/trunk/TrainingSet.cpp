@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
+#include <cfloat> // Has definition of DBL_EPSILON
+#define FLOAT_EQ(x,v) (((v - DBL_EPSILON) < x) && (x <( v + DBL_EPSILON)))
 
 #include "TrainingSet.h"
 //#include "cmatrix.h"
@@ -844,7 +846,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
       sprintf(one_image_string,"<tr><td>%d</td>",test_sample_index/tiles)+1;  /* image index */
       if (class_num>0) /* normlization factor */
       {
-        if( normalization_factor_avg < 0.001 )
+        if( (normalization_factor_avg < 0.001) || (normalization_factor > 999) )
           sprintf( buffer,"<td>%.3e</td>", normalization_factor_avg );
         else
           sprintf( buffer,"<td>%.3f</td>", normalization_factor_avg );
@@ -1010,8 +1012,10 @@ void TrainingSet::normalize()
 
     // Try not to use the absolute lowest and highest signiture value as min and max
     // Create a buffer for outlying values at both ends of the signiture spectrum
-    max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
-    min_value = sig_data[ (int)( 0.025 * count ) ];
+    //max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
+    max_value = sig_data[ max_value_index ];
+    //min_value = sig_data[ (int)( 0.025 * count ) ];
+    min_value = sig_data[ 0 ];
 
     /* these values of min and max can be used for normalizing a test vector */
     SignatureMaxes[ sig_index ] = max_value;
@@ -1021,10 +1025,10 @@ void TrainingSet::normalize()
     { 
       if( samples[ samp_index ]->data[ sig_index ].value >= INF )
         samples[ samp_index ]->data[ sig_index ].value = 0;
-      else if( samples[ samp_index ]->data[ sig_index ].value < min_value )
-        samples[ samp_index ]->data[ sig_index ].value = 0;
-      else if( samples[ samp_index ]->data[ sig_index ].value > max_value )
-        samples[ samp_index ]->data[ sig_index ].value = 100;
+      //else if( samples[ samp_index ]->data[ sig_index ].value < min_value )
+      //  samples[ samp_index ]->data[ sig_index ].value = 0;
+      //else if( samples[ samp_index ]->data[ sig_index ].value > max_value )
+      //  samples[ samp_index ]->data[ sig_index ].value = 100;
       else if( min_value >= max_value )
         samples[ samp_index ]->data[ sig_index ].value = 0; /* prevent possible division by zero */
       else
@@ -1183,6 +1187,12 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
          for (class_index=1;class_index<=class_num;class_index++)
            mean_inner_class_var+=class_var[class_index];
          mean_inner_class_var/=class_num;
+         /* Here's the MATLAB way of doing it
+         if ( !( mean_inner_class_var==0) )
+           SignatureWeights[sig_index]=class_dev_from_mean/mean_inner_class_var;
+         else
+           SignatureWeights[sig_index]=40;
+         */
          if (mean_inner_class_var==0) mean_inner_class_var+=0.000001;   /* avoid division by zero - and avoid INF values */
 
          SignatureWeights[sig_index]=class_dev_from_mean/mean_inner_class_var;
@@ -1450,6 +1460,7 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
    double samp_sum,*class_sum; //,*samples_num;
    double dist,closest_dist=INF;
    int *samples_num;
+   double intermediate_result = 0;
 
    /* normalize the test sample */
    test_sample->normalize(this);
@@ -1468,10 +1479,15 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
      samp_sum=0.0;
      for (sig_index=0;sig_index<signature_count;sig_index++)
      {
-       samp_sum+=pow(SignatureWeights[sig_index],2)*pow(test_sample->data[sig_index].value-samples[sample_index]->data[sig_index].value,2);
+         intermediate_result = pow( SignatureWeights[ sig_index ], 2 ) * 
+           pow( test_sample->data[ sig_index ].value - 
+             samples[ sample_index ]->data[ sig_index ].value, 2 );
+         // Trying to prevent against accumulated floating point error
+         if( intermediate_result > DBL_EPSILON )
+           samp_sum += intermediate_result;
      }
      //if( samp_sum == 0.0 ) continue; /* ignore images that are 100% identical */
-     if( samp_sum < 0.1 ) continue; // try to weed out matches that got through due to floating point error 
+     if( samp_sum < DBL_EPSILON ) continue; // try to weed out matches that got through due to floating point error 
      class_sum[samples[sample_index]->sample_class]+=pow(samp_sum,-5);
      samples_num[samples[sample_index]->sample_class]++;
      /* printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n",
@@ -1483,8 +1499,8 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
    {
      if( samples_num[class_index]==0 )
        class_sum[class_index]=INF;   /* no samples for this class */
-     else
-       class_sum[class_index]/=samples_num[class_index];    /* find the average distance per sample */
+/*     else
+       class_sum[class_index]/=samples_num[class_index];*/   /* find the average distance per sample */
      
      // printf( "Dist to class %d = %e = %e class_sum / %d samples\n", class_index, class_sum[class_index]/=samples_num[class_index], class_sum[class_index], samples_num[class_index] );
 
