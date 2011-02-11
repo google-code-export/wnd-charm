@@ -45,6 +45,10 @@
 #include <stdlib.h>
 #endif
 
+/* global variable */
+extern int print_to_screen;
+
+
 //---------------------------------------------------------------------------
 /*  signatures (constructor)
 */
@@ -57,6 +61,7 @@ signatures::signatures()
    count=0;
    sample_class=0;
    full_path[0]='\0';
+   sample_name[0]='\0';
    NamesTrainingSet=NULL;   
    ScoresTrainingSet=NULL;
 }
@@ -132,7 +137,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    double mean, median, std, min, max, histogram[10], norm_avg, norm_std;
    ImageMatrix *TempMatrix;
    ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*WaveletFourierSelector;
-   printf("start processing image...\n");   
+   if (print_to_screen) printf("start processing image...\n");   
    FourierTransform=matrix->duplicate();
    FourierTransform->fft2();
    ChebyshevTransform=matrix->duplicate();
@@ -1055,9 +1060,9 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(EdgeFourier,"Edge Fourier Transform");
 
   CompGroupB(EdgeWavelet,"Edge Wavelet Transform");
-printf("5.5\n");  
+//printf("5.5\n");  
   CompGroupC(EdgeWavelet,"Edge Wavelet Transform");
-printf("6\n");
+//printf("6\n");
   delete FourierTransform;
   delete WaveletSelector;
   delete ChebyshevTransform;
@@ -1069,7 +1074,7 @@ printf("6\n");
   delete EdgeFourier;
   delete EdgeWavelet;
   delete FourierChebyshev;
-printf("7\n");  
+//printf("7\n");  
 }
 
 
@@ -1123,23 +1128,15 @@ void signatures::ComputeFromDouble(double *data, int width, int height, int dept
 
 /* FileOpen
    Creates and opens a files before writing feature value content
-   path -char *- path to the file to be opened. If NULL then open path is the original file name with ".sig" extention.
-   int tile_x,tile_y - for computing tiles separately 
+   path -char *- path to the file to be opened.
+     If NULL then open path is the original file name up to the last '.', followed by '_', the sample_name and ".sig".
    int overwrite - 1 for forceably overwritting existing .sig files
 */
-FILE *signatures::FileOpen(char *path, int tile_x, int tile_y, int overwrite)
-{  char filename[512],buffer[512];
+FILE *signatures::FileOpen(char *path, int overwrite)
+{  char filename[512];
    FILE *ret;
-   if (path) strcpy(filename,path);
-   else
-   {  char *p_point;
-      strcpy(filename,full_path);
-      p_point=strrchr(filename,'.');
-      if (p_point) *p_point='\0';
-      if (tile_x!=-1) sprintf(buffer,"%s_%d_%d",filename,tile_x,tile_y);
-      strcat(buffer,".sig");
-      strcpy(filename,buffer);
-   }
+   if (path && *path != '\0') strcpy(filename,path);
+   else GetFileName (filename);
    /*
      FIXME: this sets up a race condition.
        another process can try open-for-read between this process' open-for-read and open-for-write,
@@ -1171,8 +1168,9 @@ void signatures::FileClose(FILE *value_file)
 int signatures::SaveToFile(FILE *value_file, int save_feature_names)
 {  int sig_index;
    if (!value_file) {printf("Cannot write to .sig file\n");return(0);}
-   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->class_num<=1) fprintf(value_file,"%f\n",sample_value);  /* save the continouos value */
-   else fprintf(value_file,"%d\n",sample_class);  /* save the class index */
+   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
+   	fprintf(value_file,"%f\n",sample_value);  /* save the continouos value */
+   } else fprintf(value_file,"%d\n",sample_class);  /* save the class index */
    fprintf(value_file,"%s\n",full_path);
    for (sig_index=0;sig_index<count;sig_index++)
      if (save_feature_names && NamesTrainingSet) fprintf(value_file,"%f %s\n",data[sig_index].value,((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);
@@ -1181,15 +1179,21 @@ int signatures::SaveToFile(FILE *value_file, int save_feature_names)
 }
 
 int signatures::LoadFromFile(char *filename)
-{  char buffer[256],*p_buffer;
+{  char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer;
    FILE *value_file;
 
-   if (!(value_file=fopen(filename,"r")))
+	if (!filename || *filename == '\0')
+		GetFileName (buffer);
+	else strncpy (buffer,filename,sizeof(buffer));
+
+   if (!(value_file=fopen(buffer,"r")))
      return(0);
    /* read the class or value */
    fgets(buffer,sizeof(buffer),value_file);   
-   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->class_num<=1) sample_value=atof(buffer);   /* continouos value */
-   else sample_class=atoi(buffer);                /* class index      */
+   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
+   	sample_value=atof(buffer);   /* continouos value */
+   	sample_class = 1;
+   } else sample_class=atoi(buffer);                /* class index      */
 
    /* read the path */
    fgets(buffer,sizeof(buffer),value_file);
@@ -1211,6 +1215,24 @@ int signatures::LoadFromFile(char *filename)
    fclose(value_file);
    return(1);
 }
+
+/*
+  get the filename for storing the signature.
+  The filename is generated from the full path of the image, plus a sample name.
+  The sample name (i.e. _0_0 for tile 0,0) is set externally depending on what sample of the image (referred to by full_path) the signature pertains to.
+  It is stored internally so that a signature object can get to its own file without additional information.
+*/
+void signatures::GetFileName (char *filename) {
+	char *char_p;
+
+	strcpy(filename,full_path);
+	char_p = strrchr(filename,'.');
+	if (!char_p) char_p=filename+strlen(filename);
+	sprintf(char_p,"_%s.sig",sample_name);
+}
+
+
+
 
 #pragma package(smart_init)
 

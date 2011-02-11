@@ -196,6 +196,7 @@ int ImageMatrix::LoadTIFF(char *filename)
    unsigned short *buf16;
    double max_val;
    pix_data pix;
+   TIFFSetWarningHandler(NULL);
    if (tif = TIFFOpen(filename, "r"))
    {
      TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
