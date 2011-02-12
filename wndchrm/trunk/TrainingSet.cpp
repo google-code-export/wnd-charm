@@ -665,7 +665,7 @@ int TrainingSet::AddAllSignatures() {
          Unknown classes go into class 0 with value 0 (sample_class = 0).
    If multi_processor is true, AddAllSignatures is called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous) {
+int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous) {
 	int path_len = strlen(path);
 	DIR *root_dir,*class_dir;
 	struct dirent *ent;
@@ -687,7 +687,7 @@ int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int la
 			if (IsSupportedFormat(buffer)) {
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
-				res=LoadFromFilesDir (path, 0, 0, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+				res=LoadFromFilesDir (path, 0, 0, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -737,7 +737,7 @@ int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int la
 			errno = 0;
 
 		// A single supported image file
-			res = AddImageFile(path, 0, 0, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res = AddImageFile(path, 0, 0, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 			if (res < 1) return (res-1);
 		// For a set of unknowns, number of classes is 1, with all samples sample_class = 0
 			class_num = 1;
@@ -832,7 +832,7 @@ int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int la
 			sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
 		// reset the system error
 			errno = 0;
-			res=LoadFromFilesDir (buffer, class_index, samp_val, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res=LoadFromFilesDir (buffer, class_index, samp_val, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 			if (res < 0) return (res);
 		// Since we made the class, we have to get rid of it if its empty.
 			if (class_nsamples[class_index] < 1) {
@@ -881,7 +881,7 @@ int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int la
 
 		// reset the system error
 			errno = 0;
-			res = AddImageFile(filename, file_class_num, samp_val, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res = AddImageFile(filename, file_class_num, samp_val, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 			if (res < 0) return (res);
 
 		} // while reading file of filenames
@@ -944,7 +944,7 @@ int TrainingSet::LoadFromPath(char *path, int tiles, int multi_processor, int la
    Scan the files in the directory, calling AddImageFile on each image file encountered.
    If multi_processor is true, AddAllSignatures should be called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
+int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
 	DIR *class_dir;
 	struct dirent *ent;
 	char files_in_class[MAX_FILES_IN_CLASS][64];
@@ -967,7 +967,7 @@ printf ("Processing directory '%s'\n",path);
 	// Process the files in sort order
 	for (file_index=0; file_index<files_in_dir_count; file_index++) {
 		sprintf(buffer,"%s/%s",path,files_in_class[file_index]);
-		res = AddImageFile(buffer, sample_class, sample_value, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+		res = AddImageFile(buffer, sample_class, sample_value, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
 	}
@@ -1001,9 +1001,9 @@ printf ("Processing directory '%s'\n",path);
    Returns 0 if the image cannot be opened, 1 otherwise.
    If multi_processor is true, AddAllSignatures should be called after all the class files are processed to load the skipped features.
 */
-int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
+int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
 	int res=0;
-	int tile_index_x,tile_index_y;
+	int rot_index,tile_index_x,tile_index_y;
 	ImageMatrix *tile_matrix;
 	signatures *ImageSignatures;
 	ImageMatrix *matrix;
@@ -1023,45 +1023,56 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 //matrix->ChebyshevTransform(0);
 //printf("image name: %s\n",filename);
 //matrix->SaveTiff(filename);
-
-		for (tile_index_y=0;tile_index_y<tiles;tile_index_y++) {
-			for (tile_index_x=0;tile_index_x<tiles;tile_index_x++) {
-				long tile_x_size=(long)(matrix->width/tiles);
-				long tile_y_size=(long)(matrix->height/tiles);
-				if (tiles>1) tile_matrix=new ImageMatrix(matrix,tile_index_x*tile_x_size,tile_index_y*tile_y_size,(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1,0,0);
-				else tile_matrix=matrix;
+		for (rot_index=0;rot_index<rotations;rot_index++) {
+//			printf ("rotation:%d\n",rot_index);
+			ImageMatrix *rot_matrix;
+			if (rot_index > 0) {
+				rot_matrix = matrix->Rotate (90.0 * rot_index);
+			} else {
+				rot_matrix = matrix;
+			}
+			for (tile_index_y=0;tile_index_y<tiles;tile_index_y++) {
+				for (tile_index_x=0;tile_index_x<tiles;tile_index_x++) {
+					ImageMatrix *tile_matrix;
+					long tile_x_size=(long)(rot_matrix->width/tiles);
+					long tile_y_size=(long)(rot_matrix->height/tiles);
+					if (tiles>1)
+						tile_matrix=new ImageMatrix(rot_matrix,tile_index_x*tile_x_size,tile_index_y*tile_y_size,(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1,0,0);
+					else tile_matrix=rot_matrix;
 				/* compute the image features */
-				ImageSignatures=new signatures;
-				ImageSignatures->NamesTrainingSet=this;
-				strcpy(ImageSignatures->full_path,filename);
-				ImageSignatures->sample_class=sample_class;
-				ImageSignatures->sample_value=sample_value;
-				snprintf (ImageSignatures->sample_name,SAMPLE_NAME_LENGTH,"%d_%d",tile_index_x,tile_index_y);
-
+					ImageSignatures=new signatures;
+					ImageSignatures->NamesTrainingSet=this;
+					strcpy(ImageSignatures->full_path,filename);
+					ImageSignatures->sample_class=sample_class;
+					ImageSignatures->sample_value=sample_value;
+					if (rot_index > 0) snprintf (ImageSignatures->sample_name,SAMPLE_NAME_LENGTH,"%d_%d_%d",rot_index,tile_index_x,tile_index_y);
+					else snprintf (ImageSignatures->sample_name,SAMPLE_NAME_LENGTH,"%d_%d",tile_index_x,tile_index_y);
+	
 				/* check if the features for that image were processed by another process */
-	// NEEDS WORK (see signatures.cpp)
-	// Race condition, potentially reading inconsistent sigs (e.g. second run with more tiles; only the additional tiles will be recalculated, and the rest will be invalid)
-				if (multi_processor) {
-					if (!(sig_file=ImageSignatures->FileOpen(NULL,overwrite))) {
-						// The incomplete sample is still added to keep the set consistent.
-						// AddAllSignatures will complete the set (with less work, simpler code).
-						if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-						if (tiles>1) delete tile_matrix;
-						continue;
+		// NEEDS WORK (see signatures.cpp)
+		// Race condition, potentially reading inconsistent sigs (e.g. second run with more tiles; only the additional tiles will be recalculated, and the rest will be invalid)
+					if (multi_processor) {
+						if (!(sig_file=ImageSignatures->FileOpen(NULL,overwrite))) {
+							// The incomplete sample is still added to keep the set consistent.
+							// AddAllSignatures will complete the set (with less work, simpler code).
+							if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+							if (tiles>1) delete tile_matrix;
+							continue;
+						}
 					}
-				}
-				/* compute the features */						 
-				if (large_set) ImageSignatures->ComputeGroups(tile_matrix,compute_colors);
-				else ImageSignatures->compute(tile_matrix,compute_colors);
-
-				if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-
-				if (tiles>1) delete tile_matrix;
-	// NEEDS WORK
-	// If we can guarantee these files will always be consistent with regards to the run parameters, shouldn't we always save them?
-				if (multi_processor) {
-					ImageSignatures->SaveToFile(sig_file,1);
-					ImageSignatures->FileClose(sig_file);
+					/* compute the features */						 
+					if (large_set) ImageSignatures->ComputeGroups(tile_matrix,compute_colors);
+					else ImageSignatures->compute(tile_matrix,compute_colors);
+	
+					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+	
+					if (tiles>1) delete tile_matrix;
+		// NEEDS WORK
+		// If we can guarantee these files will always be consistent with regards to the run parameters, shouldn't we always save them?
+					if (multi_processor) {
+						ImageSignatures->SaveToFile(sig_file,1);
+						ImageSignatures->FileClose(sig_file);
+					}
 				}
 			}
 		}

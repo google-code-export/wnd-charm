@@ -460,6 +460,7 @@ void ShowHelp()
    printf("\noptions:\n========\n");
    printf("m - Allow running multiple instances of this program concurrently, save (and re-use) pre-calculated .sig files.\n");
    printf("    This will save and re-use .sig files, making this option useful for single instances/processors as well\n");
+   printf("R - Add rotations to training images (0,90,180,270 degrees).\n");
    printf("t[#][^]N - split the image into NxN tiles. The default is 1. If the '#' is specified, each tile location is used as\n");
    printf("           a seperate dataset (for testing only). If '^' is specified only the closest tile is used. \n");
    printf("l - Use a large image feature set.\n");
@@ -522,6 +523,7 @@ int main(int argc, char *argv[])
     int multi_processor=0;
     int arg_index=1;
     int tiles=1;
+    int rotations=1;
     int tile_areas=0;
     int method=1;
     int report=0;
@@ -653,6 +655,7 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'q')) first_n=atoi(&(strchr(argv[arg_index],'q')[1]));
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
         if (strchr(argv[arg_index],'A')) assess_features=200; 
+        if (strchr(argv[arg_index],'R')) rotations=4;
         if (char_p = strchr(argv[arg_index],'t')) {
 			if (*(char_p+1)=='#') {
 				tile_areas = 1;
@@ -721,7 +724,7 @@ int main(int argc, char *argv[])
 				return(0);
 			}
 			fclose (out_file);
-			res=dataset->LoadFromPath(dataset_path,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+			res=dataset->LoadFromPath(dataset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			res = dataset->SaveToFile (dataset_save_fit);
 			if (res < 1) {catError (dataset->error_message); showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);}
@@ -741,7 +744,7 @@ int main(int argc, char *argv[])
 				return(0);
 			} else if (dataset_save_fit) fclose (out_file);
 			if (print_to_screen) printf ("Processing training set '%s'.\n",dataset_path);
-			res=dataset->LoadFromPath(dataset_path,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+			res=dataset->LoadFromPath(dataset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			if (dataset_save_fit) {
 				res = dataset->SaveToFile (dataset_save_fit);
@@ -770,7 +773,7 @@ int main(int argc, char *argv[])
 				} else if (testset_save_fit) fclose (out_file);
 				if (print_to_screen) printf ("Processing test set '%s'.\n",testset_path);
 				testset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
-				res=testset->LoadFromPath(testset_path,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+				res=testset->LoadFromPath(testset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
 				if (res < 1) {catError (testset->error_message); showError(1,"Errors reading from '%s'\n",testset_path);}
 				if (testset_save_fit) {
 					res = testset->SaveToFile (testset_save_fit);

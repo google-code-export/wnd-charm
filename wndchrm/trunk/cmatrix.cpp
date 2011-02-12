@@ -673,6 +673,65 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio)
 }
 
 
+/* Rotate
+   Rotate an image by 90, 120, or 270 degrees
+   angle -double- (0 to 360) the degrees of rotation.  Only values of 90, 180, 270 are currently allowed
+*/
+ImageMatrix *ImageMatrix::Rotate(double angle) {
+	ImageMatrix *new_matrix;
+	int new_x,new_y,new_width,new_height;
+	pix_data pix;
+
+	// Only deal with right angles
+	if (! ( (angle == 90) || (angle == 180) || (angle == 270) ) ) return (this);
+
+	// Make a new image matrix
+	new_matrix=new ImageMatrix;
+	new_matrix->data=new pix_data[width*height*depth];
+	if (!(new_matrix->data)) {
+		fprintf (stderr,"Could not allocate memory for duplicate image\n");
+		return(NULL); /* memory allocation failed */
+	}
+	new_matrix->depth=depth;
+	new_matrix->bits=bits;
+	new_matrix->ColorMode=ColorMode;
+	// switch width/height if 90 or 270
+	if ( (angle == 90) || (angle == 270) ) {
+		new_matrix->width = new_width = height;
+		new_matrix->height = new_height = width;
+	} else {
+		new_matrix->width = new_width = width;
+		new_matrix->height = new_height = height;
+	}
+
+	// write the new pixels
+	for (int z=0;z<depth;z++) {
+		for (new_y=0;new_y<new_height;new_y++) {
+			new_x=0;
+			for (new_x=0;new_x<new_width;new_x++) {
+				switch ((int)angle) {
+					case 90:
+						pix=pixel(new_y,height-new_x-1,z);
+					break;
+
+					case 180:
+						pix=pixel(width-new_x-1,height-new_y-1,z);
+					break;
+
+					case 270:
+						pix=pixel(width-new_y-1,new_x,z);
+					break;
+				}
+	
+				new_matrix->set(new_x,new_y,z,pix);
+			} /* for x */
+		} /* for y */
+   } /* for z */
+
+	return(new_matrix);
+}
+
+
 /* find basic intensity statistics */
 
 int compare_doubles (const void *a, const void *b)

@@ -101,10 +101,17 @@ public:
 /* methods */
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
+<<<<<<< .working
    int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
 	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
 	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
 	int LoadFromPath(char *path, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous);
+=======
+   int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
+	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
+	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
+	int LoadFromPath(char *path, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous);
+>>>>>>> .merge-right.r59
    double ClassifyImage(TrainingSet *TestSet, int test_sample_index,int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,int rank, data_split *split, double *similarities);  /* classify one or more images */
    double Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split);     /* test      */
    int SaveToFile(char *filename);                                 /* save the training set values to a file    */
