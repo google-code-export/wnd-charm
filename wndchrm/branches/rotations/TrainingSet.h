@@ -42,6 +42,24 @@
 #define WNN 0
 #define WND 1
 
+// N.B.: There is almost certainly code to fix if this is other than 1
+#define CONTINUOUS_CLASS_LABEL ""
+#define CONTINUOUS_CLASS_INDEX 1
+
+#define UNKNOWN_CLASS_LABEL ""
+// N.B.: There is almost certainly code to fix if this is other than 0
+#define UNKNOWN_CLASS_INDEX 0
+
+#define ERROR_MESSAGE_LNGTH    512
+#define CANT_OPEN_DIRECTORY                -1
+#define CANT_OPEN_FIT                      -2
+#define CANT_LOAD_ALL_SIGS                 -3
+#define ADDING_CLASS_TO_CONTINUOUS_DATASET -4
+#define CANT_ADD_UNORDERED_CLASS           -5
+#define TOO_MANY_CLASSES                   -6
+#define CONTINUOUS_DATASET_WITH_CLASSES    -7
+#define ADDING_SAMPLE_TO_UNDEFINED_CLASS   -8
+
 
 typedef struct
 {  double accuracy;
@@ -64,23 +82,29 @@ class TrainingSet
 {
 public:
 /* properties */
+	char error_message[ERROR_MESSAGE_LNGTH];                       /* Information about errors encountered      */
+	char source_path[256];                       /* Path we read this set from     */
    signatures **samples;                                           /* samples data                              */
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
    double SignatureWeights[MAX_SIGNATURE_NUM];                     /* weights of the samples                    */
    double SignatureMins[MAX_SIGNATURE_NUM];                        /* minimum value of each signature           */
    double SignatureMaxes[MAX_SIGNATURE_NUM];                       /* maximum value of each signature           */
-   long class_num;                                                 /* number of classes                         */
-//   char class_labels[MAX_CLASS_NUM][MAX_CLASS_NAME_LENGTH];        /* labels of the classes                     */
+   long class_num;                                                 /* number of known/defined classes (may be 0 if all samples are unknown, may be 1 when is_continuous, or for 1 known discrete class */
    char **class_labels;                                            /* labels of the classes                     */
    long *class_nsamples;                                           /* sample counts in each class               */
+   int  is_continuous;                                             /* A numeric/continuous dataset.  sample_class = 0 or 1 for all samples. class_nsamples is valid, but class_labels is not. */
+   int  is_numeric;                                                /* All class labels can be interpreted as numeric values (is_continuous can be false when is_numeric is true) */
+   int  is_pure_numeric;                                           /* All class labels are numerical (no characters other than those than can be part of a valid double - INF, NAN, etc are technically valid, but not in our case)  */
    long count;                                                     /* the number of samples in the training set */
    long signature_count;                                           /* the number of signatures (< MAX_SIGNATURE_NUM) */
    long color_features;                                            /* color signatures are used                 */
 /* methods */
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
-   int AddAllSignatures(char *filename, int rotations, int tiles); /* load the image feature values from all files */
-   int LoadFromDir(char *filename, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);  /* load images from a root directory   */
+   int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
+	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
+	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
+	int LoadFromPath(char *path, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous);
    double ClassifyImage(TrainingSet *TestSet, int test_sample_index,int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,int rank, data_split *split, double *similarities);  /* classify one or more images */
    double Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split);     /* test      */
    int SaveToFile(char *filename);                                 /* save the training set values to a file    */
@@ -88,9 +112,12 @@ public:
    int SaveWeightVector(char *filename);                           /* save the weights of the features into a file */
    double LoadWeightVector(char *filename, double factor);         /* load the weights of the features from a file and assign them to the features of the training set */
    void SetAttrib(TrainingSet *set);                               /* copy the attributes from one training set to another */   
-   void split(double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples,int exact_max_train); /* random split to train and test */
-   void SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
+   int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples,int exact_max_train); /* random split to train and test */
+   int SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
    void RemoveClass(long class_index);                             /* remove a class                            */
+	void MarkUnknown(long class_index);                            /* mark the given class as unknown (move + reorder class labels, reassign sample classes to class 0 */
+   int AddClass(char *label);                                      /* add a discrete class    */
+   int AddContinuousClass (char *label);                           /* add a continuous class - not that only one can be added */
    int AddSample(signatures *new_sample);                          /* add signatures computed from one image    */
    void normalize();                                               /* normalize the values of the signatures to [0,100] */
    void SetmRMRScores(double used_signatures,double used_mrmr);                     /* set mRMR scores to the features           */
@@ -105,7 +132,10 @@ public:
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
    long report(FILE *output_file, char *output_file_name, char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images,char *phylib_path, int phylip_algorithm, int export_tsv, char *path_to_test_set,int image_similarities);  /* report on few splits */
+   void catError (const char *fmt, ...);
 };
+
+int check_numeric (char *s, double *samp_val);
 
 
 #endif

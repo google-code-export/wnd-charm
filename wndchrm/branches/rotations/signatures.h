@@ -39,6 +39,7 @@
 #define MAX_SIGNATURE_NUM 5000
 #define SIGNATURE_NAME_LENGTH 80
 #define IMAGE_PATH_LENGTH 256
+#define SAMPLE_NAME_LENGTH 64
 
 
 struct signature
@@ -54,10 +55,11 @@ class signatures
   public:
     signature data[MAX_SIGNATURE_NUM];
     unsigned short sample_class;        /* the class of the sample             */
-    double sample_value;                /* a continous value (if class_num==1) */      
+    double sample_value;                /* a continous value (if TrainingSet->is_continuous is true, sample_value = 1 for known samples, and 0 for unknown samples */      
 	double interpolated_value;          /* a predicted continous value if class_num==1, or an interploated class value if class labels are all numerical */
     long count;
     char full_path[IMAGE_PATH_LENGTH];  /* optional - full path the the image file     */
+    char sample_name[SAMPLE_NAME_LENGTH];  /* A string to identify the image sample (e.g. tile). For .sig files, added before last '.' of the image name */
 	void *NamesTrainingSet;             /* the training set in which this set of signatures belongs - is assigned so that the signature names will be added */
     void *ScoresTrainingSet;            /* a pointer to a training set with computed Fisher scores (to avoid computing 0-scored signatures)                 */
     signatures();                       /* constructor                                 */
@@ -72,10 +74,11 @@ class signatures
     void ComputeGroups(ImageMatrix *matrix, int compute_colors);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
-    FILE *FileOpen(char *path, int rot_idx, int tile_x, int tile_y, int overwrite);
+    FILE *FileOpen(char *path, int overwrite);
     void FileClose(FILE *value_file);
     int SaveToFile(FILE *value_file,int save_feature_names);
     int LoadFromFile(char *filename);
+	void GetFileName(char *filename_p);
 };
 
 #endif
