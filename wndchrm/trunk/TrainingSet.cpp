@@ -626,6 +626,7 @@ int TrainingSet::AddAllSignatures() {
 		strcpy (buffer,samples[samp_index]->full_path);
 		samples[samp_index]->Clear();
 		// don't bother with locking except for the last sample.
+		errno = 0;
 		if (samp_index < count-1) res = samples[samp_index]->LoadFromFile(NULL);
 		else {
 			if (print_to_screen) printf ("Waiting for last sample ('%s', %d/%ld) to complete...\n",samples[samp_index]->GetFileName(buffer), samp_index+1, count);
@@ -639,8 +640,7 @@ int TrainingSet::AddAllSignatures() {
 			// FIXME: Its not enough that there's more than one, the count has to match.
 			// Really, the names have to match as well, but since we're dumping everything for now in fixed order, maybe OK.
 			if (samples[samp_index]->count < 1) {
-				samples[samp_index]->GetFileName(buffer); // this is only to get the .sig file name
-				catError ("0 feature values for sample %d from .sig file '%s'\n",samp_index,buffer);
+				catError ("0 feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 				return (CANT_LOAD_ALL_SIGS);
 			}
 			signature_count = samples[samp_index]->count;
@@ -1085,6 +1085,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		int rot_index;
 		int tile_index_x;
 		int tile_index_y;
+		bool saved;
+		bool added;
 	} our_sigs[MAX_SAMPLES_PER_IMAGE];
 
 
@@ -1097,6 +1099,9 @@ printf ("Processing image file '%s'.\n",filename);
 // Eventually, the sampling code would live here, and be generic but the set-up of the parameters would be done elsewhere
 // It seems this would be a good application of functional programming (i.e. closures, functors, etc).
 
+	our_sigs[0].sig = NULL;
+	our_sigs[0].file = NULL;
+	our_sigs[0].rot_index = our_sigs[0].tile_index_x = our_sigs[0].tile_index_y = -1;
 	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
 	// make signature objects for samples
 		ImageSignatures=new signatures;
@@ -1125,24 +1130,25 @@ printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
 			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
 			n_sigs++;
+			our_sigs[n_sigs].sig = NULL;
+			our_sigs[n_sigs].file = NULL;
+			our_sigs[n_sigs].rot_index = our_sigs[n_sigs].tile_index_x = our_sigs[n_sigs].tile_index_y = -1;
 
 		} else if (res == 0) {
 		// File already has a lock.
 printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
-			if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+			if ( (res=AddSample(ImageSignatures)) < 0) break;
 
 		} else if (res == NO_SIGS_IN_FILE) {
 		// File exists and lockable, but no sigs
 			catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
 				"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
-			delete ImageSignatures;
-			return (res);
+			break;
 
 		} else if (res < 0) {
 		// no lock or sig file, couldn't create, other errors
 			catError ("Error locking/creating '%s'.\n",ImageSignatures->GetFileName(buffer));
-			delete ImageSignatures;
-			return (res);
+			break;
 
 		} else if (res > 0) {
 		// file was successfully read in (no write lock, file present, samples present).
@@ -1151,8 +1157,19 @@ printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileNam
 			ImageSignatures->sample_class=sample_class;
 			ImageSignatures->sample_value=sample_value;
 printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
-			if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+			if ( (res=AddSample(ImageSignatures)) < 0) break;
 		}
+	}
+	
+	if (res < 0) {
+		for (sample_index=0; sample_index < n_sigs; sample_index++) {
+			if (our_sigs[sample_index].file) {
+				fclose (our_sigs[sample_index].file);
+				unlink (our_sigs[sample_index].sig->GetFileName(buffer));
+			}
+			if (our_sigs[sample_index].sig) delete our_sigs[sample_index].sig;
+		}
+		return (res);
 	}
 
 	// FIXME: the last sample may be being processed by someone else, and if so, we will fail on AddAllSignatures
@@ -1175,6 +1192,8 @@ printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 		rot_index = our_sigs[sig_index].rot_index;
 		tile_index_x = our_sigs[sig_index].tile_index_x;
 		tile_index_y = our_sigs[sig_index].tile_index_y;
+		our_sigs[sig_index].saved = false; // don't unlink if true
+		our_sigs[sig_index].added = false; // don't delete if true
 printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
 
 		if (!image_matrix) { // for all samples
@@ -1184,9 +1203,10 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 		// There is no support for this now though - its an error for the image not to exist together with the sigs
 		// if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
 //	if (print_to_screen) printf("Loading image %s\n",filename);
-			if ( image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev) < 1) {
+			if ( (res = image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
 				catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
-				return (-1);
+				res = -1; // make sure its negative for cleanup below
+				break;
 			}
 			if (rot_index == 0) {
 				rot_matrix_indx = 0;
@@ -1247,21 +1267,30 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
+	// This uses our open sigfile handle, so it doesn't call close on it, which would release the lock.
 		ImageSignatures->SaveToFile (sigfile,1);
-		if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+		our_sigs[sig_index].saved = true;
+		if ( (res=AddSample(ImageSignatures)) < 0) break;
+		our_sigs[sig_index].added = true;
 
 		if (tiles > 1) {
 			delete tile_matrix;
 			tile_matrix = NULL;
 		}
-	
 	}
 	
 // don't release any locks until we're done with this image
 // this prevents another process from opening the same image to calculate a different sub-set of sigs
 	for (sig_index == 0; sig_index < n_sigs; sig_index++) {
-		close (fileno(our_sigs[sig_index].file));
-		fclose (our_sigs[sig_index].file);
+		if (our_sigs[sig_index].file) {
+			fclose (our_sigs[sig_index].file);
+		}
+		if (!our_sigs[sig_index].saved) {
+			unlink (our_sigs[sig_index].sig->GetFileName(buffer));
+		}
+		if (!our_sigs[sig_index].added) {
+			delete (our_sigs[sig_index].sig);
+		}
 	}
 
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
