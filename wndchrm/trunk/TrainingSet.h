@@ -38,6 +38,7 @@
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
 #define MAX_FILES_IN_CLASS 16384
+#define MAX_SAMPLES_PER_IMAGE 4096
 
 #define WNN 0
 #define WND 1
@@ -50,7 +51,7 @@
 // N.B.: There is almost certainly code to fix if this is other than 0
 #define UNKNOWN_CLASS_INDEX 0
 
-#define ERROR_MESSAGE_LNGTH    512
+#define ERROR_MESSAGE_LNGTH    8192
 #define CANT_OPEN_DIRECTORY                -1
 #define CANT_OPEN_FIT                      -2
 #define CANT_LOAD_ALL_SIGS                 -3
