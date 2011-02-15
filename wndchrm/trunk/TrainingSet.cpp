@@ -620,9 +620,12 @@ int TrainingSet::AddAllSignatures() {
 	// Store the sample class and value in case its different in the file
 		sample_class = samples[samp_index]->sample_class;
 		sample_value = samples[samp_index]->sample_value;
+		strcpy (buffer,samples[samp_index]->full_path);
 		if (samples[samp_index]->LoadFromFile(NULL)) {
 			samples[samp_index]->sample_class=sample_class; /* make sure the sample has the right class ID */
 			samples[samp_index]->sample_value=sample_value; /* read the continouos value */
+			strcpy (samples[samp_index]->full_path,buffer);
+
 			// FIXME: Its not enough that there's more than one, the count has to match.
 			// Really, the names have to match as well, but since we're dumping everything for now in fixed order, maybe OK.
 			if (samples[samp_index]->count < 1) {
@@ -731,10 +734,10 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 
 	} else {
 	// Its a file (image, .fit or file-of-files)
-	
+	// reset the system error
+		errno = 0;
+
 		if (IsSupportedFormat(path)) {
-		// reset the system error
-			errno = 0;
 
 		// A single supported image file
 			res = AddImageFile(path, 0, 0, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
@@ -1276,7 +1279,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 					probabilities_sum[class_index] * atof( class_labels[ class_index ] );
 
 		}
-		if (do_html) sprintf(interpolated_value,"<td>%.3f</td>",TestSet->samples[test_sample_index]->interpolated_value);
+		if (do_html) sprintf(interpolated_value,"<td>%.3g</td>",TestSet->samples[test_sample_index]->interpolated_value);
 	} else if (do_html) strcpy(interpolated_value,"");
 
 	if (do_html) {
@@ -1286,14 +1289,14 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 
 	if (is_continuous) {
 		if (sample_class) { // known class
-			if (do_html) sprintf(buffer,"<td></td><td>%.3f</td><td>%.3f</td>",TestSet->samples[test_sample_index]->sample_value,TestSet->samples[test_sample_index]->interpolated_value);
+			if (do_html) sprintf(buffer,"<td></td><td>%.3g</td><td>%.3f</td>",TestSet->samples[test_sample_index]->sample_value,TestSet->samples[test_sample_index]->interpolated_value);
 			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).
 			if (print_to_screen)
 				printf("%f\t%f\t%f\n",TestSet->samples[test_sample_index]->sample_value,
 					TestSet->samples[test_sample_index]->interpolated_value,
 					fabs((TestSet->samples[test_sample_index]->sample_value-TestSet->samples[test_sample_index]->interpolated_value)/TestSet->samples[test_sample_index]->sample_value));
 		} else { // Unknown class
-			if (do_html) sprintf(buffer,"<td></td><td>UNKNOWN</td><td>%.3f</td>",TestSet->samples[test_sample_index]->interpolated_value);
+			if (do_html) sprintf(buffer,"<td></td><td>UNKNOWN</td><td>%.3g</td>",TestSet->samples[test_sample_index]->interpolated_value);
 			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).  Otherwise just predicted value.
 			if (print_to_screen)
 				printf("N/A\t%f\n",TestSet->samples[test_sample_index]->interpolated_value);
@@ -1670,7 +1673,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
           if( strncmp( full_last_name, "Edge", 4 ) == 0 )
             strcpy( full_last_name, "Edge Statistics" );
 
-          //sprintf( feature_string, "%d. %s: %f\n", group,full_last_name, sum_of_group );
+          //sprintf( feature_string, "%d. %s: %g\n", group,full_last_name, sum_of_group );
           //strcat( split->feature_groups, feature_string );
           
           strcpy( FeatureGroupNames[fg_index], full_last_name );
@@ -1707,7 +1710,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
           if( sortedFeatGroupValues[ sig_index ] == FeatureGroupValues[ sig_index2 ] &&
               sortedFeatGroupValues[ sig_index ] > 0 )
           { 
-            sprintf( feature_string, "%ld. %s: %f [%d]\n",
+            sprintf( feature_string, "%ld. %s: %g [%d]\n",
                         signature_count - sig_index,
                         FeatureGroupNames[ sig_index2 ],
                         FeatureGroupValues[ sig_index2 ],
@@ -1742,7 +1745,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
          if( signature_weight_values[sig_index] == SignatureWeights[sig_index2] &&
              signature_weight_values[sig_index] > 0 )
          {  
-           sprintf( feature_string, "%ld. %s: %f\n",
+           sprintf( feature_string, "%ld. %s: %g\n",
                       signature_count - sig_index,
                       SignatureNames[sig_index2],
                       SignatureWeights[sig_index2] );
