@@ -522,15 +522,12 @@ int main(int argc, char *argv[])
 {   char *dataset_path=NULL, *testset_path=NULL;
     int multi_processor=0;
     int arg_index=1;
-    int tiles=1;
-    int rotations=1;
     int tile_areas=0;
     int method=1;
     int report=0;
     int splits_num=1;
     int large_set=0;
     int colors=0;
-    int downsample=100;
     double split_ratio=0.75;
     double max_features=0.15;
     double used_mrmr=0.0;
@@ -551,10 +548,7 @@ int main(int argc, char *argv[])
     char weight_vector_action='\0';
     char *test_set_path=NULL;
     int N=0;                         /* use only the first N classes                               */
-    double mean=-1;                  /* normalize all image to a sepcified mean                    */
-    double stddev=-1;                /* normalize all image to a sepcified standard deviation      */
     int assess_features=0;           /* assess the contribution of each feature to the performance */
-    rect bounding_rect={-1,-1,-1,-1};/* a bounding rect from which features should be computed     */
     int image_similarities=0;        /* generate a dendrogram showing the similarity of the images */
     int max_tile=0;                  /* use only the closest tile                                  */
 	int overwrite=0;                 /* force overwriting of pre-computed .sig files               */
@@ -564,6 +558,36 @@ int main(int argc, char *argv[])
 	int balanced_splits=1;           /* when 1, use balanced training.  Override with -r#          */
 	int random_splits=1;             /* when 1 randomly chose training images, when 0 add them in read order */
 	int do_continuous=0;
+	int save_sigs=1;
+
+	preproc_opts_t preproc_opts;
+	sampling_opts_t sampling_opts;
+	feature_opts_t feature_opts;
+
+// initialize the param structs
+	strcpy (preproc_opts.bounding_rect_base,"B");
+	preproc_opts.bounding_rect.x = -1;            /* a bounding rect from which features should be computed     */
+	preproc_opts.bounding_rect.y = -1;
+	preproc_opts.bounding_rect.w = -1;
+	preproc_opts.bounding_rect.h = -1;
+	strcpy (preproc_opts.downsample_base,"d");
+	preproc_opts.downsample = 100;
+	strcpy (preproc_opts.normalize_base,"S");
+	preproc_opts.mean = -1;                      /* normalize all image to a sepcified mean                    */
+	preproc_opts.stddev = -1;                  /* normalize all image to a sepcified standard deviation      */
+
+	strcpy (sampling_opts.rot_base,"R");
+	sampling_opts.rotations = 1;
+	strcpy (sampling_opts.tile_base,"t");
+	sampling_opts.tiles_x = 1;
+	sampling_opts.tiles_y = 1;
+
+	strcpy (feature_opts.compute_colors_base,"c");
+	feature_opts.compute_colors = 0;
+	strcpy (feature_opts.large_set_base,"l");
+	feature_opts.large_set = 0;
+
+
     /* read parameters */
     if (argc<2)
     {  ShowHelp();
@@ -615,32 +639,32 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'B'))   
         {  strcpy(arg,argv[arg_index]);
            p=strtok(arg," ,;");
-           bounding_rect.x=atoi(p);
+           preproc_opts.bounding_rect.x=atoi(p);
            p=strtok(NULL," ,;");
-           bounding_rect.y=atoi(p);
+           preproc_opts.bounding_rect.y=atoi(p);
            p=strtok(NULL," ,;");
-           bounding_rect.w=atoi(p);
+           preproc_opts.bounding_rect.w=atoi(p);
            p=strtok(NULL," ,;");
-           bounding_rect.h=atoi(p);
+           preproc_opts.bounding_rect.h=atoi(p);
 		}
         /* mean and stabndard deviation for normalizing the images */
         if (strchr(argv[arg_index],'S'))   
         {  strcpy(arg,argv[arg_index]);
 		   p=strchr(arg,':');
 		   if (p)                          /* standard deviation is specified */
-		   {  stddev=atof(&(p[1]));
+		   {  preproc_opts.stddev=atoi(&(p[1]));
               *p='\0';
 		   }
-		   mean=atof(&(strchr(arg,'S')[1]));   /* mean */
+		   preproc_opts.mean=atoi(&(strchr(arg,'S')[1]));   /* mean */
         }
 	    if (strchr(argv[arg_index],'m')) multi_processor=1;
         if (strchr(argv[arg_index],'n')) splits_num=atoi(&(strchr(argv[arg_index],'n')[1]));
         if (strchr(argv[arg_index],'s')) print_to_screen=0;
         if (strchr(argv[arg_index],'o')) overwrite=1;
-        if (strchr(argv[arg_index],'l')) large_set=1;
-        if (strchr(argv[arg_index],'c')) colors=1;
+        if (strchr(argv[arg_index],'l')) feature_opts.large_set=1;
+        if (strchr(argv[arg_index],'c')) feature_opts.compute_colors=1;
         if (strchr(argv[arg_index],'C')) do_continuous=1;
-        if (strchr(argv[arg_index],'d')) downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
+        if (strchr(argv[arg_index],'d')) preproc_opts.downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
         if (char_p = strchr(argv[arg_index],'f')) {
             if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2+1);
 		    max_features=atof(char_p+1);
@@ -655,7 +679,7 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'q')) first_n=atoi(&(strchr(argv[arg_index],'q')[1]));
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
         if (strchr(argv[arg_index],'A')) assess_features=200; 
-        if (strchr(argv[arg_index],'R')) rotations=4;
+        if (strchr(argv[arg_index],'R')) sampling_opts.rotations=4;
         if (char_p = strchr(argv[arg_index],'t')) {
 			if (*(char_p+1)=='#') {
 				tile_areas = 1;
@@ -665,7 +689,7 @@ int main(int argc, char *argv[])
 					char_p++;
 				}
 			}
-           tiles=atoi(char_p+1);
+           sampling_opts.tiles_x = sampling_opts.tiles_y = atoi(char_p+1);
        }
         if (char_p = strchr(argv[arg_index],'i')) {
 			if (*(char_p+1)=='#') {
@@ -700,8 +724,8 @@ int main(int argc, char *argv[])
 	if (test && max_training_images<0) showError(1,"Maximal number of training images (i) must be an integer greater than 0");
 	if (test && max_test_images<0) showError(1,"maximal number of test images (j) must be an integer greater than 0");
 	if (test && report && arg_index==argc-1) showError(1,"a report html file must be specified");
-	if (tiles<=0) showError(1,"number of tiles (t) must be an integer greater than 0");
-	if (downsample<1 || downsample>100) showError(1,"downsample size (d) must be an integer between 1 to 100");
+	if (sampling_opts.tiles_x<=0 || sampling_opts.tiles_y <=0) showError(1,"number of tiles (t) must be an integer greater than 0");
+	if (preproc_opts.downsample<1 || preproc_opts.downsample>100) showError(1,"downsample size (d) must be an integer between 1 to 100");
 	if (split_ratio<0 || split_ratio>1) showError(1,"training fraction (r) must be > 0 and < 1");
 	if (splits_num<1 || splits_num>MAX_SPLITS) showError(1,"splits num out of range");
 	if (weight_vector_action!='\0' && weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='-' && weight_vector_action!='+') showError(1,"-v must be followed with either 'w' (write) or 'r' (read) ");
@@ -724,7 +748,7 @@ int main(int argc, char *argv[])
 				return(0);
 			}
 			fclose (out_file);
-			res=dataset->LoadFromPath(dataset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &preproc_opts, &sampling_opts, &feature_opts, do_continuous);
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			res = dataset->SaveToFile (dataset_save_fit);
 			if (res < 1) {catError (dataset->error_message); showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);}
@@ -744,7 +768,7 @@ int main(int argc, char *argv[])
 				return(0);
 			} else if (dataset_save_fit) fclose (out_file);
 			if (print_to_screen) printf ("Processing training set '%s'.\n",dataset_path);
-			res=dataset->LoadFromPath(dataset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &preproc_opts, &sampling_opts, &feature_opts, do_continuous);
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			if (dataset_save_fit) {
 				res = dataset->SaveToFile (dataset_save_fit);
@@ -773,7 +797,7 @@ int main(int argc, char *argv[])
 				} else if (testset_save_fit) fclose (out_file);
 				if (print_to_screen) printf ("Processing test set '%s'.\n",testset_path);
 				testset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
-				res=testset->LoadFromPath(testset_path,rotations,tiles,multi_processor,large_set,colors,downsample,mean,stddev,&bounding_rect,overwrite,do_continuous);
+				res=testset->LoadFromPath(testset_path, save_sigs, &preproc_opts, &sampling_opts, &feature_opts, do_continuous);
 				if (res < 1) {catError (testset->error_message); showError(1,"Errors reading from '%s'\n",testset_path);}
 				if (testset_save_fit) {
 					res = testset->SaveToFile (testset_save_fit);
@@ -793,7 +817,7 @@ int main(int argc, char *argv[])
 				// defaults are different (-r = 1.0 and random_splits = 0.  Set above, though -r can still be modified).
 			}
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
-				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, tiles*tiles, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
+				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts.tiles_x*sampling_opts.tiles_y, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 					exact_training_images,max_test_images,phylib_path,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 					testset,ignore_group,tile_areas,max_tile,image_similarities, random_splits);
 			}

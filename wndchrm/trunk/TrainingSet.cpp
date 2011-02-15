@@ -623,6 +623,7 @@ int TrainingSet::AddAllSignatures() {
 		sample_class = samples[samp_index]->sample_class;
 		sample_value = samples[samp_index]->sample_value;
 		strcpy (buffer,samples[samp_index]->full_path);
+		samples[samp_index]->Clear();
 		if (samples[samp_index]->LoadFromFile(NULL)) {
 			samples[samp_index]->sample_class=sample_class; /* make sure the sample has the right class ID */
 			samples[samp_index]->sample_value=sample_value; /* read the continouos value */
@@ -670,7 +671,7 @@ int TrainingSet::AddAllSignatures() {
          Unknown classes go into class 0 with value 0 (sample_class = 0).
    If multi_processor is true, AddAllSignatures is called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous) {
+int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts, int make_continuous) {
 	int path_len = strlen(path);
 	DIR *root_dir,*class_dir;
 	struct dirent *ent;
@@ -692,7 +693,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 			if (IsSupportedFormat(buffer)) {
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
-				res=LoadFromFilesDir (path, 0, 0, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+				res=LoadFromFilesDir (path, 0, 0, save_sigs, preproc_opts, sampling_opts, feature_opts);
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -742,7 +743,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 		if (IsSupportedFormat(path)) {
 
 		// A single supported image file
-			res = AddImageFile(path, 0, 0, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res = AddImageFile(path, 0, 0, save_sigs, preproc_opts, sampling_opts, feature_opts);
 			if (res < 1) return (res-1);
 		// For a set of unknowns, number of classes is 1, with all samples sample_class = 0
 			class_num = 1;
@@ -837,7 +838,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 			sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
 		// reset the system error
 			errno = 0;
-			res=LoadFromFilesDir (buffer, class_index, samp_val, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, preproc_opts, sampling_opts, feature_opts);
 			if (res < 0) return (res);
 		// Since we made the class, we have to get rid of it if its empty.
 			if (class_nsamples[class_index] < 1) {
@@ -886,7 +887,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 
 		// reset the system error
 			errno = 0;
-			res = AddImageFile(filename, file_class_num, samp_val, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+			res = AddImageFile(filename, file_class_num, samp_val, save_sigs, preproc_opts, sampling_opts, feature_opts);
 			if (res < 0) return (res);
 
 		} // while reading file of filenames
@@ -901,7 +902,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 
 // Done processing path as a dataset.
 // Load all the sigs if other processes are calculating them
-	if (multi_processor && (res  = AddAllSignatures ()) < 0) return (res);
+	if ( (res  = AddAllSignatures ()) < 0) return (res);
 
 // Check what we got.
 	if (count < 1) {
@@ -912,7 +913,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 
 // Print out a summary
 	if (print_to_screen) {
-		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, tiles*tiles);
+		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, sampling_opts->tiles_x*sampling_opts->tiles_y);
 		if (class_num == 1) { // one known class or a continuous class
 			if (is_continuous) printf ("%ld samples with numerical values. Interpolation will be done instead of classification\n",class_nsamples[1]);
 			else printf ("Single class '%s' with %ld samples. Suitable as a test/classification set only.\n",class_labels[1],class_nsamples[1]);
@@ -949,7 +950,7 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
    Scan the files in the directory, calling AddImageFile on each image file encountered.
    If multi_processor is true, AddAllSignatures should be called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
+int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts) {
 	DIR *class_dir;
 	struct dirent *ent;
 	char img_basenames[MAX_FILES_IN_CLASS][64];
@@ -1024,7 +1025,7 @@ printf ("Processing directory '%s'\n",path);
 	// Process the files in sort order
 	for (file_index=0; file_index<n_img_basenames; file_index++) {
 		sprintf(buffer,"%s/%s",path,img_basenames[file_index]);
-		res = AddImageFile(buffer, sample_class, sample_value, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
+		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, preproc_opts, sampling_opts, feature_opts);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
 	}
@@ -1059,7 +1060,9 @@ printf ("Processing directory '%s'\n",path);
    Returns 0 if the image cannot be opened, 1 otherwise.
    If multi_processor is true, AddAllSignatures should be called after all the class files are processed to load the skipped features.
 */
-int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
+
+ 
+int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts) {
 	int res=0;
 	int rot_index,tile_index_x,tile_index_y;
 	signatures *ImageSignatures;
@@ -1068,6 +1071,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	int sig_index,n_sigs=0;
 	char sample_name[SAMPLE_NAME_LENGTH],preproc_name[SAMPLE_NAME_LENGTH];
 	int sample_name_lngth,preproc_name_lngth;
+	int rotations,tiles_x,tiles_y;
 
 	struct siginfo_s {
 		signatures *sig;
@@ -1076,57 +1080,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		int tile_index_x;
 		int tile_index_y;
 	} our_sigs[MAX_SAMPLES_PER_IMAGE];
-
-	typedef struct {
-		char bounding_rect_base[16];
-		rect bounding_rect;
-		char downsample_base[16];
-		int downsample;
-		char normalize_base[16];
-		int mean;
-		int stddev;
-	} preproc_opts_t;
-	
-	typedef struct {
-		char rot_base[16]; // CLI option+params
-		int rotations;
-		char tile_base[16]; // CLI option+params
-		int tiles_x;
-		int tiles_y;
-	} sampling_opts_t;
-
-	typedef struct {
-		char compute_colors_base[16]; // CLI option+params
-		int compute_colors;
-		char large_set_base[16]; // CLI option+params
-		int large_set;
-	} feature_opts_t;
-
-	preproc_opts_t *preproc_opts = new preproc_opts_t;
-	sampling_opts_t *sampling_opts = new sampling_opts_t;
-	feature_opts_t *feature_opts = new feature_opts_t;
-	
-	strcpy (preproc_opts->bounding_rect_base,"B");
-	preproc_opts->bounding_rect.x = bounding_rect->x;
-	preproc_opts->bounding_rect.y = bounding_rect->y;
-	preproc_opts->bounding_rect.w = bounding_rect->w;
-	preproc_opts->bounding_rect.h = bounding_rect->h;
-	strcpy (preproc_opts->downsample_base,"d");
-	preproc_opts->downsample = downsample;
-	strcpy (preproc_opts->normalize_base,"S");
-	preproc_opts->mean = mean;
-	preproc_opts->stddev = stddev;
-
-	strcpy (sampling_opts->rot_base,"R");
-	sampling_opts->rotations = rotations;
-	strcpy (sampling_opts->tile_base,"t");
-	sampling_opts->tiles_x = tiles;
-	sampling_opts->tiles_y = tiles;
-
-	strcpy (feature_opts->compute_colors_base,"c");
-	feature_opts->compute_colors = compute_colors;
-	strcpy (feature_opts->large_set_base,"l");
-	feature_opts->large_set = large_set;
 
 
 printf ("Processing image file '%s'.\n",filename);
@@ -1160,10 +1113,13 @@ printf ("Processing image file '%s'.\n",filename);
 
 	*sample_name = '\0';
 	sample_name_lngth = 0;
+	rotations = sampling_opts->rotations;
+	tiles_x = sampling_opts->tiles_x;
+	tiles_y = sampling_opts->tiles_y;
 	for (rot_index=0;rot_index<rotations;rot_index++) {
 //			printf ("rotation:%d\n",rot_index);
-		for (tile_index_y=0;tile_index_y<tiles;tile_index_y++) {
-			for (tile_index_x=0;tile_index_x<tiles;tile_index_x++) {
+		for (tile_index_y=0;tile_index_y<tiles_x;tile_index_y++) {
+			for (tile_index_x=0;tile_index_x<tiles_y;tile_index_x++) {
 			// make signature objects for samples
 				ImageSignatures=new signatures;
 				ImageSignatures->NamesTrainingSet=this;
@@ -1174,10 +1130,10 @@ printf ("Processing image file '%s'.\n",filename);
 				sample_name_lngth = strlen (sample_name);
 				// this code block should be made more generic with regards to sampling options and params
 				// sample opts
-				if (sampling_opts->rotations && rot_index) { // only add for non-0 rotations
+				if (rotations && rot_index) { // only add for non-0 rotations
 					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d",sampling_opts->rot_base,rot_index);
 				}
-				if ( (sampling_opts->tiles_x > 1 || sampling_opts->tiles_y > 1) ) {
+				if ( (tiles_x > 1 || tiles_y > 1) ) {
 					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d_%d",sampling_opts->tile_base,tile_index_x,tile_index_y);
 				}
 				// feature opts
@@ -1206,21 +1162,28 @@ printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 					our_sigs[n_sigs].tile_index_x = tile_index_x;
 					our_sigs[n_sigs].tile_index_y = tile_index_y;
 					n_sigs++;
-				} else if (res == 0) { // File exists and lockable, but no sigs
+
+				} else if (res == 0) {
+				// File exists and lockable, but no sigs
 printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
 					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-				} else if (res == NO_SIGS_IN_FILE) { // File exists and lockable, but no sigs
+
+				} else if (res == NO_SIGS_IN_FILE) {
+				// File exists and lockable, but no sigs
 					catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
 						"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
 					delete ImageSignatures;
 					return (res);
-				} else if (res < 0) { // no lock or sig file, couldn't create, other errors
+
+				} else if (res < 0) {
+				// no lock or sig file, couldn't create, other errors
 					catError ("Error locking/creating '%s'.\n",ImageSignatures->GetFileName(buffer));
 					delete ImageSignatures;
 					return (res);
+
 				} else if (res > 0) {
-printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 				// file was successfully read in (no write lock, file present, samples present).
+printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
 				}
 			}
@@ -1235,6 +1198,7 @@ printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 	// doing this in a more general way with functional programming (or some other technique).
 	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
 	int rot_matrix_indx=0;
+	int tiles = sampling_opts->tiles_x * sampling_opts->tiles_y;
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		ImageSignatures = our_sigs[sig_index].sig;
 		sigfile = our_sigs[sig_index].file;
@@ -1330,10 +1294,6 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
 	if (image_matrix) delete image_matrix;
-
-	delete preproc_opts;
-	delete sampling_opts;
-	delete feature_opts;
 
 	return (1);
 }
@@ -2656,7 +2616,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    fprintf(output_file,"<hr/><CENTER>\n");
    
    /* print the number of samples table */
-   fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%d Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
+   fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%ld Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
    for (class_index=0;class_index<=class_num;class_index++)
      fprintf(output_file,"<td>%s</td>\n",class_labels[class_index]);
    fprintf(output_file,"<td>total</td></tr>\n");
@@ -2988,7 +2948,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       a=0;
       while (feature_names[a]!='\0') /* first count the features */
         features_num+=(feature_names[a++]=='\n');
-      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %d features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
+      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %ld features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
       fprintf(output_file,"<TABLE ID=\"FeaturesUsed_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
       p_feature_names=strtok(feature_names,"\n");
       while (p_feature_names)

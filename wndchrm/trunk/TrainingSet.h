@@ -61,6 +61,31 @@
 #define CONTINUOUS_DATASET_WITH_CLASSES    -7
 #define ADDING_SAMPLE_TO_UNDEFINED_CLASS   -8
 
+typedef struct {
+	char bounding_rect_base[16];
+	rect bounding_rect;
+	char downsample_base[16];
+	int downsample;
+	char normalize_base[16];
+	int mean;
+	int stddev;
+} preproc_opts_t;
+
+typedef struct {
+	char rot_base[16]; // CLI option+params
+	int rotations;
+	char tile_base[16]; // CLI option+params
+	int tiles_x;
+	int tiles_y;
+} sampling_opts_t;
+
+typedef struct {
+	char compute_colors_base[16]; // CLI option+params
+	int compute_colors;
+	char large_set_base[16]; // CLI option+params
+	int large_set;
+} feature_opts_t;
+
 
 typedef struct
 {  double accuracy;
@@ -103,9 +128,9 @@ public:
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
    int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
-	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
-	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite);
-	int LoadFromPath(char *path, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite, int make_continuous);
+	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts);
+	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts);
+	int LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts, int make_continuous);
    double ClassifyImage(TrainingSet *TestSet, int test_sample_index,int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,int rank, data_split *split, double *similarities);  /* classify one or more images */
    double Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split);     /* test      */
    int SaveToFile(char *filename);                                 /* save the training set values to a file    */
