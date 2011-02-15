@@ -34,8 +34,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h> // for locking stuff
+#include <errno.h>
 #include <time.h>
-
+#include <unistd.h> // apparently, for close() only?
+#include <math.h>
+#include <cfloat> // Has definition of DBL_EPSILON, FLT_EPSILON
+#define OUR_EPSILON FLT_EPSILON*6
+#define FLOAT_EQ(x,v) (((v - FLT_EPSILON) < x) && (x <( v + FLT_EPSILON)))
+#define OUR_EQ(x,v) (((v - OUR_EPSILON) < x) && (x <( v + OUR_EPSILON)))
 #include "signatures.h"
 #include "cmatrix.h"
 #include "TrainingSet.h"
@@ -1216,21 +1223,183 @@ int signatures::LoadFromFile(char *filename)
    return(1);
 }
 
+
+
+/*
+  Yet another variant of reading from a file.
+  In this case, the filename is computed from full_path and sample_name using GetFileName
+  The fp (FILE **) will be set to the successfully opened and locked file (return 0).
+  If another process has a lock, return 0 (fpp = NULL).
+  If the file exists, and is not locked, the sigs will be loaded from it, and no lock will be issued. (return 1, *fpp = NULL)
+  If an error occurs in obtaining the lock (if necessary) or creating the file (if necessary) or reading it (if possible), return -1.
+*/
+int signatures::ReadFromFile (FILE **fpp) {
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
+	FILE *fp;
+	int fd;
+	struct flock fl;
+	struct stat stat_buf;
+	// or, use 	mode_t mask = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+	mode_t mask = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+
+	// This is non-null only if we have a lock on an empty file.
+	*fpp = NULL;
+
+
+	// We will never read from this fd or from its fp
+    if ( (fd = open(GetFileName (buffer), O_WRONLY | O_CREAT,mask)) < 0 )
+		return (-1);
+    // Make a non-blocking request for a whole-file write lock
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+
+	if (fcntl(fd, F_SETLK, &fl) == -1) {
+		if (errno == EACCES || errno == EAGAIN) {
+		// locked by another process
+			errno = 0;
+			return (0);
+		} else {
+		// an unexpected error
+			return (-1);
+        }
+	} else {
+	// got the lock, check if it was just created and empty
+		if (fstat(fd, &stat_buf)) {
+			close (fd);
+			return (-1);
+		}
+		errno = 0;
+		if (stat_buf.st_size > 1) {
+		// This file has stuff in it - release the lock and read it.
+			close (fd); // this releases our lock
+			Clear(); // reset sample count
+			LoadFromFile (buffer);
+			// Of course, if it was empty afterall, its an error.
+			if (count < 1) return (NO_SIGS_IN_FILE);
+			else return (1);
+		} else {
+		// We just made an empty file. Open it as a stream, keeping the lock
+			*fpp = fdopen (fd, "w");
+			return (0);
+		}
+	}
+}
+
 /*
   get the filename for storing the signature.
   The filename is generated from the full path of the image, plus a sample name.
   The sample name (i.e. _0_0 for tile 0,0) is set externally depending on what sample of the image (referred to by full_path) the signature pertains to.
   It is stored internally so that a signature object can get to its own file without additional information.
 */
-void signatures::GetFileName (char *filename) {
+char *signatures::GetFileName (char *buffer) {
 	char *char_p;
 
-	strcpy(filename,full_path);
-	char_p = strrchr(filename,'.');
-	if (!char_p) char_p=filename+strlen(filename);
-	sprintf(char_p,"_%s.sig",sample_name);
+	strcpy(buffer,full_path);
+	char_p = strrchr(buffer,'.');
+	if (!char_p) char_p=buffer+strlen(buffer);
+
+	sprintf(char_p,"%s.sig",sample_name);
+	return (buffer);
 }
 
+
+// Based on
+// Usable AlmostEqual function
+// By Bruce Dawson
+// http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
+// returns the ulps (floating point representations) b/w the two inputs
+// uses a union for punning to avoid strict aliasing rules
+int diffUlps(float A, float B)
+{
+	union fi_union {
+	int32_t i;
+	float f;
+	};
+	fi_union fiA,fiB;
+	fiA.f = A;
+	fiB.f = B;
+
+    int32_t aInt = fiA.i;
+    // Make aInt lexicographically ordered as a twos-complement int
+    if (aInt < 0)
+        aInt = 0x80000000 - aInt;
+    // Make bInt lexicographically ordered as a twos-complement int
+    int32_t bInt = fiB.i;
+    if (bInt < 0)
+        bInt = 0x80000000 - bInt;
+    int intDiff = abs(aInt - bInt);
+    return (intDiff);
+}
+
+
+/*
+  This function is used to determine (somewhat quickly) if the features stored in a file match those
+  that would be calculated from the passed-in matrix.
+  A partial signature calculation is done to determine the match.  An exact match (within FLT_EPSILON) of every feature is required to return 1.
+  If the file can't be opened, or if the match is inexact, 0 is returned.
+*/
+int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set) {
+	signatures file_sigs;
+	double vec[72];
+	int i,file_index;
+
+printf ("compare %s to computed with %le\n",filename,OUR_EPSILON);
+	if (! file_sigs.LoadFromFile (filename) ) return (0);
+
+	// 20 features long: 323-342, standard: N/A
+	if (large_set) {
+		matrix->fractal2D(20,vec);
+		file_index = 323;
+// for (i = 0; i< 20; i++) printf ("fractal2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+// (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+// ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+// );
+		for (i = 0; i< 20; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
+printf ("fractal2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+);
+			return (0);
+		}
+	}
+	
+	// 28 features long: 253-280, standard: 485-512
+	matrix->HaarlickTexture2D(0,vec);
+	if (large_set) file_index = 253;
+	else file_index = 485;
+// for (i = 0; i< 28; i++) printf ("HaarlickTexture2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+// (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+// ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+// );
+	for (i = 0; i < 28; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
+printf ("HaarlickTexture2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+);
+		return (0);
+	}
+	
+	// 72 features long: 133-204, standard: 881-952
+	long output_size;   /* output size is normally 72 */
+	matrix->zernike2D(vec,&output_size);
+	if (large_set) file_index = 133;
+	else file_index = 881;
+// for (i = 0; i< 72; i++) printf ("zernike2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+// (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+// ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+// );
+	for (i = 0; i < 72; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
+printf ("zernike2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
+(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
+,diffUlps(file_sigs.data[file_index+i].value,vec[i])
+);
+		return (0);
+	}
+
+	return (1);
+}
 
 
 
