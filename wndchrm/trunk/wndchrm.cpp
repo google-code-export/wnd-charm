@@ -46,7 +46,7 @@
 
 /* global variable */
 int print_to_screen=1;
-#define MAX_ERROR_MESSAGE 512
+#define MAX_ERROR_MESSAGE 8192
 char error_message[MAX_ERROR_MESSAGE]="";
 
 /*
@@ -303,7 +303,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,exact_training_images);
        catError (ts->error_message);
        if ( res < 0) return (res);
-//printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
+printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
        if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
        else splits[split_index].image_similarities=NULL;
 
