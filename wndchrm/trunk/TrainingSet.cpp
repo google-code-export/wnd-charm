@@ -626,12 +626,15 @@ int TrainingSet::AddAllSignatures() {
 		strcpy (buffer,samples[samp_index]->full_path);
 		samples[samp_index]->Clear();
 		// don't bother with locking except for the last sample.
+		// FIXME: this doesn't really work.
+		//    Easiest is some kind of global lock file for all processes, but that's unlikely.
+		//    A sig file can exist and be empty and unlocked however briefly.
+
 		errno = 0;
-		if (samp_index < count-1) res = samples[samp_index]->LoadFromFile(NULL);
-		else {
-			if (print_to_screen) printf ("Waiting for last sample ('%s', %d/%ld) to complete...\n",samples[samp_index]->GetFileName(buffer), samp_index+1, count);
+		if (samples[samp_index]->count < 1) {
 			res = samples[samp_index]->ReadFromFile(NULL,1);
 		}
+
 		if (res > 0) {
 			samples[samp_index]->sample_class=sample_class; /* make sure the sample has the right class ID */
 			samples[samp_index]->sample_value=sample_value; /* read the continouos value */

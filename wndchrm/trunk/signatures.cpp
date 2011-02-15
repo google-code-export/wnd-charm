@@ -1247,10 +1247,10 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 
 
 	// We will never read from this fd or from its fp
-    if ( (fd = open(GetFileName (buffer), O_WRONLY | O_CREAT,mask)) < 0 )
+    if ( (fd = open(GetFileName (buffer), wait ? (O_RDONLY) : (O_WRONLY | O_CREAT),mask)) < 0 )
 		return (-1);
     // Make a non-blocking request for a whole-file write lock
-    fl.l_type = F_WRLCK;
+    fl.l_type = wait ? F_RDLCK : F_WRLCK;
     fl.l_whence = SEEK_SET;
     fl.l_start = 0;
     fl.l_len = 0;
@@ -1281,7 +1281,7 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 			else return (1);
 		} else {
 		// We just made an empty file. Open it as a stream, keeping the lock
-			if (fpp) *fpp = fdopen (fd, "w");
+			if (fpp) *fpp = wait ? (fdopen (fd, "r")) : (fdopen (fd, "w"));
 			return (0);
 		}
 	}
