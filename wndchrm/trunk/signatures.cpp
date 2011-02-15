@@ -1233,7 +1233,7 @@ int signatures::LoadFromFile(char *filename)
   If the file exists, and is not locked, the sigs will be loaded from it, and no lock will be issued. (return 1, *fpp = NULL)
   If an error occurs in obtaining the lock (if necessary) or creating the file (if necessary) or reading it (if possible), return -1.
 */
-int signatures::ReadFromFile (FILE **fpp) {
+int signatures::ReadFromFile (FILE **fpp, bool wait) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 	FILE *fp;
 	int fd;
@@ -1243,7 +1243,7 @@ int signatures::ReadFromFile (FILE **fpp) {
 	mode_t mask = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 
 	// This is non-null only if we have a lock on an empty file.
-	*fpp = NULL;
+	if (fpp) *fpp = NULL;
 
 
 	// We will never read from this fd or from its fp
@@ -1255,7 +1255,7 @@ int signatures::ReadFromFile (FILE **fpp) {
     fl.l_start = 0;
     fl.l_len = 0;
 
-	if (fcntl(fd, F_SETLK, &fl) == -1) {
+	if (fcntl(fd, wait ? F_SETLKW : F_SETLK, &fl) == -1) {
 		if (errno == EACCES || errno == EAGAIN) {
 		// locked by another process
 			errno = 0;
@@ -1281,7 +1281,7 @@ int signatures::ReadFromFile (FILE **fpp) {
 			else return (1);
 		} else {
 		// We just made an empty file. Open it as a stream, keeping the lock
-			*fpp = fdopen (fd, "w");
+			if (fpp) *fpp = fdopen (fd, "w");
 			return (0);
 		}
 	}

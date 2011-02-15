@@ -617,6 +617,7 @@ int TrainingSet::AddAllSignatures() {
 	int sample_class;
 	double sample_value;
 	char buffer[512];
+	int res;
 
 	for (samp_index=0;samp_index<count;samp_index++) {
 	// Store the sample class and value in case its different in the file
@@ -624,7 +625,13 @@ int TrainingSet::AddAllSignatures() {
 		sample_value = samples[samp_index]->sample_value;
 		strcpy (buffer,samples[samp_index]->full_path);
 		samples[samp_index]->Clear();
-		if (samples[samp_index]->LoadFromFile(NULL)) {
+		// don't bother with locking except for the last sample.
+		if (samp_index < count-1) res = samples[samp_index]->LoadFromFile(NULL);
+		else {
+			if (print_to_screen) printf ("Waiting for last sample ('%s', %d/%ld) to complete...\n",samples[samp_index]->GetFileName(buffer), samp_index+1, count);
+			res = samples[samp_index]->ReadFromFile(NULL,1);
+		}
+		if (res > 0) {
 			samples[samp_index]->sample_class=sample_class; /* make sure the sample has the right class ID */
 			samples[samp_index]->sample_value=sample_value; /* read the continouos value */
 			strcpy (samples[samp_index]->full_path,buffer);
@@ -638,8 +645,7 @@ int TrainingSet::AddAllSignatures() {
 			}
 			signature_count = samples[samp_index]->count;
 		} else { // report error
-			samples[samp_index]->GetFileName(buffer); // this is only to get the .sig file name
-			catError ("Error reading feature values for sample %d from .sig file '%s'\n",samp_index,buffer);
+			catError ("Error reading feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 			return (CANT_LOAD_ALL_SIGS);
 		}
 	}
@@ -671,7 +677,7 @@ int TrainingSet::AddAllSignatures() {
          Unknown classes go into class 0 with value 0 (sample_class = 0).
    If multi_processor is true, AddAllSignatures is called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts, int make_continuous) {
+int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous) {
 	int path_len = strlen(path);
 	DIR *root_dir,*class_dir;
 	struct dirent *ent;
@@ -693,7 +699,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
 			if (IsSupportedFormat(buffer)) {
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
-				res=LoadFromFilesDir (path, 0, 0, save_sigs, preproc_opts, sampling_opts, feature_opts);
+				res=LoadFromFilesDir (path, 0, 0, save_sigs, featureset);
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -743,7 +749,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
 		if (IsSupportedFormat(path)) {
 
 		// A single supported image file
-			res = AddImageFile(path, 0, 0, save_sigs, preproc_opts, sampling_opts, feature_opts);
+			res = AddImageFile(path, 0, 0, save_sigs, featureset);
 			if (res < 1) return (res-1);
 		// For a set of unknowns, number of classes is 1, with all samples sample_class = 0
 			class_num = 1;
@@ -838,7 +844,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
 			sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
 		// reset the system error
 			errno = 0;
-			res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, preproc_opts, sampling_opts, feature_opts);
+			res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, featureset);
 			if (res < 0) return (res);
 		// Since we made the class, we have to get rid of it if its empty.
 			if (class_nsamples[class_index] < 1) {
@@ -887,7 +893,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
 
 		// reset the system error
 			errno = 0;
-			res = AddImageFile(filename, file_class_num, samp_val, save_sigs, preproc_opts, sampling_opts, feature_opts);
+			res = AddImageFile(filename, file_class_num, samp_val, save_sigs, featureset);
 			if (res < 0) return (res);
 
 		} // while reading file of filenames
@@ -913,7 +919,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
 
 // Print out a summary
 	if (print_to_screen) {
-		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, sampling_opts->tiles_x*sampling_opts->tiles_y);
+		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, featureset->sampling_opts.rotations*featureset->sampling_opts.tiles_x*featureset->sampling_opts.tiles_y);
 		if (class_num == 1) { // one known class or a continuous class
 			if (is_continuous) printf ("%ld samples with numerical values. Interpolation will be done instead of classification\n",class_nsamples[1]);
 			else printf ("Single class '%s' with %ld samples. Suitable as a test/classification set only.\n",class_labels[1],class_nsamples[1]);
@@ -950,7 +956,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, preproc_opts_t *preproc
    Scan the files in the directory, calling AddImageFile on each image file encountered.
    If multi_processor is true, AddAllSignatures should be called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts) {
+int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset) {
 	DIR *class_dir;
 	struct dirent *ent;
 	char img_basenames[MAX_FILES_IN_CLASS][64];
@@ -1025,7 +1031,7 @@ printf ("Processing directory '%s'\n",path);
 	// Process the files in sort order
 	for (file_index=0; file_index<n_img_basenames; file_index++) {
 		sprintf(buffer,"%s/%s",path,img_basenames[file_index]);
-		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, preproc_opts, sampling_opts, feature_opts);
+		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, featureset);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
 	}
@@ -1062,9 +1068,9 @@ printf ("Processing directory '%s'\n",path);
 */
 
  
-int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, preproc_opts_t *preproc_opts, sampling_opts_t *sampling_opts, feature_opts_t *feature_opts) {
+int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset) {
 	int res=0;
-	int rot_index,tile_index_x,tile_index_y;
+	int sample_index;
 	signatures *ImageSignatures;
 	char buffer[IMAGE_PATH_LENGTH];
 	FILE *sigfile;
@@ -1091,105 +1097,66 @@ printf ("Processing image file '%s'.\n",filename);
 // Eventually, the sampling code would live here, and be generic but the set-up of the parameters would be done elsewhere
 // It seems this would be a good application of functional programming (i.e. closures, functors, etc).
 
-// set the preprocessing preamble string
-// Together with the sampling options, this should be more generic.
-	*preproc_name = '\0';
-	preproc_name_lngth = 0;
-	if (preproc_opts->bounding_rect.x > -1) {
-		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d_%d_%d_%d",
-			preproc_opts->bounding_rect_base,preproc_opts->bounding_rect.x,preproc_opts->bounding_rect.y,
-			preproc_opts->bounding_rect.w,preproc_opts->bounding_rect.h);
-	}
-	if (preproc_opts->downsample > 0 && preproc_opts->downsample < 100) {
-		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d",
-			preproc_opts->downsample_base,preproc_opts->downsample);
-	}
-	if (preproc_opts->mean > -1) {
-		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d",
-			preproc_opts->normalize_base,preproc_opts->mean);
-		if (preproc_opts->stddev > -1) preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"_%d",
-			preproc_opts->stddev);
-	}
+	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
+	// make signature objects for samples
+		ImageSignatures=new signatures;
+		ImageSignatures->NamesTrainingSet=this;
+		strcpy(ImageSignatures->full_path,filename);
+		ImageSignatures->sample_class=sample_class;
+		ImageSignatures->sample_value=sample_value;
 
-	*sample_name = '\0';
-	sample_name_lngth = 0;
-	rotations = sampling_opts->rotations;
-	tiles_x = sampling_opts->tiles_x;
-	tiles_y = sampling_opts->tiles_y;
-	for (rot_index=0;rot_index<rotations;rot_index++) {
-//			printf ("rotation:%d\n",rot_index);
-		for (tile_index_y=0;tile_index_y<tiles_x;tile_index_y++) {
-			for (tile_index_x=0;tile_index_x<tiles_y;tile_index_x++) {
-			// make signature objects for samples
-				ImageSignatures=new signatures;
-				ImageSignatures->NamesTrainingSet=this;
-				strcpy(ImageSignatures->full_path,filename);
-				ImageSignatures->sample_class=sample_class;
-				ImageSignatures->sample_value=sample_value;
-				strcpy (sample_name,preproc_name);
-				sample_name_lngth = strlen (sample_name);
-				// this code block should be made more generic with regards to sampling options and params
-				// sample opts
-				if (rotations && rot_index) { // only add for non-0 rotations
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d",sampling_opts->rot_base,rot_index);
-				}
-				if ( (tiles_x > 1 || tiles_y > 1) ) {
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d_%d",sampling_opts->tile_base,tile_index_x,tile_index_y);
-				}
-				// feature opts
-				if (feature_opts->compute_colors) {
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s",feature_opts->compute_colors_base);
-				}
-				if (feature_opts->large_set) {
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s",feature_opts->large_set_base);
-				}
-
-			// set the sample name and try to read it from disk.
-			// This will acquire a lock if the sample doesn't exist
-			// Note that we're acquiring locks for all the sig files for this image because its inefficient
-			// for multiple processes to read the same image and compute different sub-sets of the same sig-set.
-			// Initially, multiple processes will "win" on one image and do this anyway, but eventually they will become de-synchronized.
-			// The image file itself could be locked to prevent this, but this would be more complicated:
-			//  * are the other processes really computing the same sate of sigs?  Not necessarily.
-			//  * we would have to wait for the image lock to clear and issue locks on any left over sig files that weren't locked while we waited.
-				strcpy (ImageSignatures->sample_name,sample_name);
-				res = ImageSignatures->ReadFromFile(&sigfile); // ask for an exclusive write-lock if file doesn't exist
-				if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
+	// set the sample name and try to read it from disk.
+	// This will acquire a lock if the sample doesn't exist
+	// Note that we're acquiring locks for all the sig files for this image because its inefficient
+	// for multiple processes to read the same image and compute different sub-sets of the same sig-set.
+	// Initially, multiple processes will "win" on one image and do this anyway, but eventually they will become de-synchronized.
+	// The image file itself could be locked to prevent this, but this would be more complicated:
+	//  * are the other processes really computing the same sate of sigs?  Not necessarily.
+	//  * we would have to wait for the image lock to clear and issue locks on any left over sig files that weren't locked while we waited.
+		strcpy (ImageSignatures->sample_name,featureset->samples[sample_index].sample_name);
+	// ask for an exclusive write-lock if file doesn't exist
+	// if its the last sample, then we wait for the lock.
+		res = ImageSignatures->ReadFromFile(&sigfile,0);
+		if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
 printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
-					our_sigs[n_sigs].sig = ImageSignatures;
-					our_sigs[n_sigs].file = sigfile;
-					our_sigs[n_sigs].rot_index = rot_index;
-					our_sigs[n_sigs].tile_index_x = tile_index_x;
-					our_sigs[n_sigs].tile_index_y = tile_index_y;
-					n_sigs++;
+			our_sigs[n_sigs].sig = ImageSignatures;
+			our_sigs[n_sigs].file = sigfile;
+			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
+			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
+			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
+			n_sigs++;
 
-				} else if (res == 0) {
-				// File exists and lockable, but no sigs
+		} else if (res == 0) {
+		// File already has a lock.
 printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
-					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+			if ( (res=AddSample(ImageSignatures)) < 0) return (res);
 
-				} else if (res == NO_SIGS_IN_FILE) {
-				// File exists and lockable, but no sigs
-					catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
-						"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
-					delete ImageSignatures;
-					return (res);
+		} else if (res == NO_SIGS_IN_FILE) {
+		// File exists and lockable, but no sigs
+			catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
+				"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
+			delete ImageSignatures;
+			return (res);
 
-				} else if (res < 0) {
-				// no lock or sig file, couldn't create, other errors
-					catError ("Error locking/creating '%s'.\n",ImageSignatures->GetFileName(buffer));
-					delete ImageSignatures;
-					return (res);
+		} else if (res < 0) {
+		// no lock or sig file, couldn't create, other errors
+			catError ("Error locking/creating '%s'.\n",ImageSignatures->GetFileName(buffer));
+			delete ImageSignatures;
+			return (res);
 
-				} else if (res > 0) {
-				// file was successfully read in (no write lock, file present, samples present).
+		} else if (res > 0) {
+		// file was successfully read in (no write lock, file present, samples present).
+		// over-write these fields read in from the file
+			strcpy(ImageSignatures->full_path,filename);
+			ImageSignatures->sample_class=sample_class;
+			ImageSignatures->sample_value=sample_value;
 printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
-					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-				}
-			}
+			if ( (res=AddSample(ImageSignatures)) < 0) return (res);
 		}
 	}
-	
+
+	// FIXME: the last sample may be being processed by someone else, and if so, we will fail on AddAllSignatures
+	// wait on a lock or successful read?
 
 	// lazy loading of images and samples.
 	// this could be better done using something more implicit and general, maybe a closure (a functor? its functadelic!)
@@ -1198,7 +1165,10 @@ printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 	// doing this in a more general way with functional programming (or some other technique).
 	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
 	int rot_matrix_indx=0;
-	int tiles = sampling_opts->tiles_x * sampling_opts->tiles_y;
+	int tiles = featureset->sampling_opts.tiles_x * featureset->sampling_opts.tiles_y;
+	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
+	feature_opts_t *feature_opts = &(featureset->feature_opts);
+	int rot_index,tile_index_x,tile_index_y;
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		ImageSignatures = our_sigs[sig_index].sig;
 		sigfile = our_sigs[sig_index].file;
@@ -1289,8 +1259,10 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 	
 // don't release any locks until we're done with this image
 // this prevents another process from opening the same image to calculate a different sub-set of sigs
-	for (sig_index == 0; sig_index < n_sigs; sig_index++)
+	for (sig_index == 0; sig_index < n_sigs; sig_index++) {
+		close (fileno(our_sigs[sig_index].file));
 		fclose (our_sigs[sig_index].file);
+	}
 
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
 	if (image_matrix) delete image_matrix;

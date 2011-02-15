@@ -79,7 +79,7 @@ class signatures
     void FileClose(FILE *value_file);
     int SaveToFile(FILE *value_file,int save_feature_names);
     int LoadFromFile(char *filename);
-	int ReadFromFile (FILE **fpp); // load if exists, or lock and set fpp.
+	int ReadFromFile (FILE **fpp, bool wait); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
 	int CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set);
 };
