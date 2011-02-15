@@ -41,6 +41,7 @@
 #define IMAGE_PATH_LENGTH 256
 #define SAMPLE_NAME_LENGTH 64
 
+#define NO_SIGS_IN_FILE -2
 
 struct signature
 {
@@ -78,7 +79,9 @@ class signatures
     void FileClose(FILE *value_file);
     int SaveToFile(FILE *value_file,int save_feature_names);
     int LoadFromFile(char *filename);
-	void GetFileName(char *filename_p);
+	int ReadFromFile (FILE **fpp); // load if exists, or lock and set fpp.
+	char *GetFileName(char *buffer);
+	int CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set);
 };
 
 #endif
