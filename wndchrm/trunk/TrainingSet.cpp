@@ -40,6 +40,8 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <cfloat> // Has definition of DBL_EPSILON
+#include <unistd.h> // unlink
+
 #define FLOAT_EQ(x,v) (((v - DBL_EPSILON) < x) && (x <( v + DBL_EPSILON)))
 
 #include "TrainingSet.h"
@@ -76,7 +78,7 @@ int IsSupportedFormat(char *filename) {
 	char_p = strrchr (filename,'.');
 	if (!char_p) return (0);
 	
-	if (!strcmp(char_p,".sig")) return(0);  /* ignore files the extension but are actually .sig files */
+	if (!strcmp(char_p,".sig")) return(1);  /* ignore files the extension but are actually .sig files */
 #ifdef WIN32	  
 	if (!strcmp(char_p,".bmp") || !strcmp(char_p,".BMP")) return(1);
 #endif  
@@ -950,26 +952,78 @@ int TrainingSet::LoadFromPath(char *path, int rotations, int tiles, int multi_pr
 int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
 	DIR *class_dir;
 	struct dirent *ent;
-	char files_in_class[MAX_FILES_IN_CLASS][64];
-	int res=1,files_in_class_count=0,files_in_dir_count=0,file_index;
-	char buffer[512];
+	char img_basenames[MAX_FILES_IN_CLASS][64];
+	char sig_basenames[MAX_FILES_IN_CLASS][64];
+	int res=1,files_in_class_count=0,n_sig_basenames=0,n_img_basenames=0,file_index;
+	char buffer[512],*char_p,*char_p2,*sig_fullpath;
+	FILE *sigfile;
 
 printf ("Processing directory '%s'\n",path);
 	if (! (class_dir=opendir(path)) ) { catError ("Can't open directory %s\n",path); return (0); }
 	while (ent = readdir(class_dir)) {
-		if (!strcmp (ent->d_name,".") || !strcmp (ent->d_name,".,")) continue;
-		sprintf(buffer,"%s/%s",path,ent->d_name);
-		if (!IsSupportedFormat(buffer)) continue;
-		strcpy(files_in_class[files_in_dir_count++],ent->d_name);
+		if (!strcmp (ent->d_name,".") || !strcmp (ent->d_name,"..")) continue;
+		if (!IsSupportedFormat(ent->d_name)) continue;
+
+		// In order to ensure we gather all of the specified samples for .sig files,
+		// we need to determine the image name that the sigfiles refer to, and pass this to AddImageFile
+		// We also need to consolidate the img_basename list and the sig_basename list to remove duplicates
+		// Should really be using an std::map for this
+		if ( (char_p = strstr(ent->d_name,".sig")) && *(char_p+4) == '\0') {
+			sprintf (buffer,"%s/%s",path,ent->d_name);
+			if ( (sigfile = fopen (buffer,"r")) ) {
+				// first line is classname, second line is full_path
+				*buffer = '\0';
+				if ( fgets (buffer , 512 , sigfile) ) sig_fullpath = fgets (buffer , 512 , sigfile);
+				fclose (sigfile);
+				if (*sig_fullpath) { // not empty
+				 // the leading paths may not be correct for all sigs (i.e. NFS mounts with different mountpoints)
+				 // The only thing we care about right now is the set of sig files in this directory stemming from the same base image.
+					char_p = strrchr (sig_fullpath,'/');
+					if (!char_p) char_p = sig_fullpath; // in case its just the file
+					else char_p++;
+					// drop newlines
+					char_p2 = char_p;
+					while(*char_p2 && *char_p2 != '\n' && *char_p2 != '\r') *char_p2++;
+					*char_p2 = '\0';
+					if (!bsearch (char_p, sig_basenames, n_sig_basenames, sizeof(sig_basenames[0]), comp_strings)) {
+						strcpy(sig_basenames[n_sig_basenames++],char_p);
+						qsort(sig_basenames,n_sig_basenames,sizeof(sig_basenames[0]), comp_strings);
+					}
+				} // empty means somebody else is taking care of it.
+			// if it exists and we can't open it, then there's an error.
+			} else {
+				catError ("Sig file '%s/%s' could not be opened.\n",path,ent->d_name);
+				return (0);
+			}
+		// its an image file
+		} else {
+			strcpy(img_basenames[n_img_basenames++],ent->d_name);
+		}
 	}
 	closedir(class_dir);
-	qsort(files_in_class,files_in_dir_count,sizeof(files_in_class[0]), comp_strings);
+	qsort(img_basenames,n_img_basenames,sizeof(img_basenames[0]), comp_strings);
+	// remove files from sig_basenames that exist in img_basenames
+	for (file_index = 0; file_index < n_sig_basenames; file_index++) {
+		if (bsearch (sig_basenames[file_index], img_basenames, n_img_basenames, sizeof(img_basenames[0]), comp_strings)) {
+			n_sig_basenames--;
+			if (file_index < n_sig_basenames)
+				memmove( &(sig_basenames[file_index]),&(sig_basenames[file_index+1]),sizeof(img_basenames[0])*(n_sig_basenames-file_index) );
+			file_index--;
+		}
+	}
+	// copy what's left in sig_basenames to img_basenames, and sort it again.
+	for (file_index = 0; file_index < n_sig_basenames; file_index++)
+		strcpy(img_basenames[n_img_basenames++],sig_basenames[file_index]);
+	qsort(img_basenames,n_img_basenames,sizeof(img_basenames[0]), comp_strings);
+
+//for (file_index = 0; file_index < n_img_basenames; file_index++)
+//printf ("final basename: '%s'\n",img_basenames[file_index]);
 	
 	// N.B.: A call to AddClass must already have occurred, otherwise AddSample called from AddImageFile will fail.
 
 	// Process the files in sort order
-	for (file_index=0; file_index<files_in_dir_count; file_index++) {
-		sprintf(buffer,"%s/%s",path,files_in_class[file_index]);
+	for (file_index=0; file_index<n_img_basenames; file_index++) {
+		sprintf(buffer,"%s/%s",path,img_basenames[file_index]);
 		res = AddImageFile(buffer, sample_class, sample_value, rotations, tiles, multi_processor, large_set, compute_colors, downsample, mean, stddev, bounding_rect, overwrite);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
@@ -980,6 +1034,7 @@ printf ("Processing directory '%s'\n",path);
 /* AddImageFile
    load a set of features to the dataset from one image_path on disk by calculating features if necessary/possible.
    This includes any tiling to be done on the image, down-sampling, etc
+   Loading of image files is done lazily, so that if the set of .sigs expected for the image is on disk, the image file will never be opened or read.
    multi_processor -int- flag to allow skipping feature calculation based on the presence of a corresponding .sig file.
      If multi_processor is set:
         If a .sig exists, it will be assumed that these features are being calculated elsewhere (or where already calculated)
@@ -1007,82 +1062,280 @@ printf ("Processing directory '%s'\n",path);
 int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int rotations, int tiles, int multi_processor, int large_set, int compute_colors, int downsample, double mean, double stddev, rect *bounding_rect, int overwrite) {
 	int res=0;
 	int rot_index,tile_index_x,tile_index_y;
-	ImageMatrix *tile_matrix;
 	signatures *ImageSignatures;
-	ImageMatrix *matrix;
-	FILE *sig_file;
+	char buffer[IMAGE_PATH_LENGTH];
+	FILE *sigfile;
+	int sig_index,n_sigs=0;
+	char sample_name[SAMPLE_NAME_LENGTH],preproc_name[SAMPLE_NAME_LENGTH];
+	int sample_name_lngth,preproc_name_lngth;
 
-	if (print_to_screen) printf("Loading image %s\n",filename);
-	matrix=new ImageMatrix;
-	res=matrix->OpenImage(filename,downsample,bounding_rect,mean,stddev);
-	if (res) {  /* add the image only if it was loaded properly */
-//{  double mean,median,stddev;
-//matrix->BasicStatistics(&mean, &median, &stddev, NULL, NULL, NULL, 0);
-//for (int x=0;x<matrix->width;x++)
-//  for (int y=0;y<matrix->height;y++)
-//  if (matrix->data[x][y].intensity<mean+4*stddev) matrix->data[x][y].intensity=0;
-//}		 
-//matrix->Symlet5Transform();
-//matrix->ChebyshevTransform(0);
-//printf("image name: %s\n",filename);
-//matrix->SaveTiff(filename);
-		for (rot_index=0;rot_index<rotations;rot_index++) {
+	struct siginfo_s {
+		signatures *sig;
+		FILE *file;
+		int rot_index;
+		int tile_index_x;
+		int tile_index_y;
+	} our_sigs[MAX_SAMPLES_PER_IMAGE];
+
+	typedef struct {
+		char bounding_rect_base[16];
+		rect bounding_rect;
+		char downsample_base[16];
+		int downsample;
+		char normalize_base[16];
+		int mean;
+		int stddev;
+	} preproc_opts_t;
+	
+	typedef struct {
+		char rot_base[16]; // CLI option+params
+		int rotations;
+		char tile_base[16]; // CLI option+params
+		int tiles_x;
+		int tiles_y;
+	} sampling_opts_t;
+
+	typedef struct {
+		char compute_colors_base[16]; // CLI option+params
+		int compute_colors;
+		char large_set_base[16]; // CLI option+params
+		int large_set;
+	} feature_opts_t;
+
+	preproc_opts_t *preproc_opts = new preproc_opts_t;
+	sampling_opts_t *sampling_opts = new sampling_opts_t;
+	feature_opts_t *feature_opts = new feature_opts_t;
+	
+	strcpy (preproc_opts->bounding_rect_base,"B");
+	preproc_opts->bounding_rect.x = bounding_rect->x;
+	preproc_opts->bounding_rect.y = bounding_rect->y;
+	preproc_opts->bounding_rect.w = bounding_rect->w;
+	preproc_opts->bounding_rect.h = bounding_rect->h;
+	strcpy (preproc_opts->downsample_base,"d");
+	preproc_opts->downsample = downsample;
+	strcpy (preproc_opts->normalize_base,"S");
+	preproc_opts->mean = mean;
+	preproc_opts->stddev = stddev;
+
+	strcpy (sampling_opts->rot_base,"R");
+	sampling_opts->rotations = rotations;
+	strcpy (sampling_opts->tile_base,"t");
+	sampling_opts->tiles_x = tiles;
+	sampling_opts->tiles_y = tiles;
+
+	strcpy (feature_opts->compute_colors_base,"c");
+	feature_opts->compute_colors = compute_colors;
+	strcpy (feature_opts->large_set_base,"l");
+	feature_opts->large_set = large_set;
+
+
+printf ("Processing image file '%s'.\n",filename);
+
+// pre-determine sig files for this image.
+// Primarily, this lets us pre-lock all the signature files for one image (see below).
+// The side-effect is that we separate the code that sets up sampling parameters from the
+// code that does the actual sampling and feature calculation.
+// Eventually, the sampling code would live here, and be generic but the set-up of the parameters would be done elsewhere
+// It seems this would be a good application of functional programming (i.e. closures, functors, etc).
+
+// set the preprocessing preamble string
+// Together with the sampling options, this should be more generic.
+	*preproc_name = '\0';
+	preproc_name_lngth = 0;
+	if (preproc_opts->bounding_rect.x > -1) {
+		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d_%d_%d_%d",
+			preproc_opts->bounding_rect_base,preproc_opts->bounding_rect.x,preproc_opts->bounding_rect.y,
+			preproc_opts->bounding_rect.w,preproc_opts->bounding_rect.h);
+	}
+	if (preproc_opts->downsample > 0 && preproc_opts->downsample < 100) {
+		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d",
+			preproc_opts->downsample_base,preproc_opts->downsample);
+	}
+	if (preproc_opts->mean > -1) {
+		preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"-%s%d",
+			preproc_opts->normalize_base,preproc_opts->mean);
+		if (preproc_opts->stddev > -1) preproc_name_lngth += sprintf (preproc_name+preproc_name_lngth,"_%d",
+			preproc_opts->stddev);
+	}
+
+	*sample_name = '\0';
+	sample_name_lngth = 0;
+	for (rot_index=0;rot_index<rotations;rot_index++) {
 //			printf ("rotation:%d\n",rot_index);
-			ImageMatrix *rot_matrix;
-			if (rot_index > 0) {
-				rot_matrix = matrix->Rotate (90.0 * rot_index);
-			} else {
-				rot_matrix = matrix;
-			}
-			for (tile_index_y=0;tile_index_y<tiles;tile_index_y++) {
-				for (tile_index_x=0;tile_index_x<tiles;tile_index_x++) {
-					ImageMatrix *tile_matrix;
-					long tile_x_size=(long)(rot_matrix->width/tiles);
-					long tile_y_size=(long)(rot_matrix->height/tiles);
-					if (tiles>1)
-						tile_matrix=new ImageMatrix(rot_matrix,tile_index_x*tile_x_size,tile_index_y*tile_y_size,(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1,0,0);
-					else tile_matrix=rot_matrix;
-				/* compute the image features */
-					ImageSignatures=new signatures;
-					ImageSignatures->NamesTrainingSet=this;
-					strcpy(ImageSignatures->full_path,filename);
-					ImageSignatures->sample_class=sample_class;
-					ImageSignatures->sample_value=sample_value;
-					if (rot_index > 0) snprintf (ImageSignatures->sample_name,SAMPLE_NAME_LENGTH,"%d_%d_%d",rot_index,tile_index_x,tile_index_y);
-					else snprintf (ImageSignatures->sample_name,SAMPLE_NAME_LENGTH,"%d_%d",tile_index_x,tile_index_y);
-	
-				/* check if the features for that image were processed by another process */
-		// NEEDS WORK (see signatures.cpp)
-		// Race condition, potentially reading inconsistent sigs (e.g. second run with more tiles; only the additional tiles will be recalculated, and the rest will be invalid)
-					if (multi_processor) {
-						if (!(sig_file=ImageSignatures->FileOpen(NULL,overwrite))) {
-							// The incomplete sample is still added to keep the set consistent.
-							// AddAllSignatures will complete the set (with less work, simpler code).
-							if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-							if (tiles>1) delete tile_matrix;
-							continue;
-						}
-					}
-					/* compute the features */						 
-					if (large_set) ImageSignatures->ComputeGroups(tile_matrix,compute_colors);
-					else ImageSignatures->compute(tile_matrix,compute_colors);
-	
+		for (tile_index_y=0;tile_index_y<tiles;tile_index_y++) {
+			for (tile_index_x=0;tile_index_x<tiles;tile_index_x++) {
+			// make signature objects for samples
+				ImageSignatures=new signatures;
+				ImageSignatures->NamesTrainingSet=this;
+				strcpy(ImageSignatures->full_path,filename);
+				ImageSignatures->sample_class=sample_class;
+				ImageSignatures->sample_value=sample_value;
+				strcpy (sample_name,preproc_name);
+				sample_name_lngth = strlen (sample_name);
+				// this code block should be made more generic with regards to sampling options and params
+				// sample opts
+				if (sampling_opts->rotations && rot_index) { // only add for non-0 rotations
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d",sampling_opts->rot_base,rot_index);
+				}
+				if ( (sampling_opts->tiles_x > 1 || sampling_opts->tiles_y > 1) ) {
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d_%d",sampling_opts->tile_base,tile_index_x,tile_index_y);
+				}
+				// feature opts
+				if (feature_opts->compute_colors) {
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s",feature_opts->compute_colors_base);
+				}
+				if (feature_opts->large_set) {
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s",feature_opts->large_set_base);
+				}
+
+			// set the sample name and try to read it from disk.
+			// This will acquire a lock if the sample doesn't exist
+			// Note that we're acquiring locks for all the sig files for this image because its inefficient
+			// for multiple processes to read the same image and compute different sub-sets of the same sig-set.
+			// Initially, multiple processes will "win" on one image and do this anyway, but eventually they will become de-synchronized.
+			// The image file itself could be locked to prevent this, but this would be more complicated:
+			//  * are the other processes really computing the same sate of sigs?  Not necessarily.
+			//  * we would have to wait for the image lock to clear and issue locks on any left over sig files that weren't locked while we waited.
+				strcpy (ImageSignatures->sample_name,sample_name);
+				res = ImageSignatures->ReadFromFile(&sigfile); // ask for an exclusive write-lock if file doesn't exist
+				if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
+printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
+					our_sigs[n_sigs].sig = ImageSignatures;
+					our_sigs[n_sigs].file = sigfile;
+					our_sigs[n_sigs].rot_index = rot_index;
+					our_sigs[n_sigs].tile_index_x = tile_index_x;
+					our_sigs[n_sigs].tile_index_y = tile_index_y;
+					n_sigs++;
+				} else if (res == 0) { // File exists and lockable, but no sigs
+printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
 					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
-	
-					if (tiles>1) delete tile_matrix;
-		// NEEDS WORK
-		// If we can guarantee these files will always be consistent with regards to the run parameters, shouldn't we always save them?
-					if (multi_processor) {
-						ImageSignatures->SaveToFile(sig_file,1);
-						ImageSignatures->FileClose(sig_file);
-					}
+				} else if (res == NO_SIGS_IN_FILE) { // File exists and lockable, but no sigs
+					catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
+						"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
+					delete ImageSignatures;
+					return (res);
+				} else if (res < 0) { // no lock or sig file, couldn't create, other errors
+					catError ("Error locking/creating '%s'.\n",ImageSignatures->GetFileName(buffer));
+					delete ImageSignatures;
+					return (res);
+				} else if (res > 0) {
+printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
+				// file was successfully read in (no write lock, file present, samples present).
+					if ( (res=AddSample(ImageSignatures)) < 0) return (res);
 				}
 			}
 		}
-		res = 1;
-	} else if (print_to_screen) printf("Could not open '%s' \n",filename);
-	delete matrix;
-	return (res);
+	}
+	
+
+	// lazy loading of images and samples.
+	// this could be better done using something more implicit and general, maybe a closure (a functor? its functadelic!)
+	// Lazy loading could have been done while generating the sampling parameters above, but this lets us pre-obtain file locks
+	// for all the sigs we will calculate.  The code separation b/w sampling parameter setup and the sampling itself points to
+	// doing this in a more general way with functional programming (or some other technique).
+	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
+	int rot_matrix_indx=0;
+	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
+		ImageSignatures = our_sigs[sig_index].sig;
+		sigfile = our_sigs[sig_index].file;
+		rot_index = our_sigs[sig_index].rot_index;
+		tile_index_x = our_sigs[sig_index].tile_index_x;
+		tile_index_y = our_sigs[sig_index].tile_index_y;
+printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
+
+		if (!image_matrix) { // for all samples
+			image_matrix = new ImageMatrix;
+		// any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
+		// One of these could be reachable if the image is not in the same directory as the sigs.
+		// There is no support for this now though - its an error for the image not to exist together with the sigs
+		// if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
+//	if (print_to_screen) printf("Loading image %s\n",filename);
+			if ( image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev) < 1) {
+				catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
+				return (-1);
+			}
+			if (rot_index == 0) {
+				rot_matrix_indx = 0;
+				rot_matrix = image_matrix;
+			}
+		}
+		// Since image opening was lazy, everything else is too.
+		if (rot_matrix_indx != rot_index) {
+			if (rot_matrix_indx != 0 && rot_matrix) delete rot_matrix;
+			rot_matrix = NULL;
+		}
+		if (!rot_matrix) {
+			if (rot_index > 0) { //rotate the image_matrix
+				rot_matrix = image_matrix->Rotate (90.0 * rot_index);
+			} else {
+				rot_matrix = image_matrix;
+			}
+			rot_matrix_indx = rot_index;
+			if (tiles == 1) tile_matrix = rot_matrix;
+		}
+		if (!tile_matrix) {
+			long tile_x_size;
+			long tile_y_size;
+			if (rot_index == 1 || rot_index == 3) {
+				tile_y_size=(long)(rot_matrix->width/tiles);
+				tile_x_size=(long)(rot_matrix->height/tiles);
+			} else {
+				tile_x_size=(long)(rot_matrix->width/tiles);
+				tile_y_size=(long)(rot_matrix->height/tiles);
+			}
+			tile_matrix = new ImageMatrix(rot_matrix,
+				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
+				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1,0,0);
+		}
+
+	// last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
+	// a set of sigs that matches a small subset of re-computed sigs.
+		char old_sig_filename[128], *char_p;
+		strcpy (old_sig_filename,ImageSignatures->full_path);
+		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
+		else char_p = old_sig_filename+strlen(old_sig_filename);
+		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
+		if (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) {
+			ImageSignatures->LoadFromFile (old_sig_filename);
+			if (ImageSignatures->count < 1) {
+				catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));
+				res=0;
+			} else {
+				catError ("Old signature file '%s' converted to '%s' with %d features.\n",old_sig_filename,ImageSignatures->GetFileName(buffer),ImageSignatures->count);
+				unlink (old_sig_filename);
+			}
+		}
+
+	// all hope is lost - compute sigs.
+		if (!res) {
+			if (feature_opts->large_set) ImageSignatures->ComputeGroups(tile_matrix,feature_opts->compute_colors);
+			else ImageSignatures->compute(tile_matrix,feature_opts->compute_colors);
+		}
+	// we're saving sigs always now...
+	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
+		ImageSignatures->SaveToFile (sigfile,1);
+		if ( (res=AddSample(ImageSignatures)) < 0) return (res);
+
+		if (tiles > 1) {
+			delete tile_matrix;
+			tile_matrix = NULL;
+		}
+	
+	}
+	
+// don't release any locks until we're done with this image
+// this prevents another process from opening the same image to calculate a different sub-set of sigs
+	for (sig_index == 0; sig_index < n_sigs; sig_index++)
+		fclose (our_sigs[sig_index].file);
+
+	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
+	if (image_matrix) delete image_matrix;
+
+	delete preproc_opts;
+	delete sampling_opts;
+	delete feature_opts;
+
+	return (1);
 }
 
 
