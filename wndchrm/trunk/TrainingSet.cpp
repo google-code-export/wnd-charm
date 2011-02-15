@@ -2400,7 +2400,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    fprintf(output_file,"<hr/><CENTER>\n");
    
    /* print the number of samples table */
-   fprintf(output_file,"<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\">\" \n <caption>%ld Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
+   fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%d Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
    for (class_index=0;class_index<=class_num;class_index++)
      fprintf(output_file,"<td>%s</td>\n",class_labels[class_index]);
    fprintf(output_file,"<td>total</td></tr>\n");
@@ -2438,7 +2438,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    /* print the splits */
    splits_accuracy=0.0;
    splits_class_accuracy=0.0;
-   fprintf(output_file,"<h2>Results</h2> \n <table border=\"1\" align=\"center\"><caption></caption> \n");
+   fprintf(output_file,"<h2>Results</h2> \n <table id=\"test_results\" border=\"1\" align=\"center\"><caption></caption> \n");
    for (split_index=0;split_index<split_num;split_index++)
    {  unsigned short *confusion_matrix;
       double *similarity_matrix,P=0.0;
@@ -2474,7 +2474,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       }
 	  if (splits[split_index].pearson_coefficient!=0) 
       {  fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%e) <br>\n",splits[split_index].pearson_coefficient,splits[split_index].pearson_p_value);
-         fprintf(output_file,"Average absolute difference: %.4f <br>\n",splits[split_index].avg_abs_dif);
+         fprintf(output_file,"Mean absolute difference: %.4f <br>\n",splits[split_index].avg_abs_dif);
 //      }
 //	  else
 //      {  
@@ -2490,7 +2490,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	  splits_class_accuracy+=avg_accuracy;
    }
    /* average of all splits */
-   fprintf(output_file,"<tr> <td>Total</td> \n <td align=\"center\" valign=\"top\"> \n");
+   fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
    if (class_num>0)
    {  double avg_p2=0.0;
 //      for (int correct=(long)((test_set_size+train_set_size)*(splits_accuracy/split_num));correct<=test_set_size+train_set_size;correct++)
@@ -2503,7 +2503,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    }
    if (avg_pearson!=0) 
    {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%e) <br>\n",avg_pearson/split_num,avg_p/split_num);
-      fprintf(output_file,"Average absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
+      fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
    }   
    
    fprintf(output_file,"</table>\n");   /* close the splits table */
@@ -2513,7 +2513,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    sprintf(tsv_filename,"tsv/avg_confusion.tsv");                /* determine the tsv file name           */
    tsvfile=NULL;                                                 /* keep it null if the file doesn't open */
    if (export_tsv) tsvfile=fopen(tsv_filename,"w");              /* open the file for tsv                 */
-   if (class_num>0) fprintf(output_file,"<table border=\"1\" align=\"center\"><caption>Confusion Matrix (sum of all splits)</caption> \n <tr><td></td> ");
+   if (class_num>0) fprintf(output_file,"<table id=\"master_confusion_matrix\" border=\"1\" align=\"center\"><caption>Confusion Matrix (sum of all splits)</caption> \n <tr><td></td> ");
    if (tsvfile) fprintf(tsvfile,"\t");         /* space (in the tsv file) */
    for (class_index=1;class_index<=class_num;class_index++)
    {  fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
@@ -2547,7 +2547,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
    avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
    avg_similarity_normalization=new double[class_num+1];
-   if (class_num>0) fprintf(output_file,"<table><tr><td><table border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
+   if (class_num>0) fprintf(output_file,"<table><tr><td><table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
    if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
    for (class_index=1;class_index<=class_num;class_index++)
    {  fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
@@ -2646,7 +2646,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
    /* print the average accuracies of the tile areas */
    if (splits[0].tile_area_accuracy)
-   {  fprintf(output_file,"<br><table border=\"1\" align=\"center\"><caption>Tile Areas Accuracy</caption> \n");
+   {  fprintf(output_file,"<br><table id=\"tile_area_accuracy\" border=\"1\" align=\"center\"><caption>Tile Areas Accuracy</caption> \n");
       for (int y=0;y<tiles;y++) 
       {   fprintf(output_file,"<tr>\n");
           for (int x=0;x<tiles;x++)
@@ -2675,7 +2675,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
 	  /* print the confusion matrix */
       if (class_num>0) 
-	  {  fprintf(output_file,"<table border=\"1\" align=\"center\"><caption>Confusion Matrix</caption> \n <tr><td></td>\n");
+	  {  fprintf(output_file,"<table  id=\"confusion_matrix-split%d\" border=\"1\" align=\"center\"><caption>Confusion Matrix</caption> \n <tr><td></td>\n", split_index);
          for (class_index=1;class_index<=class_num;class_index++)
            fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);
          fprintf(output_file,"</tr>\n");
@@ -2690,7 +2690,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       
 	  /* print the similarity matrix */
       if (class_num>0) 
-	  {  fprintf(output_file,"<table><tr><td><table border=\"1\" align=\"center\"><caption>Similarity Matrix</caption> \n <tr><td></td>\n");   
+	  {  fprintf(output_file,"<table><tr><td><table id=\"similarity_matrix-split%d\" border=\"1\" align=\"center\"><caption>Similarity Matrix</caption> \n <tr><td></td>\n", split_index);
          for (class_index=1;class_index<=class_num;class_index++)
            fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);   
          fprintf(output_file,"</tr>\n");
@@ -2732,7 +2732,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       a=0;
       while (feature_names[a]!='\0') /* first count the features */
         features_num+=(feature_names[a++]=='\n');
-      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %ld features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
+      if (features_num>0) fprintf(output_file,"<br>%d features selected (out of %d features computed).<br>  <a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Toggle feature names</a><br><br>\n",features_num,signature_count,split_index);
       fprintf(output_file,"<TABLE ID=\"FeaturesUsed_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
       p_feature_names=strtok(feature_names,"\n");
       while (p_feature_names)
