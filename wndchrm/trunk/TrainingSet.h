@@ -154,6 +154,7 @@ public:
    int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples,int exact_max_train); /* random split to train and test */
    int SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
    void RemoveClass(long class_index);                             /* remove a class                            */
+	void MakeContinuous(char *label);                              /* Make an existing dataset with defined classes continuous - label is the "units" */
 	void MarkUnknown(long class_index);                            /* mark the given class as unknown (move + reorder class labels, reassign sample classes to class 0 */
    int AddClass(char *label);                                      /* add a discrete class    */
    int AddContinuousClass (char *label);                           /* add a continuous class - not that only one can be added */

@@ -301,7 +301,7 @@ int TrainingSet::SaveToFile(char *filename)
 */
 int TrainingSet::ReadFromFile(char *filename)
 {  int sample_index, class_index, sample_count,sig_index;
-   int res;
+   int res, file_class_num;
    char buffer[50000];
    FILE *file;
    if (!(file=fopen(filename,"r"))) {
@@ -312,7 +312,7 @@ int TrainingSet::ReadFromFile(char *filename)
      if (samples[sample_index]) delete samples[sample_index];
    delete samples;
    fgets(buffer,sizeof(buffer),file);
-   class_num=atoi(buffer);
+   file_class_num=atoi(buffer);
    fgets(buffer,sizeof(buffer),file);
    signature_count=atoi(buffer);
    fgets(buffer,sizeof(buffer),file);
@@ -328,10 +328,10 @@ int TrainingSet::ReadFromFile(char *filename)
       if (strstr(SignatureNames[sig_index],"color") || strstr(SignatureNames[sig_index],"Color")) color_features=1;   /* check if color signatures are used */
    }
    /* read the class labels */
-   for (class_index=0;class_index<=class_num;class_index++)
+   for (class_index=0;class_index<=file_class_num;class_index++)
    {  fgets(buffer,sizeof(buffer),file);
-      strcpy(class_labels[class_index],buffer);
-      if (strchr(class_labels[class_index],'\n')) *strchr(class_labels[class_index],'\n')='\0';	  /* make sure there is no line break in the name */
+      if (strchr(buffer,'\n')) *strchr(buffer,'\n')='\0';	  /* make sure there is no line break in the name */
+      AddClass(buffer);
    }
    /* read the samples */
    for (sample_index=0;sample_index<sample_count;sample_index++)
@@ -356,6 +356,27 @@ int TrainingSet::ReadFromFile(char *filename)
    fclose(file);
 
    return(1);
+}
+
+/*
+  MakeContinuous
+  Make an existing TrainingSet (with defined classes and samples) into a continuous TrainingSet
+*/
+void TrainingSet::MakeContinuous(char *label) {
+long index;
+
+	for (index=0;index < class_num;index++) strcpy(class_labels[index],"");
+	if (label) snprintf(class_labels[CONTINUOUS_CLASS_INDEX],MAX_CLASS_NAME_LENGTH,"%s",label);
+	else class_labels[CONTINUOUS_CLASS_INDEX] = '\0';
+
+
+	/* make the samples referring to class_index refer to class 0 */
+	// And samples with index greater than class_index refer to an index lower by 1.
+	for (index=0;index<count;index++) if (samples[index]->sample_class) samples[index]->sample_class=CONTINUOUS_CLASS_INDEX;
+	
+	// The number of defined classes is reduced by 1
+	class_num=1;
+	is_continuous = 1;
 }
 
 /*
@@ -689,6 +710,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	int res,n_classes_found=0, do_subdirs=0, class_found_index, class_index, samp_index, file_class_num,sample_index,pure_numeric=1;
 	double samp_val;
 	FILE *input_file=NULL;
+	int fit_file=0;
 
 
 	if (path[path_len-1]=='/') path[path_len-1]='\0';  /* remove a last '/' is there is one       */
@@ -763,6 +785,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		// Its a .fit file
 
 			if (ReadFromFile (path) < 1) return (CANT_OPEN_FIT);
+			fit_file=1;
 
 		} else if (input_file=fopen(path,"r")) {
 		// read the images from a file of filenames
@@ -815,103 +838,114 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		} // opened file of filenames
 	} // processing a non-directory path
 
-// We're done processing the path.
-// If we found classes to process, process them
-
-// If pure_numeric is true, make_continuous can be 1.
-// Otherwise, its a warning for make_continuous to be 1 while pure_numeric is false.
-	if (!pure_numeric && make_continuous) {
-		catError ("WARNING: Trying to make a continuous dataset with non-numeric class labels.  Making discrete classes instead.\n");
-	} else if (make_continuous && n_classes_found < 1) {
-		catError ("WARNING: Trying to make a continuous dataset with no defined classes found.  Samples are unknown.\n");
-	} else if (make_continuous) {
-		res = AddContinuousClass (NULL);
-		if (res < 0) return (res);
-	}
-
-
-// Process the classes we found, and the subdirectories if we found them
-	for (class_found_index=0;class_found_index<n_classes_found;class_found_index++) {
-	// Create class.
-		if (is_continuous) class_index = CONTINUOUS_CLASS_INDEX;
-		else {
-			class_index = AddClass (classes_found[class_found_index]);
-			// This may barf for various reasons.
-			if (class_index < 0) return (class_index);
-		}
-
-		check_numeric (classes_found[class_found_index],&samp_val);
-
-	// LoadFromFilesDir sorts the samples (files)
-		if (do_subdirs) {
-			sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
-		// reset the system error
-			errno = 0;
-			res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, featureset);
+	if (!fit_file) {
+	// We're done processing the path.
+	// If we found classes to process, process them
+	
+	// If pure_numeric is true, make_continuous can be 1.
+	// Otherwise, its a warning for make_continuous to be 1 while pure_numeric is false.
+		if (!pure_numeric && make_continuous) {
+			catError ("WARNING: Trying to make a continuous dataset with non-numeric class labels.  Making discrete classes instead.\n");
+		} else if (make_continuous && n_classes_found < 1) {
+			catError ("WARNING: Trying to make a continuous dataset with no defined classes found.  Samples are unknown.\n");
+		} else if (make_continuous) {
+			res = AddContinuousClass (NULL);
 			if (res < 0) return (res);
-		// Since we made the class, we have to get rid of it if its empty.
-			if (class_nsamples[class_index] < 1) {
-				RemoveClass (class_index);
-			}
 		}
-	}
-
-	if (input_file) {
-	// The above has created all the classes, so here, we just add samples
-		rewind (input_file);
-		// A lot of this is copy-paste code from above to accomplish two reads of this file.
-		// The first pass gave us an ordered list of classes.  In the second pass, we add samples.
-		// We need to have a sorted list of classes, and add them in order, yet we want to keep the samples in file order.
-		// The alternative is to read the file once, and accomplish two passes by holding all of its relevant contents in memory.
-		// Or worse, sort the classes and reindex the samples as we go.
-		// reset the system error
-			errno = 0;
-		while (fgets(buffer,sizeof(buffer),input_file)) {
-			if (*buffer == '#') continue; // skip comment lines
-
-		// Read chars while not \n,\r,\t, read and ignore chars that are \n\r\t, read chars while not \n,\r,\t.
-		// Basically, the first two tab-delimited strings on a line.
-			*filename = *label = *class_label = '\0';
-			res = sscanf (buffer," %[^\n\r\t]%*[\t\r\n]%[^\t\r\n]",filename,label);
-			if (res < 1) continue;
-			if (!IsSupportedFormat(filename)) continue; // skip unrecognized files
-
-			if (*label) {
-			// determine class index and value from label
-				snprintf (class_label,MAX_CLASS_NAME_LENGTH,"%s",label); // conform to size restriction
-
-			// Search for the label in pre-existing labels
-				if (!is_continuous) {
-					label_p = (char *)bsearch(class_label, classes_found, n_classes_found, sizeof(classes_found[0]), comp_strings);
-					if (label_p) file_class_num = (int) ( (label_p - classes_found[0]) / sizeof(classes_found[0]) ) + 1;
-					else file_class_num = UNKNOWN_CLASS_INDEX; // This should never happen.
-				} else {
-					file_class_num = CONTINUOUS_CLASS_INDEX;
+	
+	
+	// Process the classes we found, and the subdirectories if we found them
+		for (class_found_index=0;class_found_index<n_classes_found;class_found_index++) {
+		// Create class.
+			if (is_continuous) class_index = CONTINUOUS_CLASS_INDEX;
+			else {
+				class_index = AddClass (classes_found[class_found_index]);
+				// This may barf for various reasons.
+				if (class_index < 0) return (class_index);
+			}
+	
+			check_numeric (classes_found[class_found_index],&samp_val);
+	
+		// LoadFromFilesDir sorts the samples (files)
+			if (do_subdirs) {
+				sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
+			// reset the system error
+				errno = 0;
+				res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, featureset);
+				if (res < 0) return (res);
+			// Since we made the class, we have to get rid of it if its empty.
+				if (class_nsamples[class_index] < 1) {
+					RemoveClass (class_index);
 				}
-				check_numeric (class_label,&samp_val);
-			} else {
-				file_class_num = UNKNOWN_CLASS_INDEX;
-				samp_val = 0;
 			}
-
-		// reset the system error
-			errno = 0;
-			res = AddImageFile(filename, file_class_num, samp_val, save_sigs, featureset);
+		}
+	
+		if (input_file) {
+		// The above has created all the classes, so here, we just add samples
+			rewind (input_file);
+			// A lot of this is copy-paste code from above to accomplish two reads of this file.
+			// The first pass gave us an ordered list of classes.  In the second pass, we add samples.
+			// We need to have a sorted list of classes, and add them in order, yet we want to keep the samples in file order.
+			// The alternative is to read the file once, and accomplish two passes by holding all of its relevant contents in memory.
+			// Or worse, sort the classes and reindex the samples as we go.
+			// reset the system error
+				errno = 0;
+			while (fgets(buffer,sizeof(buffer),input_file)) {
+				if (*buffer == '#') continue; // skip comment lines
+	
+			// Read chars while not \n,\r,\t, read and ignore chars that are \n\r\t, read chars while not \n,\r,\t.
+			// Basically, the first two tab-delimited strings on a line.
+				*filename = *label = *class_label = '\0';
+				res = sscanf (buffer," %[^\n\r\t]%*[\t\r\n]%[^\t\r\n]",filename,label);
+				if (res < 1) continue;
+				if (!IsSupportedFormat(filename)) continue; // skip unrecognized files
+	
+				if (*label) {
+				// determine class index and value from label
+					snprintf (class_label,MAX_CLASS_NAME_LENGTH,"%s",label); // conform to size restriction
+	
+				// Search for the label in pre-existing labels
+					if (!is_continuous) {
+						label_p = (char *)bsearch(class_label, classes_found, n_classes_found, sizeof(classes_found[0]), comp_strings);
+						if (label_p) file_class_num = (int) ( (label_p - classes_found[0]) / sizeof(classes_found[0]) ) + 1;
+						else file_class_num = UNKNOWN_CLASS_INDEX; // This should never happen.
+					} else {
+						file_class_num = CONTINUOUS_CLASS_INDEX;
+					}
+					check_numeric (class_label,&samp_val);
+				} else {
+					file_class_num = UNKNOWN_CLASS_INDEX;
+					samp_val = 0;
+				}
+	
+			// reset the system error
+				errno = 0;
+				res = AddImageFile(filename, file_class_num, samp_val, save_sigs, featureset);
+				if (res < 0) return (res);
+	
+			} // while reading file of filenames
+			fclose (input_file);
+	
+		// Finally, we need to make sure all the classes we created have some samples
+			for (class_index=1;class_index<class_num;class_index++) {
+				if (class_nsamples[class_index] < 1) RemoveClass (class_index);
+			}
+		}
+	
+	
+	// Done processing path as a dataset.
+	// Load all the sigs if other processes are calculating them
+		if ( (res  = AddAllSignatures ()) < 0) return (res);
+	} else { // its a fit file!
+		if (!is_numeric && make_continuous) {
+			catError ("WARNING: Trying to make a continuous dataset with non-numeric class labels.  Making discrete classes instead.\n");
+		} else if (make_continuous && class_num < 1) {
+			catError ("WARNING: Trying to make a continuous dataset with no defined classes found.  Samples are unknown.\n");
+		} else if (make_continuous) {
+			MakeContinuous (NULL);
 			if (res < 0) return (res);
-
-		} // while reading file of filenames
-		fclose (input_file);
-
-	// Finally, we need to make sure all the classes we created have some samples
-		for (class_index=1;class_index<class_num;class_index++) {
-			if (class_nsamples[class_index] < 1) RemoveClass (class_index);
 		}
 	}
-
-
-// Done processing path as a dataset.
-// Load all the sigs if other processes are calculating them
-	if ( (res  = AddAllSignatures ()) < 0) return (res);
 
 // Check what we got.
 	if (count < 1) {
