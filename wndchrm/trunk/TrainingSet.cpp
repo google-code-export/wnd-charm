@@ -331,7 +331,11 @@ int TrainingSet::ReadFromFile(char *filename)
    for (class_index=0;class_index<=file_class_num;class_index++)
    {  fgets(buffer,sizeof(buffer),file);
       if (strchr(buffer,'\n')) *strchr(buffer,'\n')='\0';	  /* make sure there is no line break in the name */
-      AddClass(buffer);
+      if ( (res = AddClass(buffer) < 0) ) {
+      	delete samples;
+      	fclose(file);
+      	return (res);
+      }
    }
    /* read the samples */
    for (sample_index=0;sample_index<sample_count;sample_index++)
@@ -350,7 +354,12 @@ int TrainingSet::ReadFromFile(char *filename)
       fgets(buffer,sizeof(buffer),file);                        /* read the image path (can also be en ampty line)  */
       if (strchr(buffer,'\n')) *(strchr(buffer,'\n'))='\0';     /* remove the end of line (if there is one)         */
       strcpy(one_sample->full_path,buffer);                     /* copy the full path to the signatures object      */
-      if ( (res=AddSample(one_sample)) < 0) return (res);
+      if ( (res=AddSample(one_sample)) < 0) {
+        for (sig_index=0;sig_index<sample_index;sig_index++) delete samples[sig_index];
+      	delete samples;
+      	fclose(file);
+      	return (res);
+      }
    }
    
    fclose(file);
@@ -981,6 +990,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		}
 		printf ("----------\n");
 	}
+	return (1);
 }
 
 
