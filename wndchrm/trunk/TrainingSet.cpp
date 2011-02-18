@@ -42,6 +42,9 @@
 #include <cfloat> // Has definition of DBL_EPSILON
 #include <unistd.h> // unlink
 
+#include <vector>
+#include <fstream>
+
 #define FLOAT_EQ(x,v) (((v - DBL_EPSILON) < x) && (x <( v + DBL_EPSILON)))
 
 #include "TrainingSet.h"
@@ -53,6 +56,8 @@
 #include <dir.h>
 #endif
 
+
+#define DEBUG_CREATE_INDIV_DISTANCE_FILES 0
 
 /* global variable */
 extern int print_to_screen;
@@ -213,10 +218,10 @@ int numeric;
 		
 		// Check if its numeric.  If not, global is_numeric set to false.
 		numeric = check_numeric(class_labels[class_num],NULL);
-		if (class_num == 1) {
+		if (class_num == 1) { //you only get to turn on numeric if you're the first class being read in
 			is_numeric = 1;
 			if (numeric == 2) is_pure_numeric = 1;
-		} else {
+		} else { // after that, you only get to turn it off
 			if (!numeric) {is_numeric = 0; is_pure_numeric = 0;}
 			else if (numeric == 1) is_pure_numeric = 0;
 		}
@@ -1373,25 +1378,37 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
    for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
    for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++) {
-	if (print_to_screen && tiles>1) printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
-		test_signature=TestSet->samples[tile_index]->duplicate();
-		if (tile_areas==0 || tiles==1) ts_selector=this;
-		else ts_selector=TilesTrainingSets[tile_index-test_sample_index];   /* select the TrainingSet of the location of the tile */
-		if (is_continuous) { /* interpolate the value here */
-			val=ts_selector->InterpolateValue(test_signature,method,rank,&closest_sample,&dist);
-			value=value+val/(double)tiles;
-			if (print_to_screen && tiles>1) {
-				if (sample_class) printf ("%.3g\t%.3g\n",TestSet->samples[test_sample_index]->sample_value,val);
-				else printf ("N/A\t%.3g\n",val);
+	if (print_to_screen && tiles>1)
+		printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
+		test_signature = TestSet->samples[ tile_index ]->duplicate();
+		if (tile_areas==0 || tiles==1)
+			ts_selector=this;
+		else 
+			ts_selector = TilesTrainingSets[ tile_index - test_sample_index ];   /* select the TrainingSet of the location of the tile */
+		if( is_continuous )  //interpolate the value here 
+		{
+			val = ts_selector->InterpolateValue( test_signature, method, rank, &closest_sample, &dist );
+			value = value + val / ( double ) tiles;
+			if( print_to_screen && tiles > 1 ) {
+				if( sample_class )
+					printf( "%.3g\t%.3g\n", TestSet->samples[ test_sample_index ]->sample_value, val );
+				else
+					printf( "N/A\t%.3g\n", val );
 			}
 		} else {
-			if (method==WNN) predicted_class=ts_selector->WNNclassify(test_signature, probabilities,&normalization_factor,&closest_sample);
-			if (method==WND) predicted_class=ts_selector->classify2(test_signature, probabilities,&normalization_factor);
-			if (print_to_screen && tiles>1) {
-				printf ("%.3g\t",normalization_factor);
-				for (class_index=1;class_index<=class_num;class_index++) printf ("%.3f\t",probabilities[class_index]);
-				if (sample_class) printf ("%s\t%s\n",class_labels[sample_class],class_labels[predicted_class]);
-				else printf ("UNKNOWN\t%s\n",class_labels[predicted_class]);
+			if( method == WNN )
+				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
+			if( method == WND )
+				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_signature, probabilities, &normalization_factor );
+			if( print_to_screen && tiles>1)
+			{
+				printf( "%.3g\t", normalization_factor );
+				for( class_index = 1; class_index <= class_num; class_index++)
+					printf( "%.3f\t", probabilities[ class_index ] );
+				if( sample_class )
+					printf( "%s\t%s\n", class_labels[ sample_class ], class_labels[ predicted_class ] );
+				else
+					printf( "UNKNOWN\t%s\n", class_labels[ predicted_class ] );
 			}
 //if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
 		}
@@ -1598,6 +1615,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 {  int test_sample_index,class_index,b;//tile_index;
    long accurate_prediction=0, known_images=0;//,interpolate=1;
    	double probabilities_sum[MAX_CLASS_NUM];
+	double value;
+	int predicted_class;
 
    if (tiles<1) tiles=1;       /* make sure the number of tiles is at least 1 */
    if (rank<=0) rank=1;  /* set a valid value to rank                */
@@ -1611,21 +1630,38 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
    if (split && split->image_similarities)
      for (class_index=0;class_index<(TestSet->count/tiles+1)*(TestSet->count/tiles+1);class_index++) split->image_similarities[class_index]=0.0;
 
-   /* test */
-   for (test_sample_index=0;test_sample_index<TestSet->count;test_sample_index+=tiles)
-//   tile_index=0;
-//   for (class_index=0;class_index<=class_num;class_index++) probabilities_sum[class_index]=0;
-   /* start going over the test samples */
-//TestSet->count=250*tiles;   /* FERET */
-   if (is_continuous)   /* continouos values */
-   {  double value=ClassifyImage(TestSet,test_sample_index,method,tiles,tile_areas,TilesTrainingSets,max_tile,rank,split,NULL);
-   } else {  /* discrete classes */
-		long predicted_class=(long)(ClassifyImage(TestSet,test_sample_index,method,tiles,tile_areas,TilesTrainingSets,max_tile,rank,split,NULL));
-		if (TestSet->samples[test_sample_index]->sample_class) {
-			known_images++;
-			if (predicted_class==TestSet->samples[test_sample_index]->sample_class) accurate_prediction++;
-		}
-   }
+   // perform the actual test
+ 
+	 if( DEBUG_CREATE_INDIV_DISTANCE_FILES ) {
+		 // These are files that contain distances and similarities for individual distances
+		 // They are printed into by classify2()
+		 // Initialize them by truncating them.
+		 std::ofstream indiv_dists_file ( "individual_distances.csv", std::ios::trunc );
+		 indiv_dists_file.close();
+
+		 std::ofstream indiv_simls_file ( "individual_similarities.csv", std::ios::trunc );
+		 indiv_simls_file.close();
+		 
+		 std::ofstream class_report ( "class_dists_and_simls.txt", std::ios::trunc );
+		 class_report.close();
+	 }
+
+	 for( test_sample_index = 0; test_sample_index < TestSet->count; test_sample_index += tiles )
+	 {
+		 if( is_continuous )
+			 value = ClassifyImage(TestSet,test_sample_index,method,tiles,tile_areas,TilesTrainingSets,max_tile,rank,split,NULL);
+		   //FIXME: do what with the value in "value"?
+		 else 
+		 {
+			 predicted_class = int( ClassifyImage( TestSet, test_sample_index, method, tiles, tile_areas, TilesTrainingSets, max_tile, rank, split, NULL ) );
+			 if( TestSet->samples[ test_sample_index ]->sample_class )
+			 {
+				 known_images++;
+				 if( predicted_class == TestSet->samples[ test_sample_index ]->sample_class )
+					 accurate_prediction++;
+			 }
+		 }
+	 }
 
    /* normalize the similarity matrix */
    if (split && split->similarity_matrix)
@@ -2124,20 +2160,134 @@ long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, do
 
    comment: must set weights before calling to this function
 */
-long TrainingSet::classify2(signatures *test_sample, double *probabilities, double *normalization_factor)
-{  int sample_index,class_index,sig_index;
+long TrainingSet::classify2( char* name, signatures *test_sample, double *probabilities, double *normalization_factor)
+{ 
+	using namespace std;
+	vector<int> num_samples_per_class( class_num + 1, 0 ); 
+  vector<double> indiv_distances( count, 0.0 ); 
+  vector<double> indiv_similarities( count, 0.0 ); 
+  // class numberings start at 1.
+  vector<double> class_similarities( class_num + 1, 0.0 );
+	vector<double> class_distances( class_num + 1, 0.0 );
+
+  /* normalize the test sample */
+  test_sample->normalize(this);
+
+  int sample_index;
+  int sig_index;
+  double dist;
+  double similarity;
+
+  for( sample_index = 0; sample_index < count; sample_index++ ) {
+    dist = 0.0; 
+    for( sig_index = 0; sig_index < signature_count; sig_index++ )
+      dist += pow( SignatureWeights[ sig_index ], 2 ) * pow( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value, 2 ); 
+    if( dist < DBL_EPSILON ) continue; 
+    
+    similarity = pow( dist, -5 ); 
+    indiv_distances[ sample_index ] = dist;
+    indiv_similarities[ sample_index ] = similarity;
+    class_distances[ samples[ sample_index ]->sample_class ] += dist;
+    class_similarities[ samples[ sample_index ]->sample_class ] += similarity;
+
+    num_samples_per_class[ samples[ sample_index ]->sample_class ]++; 
+    /* printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n",
+       sample_index, samples[sample_index]->sample_class, samp_sum, pow(samp_sum, -5), class_sum[samples[sample_index]->sample_class], samples_num[samples[sample_index]->sample_class]);
+     */
+  }
+
+  long most_probable_class = -1;
+  double closest_dist = INF;
+  int class_index;
+
+  for( class_index = 1; class_index <= class_num; class_index++ )
+  {
+    if( num_samples_per_class[ class_index ] == 0 )
+      continue;
+    // printf( "Dist to class %d = %e = %e class_sum / %d samples\n", class_index, class_sum[class_index]/=samples_num[class_index], class_sum[class_index], samples_num[class_index] );
+
+    if( class_similarities[ class_index ] < closest_dist )
+    {
+      closest_dist = class_similarities[ class_index ];
+      most_probable_class = class_index;
+    }
+  }
+
+  // normalize the marginal probabilities
+  if (probabilities)
+  {
+    double sum_dists=0;
+
+    //printf( "\n\n" );
+
+    for( class_index = 1; class_index <= class_num; class_index++ )
+      sum_dists += class_similarities[ class_index ];
+
+    // printf( "Sum of all distances = %e\n", sum_dists );
+
+    for( class_index = 1; class_index <= class_num; class_index++ )
+      probabilities[ class_index ]= class_similarities[ class_index ] / sum_dists;
+
+    if (normalization_factor) *normalization_factor=sum_dists;
+  }
+
+	if( DEBUG_CREATE_INDIV_DISTANCE_FILES ) {
+		// Looking at how similarities and distances behave
+
+		ofstream indiv_dists_file ( "individual_distances.csv", ios::app );
+		ofstream indiv_simls_file ( "individual_similarities.csv", ios::app );
+		ofstream class_report ( "class_dists_and_simls.txt", ios::app );
+
+		vector<double>::iterator it;
+
+		indiv_dists_file << name << "\t";
+		indiv_dists_file.precision(5);
+		indiv_dists_file << scientific;
+		for( it = indiv_distances.begin(); it != indiv_distances.end(); it++ )
+			indiv_dists_file << *it << ",";
+		indiv_dists_file << endl;
+		indiv_dists_file.close();
+
+		indiv_simls_file << name << "\t";
+		indiv_simls_file.precision(5);
+		indiv_simls_file << scientific;
+		for( it = indiv_similarities.begin(); it != indiv_similarities.end(); it++ )
+			indiv_simls_file << *it << ",";
+		indiv_simls_file << endl;
+		indiv_simls_file.close();
+
+		class_report << name << endl;
+		class_report.precision(5);
+		class_report << scientific;
+		//class zero is the unknown class, don't use it here
+		for( it = class_distances.begin() + 1; it != class_distances.end(); it++)
+			class_report << *it << "\t";
+		class_report << endl;
+		for( it = class_similarities.begin() + 1; it != class_similarities.end(); it++ )
+			class_report << *it << "\t";
+		class_report << endl << endl;
+		class_report.close();
+  }
+
+
+  return(most_probable_class);
+}
+/*
+  {  int sample_index,class_index,sig_index;
    long most_probable_class;
    double samp_sum,*class_sum; //,*samples_num;
    double dist,closest_dist=INF;
    int *samples_num;
    double intermediate_result = 0;
 
-   /* normalize the test sample */
+   // normalize the test sample 
    test_sample->normalize(this);
 
-   /* allocate and initialize memory */
+   // allocate and initialize memory
    class_sum=new double[class_num+1];
    samples_num=new int[class_num+1];
+
+
    for (class_index=0;class_index<=class_num;class_index++)
    {  
      class_sum[class_index]=0.0;
@@ -2156,33 +2306,32 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
          if( intermediate_result > DBL_EPSILON )
            samp_sum += intermediate_result;
      }
-     //if( samp_sum == 0.0 ) continue; /* ignore images that are 100% identical */
+     //if( samp_sum == 0.0 ) continue; // ignore images that are 100% identical 
      if( samp_sum < DBL_EPSILON ) continue; // try to weed out matches that got through due to floating point error 
      class_sum[samples[sample_index]->sample_class]+=pow(samp_sum,-5);
      samples_num[samples[sample_index]->sample_class]++;
-     /* printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n",
-         sample_index, samples[sample_index]->sample_class, samp_sum, pow(samp_sum, -5), class_sum[samples[sample_index]->sample_class], samples_num[samples[sample_index]->sample_class]);
-      */
+     // printf( "\ttest img index %i, test img class: %i, dist w/o ^-5 %f, dist w/ ^-5 %e, class sum so far: %e, number of test images from this class seen so far: %d\n", sample_index, samples[sample_index]->sample_class, samp_sum, pow(samp_sum, -5), class_sum[samples[sample_index]->sample_class], samples_num[samples[sample_index]->sample_class]);
+      
    }
 	 
    for (class_index=1;class_index<=class_num;class_index++)
    {
      if( samples_num[class_index]==0 )
-       class_sum[class_index]=INF;   /* no samples for this class */
-/*     else
-       class_sum[class_index]/=samples_num[class_index];*/   /* find the average distance per sample */
+       class_sum[class_index]=INF;   // no samples for this class 
+//     else
+//       class_sum[class_index]/=samples_num[class_index];   // find the average distance per sample 
      
      // printf( "Dist to class %d = %e = %e class_sum / %d samples\n", class_index, class_sum[class_index]/=samples_num[class_index], class_sum[class_index], samples_num[class_index] );
 
      dist=class_sum[class_index];
      if( dist < closest_dist )
-     {  
+     {
        closest_dist=dist;
        most_probable_class=class_index;
      }
    }
    
-   /* normalize the marginal probabilities */
+   // normalize the marginal probabilities 
    if (probabilities)
    {  
      double sum_dists=0;
@@ -2204,6 +2353,7 @@ long TrainingSet::classify2(signatures *test_sample, double *probabilities, doub
    delete samples_num;
    return(most_probable_class);
 }
+*/
 
 /* InterpolateValue
    Compute the interpolated value of a given test sample
