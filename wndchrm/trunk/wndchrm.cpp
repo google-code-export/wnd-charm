@@ -896,14 +896,14 @@ int main(int argc, char *argv[])
 			// For now, the compromise is to issue a warning, while keeping the defaults as documented.
 			// Additionally, previously all the training samples were used balanced or not, and now its balanced except with -r#
 			// This is also inconsistent with previous behavior.
-				if (testset && (split_ratio < 1.0 || balanced_splits)) {
-					catError (
-						"WARNING: Change from previous versions when specifying a testset with the test command.\n"
-						"  Previously the entire dataset was used for training (balanced or not) if a testset was specified,\n"
-						"  making it impossible to test random training splits on a testset. This was undocumented behavior.\n"
-						"  If the old behavior is desired, use the classify command, or specify -r1 (or -r#1).\n"
-					);
-				}
+// 				if (testset && (split_ratio < 1.0 || balanced_splits)) {
+// 					catError (
+// 						"WARNING: Change from previous versions when specifying a testset with the test command.\n"
+// 						"  Previously the entire dataset was used for training (balanced or not) if a testset was specified,\n"
+// 						"  making it impossible to test random training splits on a testset. This was undocumented behavior.\n"
+// 						"  If the old behavior is desired, use the classify command, or specify -r1 (or -r#1).\n"
+// 					);
+// 				}
 			}
 
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
