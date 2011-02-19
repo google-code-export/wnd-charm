@@ -469,7 +469,8 @@ printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
 	      if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
 	   }
 	   else output_file=stdout;     
-	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,n_train,phylib_path,phylip_algorithm,export_tsv,testset->source_path,image_similarities);   
+	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,n_train,phylib_path,phylip_algorithm,export_tsv,
+	   	testset ? testset->source_path : NULL,image_similarities);   
 	   if (output_file!=stdout) fclose(output_file);
 	   /* copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files */
 	   if (export_tsv || phylib_path)
