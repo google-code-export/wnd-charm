@@ -346,7 +346,10 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
       // if ratio is 0, use the max_train_samples and max_test_samples (balanced training and testing)
       // if ratio is > 0 and <= 1, use ratio (unbalanced training)      
 */
-	if (print_to_screen) printf ("samples per image=%d, training images: %d, testing images %d training fraction=%f\n",samples_per_image,n_train,n_test,train_frac);
+	if (print_to_screen) {
+		if (train_frac > 0) printf ("samples per image=%d, UNBALANCED training fraction=%f\n",samples_per_image,train_frac);
+		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
+	}
      for (split_index=0;split_index<split_num;split_index++)
      { double accuracy;
        double feature_weight_distance=-1.0;
@@ -884,7 +887,25 @@ int main(int argc, char *argv[])
 				splits_num = 1;
 				random_splits = 0;
 				// defaults are different (-r = 1.0 and random_splits = 0.  Set above, though -r can still be modified).
+			} else if (test) {
+			// Warn about change from old behavior when specifying a testset.
+			// We could make the -r default 1 above if there's a testset, but:
+			//  this would be an arbitrary change in defaults for someone new to wndchrm - would they expect this change?
+			//  for the sake of maintaining consistency for someone familiar with wndchrm's previous undocumented behavior.
+			//  leaving us wondering:  Which is worse?
+			// For now, the compromise is to issue a warning, while keeping the defaults as documented.
+			// Additionally, previously all the training samples were used balanced or not, and now its balanced except with -r#
+			// This is also inconsistent with previous behavior.
+				if (testset && (split_ratio < 1.0 || balanced_splits)) {
+					catError (
+						"WARNING: Change from previous versions when specifying a testset with the test command.\n"
+						"  Previously the entire dataset was used for training (balanced or not) if a testset was specified,\n"
+						"  making it impossible to test random training splits on a testset. This was undocumented behavior.\n"
+						"  If the old behavior is desired, use the classify command, or specify -r1 (or -r#1).\n"
+					);
+				}
 			}
+
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
 				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts->tiles_x*sampling_opts->tiles_y, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 					exact_training_images,max_test_images,phylib_path,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
