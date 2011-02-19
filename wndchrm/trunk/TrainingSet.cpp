@@ -1376,21 +1376,20 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    char buffer[512],closest_image[512],color[128],one_image_string[MAX_CLASS_NUM*15];
 
    /* interpolate only if all class labels are values */
-   interpolate=is_numeric;
-   if (tiles<=0) tiles=1;   /* make sure the number of tiles is valid */
-   strcpy(last_path,TestSet->samples[test_sample_index]->full_path);
-   sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
-   for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
-   for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++) {
-	if (print_to_screen && tiles>1)
-		printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
+	interpolate=is_numeric;
+	if (tiles<=0) tiles=1;   /* make sure the number of tiles is valid */
+	strcpy(last_path,TestSet->samples[test_sample_index]->full_path);
+	sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
+	for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
+	for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++) {
+		if (print_to_screen && tiles>1)
+			printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
 		test_signature = TestSet->samples[ tile_index ]->duplicate();
 		if (tile_areas==0 || tiles==1)
 			ts_selector=this;
 		else 
 			ts_selector = TilesTrainingSets[ tile_index - test_sample_index ];   /* select the TrainingSet of the location of the tile */
-		if( is_continuous )  //interpolate the value here 
-		{
+		if( is_continuous ) { //interpolate the value here 
 			val = ts_selector->InterpolateValue( test_signature, method, rank, &closest_sample, &dist );
 			value = value + val / ( double ) tiles;
 			if( print_to_screen && tiles > 1 ) {
@@ -1404,8 +1403,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
 				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_signature, probabilities, &normalization_factor );
-			if( print_to_screen && tiles>1)
-			{
+			if( print_to_screen && tiles>1) {
 				printf( "%.3g\t", normalization_factor );
 				for( class_index = 1; class_index <= class_num; class_index++)
 					printf( "%.3f\t", probabilities[ class_index ] );
@@ -1414,51 +1412,49 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				else
 					printf( "UNKNOWN\t%s\n", class_labels[ predicted_class ] );
 			}
-//if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
+	//if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
 		}
-
-      /* use only the most similar tile */
-      if (max_tile) 
-	  {  sum_prob=0.0;
-         for (class_index=0;class_index<=class_num;class_index++) if (class_index!=predicted_class) sum_prob+=probabilities[class_index];
-         if (is_continuous)
-		 {  if (dist<closest_value_dist)
-            {  closest_value_dist=dist;
-               most_similar_value=val;
-               most_similar_tile=tile_index;		   
-			   tile_closest_sample=closest_sample;
-            }
-		 }
-		 else
-         if (probabilities[predicted_class]/sum_prob>max_tile_similarity) 
-		 {  max_tile_similarity=probabilities[predicted_class]/sum_prob;
-            most_similar_tile=tile_index;
-            most_similar_predicted_class=predicted_class;
-            tile_closest_sample=closest_sample;			
-		 }
-	  }
-	  
-      /* measure the distances between the image to all other images */
-      if (split && split->image_similarities)
-      {  split->image_similarities[(1+test_sample_index/tiles)]=(double)(test_signature->sample_class);   /* for storing the class of each image in the first row (that is not used for anything else) */
-	     for (test_tile_index=0;test_tile_index<TestSet->count;test_tile_index++)
-         {  signatures *compare_to;
-		    if (max_tile) compare_to=TestSet->samples[most_similar_tile]->duplicate();         /* so that only the most similar tile is used */
-		    else compare_to=TestSet->samples[test_tile_index]->duplicate();          
-            compare_to->normalize(this);   /* in order to compare two normalized vectors */
-            split->image_similarities[(1+test_sample_index/tiles)*(TestSet->count/tiles+1)+test_tile_index/tiles+1]+=(distance(test_signature,compare_to,2.0)/tiles);
-            delete compare_to;
-         }
-      }
-	  
-      if ((strcmp(last_path,test_signature->full_path)!=0)) printf("inconsistent tile %d of image '%s' \n",tile_index-test_sample_index,test_signature->full_path); /* check that the tile is consistent */
-      for (class_index=1;class_index<=class_num;class_index++) 
-	    if (max_tile && max_tile_similarity==probabilities[predicted_class]/sum_prob) probabilities_sum[class_index]=probabilities[class_index];  /* take the probabilities of this tile only */
-	    else probabilities_sum[class_index]+=(probabilities[class_index]/(double)tiles);  /* sum the marginal probabilities */	  
-      normalization_factor_avg+=normalization_factor;	  
-      if (split && split->tile_area_accuracy) split->tile_area_accuracy[tile_index-test_sample_index]+=((double)(predicted_class==sample_class))/((double)TestSet->count/(double)tiles); 
-      delete test_signature;
-   } /* iterate over tiles */
+	
+		  /* use only the most similar tile */
+		if (max_tile) {
+			sum_prob=0.0;
+			for (class_index=0;class_index<=class_num;class_index++) if (class_index!=predicted_class) sum_prob+=probabilities[class_index];
+			if (is_continuous) {
+				if (dist<closest_value_dist) {
+					closest_value_dist=dist;
+					most_similar_value=val;
+					most_similar_tile=tile_index;		   
+					tile_closest_sample=closest_sample;
+				}
+			} else if (probabilities[predicted_class]/sum_prob>max_tile_similarity) {
+				max_tile_similarity=probabilities[predicted_class]/sum_prob;
+				most_similar_tile=tile_index;
+				most_similar_predicted_class=predicted_class;
+				tile_closest_sample=closest_sample;			
+			}
+		}
+		  
+		  /* measure the distances between the image to all other images */
+		if (split && split->image_similarities) {
+			split->image_similarities[(1+test_sample_index/tiles)]=(double)(test_signature->sample_class);   /* for storing the class of each image in the first row (that is not used for anything else) */
+			for (test_tile_index=0;test_tile_index<TestSet->count;test_tile_index++) {
+				signatures *compare_to;
+				if (max_tile) compare_to=TestSet->samples[most_similar_tile]->duplicate();         /* so that only the most similar tile is used */
+				else compare_to=TestSet->samples[test_tile_index]->duplicate();          
+				compare_to->normalize(this);   /* in order to compare two normalized vectors */
+				split->image_similarities[(1+test_sample_index/tiles)*(TestSet->count/tiles+1)+test_tile_index/tiles+1]+=(distance(test_signature,compare_to,2.0)/tiles);
+				delete compare_to;
+			}
+		}
+		  
+		if ((strcmp(last_path,test_signature->full_path)!=0)) printf("inconsistent tile %d of image '%s' \n",tile_index-test_sample_index,test_signature->full_path); /* check that the tile is consistent */
+		for (class_index=1;class_index<=class_num;class_index++) 
+			if (max_tile && max_tile_similarity==probabilities[predicted_class]/sum_prob) probabilities_sum[class_index]=probabilities[class_index];  /* take the probabilities of this tile only */
+			else probabilities_sum[class_index]+=(probabilities[class_index]/(double)tiles);  /* sum the marginal probabilities */	  
+		normalization_factor_avg+=normalization_factor;	  
+		if (split && split->tile_area_accuracy) split->tile_area_accuracy[tile_index-test_sample_index]+=((double)(predicted_class==sample_class))/((double)TestSet->count/(double)tiles); 
+		delete test_signature;
+	} /* iterate over tiles */
 
    if (max_tile) 
    {  value=most_similar_value;
