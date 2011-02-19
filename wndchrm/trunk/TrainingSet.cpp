@@ -218,10 +218,10 @@ int numeric;
 		
 		// Check if its numeric.  If not, global is_numeric set to false.
 		numeric = check_numeric(class_labels[class_num],NULL);
-		if (class_num == 1) { //you only get to turn on numeric if you're the first class being read in
+		if (numeric && class_num == 1) { //you only get to turn on numeric if you're the first class being read in
 			is_numeric = 1;
 			if (numeric == 2) is_pure_numeric = 1;
-		} else { // after that, you only get to turn it off
+		} else if (class_num > 1) { // after that, you only get to turn it off
 			if (!numeric) {is_numeric = 0; is_pure_numeric = 0;}
 			else if (numeric == 1) is_pure_numeric = 0;
 		}
@@ -516,6 +516,10 @@ void TrainingSet::SetAttrib(TrainingSet *set)
    /* copy the signature names to the training and test set */
    for (sig_index=0;sig_index<signature_count;sig_index++)
      strcpy(set->SignatureNames[sig_index],SignatureNames[sig_index]);
+   set->is_numeric = is_numeric;
+   set->is_pure_numeric = is_pure_numeric;
+   set->is_continuous = is_continuous;
+   
 }
 
 /*  split
@@ -545,7 +549,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
    class_samples = new long[count];
    
    SetAttrib(TrainSet);      /* copy the same attributes to the training and test set */
-   SetAttrib(TestSet); 
+   if (!TestSet->count > 0) SetAttrib(TestSet); /* don't change the test set if it pre-exists */
    if (tiles<1) tiles=1;    /* make sure the number of tiles is valid */
 //class_num=250; /* FERET */   
    TrainSet->class_num=TestSet->class_num=class_num;
@@ -3187,12 +3191,10 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 		 
          fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
          fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><td><b>Image No.</b></td>",split_index);
-		 if (class_num>0) fprintf(output_file,"<td><b>Normalization<br>Factor</b></td>");
+		 if (!is_continuous) fprintf(output_file,"<td><b>Normalization<br>Factor</b></td>");
          for (class_index=1;class_index<=class_num;class_index++)
-         {  fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index]);
-            interpolate*=(atof(class_labels[class_index])!=0.0 || class_labels[class_index][0]=='0');		 /* interpolate only if all class labels are values */ 
-		 }
-   	     if (interpolate) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
+			fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index]);
+   	     if (is_numeric) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
          else strcpy(interpolated_value,"");
          if (is_continuous) fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
          else fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
