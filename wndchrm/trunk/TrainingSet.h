@@ -147,6 +147,7 @@ public:
    double ClassifyImage(TrainingSet *TestSet, int test_sample_index,int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,int rank, data_split *split, double *similarities);  /* classify one or more images */
    double Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split);     /* test      */
    int SaveToFile(char *filename);                                 /* save the training set values to a file    */
+	bool IsFitFile(char *filename);                                /* checks if its a proper fit file by making sure the first three lines are pure numeric */
    int ReadFromFile(char *filename);                               /* read the training set values from a file  */
    int SaveWeightVector(char *filename);                           /* save the weights of the features into a file */
    double LoadWeightVector(char *filename, double factor);         /* load the weights of the features from a file and assign them to the features of the training set */
@@ -176,6 +177,7 @@ public:
 };
 
 int check_numeric (char *s, double *samp_val);
+void chomp (char *line);
 
 
 #endif

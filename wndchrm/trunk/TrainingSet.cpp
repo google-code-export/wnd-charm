@@ -297,6 +297,28 @@ int TrainingSet::SaveToFile(char *filename)
    return(1);
 }
 
+/* IsFitFile
+   filename -char *- the name of the file to open
+   returned value -int- 1 is a .fit file, 0 if not.
+
+   comment: opens the file and checks if the first three lines are "pure numeric"
+*/
+bool TrainingSet::IsFitFile(char *filename) {
+	char buffer[128];
+	FILE *file;
+	int line_num=3; // number of pure numeric lines to check
+
+	if (!(file=fopen(filename,"r"))) return (0);
+	while (line_num) {
+		fgets(buffer,sizeof(buffer),file);
+		chomp (buffer);
+		if (check_numeric (buffer,NULL) != 2) break;
+		line_num--;
+	}
+	fclose (file);
+	return (line_num == 0);
+}
+
 
 /* ReadFromFile
    filename -char *- the name of the file to open
@@ -328,14 +350,14 @@ int TrainingSet::ReadFromFile(char *filename)
    /* read the signature names */
    for (sig_index=0;sig_index<signature_count;sig_index++)
    {  fgets(buffer,sizeof(buffer),file);
+      chomp (buffer);
       strcpy(SignatureNames[sig_index],buffer);
-      if (strchr(SignatureNames[sig_index],'\n')) *strchr(SignatureNames[sig_index],'\n')='\0';  /* make sure there is no line break in the name */
       if (strstr(SignatureNames[sig_index],"color") || strstr(SignatureNames[sig_index],"Color")) color_features=1;   /* check if color signatures are used */
    }
    /* read the class labels */
    for (class_index=0;class_index<=file_class_num;class_index++)
    {  fgets(buffer,sizeof(buffer),file);
-      if (strchr(buffer,'\n')) *strchr(buffer,'\n')='\0';	  /* make sure there is no line break in the name */
+      chomp (buffer);
       if ( (res = AddClass(buffer) < 0) ) {
       	delete samples;
       	fclose(file);
@@ -357,7 +379,7 @@ int TrainingSet::ReadFromFile(char *filename)
       if (is_continuous) one_sample->sample_value=atof(p_buffer);/* use the same value as an continouos value        */
       else one_sample->sample_value=atof(class_labels[one_sample->sample_class]); /* use the class label as a value */
       fgets(buffer,sizeof(buffer),file);                        /* read the image path (can also be en ampty line)  */
-      if (strchr(buffer,'\n')) *(strchr(buffer,'\n'))='\0';     /* remove the end of line (if there is one)         */
+      chomp (buffer);
       strcpy(one_sample->full_path,buffer);                     /* copy the full path to the signatures object      */
       if ( (res=AddSample(one_sample)) < 0) {
         for (sig_index=0;sig_index<sample_index;sig_index++) delete samples[sig_index];
@@ -799,7 +821,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		// Unknown classes are not pure numeric
 			pure_numeric = 0;
 
-		} else if (!strcmp (path+path_len-4,".fit")) {
+		} else if (IsFitFile (path)) {
 		// Its a .fit file
 
 			if (ReadFromFile (path) < 1) return (CANT_OPEN_FIT);
@@ -1044,10 +1066,7 @@ printf ("Processing directory '%s'\n",path);
 					char_p = strrchr (sig_fullpath,'/');
 					if (!char_p) char_p = sig_fullpath; // in case its just the file
 					else char_p++;
-					// drop newlines
-					char_p2 = char_p;
-					while(*char_p2 && *char_p2 != '\n' && *char_p2 != '\r') *char_p2++;
-					*char_p2 = '\0';
+					chomp (char_p);
 					if (!bsearch (char_p, sig_basenames, n_sig_basenames, sizeof(sig_basenames[0]), comp_strings)) {
 						strcpy(sig_basenames[n_sig_basenames++],char_p);
 						qsort(sig_basenames,n_sig_basenames,sizeof(sig_basenames[0]), comp_strings);
@@ -2791,6 +2810,16 @@ int last_errno, conv_errno;
 	if (numeric && samp_val) *samp_val = val;
 	errno = last_errno;
 	return (numeric+pure_numeric);
+}
+
+
+void chomp (char *line) {
+	size_t len;
+	char *char_p;
+	if (!line || !*line) return;
+	len = strlen ( line );
+	char_p = line+len-1;
+	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
 long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images, char *phylib_path, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)

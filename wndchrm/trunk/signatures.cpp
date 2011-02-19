@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #endif
 
+
 /* global variable */
 extern int print_to_screen;
 
@@ -1204,7 +1205,7 @@ int signatures::LoadFromFile(char *filename)
 
    /* read the path */
    fgets(buffer,sizeof(buffer),value_file);
-   if (strchr(buffer,'\n')) *(strchr(buffer,'\n'))='\0';
+   chomp (buffer);
    strcpy(full_path,buffer);
 
    /* read the feature values */
