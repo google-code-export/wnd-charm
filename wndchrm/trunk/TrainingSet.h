@@ -166,7 +166,7 @@ public:
    int IgnoreFeatureGroup(long index,char *group_name);            /* set the Fisher Score of a group of image features to zero */
    double distance(signatures *sample1, signatures *sample2,double power);  /* Find the weighted Euclidean distance between two samples  */
    long WNNclassify(signatures *test_sample, double *probabilities, double *normalization_factor, signatures **closest_sample);/* classify a sample using weighted nearest neighbor */
-   long classify2(char* name, signatures *test_sample, double *probabilities,double *normalization_factor); /* classify using -5                         */
+   long classify2(char* name, int test_sample_index, signatures *test_sample, double *probabilities,double *normalization_factor); /* classify using -5                         */
    double InterpolateValue(signatures *test_sample, int method, int N, signatures **closest_sample, double *closest_dist);  /* interpolate a value */
    long classify3(signatures *test_sample, double *probabilities,double *normalization_factor);
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */

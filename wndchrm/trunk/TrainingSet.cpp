@@ -42,10 +42,12 @@
 #include <cfloat> // Has definition of DBL_EPSILON
 #include <unistd.h> // unlink
 
+// #include <iostream> // Debug
+//#include <limits>
 #include <vector>
 #include <fstream>
 
-#define FLOAT_EQ(x,v) (((v - DBL_EPSILON) < x) && (x <( v + DBL_EPSILON)))
+#define FLOAT_EQ(x,v,y) (((v - FLT_EPSILON * y) < x) && (x < ( v + FLT_EPSILON * y)))
 
 #include "TrainingSet.h"
 //#include "cmatrix.h"
@@ -1421,7 +1423,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 			if( method == WNN )
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
-				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_signature, probabilities, &normalization_factor );
+				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_sample_index, test_signature, probabilities, &normalization_factor );
 			if( print_to_screen && tiles>1) {
 				printf( "%.3g\t", normalization_factor );
 				for( class_index = 1; class_index <= class_num; class_index++)
@@ -1651,7 +1653,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 
    // perform the actual test
  
-	 if( DEBUG_CREATE_INDIV_DISTANCE_FILES ) {
+	 if( DEBUG_CREATE_INDIV_DISTANCE_FILES && method == WND) {
 		 // These are files that contain distances and similarities for individual distances
 		 // They are printed into by classify2()
 		 // Initialize them by truncating them.
@@ -1726,7 +1728,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 void TrainingSet::normalize()
 {  
   int sig_index, samp_index, max_value_index;
-  double *sig_data, min_value, max_value;
+  double *sig_data;
+	double min_value, max_value;
 
   sig_data = new double[ count ];
 
@@ -1745,8 +1748,11 @@ void TrainingSet::normalize()
 
     // Try not to use the absolute lowest and highest signiture value as min and max
     // Create a buffer for outlying values at both ends of the signiture spectrum
-    max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
-    min_value = sig_data[ (int)( 0.025 * count ) ];
+    //max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
+    //min_value = sig_data[ (int)( 0.025 * count ) ];
+
+		min_value = sig_data[ 0 ];
+		max_value = sig_data[ max_value_index ];
 
     /* these values of min and max can be used for normalizing a test vector */
     SignatureMaxes[ sig_index ] = max_value;
@@ -2179,7 +2185,7 @@ long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, do
 
    comment: must set weights before calling to this function
 */
-long TrainingSet::classify2( char* name, signatures *test_sample, double *probabilities, double *normalization_factor)
+long TrainingSet::classify2( char* name, int test_sample_index, signatures *test_sample, double *probabilities, double *normalization_factor)
 { 
 	using namespace std;
 	vector<int> num_samples_per_class( class_num + 1, 0 ); 
@@ -2188,6 +2194,7 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
   // class numberings start at 1.
   vector<double> class_similarities( class_num + 1, 0.0 );
 	vector<double> class_distances( class_num + 1, 0.0 );
+	vector<int> num_collisions( class_num + 1, 0 );
 
   /* normalize the test sample */
   test_sample->normalize(this);
@@ -2195,18 +2202,44 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
   int sample_index;
   int sig_index;
   double dist;
+	double dist_sum;
   double similarity;
 
   for( sample_index = 0; sample_index < count; sample_index++ ) {
-    dist = 0.0; 
+    dist_sum = 0.0;
     for( sig_index = 0; sig_index < signature_count; sig_index++ )
-      dist += pow( SignatureWeights[ sig_index ], 2 ) * pow( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value, 2 ); 
-    if( dist < DBL_EPSILON ) continue; 
+		{
+			dist = fabs( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value );
+			if( dist < DBL_EPSILON )
+			//if( FLOAT_EQ( test_sample->data[ sig_index ].value, samples[ sample_index ]->data[ sig_index ].value, 100000000 ) )
+			{
+				
+			  //if( !( FLOAT_EQ( test_sample->data[ sig_index ].value, 0.0, 1) && FLOAT_EQ( samples[ sample_index ]->data[ sig_index ].value, 0, 1) ) )
+				/*	cout << "--- Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
+						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
+							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl;
+				*/
+				continue;
+			}
+			else
+			{
+				/*	cout << "### Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
+						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
+							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl; */
+				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value, 2 );
+			}
+		}
+
+    if( dist_sum < FLT_EPSILON ) {
+			//cout << "Small dist: " << test_sample_index << " & " << sample_index << endl;
+			num_collisions[ samples[ sample_index ]->sample_class ]++;
+			continue;
+		}
     
-    similarity = pow( dist, -5 ); 
-    indiv_distances[ sample_index ] = dist;
+    similarity = pow( dist_sum, -5 ); 
+    indiv_distances[ sample_index ] = dist_sum;
     indiv_similarities[ sample_index ] = similarity;
-    class_distances[ samples[ sample_index ]->sample_class ] += dist;
+    class_distances[ samples[ sample_index ]->sample_class ] += dist_sum;
     class_similarities[ samples[ sample_index ]->sample_class ] += similarity;
 
     num_samples_per_class[ samples[ sample_index ]->sample_class ]++; 
@@ -2216,18 +2249,23 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
   }
 
   long most_probable_class = -1;
-  double closest_dist = INF;
+  double max_similarity = 0;
   int class_index;
 
   for( class_index = 1; class_index <= class_num; class_index++ )
   {
     if( num_samples_per_class[ class_index ] == 0 )
       continue;
+		else
+		{
+			class_distances[ class_index ] /= num_samples_per_class[ class_index ];
+			class_similarities[ class_index ] /= num_samples_per_class[ class_index ];
+		}
     // printf( "Dist to class %d = %e = %e class_sum / %d samples\n", class_index, class_sum[class_index]/=samples_num[class_index], class_sum[class_index], samples_num[class_index] );
 
-    if( class_similarities[ class_index ] < closest_dist )
+    if( class_similarities[ class_index ] > max_similarity )
     {
-      closest_dist = class_similarities[ class_index ];
+      max_similarity = class_similarities[ class_index ];
       most_probable_class = class_index;
     }
   }
@@ -2247,7 +2285,8 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
     for( class_index = 1; class_index <= class_num; class_index++ )
       probabilities[ class_index ]= class_similarities[ class_index ] / sum_dists;
 
-    if (normalization_factor) *normalization_factor=sum_dists;
+    if( normalization_factor )
+			*normalization_factor = sum_dists;
   }
 
 	if( DEBUG_CREATE_INDIV_DISTANCE_FILES ) {
@@ -2258,8 +2297,9 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
 		ofstream class_report ( "class_dists_and_simls.txt", ios::app );
 
 		vector<double>::iterator it;
+		vector<int>::iterator iit;
 
-		indiv_dists_file << name << "\t";
+		indiv_dists_file << name << ",";
 		indiv_dists_file.precision(5);
 		indiv_dists_file << scientific;
 		for( it = indiv_distances.begin(); it != indiv_distances.end(); it++ )
@@ -2267,7 +2307,7 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
 		indiv_dists_file << endl;
 		indiv_dists_file.close();
 
-		indiv_simls_file << name << "\t";
+		indiv_simls_file << name << ",";
 		indiv_simls_file.precision(5);
 		indiv_simls_file << scientific;
 		for( it = indiv_similarities.begin(); it != indiv_similarities.end(); it++ )
@@ -2275,7 +2315,8 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
 		indiv_simls_file << endl;
 		indiv_simls_file.close();
 
-		class_report << name << endl;
+		class_report << "Image " << test_sample_index << " "<< name << ", predicted: "
+		             << most_probable_class << ", ground truth: " << samples[ test_sample_index ]->sample_class << endl;
 		class_report.precision(5);
 		class_report << scientific;
 		//class zero is the unknown class, don't use it here
@@ -2284,6 +2325,12 @@ long TrainingSet::classify2( char* name, signatures *test_sample, double *probab
 		class_report << endl;
 		for( it = class_similarities.begin() + 1; it != class_similarities.end(); it++ )
 			class_report << *it << "\t";
+		class_report << endl;
+		for( iit = num_collisions.begin() + 1; iit != num_collisions.end(); iit++ )
+			class_report << *iit << "\t";
+		class_report << endl << endl;
+		for( iit = num_samples_per_class.begin() + 1; iit != num_samples_per_class.end(); iit++ )
+			class_report << *iit << "\t";
 		class_report << endl << endl;
 		class_report.close();
   }

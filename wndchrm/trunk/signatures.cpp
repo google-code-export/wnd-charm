@@ -1091,20 +1091,23 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
    ts -TrainingSet *- the training set according which the signature values should be normalized
 */
 void signatures::normalize(void *TrainSet)
-{  int sig_index;
-   TrainingSet *ts;
-   ts=(TrainingSet *)TrainSet;
-   for (sig_index=0;sig_index<count;sig_index++)
-   { if (data[sig_index].value>=INF) data[sig_index].value=0;
-     else
-     if (data[sig_index].value<ts->SignatureMins[sig_index]) data[sig_index].value=ts->SignatureMins[sig_index];
-     else
-     if (data[sig_index].value>ts->SignatureMaxes[sig_index]) data[sig_index].value=ts->SignatureMaxes[sig_index];
-     else
-     if (ts->SignatureMins[sig_index]>=ts->SignatureMaxes[sig_index]) data[sig_index].value=0; /* prevent possible division by zero */
-     else
-     data[sig_index].value=100*(data[sig_index].value-ts->SignatureMins[sig_index])/(ts->SignatureMaxes[sig_index]-ts->SignatureMins[sig_index]);
-   }
+{
+	int sig_index;
+	TrainingSet *ts;
+	ts=(TrainingSet *)TrainSet;
+	for( sig_index = 0; sig_index < count; sig_index++ )
+	{
+		if( data[ sig_index ].value >= INF )
+			data[sig_index].value=0;
+		else if( data[ sig_index ].value < ts->SignatureMins[ sig_index ] )
+			data[ sig_index ].value = ts->SignatureMins[ sig_index ];
+		else if( data[ sig_index ].value > ts->SignatureMaxes[ sig_index ] )
+			data[ sig_index ].value = ts->SignatureMaxes[ sig_index ];
+		else if( ts->SignatureMins[ sig_index ] >= ts->SignatureMaxes[ sig_index ] )
+			data[ sig_index ].value = 0; /* prevent possible division by zero */
+		else
+			data[ sig_index ].value=100*(data[sig_index].value-ts->SignatureMins[sig_index])/(ts->SignatureMaxes[sig_index]-ts->SignatureMins[sig_index]);
+	}
 }
 
 
