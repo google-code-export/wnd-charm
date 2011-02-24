@@ -1517,19 +1517,16 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	if (do_html) sprintf(one_image_string,"<tr><td>%d</td>",test_sample_index/tiles)+1;  /* image index */
 	if (print_to_screen) {
 		printf("%s",TestSet->samples[test_sample_index]->full_path);
-		if (tiles > 1) printf(" (RESULT)");
+		if (tiles > 1) printf(" (AVG)");
 		printf ("\t");
 	}
 
 	if (!is_continuous && (do_html || print_to_screen)) { /* normlization factor */
-		if( normalization_factor_avg < 0.001 ) {
-			if (do_html) sprintf( buffer,"<td>%.3e</td>", normalization_factor_avg );
-			if (print_to_screen) printf ("%.3e\t",normalization_factor_avg);
-		} else {
-			if (do_html) sprintf( buffer,"<td>%.3f</td>", normalization_factor_avg );
-			if (print_to_screen) printf ("%.3f\t",normalization_factor_avg);
+		if (do_html) {
+			sprintf( buffer,"<td>%.3g</td>", normalization_factor_avg );
+			strcat(one_image_string, buffer);
 		}
-		if (do_html) strcat(one_image_string, buffer);
+		if (print_to_screen) printf ("%.3g\t",normalization_factor_avg);
 	}
 	if (do_html || print_to_screen) {
 		for (class_index=1;class_index<=class_num;class_index++) {
@@ -2959,11 +2956,11 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
       fprintf(output_file,"<tr> <td>Split %d</td> \n <td align=\"center\" valign=\"top\"> \n",split_index+1);
       if (class_num>0)
-      {  fprintf(output_file,"Accuracy: <b>%.2f of total (P=%e) </b><br> \n",splits[split_index].accuracy,P);	  
+      {  fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g) </b><br> \n",splits[split_index].accuracy,P);	  
          fprintf(output_file,"<b>%.2f &plusmn; %.1f Avg per Class Correct of total</b><br> \n",avg_accuracy,plus_minus);
       }
 	  if (splits[split_index].pearson_coefficient!=0) 
-      {  fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%e) <br>\n",splits[split_index].pearson_coefficient,splits[split_index].pearson_p_value);
+      {  fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%.3g) <br>\n",splits[split_index].pearson_coefficient,splits[split_index].pearson_p_value);
          fprintf(output_file,"Mean absolute difference: %.4f <br>\n",splits[split_index].avg_abs_dif);
 //      }
 //	  else
@@ -2989,10 +2986,10 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	    avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/pow(tiles,2))-correct)*factorial((long)(count/pow(tiles,2)))/(factorial(correct)*factorial((long)(count/pow(tiles,2))-correct));		
 //printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/tiles),(long)((long)(count/tiles)*(splits_accuracy/split_num)),0.0,avg_p2);		
       fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
-      fprintf(output_file,"Accuracy: <b>%.2f of total (P=%e)</b><br> \n",splits_accuracy/split_num,avg_p2);
+      fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
    }
    if (avg_pearson!=0) 
-   {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%e) <br>\n",avg_pearson/split_num,avg_p/split_num);
+   {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
       fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
    }   
    
