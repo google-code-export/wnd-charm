@@ -565,88 +565,85 @@ void TrainingSet::SetAttrib(TrainingSet *set)
     Range-checking must occur outside of this call.
 */
 int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples, int exact_max_train)
-{  long *class_samples;
-   int res;
-   int class_index,sig_index,tile_index;
-   int number_of_test_samples, number_of_train_samples;
-   long class_counts[MAX_CLASS_NUM];
-   class_samples = new long[count];
-   
-   SetAttrib(TrainSet);      /* copy the same attributes to the training and test set */
-   if (!TestSet->count > 0) SetAttrib(TestSet); /* don't change the test set if it pre-exists */
-   if (tiles<1) tiles=1;    /* make sure the number of tiles is valid */
-//class_num=250; /* FERET */   
-   TrainSet->class_num=TestSet->class_num=class_num;
-   number_of_test_samples = test_samples;
-   number_of_train_samples=train_samples; // balanced training
-   if (TestSet->count > 0) number_of_test_samples = 0; // test already has samples from a file
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  int sample_index,sample_count=0;
-      int class_samples_count=0;
-      for (sample_index=0;sample_index<count;sample_index++)
-        if (samples[sample_index]->sample_class==class_index || is_continuous)
-//if (strstr(samples[sample_index]->full_path,"_fa") || strstr(samples[sample_index]->full_path,"_fb") || strstr(samples[sample_index]->full_path,"_rc") || strstr(samples[sample_index]->full_path,"_rb") || strstr(samples[sample_index]->full_path,"_ql") || strstr(samples[sample_index]->full_path,"_qr"))	  	/* FERET */
-          class_samples[class_samples_count++]=sample_index;	  
-      class_samples_count/=tiles;
-	  class_counts[class_index]=class_samples_count;
-	  // Determine number of training samples.
-      if (ratio > 0.0 && ratio <= 1.0) // unbalanced training
-     	 number_of_train_samples=floor( (ratio * (float)class_samples_count) + 0.5 );
-      /* add the samples to the training set */
-      if (number_of_train_samples + number_of_test_samples > class_samples_count) {
-		printf("While splitting class %s, training images (%d) + testing images (%d) is greater than total images in the class (%d)\n",
-			class_labels[class_index], number_of_train_samples, number_of_test_samples, class_samples_count);
-		exit (-1);
-      }
-//printf ("getting %d training images from class %s\n", number_of_train_samples, class_labels[class_index]);
-      for (sample_index=0;sample_index<number_of_train_samples;sample_index++)
-      {  long rand_index;
-      	if (randomize) rand_index=rand() % class_samples_count; // find a random sample
-      	else rand_index=0;
+{
+	long *class_samples;
+	int res;
+	int class_index,sig_index,tile_index;
+	int number_of_test_samples, number_of_train_samples;
+	long class_counts[MAX_CLASS_NUM];
+	class_samples = new long[count];
 
-//int b=0;   /* FERET */
-//for (int a=0;a<class_samples_count;a++)
-//if (strstr(samples[class_samples[a*tiles]]->full_path,"_fb"))
-//{ rand_index=a;
-//  b=1;
-//  break;
-//}
-//if (b==0) break;
+	SetAttrib( TrainSet );      // copy the same attributes to the training and test set
+	if( !TestSet-> count > 0 )
+		SetAttrib(TestSet); // don't change the test set if it pre-exists
+	if( tiles < 1 )
+		tiles = 1;    // make sure the number of tiles is valid 
+	TrainSet->class_num = TestSet->class_num = class_num;
+	number_of_test_samples = test_samples;
+	number_of_train_samples = train_samples; // balanced training
+	if( TestSet->count > 0 )
+		number_of_test_samples = 0; // test already has samples from a file
+	for( class_index = 1; class_index <= class_num; class_index++ )
+	{
+		int sample_index,sample_count=0;
+		int class_samples_count=0;
+		for( sample_index = 0 ; sample_index < count; sample_index++ )
+			if( samples[ sample_index ]->sample_class == class_index || is_continuous )
+				class_samples[ class_samples_count++ ] = sample_index;	  
+		class_samples_count /= tiles;
+		class_counts[ class_index ] = class_samples_count;
 
-         for (tile_index=0;tile_index<tiles;tile_index++)    /* add all the tiles of that image */
-           if ( (res=TrainSet->AddSample(samples[class_samples[rand_index*tiles+tile_index]]->duplicate())) < 0) return (res);   /* add the random sample */		   
-         /* remove the index */
-         memmove(&(class_samples[rand_index*tiles]),&(class_samples[rand_index*tiles+tiles]),sizeof(long)*(tiles*(class_samples_count-rand_index)));
-         class_samples_count--;
-      }
-	  
-      /* now add the remaining samples to the Test Set up to the maximum */
-      // Here we're adding samples, so we multiply the counter by samples per image
-      sample_count = number_of_test_samples * tiles;
-//printf ("getting %d testing samples from class %s\n", sample_count, class_labels[class_index]);
-		for (sample_index=0;sample_count>0;sample_index++) {
-//if (strstr(samples[class_samples[sample_index]]->full_path,"_fa") || strstr(samples[class_samples[sample_index]]->full_path,"_fb") || strstr(samples[class_samples[sample_index]]->full_path,"_hr") || strstr(samples[class_samples[sample_index]]->full_path,"_hl") || strstr(samples[class_samples[sample_index]]->full_path,"_pr"))	  	/* FERET */
-//if (strstr(samples[class_samples[sample_index]]->full_path,"_fa")) /* FERET */
-//if (strstr(samples[class_samples[sample_index]]->full_path,"_fa") || strstr(samples[class_samples[sample_index]]->full_path,"_fb") || strstr(samples[class_samples[sample_index]]->full_path,"_rc") || strstr(samples[class_samples[sample_index]]->full_path,"_rb") || strstr(samples[class_samples[sample_index]]->full_path,"_ql") || strstr(samples[class_samples[sample_index]]->full_path,"_qr"))	  	/* FERET */
-			if ( (res=TestSet->AddSample(samples[class_samples[sample_index]]->duplicate())) < 0) return (res);
+		// Determine number of training samples.
+		if( ratio > 0.0 && ratio <= 1.0 ) // unbalanced training
+			number_of_train_samples = floor( (ratio * (float)class_samples_count) + 0.5 );
+		// add the samples to the training set
+		if( number_of_train_samples + number_of_test_samples > class_samples_count ) {
+			printf("While splitting class %s, training images (%d) + testing images (%d) is greater than total images in the class (%d)\n",
+					class_labels[class_index], number_of_train_samples, number_of_test_samples, class_samples_count);
+			exit (-1);
+		}
+		//printf ("getting %d training images from class %s\n", number_of_train_samples, class_labels[class_index]);
+		for( sample_index = 0; sample_index < number_of_train_samples; sample_index++ )
+		{ 
+			long rand_index;
+			if( randomize )
+				rand_index = rand() % class_samples_count; // find a random sample
+			else rand_index=0;
+
+			for( tile_index=0; tile_index < tiles; tile_index++ )    // add all the tiles of that image 
+				if( ( res = TrainSet->AddSample( samples[ class_samples[ rand_index * tiles + tile_index ] ]->duplicate() ) ) < 0) return (res);   // add the random sample		   
+			// remove the index
+			memmove( &( class_samples[ rand_index * tiles ] ), &( class_samples[ rand_index * tiles + tiles ] ), sizeof( long )*( tiles*( class_samples_count - rand_index ) ) );
+			class_samples_count--;
+		}
+
+		// now add the remaining samples to the Test Set up to the maximum
+		// Here we're adding samples, so we multiply the counter by samples per image
+		sample_count = number_of_test_samples * tiles;
+		//printf ("getting %d testing samples from class %s\n", sample_count, class_labels[class_index]);
+		for( sample_index = 0; sample_count > 0; sample_index++ )
+		{
+			if( ( res = TestSet->AddSample( samples[ class_samples[ sample_index ] ]->duplicate() ) ) < 0 ) return (res);
 			sample_count--;
 		}
-   }
+	}
 
-   /* remove the class if it doesn't have enough samples */
-   class_index=class_num;
-   if (exact_max_train)
-   while (class_index>0)
-   {  if (class_counts[class_index]<=train_samples-test_samples)
-      {  TrainSet->RemoveClass(class_index);
-	     TestSet->RemoveClass(class_index);
-	     RemoveClass(class_index);
-	  }
-	  class_index--;
-   }
-   
-   delete class_samples;
-   return (1);
+	// remove the class if it doesn't have enough samples
+	class_index=class_num;
+	if( exact_max_train )
+		while( class_index > 0 )
+		{
+			if( class_counts[ class_index ] <= train_samples - test_samples )
+			{
+				TrainSet->RemoveClass( class_index );
+				TestSet->RemoveClass( class_index );
+				RemoveClass( class_index );
+			}
+			class_index--;
+		}
+
+	delete class_samples;
+	return (1);
 }
 
 /* SplitAreas
