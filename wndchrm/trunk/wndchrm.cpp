@@ -215,6 +215,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 	// Innitialize what we will be returning
 	*n_train_p = 0;
 	*n_test_p = 0;
+	*train_frac_p = 0.0;
 
 	/*
 	  Bounds checking on samples.

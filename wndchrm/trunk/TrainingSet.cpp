@@ -534,6 +534,7 @@ void TrainingSet::SetAttrib(TrainingSet *set)
 {  int class_index,sig_index;
    set->signature_count=signature_count;
    set->color_features=color_features;
+	 // set->count = count; don't set this, count get incremented as you load sigs into it
    /* copy the class labels to the train and test */
    for (class_index=0;class_index<=class_num;class_index++)
      strcpy(set->class_labels[class_index],class_labels[class_index]);
@@ -596,6 +597,8 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 		// Determine number of training samples.
 		if( ratio > 0.0 && ratio <= 1.0 ) // unbalanced training
 			number_of_train_samples = floor( (ratio * (float)class_samples_count) + 0.5 );
+		else
+			number_of_train_samples = train_samples;
 		// add the samples to the training set
 		if( number_of_train_samples + number_of_test_samples > class_samples_count ) {
 			printf("While splitting class %s, training images (%d) + testing images (%d) is greater than total images in the class (%d)\n",
@@ -1723,30 +1726,26 @@ void TrainingSet::normalize()
 {  
   int sig_index, samp_index, max_value_index;
   double *sig_data;
-	double min_value, max_value;
+	double min_value = INF, max_value = -INF;
 
   sig_data = new double[ count ];
 
   for( sig_index = 0; sig_index < signature_count; sig_index++ )
   {  
     // Get the values for this particular feature across entire training set
-    for( samp_index = 0; samp_index < count; samp_index++ )
+    for( samp_index = 0; samp_index < count; samp_index++ ) 
+		{
       sig_data[ samp_index ] = samples[ samp_index ]->data[ sig_index ].value;
-
-    qsort( sig_data, count, sizeof(double), compare_two_doubles );
-    max_value_index = count - 1;
-
-    /* make sure the maximum value is not SIG_INF */
-    while( sig_data[ max_value_index ] == INF && max_value_index > 0 )
-      max_value_index--;
-
-    // Try not to use the absolute lowest and highest signiture value as min and max
-    // Create a buffer for outlying values at both ends of the signiture spectrum
-    //max_value = sig_data[ (int)( 0.975 * max_value_index ) ];
-    //min_value = sig_data[ (int)( 0.025 * count ) ];
-
-		min_value = sig_data[ 0 ];
-		max_value = sig_data[ max_value_index ];
+			if( sig_data[ samp_index ] > max_value )
+			{
+				if( sig_data[ samp_index ] != INF )
+					max_value = sig_data[ samp_index ];
+			}
+			else if( sig_data[ sample_index ] < min_value )
+			{
+				min_value = sig_data[ samp_index ];
+			}
+		}
 
     /* these values of min and max can be used for normalizing a test vector */
     SignatureMaxes[ sig_index ] = max_value;
