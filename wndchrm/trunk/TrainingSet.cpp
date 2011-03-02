@@ -27,8 +27,9 @@
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-
+#ifdef WIN32
 #pragma hdrstop
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -175,6 +176,8 @@ int TrainingSet::AddContinuousClass(char *label) {
 	if (label) snprintf(class_labels[CONTINUOUS_CLASS_INDEX],MAX_CLASS_NAME_LENGTH,"%s",label);
 	else class_labels[CONTINUOUS_CLASS_INDEX] = '\0';
 	class_nsamples[CONTINUOUS_CLASS_INDEX] = 0;
+	
+	return (1);
 }
 
 
@@ -247,7 +250,7 @@ int numeric;
                         can fail due to bad sample class
 */
 int TrainingSet::AddSample(signatures *new_sample)
-{  int sig_index;
+{
    /* check if the sample can be added */
 	if (new_sample->sample_class > class_num) {
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
@@ -581,7 +584,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 {
 	long *class_samples;
 	int res;
-	int class_index,sig_index,tile_index;
+	int class_index,tile_index;
 	int number_of_test_samples, number_of_train_samples;
 	long class_counts[MAX_CLASS_NUM];
 	class_samples = new long[count];
@@ -665,6 +668,8 @@ int TrainingSet::SplitAreas(long tiles_num, TrainingSet **TrainingSets)
       tile_index++;
       if (tile_index>=tiles_num) tile_index=0;
    }
+   
+   return (1);
 }
 
 
@@ -692,6 +697,7 @@ int TrainingSet::AddAllSignatures() {
 		//    A sig file can exist and be empty and unlocked however briefly.
 
 		errno = 0;
+		res = 1;
 		if (samples[samp_index]->count < 1) {
 			res = samples[samp_index]->ReadFromFile(NULL,1);
 		}
@@ -747,16 +753,16 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	struct dirent *ent;
 	char buffer[512], filename[512], label[512], class_label[MAX_CLASS_NAME_LENGTH], *label_p;
 	char classes_found[MAX_CLASS_NUM][MAX_CLASS_NAME_LENGTH];
-	int res,n_classes_found=0, do_subdirs=0, class_found_index, class_index, samp_index, file_class_num,sample_index,pure_numeric=1;
+	int res,n_classes_found=0, do_subdirs=0, class_found_index, class_index, file_class_num,pure_numeric=1;
 	double samp_val;
 	FILE *input_file=NULL;
 	int fit_file=0;
 
 
 	if (path[path_len-1]=='/') path[path_len-1]='\0';  /* remove a last '/' is there is one       */
-	if (root_dir=opendir(path)) {
+	if ( (root_dir=opendir(path)) ) {
 	// path is a directory
-		while (ent = readdir(root_dir)) {
+		while ( (ent = readdir(root_dir)) ) {
 			if (!strcmp (ent->d_name,".") || !strcmp (ent->d_name,"..")) continue; // ignore . and .. sub-dirs
 			sprintf(buffer,"%s/%s",path,ent->d_name);
 
@@ -774,7 +780,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 				n_classes_found = 0;
 				break; // Don't read any more entries.
 
-			} else if (class_dir=opendir(buffer)) {
+			} else if ( (class_dir=opendir(buffer)) ) {
 			// A directory with sub-directories
 				snprintf(class_label,MAX_CLASS_NAME_LENGTH,"%s",ent->d_name);	/* the label of the class is the directory name */
 			// Peek inside to make sure we have at least one recognized image file in there.
@@ -827,7 +833,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 			if (ReadFromFile (path) < 1) return (CANT_OPEN_FIT);
 			fit_file=1;
 
-		} else if (input_file=fopen(path,"r")) {
+		} else if ( (input_file=fopen(path,"r")) ) {
 		// read the images from a file of filenames
 
 			n_classes_found = 0;
@@ -983,7 +989,6 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 			catError ("WARNING: Trying to make a continuous dataset with no defined classes found.  Samples are unknown.\n");
 		} else if (make_continuous) {
 			MakeContinuous (NULL);
-			if (res < 0) return (res);
 		}
 	}
 
@@ -1040,12 +1045,12 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 	char img_basenames[MAX_FILES_IN_CLASS][64];
 	char sig_basenames[MAX_FILES_IN_CLASS][64];
 	int res=1,files_in_class_count=0,n_sig_basenames=0,n_img_basenames=0,file_index;
-	char buffer[512],*char_p,*char_p2,*sig_fullpath;
+	char buffer[512],*char_p,*sig_fullpath = NULL;
 	FILE *sigfile;
 
 printf ("Processing directory '%s'\n",path);
 	if (! (class_dir=opendir(path)) ) { catError ("Can't open directory %s\n",path); return (0); }
-	while (ent = readdir(class_dir)) {
+	while ( (ent = readdir(class_dir)) ) {
 		if (!strcmp (ent->d_name,".") || !strcmp (ent->d_name,"..")) continue;
 		if (!IsSupportedFormat(ent->d_name)) continue;
 
@@ -1060,7 +1065,7 @@ printf ("Processing directory '%s'\n",path);
 				*buffer = '\0';
 				if ( fgets (buffer , 512 , sigfile) ) sig_fullpath = fgets (buffer , 512 , sigfile);
 				fclose (sigfile);
-				if (*sig_fullpath) { // not empty
+				if (sig_fullpath && *sig_fullpath) { // not empty
 				 // the leading paths may not be correct for all sigs (i.e. NFS mounts with different mountpoints)
 				 // The only thing we care about right now is the set of sig files in this directory stemming from the same base image.
 					char_p = strrchr (sig_fullpath,'/');
@@ -1150,9 +1155,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	char buffer[IMAGE_PATH_LENGTH];
 	FILE *sigfile;
 	int sig_index,n_sigs=0;
-	char sample_name[SAMPLE_NAME_LENGTH],preproc_name[SAMPLE_NAME_LENGTH];
-	int sample_name_lngth,preproc_name_lngth;
-	int rotations,tiles_x,tiles_y;
 
 	struct siginfo_s {
 		signatures *sig;
@@ -1324,7 +1326,7 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
 		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-		if (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) {
+		if ( (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
 			ImageSignatures->LoadFromFile (old_sig_filename);
 			if (ImageSignatures->count < 1) {
 				catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));
@@ -1356,7 +1358,7 @@ printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig
 	
 // don't release any locks until we're done with this image
 // this prevents another process from opening the same image to calculate a different sub-set of sigs
-	for (sig_index == 0; sig_index < n_sigs; sig_index++) {
+	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		if (our_sigs[sig_index].file) {
 			fclose (our_sigs[sig_index].file);
 		}
@@ -1390,7 +1392,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    char interpolated_value[128],last_path[IMAGE_PATH_LENGTH];
    TrainingSet *ts_selector;
    int most_similar_tile=1,most_similar_predicted_class=0;
-   double val,sum_prob,dist,value=0.0,value_sum=0.0,most_similar_value=0.0,closest_value_dist=INF,max_tile_similarity=0.0;  /* use for the continouos value */
+   double val=0.0,sum_prob=0.0,dist,value=0.0,most_similar_value=0.0,closest_value_dist=INF,max_tile_similarity=0.0;  /* use for the continouos value */
    int do_html=0;
    char buffer[512],closest_image[512],color[128],one_image_string[MAX_CLASS_NUM*15];
 
@@ -1512,7 +1514,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    /* print the report line to a string (for the final report) */
 	if (split && split->individual_images) do_html = 1;
 
-	if (do_html) sprintf(one_image_string,"<tr><td>%d</td>",test_sample_index/tiles)+1;  /* image index */
+	if (do_html) sprintf(one_image_string,"<tr><td>%d</td>",(test_sample_index/tiles)+1);  /* image index */
 	if (print_to_screen) {
 		printf("%s",TestSet->samples[test_sample_index]->full_path);
 		if (tiles > 1) printf(" (AVG)");
@@ -1630,7 +1632,6 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split)
 {  int test_sample_index,class_index,b;//tile_index;
    long accurate_prediction=0, known_images=0;//,interpolate=1;
-   	double probabilities_sum[MAX_CLASS_NUM];
 	double value;
 	int predicted_class;
 
@@ -1722,7 +1723,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 
 void TrainingSet::normalize()
 {  
-  int sig_index, samp_index, max_value_index;
+  int sig_index, samp_index;
   double *sig_data;
 	double min_value = INF, max_value = -INF;
 
@@ -1802,7 +1803,7 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
    int sig_index,sample_index;
 
    /* use mRMR (if an executable file "mrmr" exists) */
-   if (mrmr_file=fopen("mrmr","r")) fclose(mrmr_file);
+   if ( (mrmr_file=fopen("mrmr","r")) ) fclose(mrmr_file);
    if (mrmr_file)  /* use mrmr */
    {  /* first create a csv file for mrmr */
       mrmr_file=fopen("mrmr_sigs.csv","w");
@@ -1973,7 +1974,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
         }
         if( ( strcmp( current_name, last_name ) != 0 ) && ( sig_index > 0 ) )
         {  
-          int char_index;
+          size_t char_index;
           for( char_index = 0; char_index < strlen( full_last_name ); char_index++ )
           {
             if( isdigit( full_last_name[ char_index ] ) )
@@ -2081,7 +2082,8 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
    group_name -char *- the name of the ignored group. This output variable is ignored if NULL.
 */
 int TrainingSet::IgnoreFeatureGroup(long index,char *group_name)
-{  int group=0,sig_index=0,char_index;
+{  int group=0,sig_index=0;
+	size_t char_index;
    char current_name[256]={'\0'},last_name[256]={'\0'};
    
    while(group<=index)
@@ -2123,8 +2125,8 @@ double TrainingSet::distance(signatures *sample1, signatures *sample2, double po
    comment: must set weights before calling to this function
 */
 long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, double *normalization_factor,signatures **closest_sample)
-{  int class_index,sample_index,sig_index;
-   long most_probable_class;
+{  int class_index,sample_index;
+   long most_probable_class=0;
    double closest_dist=INF;
 
    /* initialize the probabilities */
@@ -2494,8 +2496,7 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
    int max_class;
    double *min_dists;
    long *min_dists_classes;
-   double *sig_probs;
-   int most_probable_class;
+   int most_probable_class=0;
    long double probs[MAX_CLASS_NUM];
    double dist;
    long size_of_class;
@@ -2517,7 +2518,7 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
    min_dists=new double[count];
    min_dists_classes=new long[count];
    for (sig_index=0;sig_index<signature_count;sig_index++)
-   {  int close_index,total_num_min_dist;
+   {  int close_index;
       for (dist_index=0;dist_index<min_samples;dist_index++)
         min_dists[dist_index]=INF;
       for (sample_index=0;sample_index<count;sample_index++)
@@ -2813,7 +2814,7 @@ int numeric=1;
 int pure_numeric=1;
 long maybe_int;
 double val;
-int last_errno, conv_errno;
+int last_errno;
 
 	// Checking errno is the only way we have to know that the numeric conversion had an error
 	last_errno = errno;
@@ -3232,7 +3233,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
         if( features_num > 0 )
           fprintf( output_file, "<a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesGroups_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Feature groups analysis (sum of Fisher scores for each family) </a><br><br>\n",split_index);
         fprintf(output_file,"<TABLE ID=\"FeaturesGroups_split%d\" border=\"1\" style=\"display: none;\">\n",split_index);
-        fprintf( output_file,"<tr><td>NOTE: Number of component features in each group is given in brackets</td></tr>\n",p_feature_names );
+        fprintf( output_file,"<tr><td>NOTE: Number of component features in each group is given in brackets</td></tr>\n" );
         
         p_feature_names=strtok(feature_names,"\n");
         while( p_feature_names )
@@ -3246,7 +3247,6 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       /* individual image predictions */
       if (splits[split_index].individual_images)
       {  char closest_image[256],interpolated_value[256];
-	     int interpolate=1;
          
          /* add the most similar image if WNN and no tiling */
          if ((splits[split_index].method==WNN || is_continuous) && tiles==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
@@ -3270,6 +3270,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    fprintf(output_file,"<br><br><br><br><br><br> \n\n\n\n\n\n\n\n");
 
    fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
+   return (1);
 }
 
 void TrainingSet::catError (const char *fmt, ...) {
@@ -3297,5 +3298,7 @@ char newline=0;
 }
 
 
+#ifdef WIN32
 #pragma package(smart_init)
+#endif
 
