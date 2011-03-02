@@ -178,10 +178,10 @@ void setup_featureset (featureset_t *featureset) {
 				// this code block should be made more generic with regards to sampling options and params
 				// sample opts
 				if (rotations && rot_index) { // only add for non-0 rotations
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d",sampling_opts->rot_base,rot_index);
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d",sampling_opts->rot_base,rot_index);
 				}
 				if ( (tiles_x > 1 || tiles_y > 1) ) {
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d_%d",sampling_opts->tile_base,tile_index_x,tile_index_y);
+					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d_%d_%d",sampling_opts->tile_base,tiles_x,tile_index_x,tile_index_y);
 				}
 				// feature opts
 				if (feature_opts->compute_colors) {
