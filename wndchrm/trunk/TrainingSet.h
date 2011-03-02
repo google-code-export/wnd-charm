@@ -152,7 +152,7 @@ public:
    int SaveWeightVector(char *filename);                           /* save the weights of the features into a file */
    double LoadWeightVector(char *filename, double factor);         /* load the weights of the features from a file and assign them to the features of the training set */
    void SetAttrib(TrainingSet *set);                               /* copy the attributes from one training set to another */   
-   int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples,int exact_max_train); /* random split to train and test */
+   int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples); /* random split to train and test */
    int SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
    void RemoveClass(long class_index);                             /* remove a class                            */
 	void MakeContinuous(char *label);                              /* Make an existing dataset with defined classes continuous - label is the "units" */
