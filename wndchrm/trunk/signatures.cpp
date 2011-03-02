@@ -1051,22 +1051,27 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
 
   CompGroupB(ChebyshevTransform,"Chebyshev");
   CompGroupC(ChebyshevTransform,"Chebyshev");
-
+// Fourier, then Chebyshev
   CompGroupC(ChebyshevFourierTransform,"Chebyshev Fourier");
+// Fourier, then Wavelet
   CompGroupC(FourierWaveletSelector,"Wavelet Fourier");
 /**/
+// Wavelet, then Fourier
   CompGroupB(WaveletFourier,"Fourier Wavelet");
   CompGroupC(WaveletFourier,"Fourier Wavelet");
 
+// Chebyshev, then Fourier
   CompGroupC(FourierChebyshev,"Fourier Chebyshev");
+// Wavelet, then Chebyshev
   CompGroupC(ChebyshevWavelet,"Chebyshev Wavelet");
 
   CompGroupB(EdgeTransform,"Edge Transform");
   CompGroupC(EdgeTransform,"Edge Transform");
-
+// Edge, then fourier - named in wrong order!
   CompGroupB(EdgeFourier,"Edge Fourier Transform");
   CompGroupC(EdgeFourier,"Edge Fourier Transform");
 
+// Edge, then wavelet - named in wrong order!
   CompGroupB(EdgeWavelet,"Edge Wavelet Transform");
 //printf("5.5\n");  
   CompGroupC(EdgeWavelet,"Edge Wavelet Transform");
