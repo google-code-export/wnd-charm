@@ -448,30 +448,43 @@ long index;
 /* RemoveClass
    remove a class from the training set
    class_index -long- the index of the class to be removed
+   The effect of removing class index 0 is to remove the samples of that class, but not
+   change the indexes of the other samples.
 */
 void TrainingSet::RemoveClass(long class_index)
 {  long index,deleted_count=0;
-   /* remove the class label */
-   for (index=class_index;index<class_num;index++) {
-     strcpy(class_labels[index],class_labels[index+1]);
-     class_nsamples[index] = class_nsamples[index+1];
-   }
-   /* remove the samples of that class */
-   for (index=0;index<count;index++)
-   { if (samples[index]->sample_class==class_index)
-     {  delete samples[index];
-        deleted_count++;
-     }
-     else samples[index-deleted_count]=samples[index];
-   }
-   count=count-deleted_count;   /* set the new number of samples */   
-   /* change the indices of the samples */
-   for (index=0;index<count;index++)
-     if (samples[index]->sample_class>class_index)
-       samples[index]->sample_class=samples[index]->sample_class-1;
-   /* change the number of classes and training samples */
-   class_num--;
-   return;
+
+	if (class_index >= class_num || class_index < 0) return;
+// remove the class label , and shift labels down only for index > 0
+	if (class_index > 0) {
+		for (index=class_index;index<class_num;index++) {
+			strcpy(class_labels[index],class_labels[index+1]);
+			class_nsamples[index] = class_nsamples[index+1];
+		}
+	} else {
+		class_nsamples[0] = 0;
+	}
+	
+// remove the samples of that class
+	for (index=0;index<count;index++)  {
+		if (samples[index]->sample_class==class_index) {
+			delete samples[index];
+			deleted_count++;
+		} else samples[index-deleted_count]=samples[index];
+	}
+
+// set the new number of samples
+	count=count-deleted_count;
+// change the indices of the samples, only if class_index > 0
+	if (class_index > 0) {
+		for (index=0;index<count;index++)
+			if (samples[index]->sample_class > class_index)
+				samples[index]->sample_class=samples[index]->sample_class-1;
+	// change the number of classes
+		class_num--;
+	}
+
+	return;
 }
 
 /* SaveWeightVector
@@ -561,11 +574,10 @@ void TrainingSet::SetAttrib(TrainingSet *set)
                            test set or training set.
     train_samples -int- the number of samples to use for training (if ratio is 0)
     test_samples -int- the number of samples to use for testing (if TestSet->count == 0)
-    exact_max_train -int- if 1 then the class is removed if its number of samples does not reach the "train_samples". (ignored if 0)
     N.B.: It is a fatal error for train_samples+test_samples to be greater than the number of images in the class.
     Range-checking must occur outside of this call.
 */
-int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples, int exact_max_train)
+int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples)
 {
 	long *class_samples;
 	int res;
@@ -630,20 +642,6 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 			sample_count--;
 		}
 	}
-
-	// remove the class if it doesn't have enough samples
-	class_index=class_num;
-	if( exact_max_train )
-		while( class_index > 0 )
-		{
-			if( class_counts[ class_index ] <= train_samples - test_samples )
-			{
-				TrainSet->RemoveClass( class_index );
-				TestSet->RemoveClass( class_index );
-				RemoveClass( class_index );
-			}
-			class_index--;
-		}
 
 	delete class_samples;
 	return (1);
