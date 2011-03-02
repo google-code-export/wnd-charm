@@ -31,49 +31,80 @@ std::map:
 class FeatureNames {
 public:
 /////////////////////////////////
+//         Channels
+/////////////////////////////////
+// Instead of a string, this should be a channel object
+	struct Channel {
+		std::string name;
+
+		Channel (std::string &s) { name = s;}
+		Channel (const char *s) { name = s;}
+	};
+// This just returns the string, should return a channel object by string lookup
+	static const Channel *getChannelByName (std::string &name);
+
+
+/////////////////////////////////
 //         Transforms
 /////////////////////////////////
 // Instead of a string, this should be a transform object with an execute() method
-	typedef std::string transform_t;
+	struct Transform {
+		std::string name;
+
+		Transform (std::string &s) { name = s;}
+		Transform (const char *s) { name = s;}
+	};
 // This just returns the string, should return a transform object by string lookup
-	static const transform_t *getTransformByName (std::string &name);
+	static const Transform *getTransformByName (std::string &name);
 
 
 /////////////////////////////////
 //      Feature Algorithms
 /////////////////////////////////
 // This should be a feature algorithm object with an execute() method
-	typedef struct {
-	std::string name;
-	int n_features;
-} feature_algorithm_t;
+	struct FeatureAlgorithm {
+		std::string name;
+		int n_features;
+
+		FeatureAlgorithm () : name(""), n_features(1) { }
+		FeatureAlgorithm (std::string &s,int i) { name = s; n_features = i;}
+		FeatureAlgorithm (const char *s,int i) { name = s; n_features = i;}
+	};
 // This returns an iterator to the algorithm map by string lookup
-	static const feature_algorithm_t *getFeatureAlgorithmByName (std::string &name);
+	static const FeatureAlgorithm *getFeatureAlgorithmByName (std::string &name);
 
 
 /////////////////////////////////
 //        Feature Groups
 /////////////////////////////////
-	typedef struct {
+	struct FeatureGroup {
 		std::string name;
-		feature_algorithm_t *algorithm;
-		int n_features;
-		std::vector<transform_t const *> transforms; // these are in order of application
-	} featuregroup_t;
+		const FeatureAlgorithm *algorithm;
+		const Channel *channel;
+		std::vector<Transform const *> transforms; // these are in order of application
+
+		FeatureGroup () : algorithm(NULL), channel(NULL) {};
+		FeatureGroup (std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<Transform const *> t) {
+			name = s; algorithm = f; channel = c; transforms = t;
+		}
+	};
 // This will store a new group if the name doesn't exist.
 // The returned pointer is to an iterator into the static group map
-	static const featuregroup_t *getGroupByName (std::string &name);
+	static const FeatureGroup *getGroupByName (std::string &name);
 
 
 /////////////////////////////////
 //          Features
 /////////////////////////////////
-	typedef struct {
+	struct Feature {
 		std::string name;
-		const featuregroup_t *group;
+		const FeatureGroup *group;
 		int index; // within group
-	} featureinfo_t;
-	static const featureinfo_t *getFeatureByName (const char *featurename_in);
+
+		Feature () : group(NULL), index(-1) {};
+		Feature (std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
+	};
+	static const Feature *getFeatureByName (const char *featurename_in);
 
 /////////////////////////////////
 // Old-style feature name lookup
@@ -93,16 +124,19 @@ private:
 ////////////////////////////////////////
 // Private static object caches
 ////////////////////////////////////////
-	typedef MAP<std::string,transform_t *> tnm_t;
+	typedef MAP<std::string, Channel *> cnm_t;
+	static cnm_t  channels_;
+
+	typedef MAP<std::string, Transform *> tnm_t;
 	static tnm_t  transforms_;
 
-	typedef MAP<std::string,feature_algorithm_t> fam_t;
+	typedef MAP<std::string, FeatureAlgorithm *> fam_t;
 	static fam_t  feature_algorithms_;
 
-	typedef MAP<std::string,featuregroup_t *> fgnm_t;
+	typedef MAP<std::string, FeatureGroup *> fgnm_t;
 	static fgnm_t feature_groups_;
 
-	typedef MAP<std::string,featureinfo_t *> fnm_t;
+	typedef MAP<std::string, Feature *> fnm_t;
 	static fnm_t  features_;
 
 	
