@@ -18,7 +18,7 @@ AC_PROG_CXX
 # And here we overwrite it based on our test above
 CXXFLAGS=$MY_CXXFLAGS
 # Put the usual defualt into AM_CXXFLAGS
-AM_CXXFLAGS="-g -O2"
+AM_CXXFLAGS="-Wall -g -O2"
 # Write both of them out
 AC_SUBST(CXXFLAGS)
 AC_SUBST(AM_CXXFLAGS)
