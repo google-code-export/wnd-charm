@@ -207,12 +207,11 @@ void setup_featureset (featureset_t *featureset) {
 check_split_params - checks parameters for consistency with regards to training/testing a given dataset.
 Returns 1 on success, 0 upon failure.
 */
-int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, double split_ratio, int balanced_splits, int max_training_images, int max_test_images, int N) {
-	double train_frac;
+int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, double split_ratio, int balanced_splits, int max_training_images, int max_test_images, int exact_training_images) {
 	int class_index, smallest_class=0;
 	int max_balanced_samples,max_balanced_i;
 
-	// Innitialize what we will be returning
+	// Initialize what we will be returning
 	*n_train_p = 0;
 	*n_test_p = 0;
 	*train_frac_p = 0.0;
@@ -240,9 +239,9 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 	}
 	max_balanced_i = max_balanced_samples / samples_per_image;
-
+printf ("Max balanced training: %d\n",max_balanced_i);
 	// Check provided parameters against balanced testing/training
-	if (max_training_images > 0) { // N.B.: -i overrides -r
+	if (max_training_images > 0 && !exact_training_images) { // N.B.: -i overrides -r, except if exact_training_images
 		if (max_training_images > max_balanced_i && testset) {
 			catError("WARNING: Specified training images (%d) exceeds maximum for balanced training (%d).  %d images used for training.  Use -r# instead of -i to over-ride balanced training.\n",
 				max_training_images,max_balanced_i,max_balanced_i);
@@ -256,7 +255,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 			return (0);
 		}
 		split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
-	} else { // -i unspecified, use split_ratio (default or specified - already set in main)
+	} else { // -i unspecified or used for exact_training_images, use split_ratio (default or specified - already set in main)
 		max_training_images = floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
 		if (max_training_images >= max_balanced_i && testset == NULL) { // rounding error left no test images
 			catError("ERROR: No images left for testing using specified -r=%f.\n",split_ratio);
@@ -304,16 +303,11 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	int split_index,tile_index;
 	int n_train,n_test;
 	double train_frac;
-	int class_index, smallest_class=0;
+	int class_index;
 	int res;
 
 	// Remove classes from the end if N is specified
 	if (N>0) while (ts->class_num>N) ts->RemoveClass(ts->class_num);
-
-	// Check the parameters and set train/test image numbers
-	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
-		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, N))
-			return(showError(1, NULL));
 
 	// If a testset was specified, make sure its classes are consistent with ts.
 	if (testset) {
@@ -340,6 +334,25 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 //for (class_index = 0; class_index < testset->count; class_index++) printf("sample %d '%s' class '%s' \n",class_index,testset->samples[class_index]->full_path, testset->class_labels[testset->samples[class_index]->sample_class]);
 
 	}
+
+
+// Remove classes with less than max_training_images if exact_training_images is true
+	if (exact_training_images) {
+		class_index=ts->class_num;
+		while( class_index > 0 ) {
+			if( ts->class_nsamples[ class_index ] * samples_per_image <  max_training_images ) {
+				ts->RemoveClass( class_index );
+				if (testset) testset->RemoveClass( class_index );
+			}
+			class_index--;
+		}
+	}
+
+// Check the parameters and set train/test image numbers
+	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
+		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
+			return(showError(1, NULL));
+
 
 /*
 	In ts-split(),
@@ -370,7 +383,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        if (ts->signature_count>2500) splits[split_index].feature_groups=new char[ts->signature_count*80];
        else splits[split_index].feature_groups=NULL;
 
-       res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,exact_training_images);
+       res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test);
        catError (ts->error_message);
        if ( res < 0) return (res);
 printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
@@ -597,8 +610,6 @@ int main(int argc, char *argv[])
     int method=1;
     int report=0;
     int splits_num=1;
-    int large_set=0;
-    int colors=0;
     double split_ratio=0.75;
     double max_features=0.15;
     double used_mrmr=0.0;
@@ -617,7 +628,6 @@ int main(int argc, char *argv[])
     long first_n=1;
     char weight_file_buffer[256];
     char weight_vector_action='\0';
-    char *test_set_path=NULL;
     int N=0;                         /* use only the first N classes                               */
     int assess_features=0;           /* assess the contribution of each feature to the performance */
     int image_similarities=0;        /* generate a dendrogram showing the similarity of the images */
@@ -737,11 +747,11 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'c')) feature_opts->compute_colors=1;
         if (strchr(argv[arg_index],'C')) do_continuous=1;
         if (strchr(argv[arg_index],'d')) preproc_opts->downsample=atoi(&(strchr(argv[arg_index],'d')[1]));
-        if (char_p = strchr(argv[arg_index],'f')) {
-            if (char_p2=strchr(char_p,':')) used_mrmr=atof(char_p2+1);
+        if ( (char_p = strchr(argv[arg_index],'f')) ) {
+            if ( (char_p2=strchr(char_p,':')) ) used_mrmr=atof(char_p2+1);
 		    max_features=atof(char_p+1);
 		}
-        if (char_p = strchr(argv[arg_index],'r')) {
+        if ( (char_p = strchr(argv[arg_index],'r')) ) {
 			if (*(char_p+1)=='#') {
 				balanced_splits = 0;
 				char_p++;
@@ -752,7 +762,7 @@ int main(int argc, char *argv[])
         if (strchr(argv[arg_index],'N')) N=atoi(&(strchr(argv[arg_index],'N')[1]));
         if (strchr(argv[arg_index],'A')) assess_features=200; 
         if (strchr(argv[arg_index],'R')) sampling_opts->rotations=4;
-        if (char_p = strchr(argv[arg_index],'t')) {
+        if ( (char_p = strchr(argv[arg_index],'t')) ) {
 			if (*(char_p+1)=='#') {
 				tile_areas = 1;
 				char_p++;
@@ -763,7 +773,7 @@ int main(int argc, char *argv[])
 			}
            sampling_opts->tiles_x = sampling_opts->tiles_y = atoi(char_p+1);
        }
-        if (char_p = strchr(argv[arg_index],'i')) {
+        if ( (char_p = strchr(argv[arg_index],'i')) ) {
 			if (*(char_p+1)=='#') {
 				exact_training_images = 1;
 				char_p++;
