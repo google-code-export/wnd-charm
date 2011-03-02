@@ -49,6 +49,11 @@ CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
+libFeatureNames_a_AR = $(AR) $(ARFLAGS)
+libFeatureNames_a_LIBADD =
+am_libFeatureNames_a_OBJECTS =  \
+	libFeatureNames_a-FeatureNames.$(OBJEXT)
+libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
 am_libimfit_a_OBJECTS = cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) \
@@ -74,7 +79,7 @@ util_color_deconvolution_DEPENDENCIES =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_wndchrm_OBJECTS = wndchrm.$(OBJEXT)
 wndchrm_OBJECTS = $(am_wndchrm_OBJECTS)
-wndchrm_DEPENDENCIES = libimfit.a
+wndchrm_DEPENDENCIES = libimfit.a libFeatureNames.a
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -87,9 +92,9 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(libimfit_a_SOURCES) $(util_color_deconvolution_SOURCES) \
-	$(wndchrm_SOURCES)
-DIST_SOURCES = $(libimfit_a_SOURCES) \
+SOURCES = $(libFeatureNames_a_SOURCES) $(libimfit_a_SOURCES) \
+	$(util_color_deconvolution_SOURCES) $(wndchrm_SOURCES)
+DIST_SOURCES = $(libFeatureNames_a_SOURCES) $(libimfit_a_SOURCES) \
 	$(util_color_deconvolution_SOURCES) $(wndchrm_SOURCES)
 ETAGS = etags
 CTAGS = ctags
@@ -105,6 +110,7 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_CXXFLAGS = @AM_CXXFLAGS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -195,7 +201,25 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
-noinst_LIBRARIES = libimfit.a
+noinst_LIBRARIES = libimfit.a libFeatureNames.a
+
+# This is set up as a separate target because g++ barfs compiling this with optimization.
+# gcc 4.2.1 tries to allocate several gigs of RAM, and fails with an out-of-memory error
+# Apparently fixed in 4.3 or 4.4, but have not checked.
+libFeatureNames_a_SOURCES = \
+	FeatureNames.cpp \
+	FeatureNames.hpp
+
+
+# Our special optimization flags, which over-ride AM_CXXFLAGS.
+# Note that the user's CXXFLAGS always go at the end, which
+# get set to "-g -O2" if they are not set, which blows up.
+# I thought they were strictly for the user, so why are they set to a default?
+# configure.ac has some checks to not stomp on the user's CXXFLAGS, but also
+# not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
+# The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
+# The result is that it only blows up if the user has -O set in their CXXFLAGS.
+libFeatureNames_a_CXXFLAGS = -g -O0
 libimfit_a_SOURCES = \
 	cmatrix.cpp \
 	cmatrix.h \
@@ -261,7 +285,7 @@ libimfit_a_SOURCES = \
 
 AM_CPPFLAGS = -fPIC
 wndchrm_SOURCES = wndchrm.cpp
-wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libimfit.a libFeatureNames.a -lm -ltiff -L. -limfit -lfftw3
 util_color_deconvolution_SOURCES = \
 	util/readTiffData.c \
 	util/readTIFF.h \
@@ -326,6 +350,10 @@ distclean-hdr:
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libFeatureNames.a: $(libFeatureNames_a_OBJECTS) $(libFeatureNames_a_DEPENDENCIES) 
+	-rm -f libFeatureNames.a
+	$(libFeatureNames_a_AR) libFeatureNames.a $(libFeatureNames_a_OBJECTS) $(libFeatureNames_a_LIBADD)
+	$(RANLIB) libFeatureNames.a
 libimfit.a: $(libimfit_a_OBJECTS) $(libimfit_a_DEPENDENCIES) 
 	-rm -f libimfit.a
 	$(libimfit_a_AR) libimfit.a $(libimfit_a_OBJECTS) $(libimfit_a_LIBADD)
@@ -392,6 +420,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convolution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gabor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/haarlick.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libFeatureNames_a-FeatureNames.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapkit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapkit_generic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/radon.Po@am__quote@
@@ -457,6 +486,20 @@ color_deconvolution.obj: util/color_deconvolution.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+libFeatureNames_a-FeatureNames.o: FeatureNames.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -MT libFeatureNames_a-FeatureNames.o -MD -MP -MF $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo -c -o libFeatureNames_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo $(DEPDIR)/libFeatureNames_a-FeatureNames.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
+
+libFeatureNames_a-FeatureNames.obj: FeatureNames.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -MT libFeatureNames_a-FeatureNames.obj -MD -MP -MF $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo $(DEPDIR)/libFeatureNames_a-FeatureNames.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
 
 FuzzyCalc.o: colors/FuzzyCalc.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FuzzyCalc.o -MD -MP -MF $(DEPDIR)/FuzzyCalc.Tpo -c -o FuzzyCalc.o `test -f 'colors/FuzzyCalc.cpp' || echo '$(srcdir)/'`colors/FuzzyCalc.cpp
