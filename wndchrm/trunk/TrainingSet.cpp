@@ -1741,7 +1741,7 @@ void TrainingSet::normalize()
 				if( sig_data[ samp_index ] != INF )
 					max_value = sig_data[ samp_index ];
 			}
-			else if( sig_data[ sample_index ] < min_value )
+			else if( sig_data[ samp_index ] < min_value )
 			{
 				min_value = sig_data[ samp_index ];
 			}
