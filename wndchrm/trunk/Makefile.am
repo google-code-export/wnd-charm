@@ -1,7 +1,24 @@
 EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
 
-noinst_LIBRARIES=libimfit.a
+noinst_LIBRARIES = libimfit.a libFeatureNames.a
+
+# This is set up as a separate target because g++ barfs compiling this with optimization.
+# gcc 4.2.1 tries to allocate several gigs of RAM, and fails with an out-of-memory error
+# Apparently fixed in 4.3 or 4.4, but have not checked.
+libFeatureNames_a_SOURCES = \
+	FeatureNames.cpp \
+	FeatureNames.hpp
+
+# Our special optimization flags, which over-ride AM_CXXFLAGS.
+# Note that the user's CXXFLAGS always go at the end, which
+# get set to "-g -O2" if they are not set, which blows up.
+# I thought they were strictly for the user, so why are they set to a default?
+# configure.ac has some checks to not stomp on the user's CXXFLAGS, but also
+# not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
+# The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
+# The result is that it only blows up if the user has -O set in their CXXFLAGS.
+libFeatureNames_a_CXXFLAGS = -g -O0
 
 libimfit_a_SOURCES = \
 	cmatrix.cpp \
@@ -72,7 +89,7 @@ bin_PROGRAMS=wndchrm util/color_deconvolution
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libimfit.a libFeatureNames.a -lm -ltiff -L. -limfit -lfftw3
 
 util_color_deconvolution_SOURCES = 	\
 	util/readTiffData.c \
