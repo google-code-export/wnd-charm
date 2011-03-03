@@ -79,7 +79,7 @@ util_color_deconvolution_DEPENDENCIES =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_wndchrm_OBJECTS = wndchrm.$(OBJEXT)
 wndchrm_OBJECTS = $(am_wndchrm_OBJECTS)
-wndchrm_DEPENDENCIES = libimfit.a libFeatureNames.a
+wndchrm_DEPENDENCIES = libFeatureNames.a libimfit.a
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -285,7 +285,7 @@ libimfit_a_SOURCES = \
 
 AM_CPPFLAGS = -fPIC
 wndchrm_SOURCES = wndchrm.cpp
-wndchrm_LDADD = libimfit.a libFeatureNames.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -limfit -lfftw3
 util_color_deconvolution_SOURCES = \
 	util/readTiffData.c \
 	util/readTIFF.h \
