@@ -374,19 +374,15 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].similarity_normalization=new double[ts->class_num+1];
-       splits[split_index].feature_names=new char[ts->signature_count*80];
        if (tile_areas)
        {  splits[split_index].tile_area_accuracy=new double[samples_per_image];
           for (tile_index=0;tile_index<samples_per_image;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
        }
        else splits[split_index].tile_area_accuracy=NULL;
-       if (ts->signature_count>2500) splits[split_index].feature_groups=new char[ts->signature_count*80];
-       else splits[split_index].feature_groups=NULL;
 
        res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test);
        catError (ts->error_message);
        if ( res < 0) return (res);
-printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
        if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
        else splits[split_index].image_similarities=NULL;
 
@@ -419,7 +415,7 @@ printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
        else splits[split_index].individual_images=NULL;
        if (ignore_group)   /* assign to zero all features of the group */
        {  if (!(ts->IgnoreFeatureGroup(ignore_group,group_name))) {
-			delete train;if (!testset) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].similarity_matrix;delete splits[split_index].feature_names;delete splits[split_index].feature_groups;delete splits[split_index].individual_images;
+			delete train;if (!testset) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].similarity_matrix;delete splits[split_index].individual_images;
 			showError(1,"%sErrors while trying to ignore group %d '%s'\n",train->error_message,ignore_group,group_name);
 			return(0);
 		  }
@@ -512,8 +508,6 @@ printf ("test set: %ld samples, train: %ld samples\n",test->count,train->count);
     for (split_index=0;split_index<split_num;split_index++)
     {  delete splits[split_index].confusion_matrix;	
        delete splits[split_index].similarity_matrix;
-       if (splits[split_index].feature_names) delete splits[split_index].feature_names;
-       if (splits[split_index].feature_groups) delete splits[split_index].feature_groups;
        if (splits[split_index].individual_images) delete splits[split_index].individual_images;
        if (splits[split_index].tile_area_accuracy) delete splits[split_index].tile_area_accuracy;
        if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
