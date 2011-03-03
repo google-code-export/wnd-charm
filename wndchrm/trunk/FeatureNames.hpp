@@ -116,10 +116,6 @@ public:
 	static const bool initFeatureAlgorithms();
 	static const bool initOldFeatureNameLookup();
 
-// TEMPORARY used for testing by main() in FeatureNames.cpp - move to private.
-	typedef MAP<std::string,std::string> ofnm_t;
-	static ofnm_t old_features_;
-
 private:
 ////////////////////////////////////////
 // Private static object caches
@@ -138,6 +134,9 @@ private:
 
 	typedef MAP<std::string, FeatureInfo *> fnm_t;
 	static fnm_t  features_;
+
+	typedef MAP<std::string,std::string> ofnm_t;
+	static ofnm_t old_features_;
 
 	
 };
