@@ -33,7 +33,12 @@
 //---------------------------------------------------------------------------
 
 #include "signatures.h"
+#include "FeatureNames.hpp"
 #include "config.h" // for version info
+
+// STL stuff
+#include <map>
+#include <string>
 
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
@@ -100,6 +105,35 @@ typedef struct {
 } featureset_t;
 
 
+// Set up our struct for keeping track of per-feature-group statistics.
+typedef struct {
+	std::string name;
+	const FeatureNames::FeatureGroup *featuregroup_info;
+	double min;
+	double max;
+	double sum_weight;
+	double sum_weight2;
+	double mean;
+	double stddev;
+	int n_features;
+} featuregroup_stats_t;
+typedef struct sort_by_mean_weight_t {
+	bool operator() (featuregroup_stats_t i,featuregroup_stats_t j) { return (j.mean < i.mean);}
+} sort_by_mean_weight_func;
+typedef std::vector<featuregroup_stats_t> featuregroups_t;
+
+// Set up our struct for keeping track of per-feature stuff.
+typedef struct {
+	std::string name; // N.B.: name as read from file
+	const FeatureNames::FeatureInfo *feature_info;
+	double weight;
+} feature_stats_t;
+typedef struct sort_by_weight_t {
+	bool operator() (feature_stats_t i,feature_stats_t j) { return (j.weight < i.weight);}
+} sort_by_weight_func;
+typedef std::vector<feature_stats_t> features_t;
+
+
 typedef struct
 {  double accuracy;
    double *tile_area_accuracy;            /* used for the different accuracies of the different tile areas     */
@@ -107,8 +141,8 @@ typedef struct
    double *similarity_matrix;             /* matrix - used for the similarities between the classes            */
    double *similarity_normalization;
    double *image_similarities;            /* matrix - used for the similarity values between all test images   */
-   char *feature_names;
-   char *feature_groups;
+   features_t feature_stats;
+   featuregroups_t featuregroups_stats;
    double feature_weight_distance;
    char *individual_images;                /* a string of the individual image predictions. used for the report */
    unsigned short method; 
