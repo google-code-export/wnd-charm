@@ -1,5 +1,5 @@
-#ifndef __FEATURE_INFO_HPP__
-#define __FEATURE_INFO_HPP__
+#ifndef __FEATURE_NAMES_HPP__
+#define __FEATURE_NAMES_HPP__
 
 #include <string>
 #include <vector>
@@ -96,15 +96,15 @@ public:
 /////////////////////////////////
 //          Features
 /////////////////////////////////
-	struct Feature {
+	struct FeatureInfo {
 		std::string name;
 		const FeatureGroup *group;
 		int index; // within group
 
-		Feature () : group(NULL), index(-1) {};
-		Feature (std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
+		FeatureInfo () : group(NULL), index(-1) {};
+		FeatureInfo (std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
 	};
-	static const Feature *getFeatureByName (const char *featurename_in);
+	static const FeatureInfo *getFeatureInfoByName (const char *featurename_in);
 
 /////////////////////////////////
 // Old-style feature name lookup
@@ -136,10 +136,10 @@ private:
 	typedef MAP<std::string, FeatureGroup *> fgnm_t;
 	static fgnm_t feature_groups_;
 
-	typedef MAP<std::string, Feature *> fnm_t;
+	typedef MAP<std::string, FeatureInfo *> fnm_t;
 	static fnm_t  features_;
 
 	
 };
 
-#endif // __FEATURE_INFO_HPP__
+#endif // __FEATURE_NAMES_HPP__

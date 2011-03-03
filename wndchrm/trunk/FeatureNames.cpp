@@ -2,7 +2,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <FeatureNames.hpp>
+#include "FeatureNames.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -23,102 +23,102 @@ const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
 
 
 // testing only
-#define CYCLES 100
-
-typedef struct {
-	std::string name;
-	const FeatureNames::Feature *feature_info;
-	int n_hits;
-} featuregroup_stats_t;
-struct sort_by_n_features_t {
-	bool operator() (featuregroup_stats_t i,featuregroup_stats_t j) { return (i.feature_info->group->algorithm->n_features<j.feature_info->group->algorithm->n_features);}
-} sort_by_n_features;
-// testing only
-
-int main () {
-	int i,j,n_featnames;
-	FeatureNames::ofnm_t::const_iterator ofnm_it;
-	std::vector<std::string> featurenames;
-
-	featurenames.reserve(FeatureNames::old_features_.size());
-	for(ofnm_it = FeatureNames::old_features_.begin(); ofnm_it != FeatureNames::old_features_.end(); ++ofnm_it ) {
-		featurenames.push_back( ofnm_it->first );
-	}
-	n_featnames = featurenames.size();
-
-	std::set<std::string> fgs;
-	std::set<std::string>::iterator fgs_it;
-	std::vector<featuregroup_stats_t> fgsv;
-	std::vector<featuregroup_stats_t>::iterator fgsv_it;
-	featuregroup_stats_t featuregroup_stats;
-	FeatureNames::Feature const *featureinfo;
-	for (i = 0; i< n_featnames; i++) {
-		featureinfo = FeatureNames::getFeatureByName ( featurenames[i].c_str() );
-		fgs_it = fgs.find(featureinfo->group->name);
-		if (fgs_it == fgs.end()) {
-			featuregroup_stats.name = featureinfo->group->name;
-			featuregroup_stats.feature_info = featureinfo;
-			featuregroup_stats.n_hits = 0;
-			fgs.insert(featureinfo->group->name);
-			fgsv.push_back (featuregroup_stats);
-		}
-	}
-
-	sort (fgsv.begin(), fgsv.end(), sort_by_n_features);
-	for(fgsv_it = fgsv.begin(); fgsv_it != fgsv.end(); ++fgsv_it ) {
-		printf ("%s: %d\n",fgsv_it->name.c_str(), fgsv_it->feature_info->group->algorithm->n_features);
-	}
-
-
-
-// 	fgnm_t *fgnm = featureGroups();
-// 	fgnm_it_t fgnm_it;
-// 	for(fgnm_it = (*fgnm).begin(); fgnm_it != (*fgnm).end(); ++fgnm_it ) {
-// 		printf ("%s: %d\n",fgnm_it->second.name.c_str(), fgnm_it->second.n_features);
+// #define CYCLES 100
+// 
+// typedef struct {
+// 	std::string name;
+// 	const FeatureNames::FeatureInfo *feature_info;
+// 	int n_hits;
+// } featuregroup_stats_t;
+// struct sort_by_n_features_t {
+// 	bool operator() (featuregroup_stats_t i,featuregroup_stats_t j) { return (i.feature_info->group->algorithm->n_features<j.feature_info->group->algorithm->n_features);}
+// } sort_by_n_features;
+// // testing only
+// 
+// int main () {
+// 	int i,j,n_featnames;
+// 	FeatureNames::ofnm_t::const_iterator ofnm_it;
+// 	std::vector<std::string> featurenames;
+// 
+// 	featurenames.reserve(FeatureNames::old_features_.size());
+// 	for(ofnm_it = FeatureNames::old_features_.begin(); ofnm_it != FeatureNames::old_features_.end(); ++ofnm_it ) {
+// 		featurenames.push_back( ofnm_it->first );
 // 	}
-
-
-
-	int found=0;
-	int missed=0;
-	double cpu_secs;
-	clock_t start, end;
-
-// time parse feature - found
-	found=0;
-	missed=0;
-	start = clock();
-	for (j = 0; j < CYCLES; j++) {
-		for (i = 0; i< n_featnames; i++) {
-			if (! FeatureNames::getFeatureByName ( featurenames[i].c_str() ) ) missed++;
-			else found++;
-		}
-	}
-	end = clock();
-	cpu_secs = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf ("       +parse %9d lookups %9d misses %9.2g secs, %9.0f lookups/sec\n",found+missed,missed,cpu_secs,(double)(found+missed)/cpu_secs);
-
-
-// time parse feature - nonexistant
-	found=0;
-	missed=0;
-	start = clock();
-	for (j = 0; j < CYCLES; j++) {
-		for (i = 0; i< n_featnames; i++) {
-		// worst- case can't find algorithm
-		//	if ( !FeatureNames::getFeatureByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef () [123]" ) ) missed++;
-		// second-worst - malformed invalid algorithm: no '()'
-			if ( !FeatureNames::getFeatureByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef [123]" ) ) missed++;
-		// best-case invalid name - no []
-		//	if ( !FeatureNames::getFeatureByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef" ) ) missed++;
-			else found++;
-		}
-	}
-	end = clock();
-	cpu_secs = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf ("       -parse %9d lookups %9d misses %9.2g secs, %9.0f lookups/sec\n",found+missed,missed,cpu_secs,(double)(found+missed)/cpu_secs);
-
-}
+// 	n_featnames = featurenames.size();
+// 
+// 	std::set<std::string> fgs;
+// 	std::set<std::string>::iterator fgs_it;
+// 	std::vector<featuregroup_stats_t> fgsv;
+// 	std::vector<featuregroup_stats_t>::iterator fgsv_it;
+// 	featuregroup_stats_t featuregroup_stats;
+// 	FeatureNames::FeatureInfo const *featureinfo;
+// 	for (i = 0; i< n_featnames; i++) {
+// 		featureinfo = FeatureNames::getFeatureInfoByName ( featurenames[i].c_str() );
+// 		fgs_it = fgs.find(featureinfo->group->name);
+// 		if (fgs_it == fgs.end()) {
+// 			featuregroup_stats.name = featureinfo->group->name;
+// 			featuregroup_stats.feature_info = featureinfo;
+// 			featuregroup_stats.n_hits = 0;
+// 			fgs.insert(featureinfo->group->name);
+// 			fgsv.push_back (featuregroup_stats);
+// 		}
+// 	}
+// 
+// 	sort (fgsv.begin(), fgsv.end(), sort_by_n_features);
+// 	for(fgsv_it = fgsv.begin(); fgsv_it != fgsv.end(); ++fgsv_it ) {
+// 		printf ("%s: %d\n",fgsv_it->name.c_str(), fgsv_it->feature_info->group->algorithm->n_features);
+// 	}
+// 
+// 
+// 
+// // 	fgnm_t *fgnm = featureGroups();
+// // 	fgnm_it_t fgnm_it;
+// // 	for(fgnm_it = (*fgnm).begin(); fgnm_it != (*fgnm).end(); ++fgnm_it ) {
+// // 		printf ("%s: %d\n",fgnm_it->second.name.c_str(), fgnm_it->second.n_features);
+// // 	}
+// 
+// 
+// 
+// 	int found=0;
+// 	int missed=0;
+// 	double cpu_secs;
+// 	clock_t start, end;
+// 
+// // time parse feature - found
+// 	found=0;
+// 	missed=0;
+// 	start = clock();
+// 	for (j = 0; j < CYCLES; j++) {
+// 		for (i = 0; i< n_featnames; i++) {
+// 			if (! FeatureNames::getFeatureInfoByName ( featurenames[i].c_str() ) ) missed++;
+// 			else found++;
+// 		}
+// 	}
+// 	end = clock();
+// 	cpu_secs = ((double) (end - start)) / CLOCKS_PER_SEC;
+// 	printf ("       +parse %9d lookups %9d misses %9.2g secs, %9.0f lookups/sec\n",found+missed,missed,cpu_secs,(double)(found+missed)/cpu_secs);
+// 
+// 
+// // time parse feature - nonexistant
+// 	found=0;
+// 	missed=0;
+// 	start = clock();
+// 	for (j = 0; j < CYCLES; j++) {
+// 		for (i = 0; i< n_featnames; i++) {
+// 		// worst- case can't find algorithm
+// 		//	if ( !FeatureNames::getFeatureInfoByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef () [123]" ) ) missed++;
+// 		// second-worst - malformed invalid algorithm: no '()'
+// 			if ( !FeatureNames::getFeatureInfoByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef [123]" ) ) missed++;
+// 		// best-case invalid name - no []
+// 		//	if ( !FeatureNames::getFeatureInfoByName ( "CoOcMat_MaximalCorrelationCoefficientDif_ChebyshevFFT MaxCorrCoef" ) ) missed++;
+// 			else found++;
+// 		}
+// 	}
+// 	end = clock();
+// 	cpu_secs = ((double) (end - start)) / CLOCKS_PER_SEC;
+// 	printf ("       -parse %9d lookups %9d misses %9.2g secs, %9.0f lookups/sec\n",found+missed,missed,cpu_secs,(double)(found+missed)/cpu_secs);
+// 
+// }
 
 /*
 New-style feature names follow this style:
@@ -134,7 +134,7 @@ In the example above, Edge transform first, then Wavelet, then Zernike coefficie
 The feature and group names reported in .name fields are normalized for whitespace as in the example above.
 */
 
-const FeatureNames::Feature *FeatureNames::getFeatureByName (const char *featurename_in) {
+const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
 	if (! (featurename_in && *featurename_in) ) return (NULL);
 	fnm_t::const_iterator fnm_it = features_.find(featurename_in);
 	if (fnm_it != features_.end()) return (fnm_it->second);
@@ -186,7 +186,7 @@ const FeatureNames::Feature *FeatureNames::getFeatureByName (const char *feature
 		*index_p = index;
 	}
 
-	Feature *featureinfo = new Feature (featurename, featuregroup, index);
+	FeatureInfo *featureinfo = new FeatureInfo (featurename, featuregroup, index);
 
 	features_[featurename_in] = featureinfo;
 	return (featureinfo);
