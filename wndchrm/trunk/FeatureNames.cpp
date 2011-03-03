@@ -122,12 +122,14 @@ const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
 
 /*
 New-style feature names follow this style:
-  Zernike Coefficients (Wavelet (Edge)) [21]
-  Zernike Coefficients (Wavelet) [21]
+  Zernike Coefficients (Wavelet (Edge ())) [21]
+  Zernike Coefficients (Wavelet ()) [21]
   Zernike Coefficients () [21]
 Algorithm name followed by a set of nested transforms in parentheses, then feature index within the group in square brackets.
+The inner-most parentheses contain an optional channel label
 White-space is not used as a delimiter - only '(',')','[' and ']'. Leading and trailing whitespace is eliminated from transforms and algorithm names.
-The parentheses and square brackets are *required* regardless of the number of transforms or features per group.
+The parentheses are *required* to parse transforms. In their absence, the entire feature name (other than square brackets) is taken as the algorithm name.
+The square brackets are required for indexes.  In their absence, an index of 0 is assumed.
 The index is 0-based.
 The transforms are applied in reverse order to what is listed, as expected for the nested representation.
 In the example above, Edge transform first, then Wavelet, then Zernike coefficients on the Wavelet.
