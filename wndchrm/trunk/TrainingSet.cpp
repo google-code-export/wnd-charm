@@ -1645,6 +1645,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
      for (class_index=0;class_index<(class_num+1)*(class_num+1);class_index++) split->confusion_matrix[class_index]=0;
    if (split && split->similarity_matrix)
      for (class_index=0;class_index<(class_num+1)*(class_num+1);class_index++) split->similarity_matrix[class_index]=0.0;
+   if (split && split->class_probability_matrix)
+     for (class_index=0;class_index<(class_num+1)*(class_num+1);class_index++) split->class_probability_matrix[class_index]=0.0;
    if (split && split->image_similarities)
      for (class_index=0;class_index<(TestSet->count/tiles+1)*(TestSet->count/tiles+1);class_index++) split->image_similarities[class_index]=0.0;
 
@@ -1681,18 +1683,26 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 		 }
 	 }
 
-   /* normalize the similarity matrix */
-   if (split && split->similarity_matrix)
-     for (class_index=1;class_index<=class_num;class_index++)
-     { double class_sim;
-       int class_test_samples=0;
-	   for (b=1;b<=class_num;b++)
-	     class_test_samples+=split->confusion_matrix[class_num*class_index+b];
-       class_sim=split->similarity_matrix[class_num*class_index+class_index]/class_test_samples; 
-       for (b=1;b<=class_num;b++)
-         split->similarity_matrix[class_num*class_index+b]/=(class_test_samples*class_sim);
-       if (split->similarity_normalization) split->similarity_normalization[class_index]=class_sim;
-     }
+/*
+  normalize the similarity matrix
+  Method: The similarity matrix now contains the sum of marginal probabilities for each class.
+    The number of known test samples is the sum of the row for each class in the confusion matrix.
+    The normalization is simply to divide each cell in the similarity matrix by the sum of the corresponding row in the confusion matrix.
+*/
+	if (split && split->similarity_matrix)
+		for (class_index=1;class_index<=class_num;class_index++) {
+			double class_sim;
+			int class_test_samples=0;
+     	// Get the number of known test samples
+			for (b=1;b<=class_num;b++)
+				class_test_samples+=split->confusion_matrix[class_num*class_index+b];
+			class_sim=split->similarity_matrix[class_num*class_index+class_index]/class_test_samples; 
+			for (b=1;b<=class_num;b++) {
+				split->class_probability_matrix[class_num*class_index+b] =
+					split->similarity_matrix[class_num*class_index+b] / class_test_samples;
+				split->similarity_matrix[class_num*class_index+b] /= (class_test_samples*class_sim);
+			}
+		}
 
    /* normalize the image similarities */
    if (split && split->image_similarities)
@@ -2609,64 +2619,105 @@ sim_method -unsigned short- the method of transforming the similarity values int
 phylip_algorithm -unsigned short- the method used by phylip
 */
 long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels, unsigned short sim_method,unsigned short phylip_algorithm)
-{  FILE *dend_file;
-   int label_index,algorithm_index;
-   char file_path[256],alg[16];
-   sprintf(file_path,"%s/dend_file.txt",phylib_path);
-   if (!(dend_file=fopen(file_path,"w"))) return(0);
-   fprintf(dend_file,"%d\n",nodes_num);
-   /* print the labels */
-   for (label_index=1;label_index<=nodes_num;label_index++)
-   {  char label[128];
-      double dist=0.0;
-      int label_index2;
-      strcpy(label,labels[label_index]);
-      if (strlen(label)>8) strcpy(label,&(label[strlen(label)-8]));  /* make sure the labels are shorter or equal to 8 characters in length */
-      if (!isalnum(label[strlen(label)-1])) label[strlen(label)-1]='\0';
-      fprintf(dend_file,"%s                 ",label);
-      for (label_index2=1;label_index2<=nodes_num;label_index2++)	  
-      {  if (sim_method==0) dist=max(1-similarity_matrix[label_index*nodes_num+label_index2],1-similarity_matrix[label_index2*nodes_num+label_index]);
-         if (sim_method==1) dist=((1-similarity_matrix[label_index*nodes_num+label_index2])+(1-similarity_matrix[label_index2*nodes_num+label_index]))/2;
-         if (sim_method==2) dist=(1-similarity_matrix[label_index*nodes_num+label_index2])*(label_index2>=label_index)+(1-similarity_matrix[label_index2*nodes_num+label_index])*(label_index2<label_index);  /* top triangle    */
-         if (sim_method==3) dist=(1-similarity_matrix[label_index*nodes_num+label_index2])*(label_index2<=label_index)+(1-similarity_matrix[label_index2*nodes_num+label_index])*(label_index2>label_index);  /* bottom triangle */
-         if (sim_method==4) dist=(similarity_matrix[label_index*nodes_num+label_index2]+similarity_matrix[label_index2*nodes_num+label_index])/2;
-#ifndef WIN32
-         if (isnan (dist)) dist=0;
-#endif
-         fprintf(dend_file,"%.4f       ",fabs(dist*(dist>=0)));
-      }
-	  fprintf(dend_file,"\n");
-   }
-   fclose(dend_file);
+{
+	FILE *dend_file;
+	int label_index,algorithm_index;
+	char file_path[256],alg[16];
+	sprintf(file_path,"%s/dend_file.txt",phylib_path);
+	if (!(dend_file=fopen(file_path,"w"))) return(0);
+	fprintf(dend_file,"%d\n",nodes_num);
+/* print the labels */
+	for (label_index=1;label_index<=nodes_num;label_index++) {
+		char label[128];
+		double dist=0.0;
+		int label_index2;
+		strcpy(label,labels[label_index]);
+		if (strlen(label)>8) strcpy(label,&(label[strlen(label)-8]));  /* make sure the labels are shorter or equal to 8 characters in length */
+		if (!isalnum(label[strlen(label)-1])) label[strlen(label)-1]='\0';
+		fprintf(dend_file,"%s                 ",label);
+		for (label_index2=1;label_index2<=nodes_num;label_index2++) {
+			switch (sim_method) {
+			case 1: // Maximum of the two dis-similarities
+				dist=max(
+					1-similarity_matrix[label_index*nodes_num+label_index2],
+					1-similarity_matrix[label_index2*nodes_num+label_index]
+				);
+			break;
 
-   /* *** generate a dendrogram *** */
-   sprintf(file_path,"%s/fitch.infile",phylib_path);
-   /* create fith.infile */   
-   if (!(dend_file=fopen(file_path,"w"))) return(0);
-   fprintf(dend_file,"%s/dend_file.txt\nJ\n97\n10\nY\n",phylib_path);
-   fclose(dend_file);
-   /* create drawtree.infile */			
-   sprintf(file_path,"%s/drawtree.infile",phylib_path);
-   if (!(dend_file=fopen(file_path,"w"))) return(0);
-   alg[0]='\0';
-   for (algorithm_index=0;algorithm_index<phylip_algorithm;algorithm_index++)
-     strcat(alg,"I\n");
-   fprintf(dend_file,"outtree\n%s/exe/font1\n%sV\nN\nY\n",phylib_path,alg);     //D\n
-   fclose(dend_file);
-   /* create the dendrogram */   
-   system("rm plotfile");
-   sprintf(file_path,"%s/exe/fitch < %s/fitch.infile",phylib_path,phylib_path);
-   system(file_path);
-   sprintf(file_path,"%s/exe/drawtree < %s/drawtree.infile",phylib_path,phylib_path);
-   system(file_path);
-   sprintf(file_path,"mv plotfile ./%s.ps",data_set_name);
-   system(file_path);			
-   sprintf(file_path,"convert ./%s.ps ./%s.jpg",data_set_name,data_set_name);
-   system(file_path);
-   system("rm outfile outtree");  /* delete files from last run */			
-   fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",data_set_name,data_set_name);
-   fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",data_set_name,data_set_name);	/* the image files are copied in the file "wndchrm.cpp" */
-   return(1);
+			case 2:  // Average of the two dis-similarities
+				dist = (
+					(1-similarity_matrix[label_index*nodes_num+label_index2])
+					+(1-similarity_matrix[label_index2*nodes_num+label_index])
+				) / 2;
+			break;
+
+			case 3:  // top triangle
+				dist =
+					(1-similarity_matrix[label_index*nodes_num+label_index2]) * (label_index2>=label_index)
+					+(1-similarity_matrix[label_index2*nodes_num+label_index]) * (label_index2<label_index);
+			break;
+
+			case 4:  // bottom triangle
+				dist =
+					(1-similarity_matrix[label_index*nodes_num+label_index2]) * (label_index2<=label_index)
+					+(1-similarity_matrix[label_index2*nodes_num+label_index]) * (label_index2>label_index);
+			break;
+
+			case 6:  // Average of the two similarities
+				dist=(
+					similarity_matrix[label_index*nodes_num+label_index2]
+					+similarity_matrix[label_index2*nodes_num+label_index]
+				) /2 ;
+			break;
+
+			case 5:
+			// The similarity matrix parameter is the average_class_probability matrix (a de-normalized similarity matrix).
+			// The average class probabilities are used as class centroid coordinates in a "marginal probability space"
+			// The distance is the euclidean distance between class centroid coordinates.
+				for (int class_index = 0; class_index < nodes_num; class_index++) {
+					dist = similarity_matrix[label_index*nodes_num+class_index] - similarity_matrix[label_index2*nodes_num+class_index];
+					dist *= dist;
+				}
+				dist=sqrt (dist);
+			break;
+			} // switch
+#ifndef WIN32
+			if (isnan (dist)) dist=0;
+#endif
+			fprintf(dend_file,"%.4f       ",fabs(dist*(dist>=0)));
+		}
+		fprintf(dend_file,"\n");
+	}
+	fclose(dend_file);
+
+	/* *** generate a dendrogram *** */
+	sprintf(file_path,"%s/fitch.infile",phylib_path);
+	/* create fith.infile */   
+	if (!(dend_file=fopen(file_path,"w"))) return(0);
+	fprintf(dend_file,"%s/dend_file.txt\nJ\n97\n10\nY\n",phylib_path);
+	fclose(dend_file);
+	/* create drawtree.infile */			
+	sprintf(file_path,"%s/drawtree.infile",phylib_path);
+	if (!(dend_file=fopen(file_path,"w"))) return(0);
+	alg[0]='\0';
+	for (algorithm_index=0;algorithm_index<phylip_algorithm;algorithm_index++)
+		strcat(alg,"I\n");
+	fprintf(dend_file,"outtree\n%s/exe/font1\n%sV\nN\nY\n",phylib_path,alg);     //D\n
+	fclose(dend_file);
+	/* create the dendrogram */   
+	system("rm plotfile");
+	sprintf(file_path,"%s/exe/fitch < %s/fitch.infile",phylib_path,phylib_path);
+	system(file_path);
+	sprintf(file_path,"%s/exe/drawtree < %s/drawtree.infile",phylib_path,phylib_path);
+	system(file_path);
+	sprintf(file_path,"mv plotfile ./%s.ps",data_set_name);
+	system(file_path);			
+	sprintf(file_path,"convert ./%s.ps ./%s.jpg",data_set_name,data_set_name);
+	system(file_path);
+	system("rm outfile outtree");  /* delete files from last run */			
+	fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",data_set_name,data_set_name);
+	fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",data_set_name,data_set_name);	/* the image files are copied in the file "wndchrm.cpp" */
+	return(1);
 }
 
 /*
@@ -2820,10 +2871,10 @@ void chomp (char *line) {
 	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
-long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images, char *phylib_path, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
+long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images, char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
 {  int class_index,class_index2,sample_index,split_index,test_set_size,train_set_size;
    int test_images[MAX_CLASS_NUM];
-   double *avg_similarity_matrix,*avg_similarity_normalization;
+   double *avg_similarity_matrix,*avg_class_prob_matrix;
    double splits_accuracy,splits_class_accuracy,avg_pearson=0.0,avg_abs_dif=0.0,avg_p=0.0;
    FILE *tsvfile;
    char tsv_filename[512];
@@ -2882,11 +2933,12 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    fprintf(output_file,"<h2>Results</h2> \n <table id=\"test_results\" border=\"1\" align=\"center\"><caption></caption> \n");
    for (split_index=0;split_index<split_num;split_index++)
    {  unsigned short *confusion_matrix;
-      double *similarity_matrix,P=0.0;
+      double *similarity_matrix,*class_probability_matrix,P=0.0;
       double avg_accuracy=0.0,plus_minus=0;
 
       confusion_matrix=splits[split_index].confusion_matrix;
       similarity_matrix=splits[split_index].similarity_matrix;
+      class_probability_matrix=splits[split_index].class_probability_matrix;
 
       for (class_index=1;class_index<=class_num;class_index++)
       {  double class_avg=0.0,class_sum=0.0;
@@ -2948,7 +3000,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    }   
    
    fprintf(output_file,"</table>\n");   /* close the splits table */
-   fprintf(output_file,"<br><br><br><br><br><br> \n\n\n\n\n\n\n\n");
+   fprintf(output_file,"<br><br><br><br> \n\n\n\n\n\n\n\n");
 
    /* average (sum) confusion matrix */
    sprintf(tsv_filename,"tsv/avg_confusion.tsv");                /* determine the tsv file name           */
@@ -2979,62 +3031,88 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       fprintf(output_file,"</tr>\n");         /* end of the line in the html report */
       if (tsvfile) fprintf(tsvfile,"\n");     /* end of the line in the tsv file    */	  
    }
-   fprintf(output_file,"</table> \n <br><br><br><br> \n");  /* end of average confusion matrix */
+   fprintf(output_file,"</table> \n <br><br> \n");  /* end of average confusion matrix */
    if (tsvfile) fclose(tsvfile);
 
    /* average similarity matrix */
-   sprintf(tsv_filename,"tsv/avg_similarity.tsv");                 /* determine the tsv file name               */
-   tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
-   if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
-   avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
-   avg_similarity_normalization=new double[class_num+1];
-   if (class_num>0) fprintf(output_file,"<table><tr><td><table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
-   if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
-      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
-   }
-   fprintf(output_file,"</tr>\n");         /* end of the classes names */
-   if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<tr><td><b>%s</b></td> ",class_labels[class_index]);
-      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print the class name into the tsv file */
-      for (class_index2=1;class_index2<=class_num;class_index2++)
-      {  double sum=0.0;
-         for (split_index=0;split_index<split_num;split_index++)
-           sum+=splits[split_index].similarity_matrix[class_index*class_num+class_index2];
-         avg_similarity_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
-         fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
-         if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
-      }
-      fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
-      if (tsvfile) fprintf(tsvfile,"\n");                     /* end of the line in the tsv file      */	  
-	  /* compute the avg normalization factor */
-	  avg_similarity_normalization[class_index]=0.0;
-	  for (split_index=0;split_index<split_num;split_index++) 
-	    if (splits[split_index].similarity_normalization)
-	      avg_similarity_normalization[class_index]+=(splits[split_index].similarity_normalization[class_index]/split_num);
-   }
-   fprintf(output_file,"</table></td>");   /* end of average similarity matrix */
-   if (tsvfile) fclose(tsvfile);
-   /* write the normalization factors for each class */
-//   if (splits[0].similarity_normalization)
-//   {  fprintf(output_file,"<td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</td><td><table border=\"1\" align=\"center\"><caption>Norm. Factor</caption>\n");
-//      for (class_index=1;class_index<=class_num;class_index++)
-//      {  fprintf(output_file,"<TR><TD>%.3f</TD></TR><br>\n",avg_similarity_normalization[class_index]);
-//      }
-//	  fprintf(output_file,"</td></table> \n");  /* end of average similarity normalization factors list */
-//   }
-   fprintf(output_file,"</tr></table><br><br><br><br> \n");   
-   
-   /* *** generate a dendrogram *** */
-   if (phylib_path && class_num>0)  /* generate a dendrogram only if phlyb path was specified */
-   {   dendrogram(output_file,data_set_name, phylib_path, class_num,avg_similarity_matrix, class_labels,1,phylip_algorithm);
-       if (export_tsv)   /* write the phylip file to the tsv directory */
-       {  sprintf(tsv_filename,"cp %s/dend_file tsv/dend_file.txt",phylib_path);
-          system(tsv_filename);
-	   }   
-   }
+	sprintf(tsv_filename,"tsv/avg_similarity.tsv");                 /* determine the tsv file name               */
+	tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
+	if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
+	avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
+	if (class_num>0) fprintf(output_file,"<table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
+	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
+	for (class_index=1;class_index<=class_num;class_index++) {
+		fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
+	}
+	fprintf(output_file,"</tr>\n");         /* end of the classes names */
+	if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
+
+	for (class_index=1;class_index<=class_num;class_index++) {
+		fprintf(output_file,"<tr><td><b>%s</b></td> ",class_labels[class_index]);
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print the class name into the tsv file */
+		for (class_index2=1;class_index2<=class_num;class_index2++) {
+			double sum=0.0;
+			for (split_index=0;split_index<split_num;split_index++)
+				sum+=splits[split_index].similarity_matrix[class_index*class_num+class_index2];
+			avg_similarity_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
+			fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
+			if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
+		}
+		fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
+		if (tsvfile) fprintf(tsvfile,"\n");                     /* end of the line in the tsv file      */	  
+	}
+	fprintf(output_file,"</table><br>");   /* end of average similarity matrix */
+	if (tsvfile) fclose(tsvfile);
+
+   /* average class probability matrix */
+	sprintf(tsv_filename,"tsv/avg_class_prob.tsv");                 /* determine the tsv file name               */
+	tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
+	if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
+	avg_class_prob_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
+	if (class_num>0) fprintf(output_file,"<table id=\"average_class_probability_matrix\" border=\"1\" align=\"center\"><caption>Average Class Probability Matrix</caption>\n <tr><td></td> ");
+	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
+	for (class_index=1;class_index<=class_num;class_index++) {
+		fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);   /* print to the html file  */
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
+	}
+	fprintf(output_file,"</tr>\n");         /* end of the classes names */
+	if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
+
+	for (class_index=1;class_index<=class_num;class_index++) {
+		fprintf(output_file,"<tr><th>%s</th> ",class_labels[class_index]);
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print the class name into the tsv file */
+		for (class_index2=1;class_index2<=class_num;class_index2++) {
+			double sum=0.0;
+			for (split_index=0;split_index<split_num;split_index++)
+				sum+=splits[split_index].class_probability_matrix[class_index*class_num+class_index2];
+			avg_class_prob_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
+			fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
+			if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
+		}
+		fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
+		if (tsvfile) fprintf(tsvfile,"\n");                     /* end of the line in the tsv file      */	  
+	}
+	fprintf(output_file,"</table>");   /* end of average class probability matrix */
+	if (tsvfile) fclose(tsvfile);
+
+
+	/* *** generate a dendrogram *** */
+	if (phylib_path && class_num>0 ) {  /* generate a dendrogram only if phlyb path was specified */
+		if (distance_method == 5)
+			dendrogram(output_file,data_set_name, phylib_path, class_num,avg_class_prob_matrix, class_labels,distance_method,phylip_algorithm);
+		else
+			dendrogram(output_file,data_set_name, phylib_path, class_num,avg_similarity_matrix, class_labels,distance_method,phylip_algorithm);
+		if (export_tsv) {  /* write the phylip file to the tsv directory */
+			sprintf(tsv_filename,"cp %s/dend_file tsv/dend_file.txt",phylib_path);
+			system(tsv_filename);
+		}   
+	}
+
+	fprintf(output_file,"<br><br><br><br> \n");
+// deallocate averaging matrixes
+	delete avg_similarity_matrix;
+	delete avg_class_prob_matrix;
 
    
 //      FILE *dend_file;
@@ -3082,8 +3160,6 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 //         }
 //	}		   
 //   }
-//   delete avg_similarity_matrix;  /* free the memory allocated for the dendrogram similarity matrix */
-//   delete avg_similarity_normalization;
 
    /* print the average accuracies of the tile areas */
    if (splits[0].tile_area_accuracy)
@@ -3102,54 +3178,68 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    }
    
    /* *** print the confusion/similarity matrices, feature names and individual images for the splits *** */
-   for (split_index=0;split_index<split_num;split_index++)
-   {  unsigned short *confusion_matrix;
-      double *similarity_matrix;
-      unsigned short features_num=0,class_index;
+	for (split_index=0;split_index<split_num;split_index++) {
+		unsigned short *confusion_matrix;
+		double *similarity_matrix, *class_probability_matrix;
+		unsigned short features_num=0,class_index;
 
-      confusion_matrix=splits[split_index].confusion_matrix;
-      similarity_matrix=splits[split_index].similarity_matrix;
+		confusion_matrix=splits[split_index].confusion_matrix;
+		similarity_matrix=splits[split_index].similarity_matrix;
+		class_probability_matrix=splits[split_index].class_probability_matrix;
 
-      fprintf(output_file,"<HR><BR><A NAME=\"split%d\">\n",split_index);   /* for the link to the split */
-      fprintf(output_file,"<B>Split %d</B><br><br>\n",split_index+1);
-
-	  /* print the confusion matrix */
-      if (class_num>0) 
-	  {  fprintf(output_file,"<table  id=\"confusion_matrix-split%d\" border=\"1\" align=\"center\"><caption>Confusion Matrix</caption> \n <tr><td></td>\n", split_index);
-         for (class_index=1;class_index<=class_num;class_index++)
-           fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);
-         fprintf(output_file,"</tr>\n");
-         for (class_index=1;class_index<=class_num;class_index++)
-         {  fprintf(output_file,"<tr><td><b>%s</b></td>\n",class_labels[class_index]);
-            for (class_index2=1;class_index2<=class_num;class_index2++)
-              fprintf(output_file,"<td>%d</td>\n",confusion_matrix[class_index*class_num+class_index2]);
-            fprintf(output_file,"</tr>\n");
-         }
-         fprintf(output_file,"</table> \n <br><br> \n");
-      }
+		fprintf(output_file,"<HR><BR><A NAME=\"split%d\">\n",split_index);   /* for the link to the split */
+		fprintf(output_file,"<B>Split %d</B><br><br>\n",split_index+1);
       
-	  /* print the similarity matrix */
-      if (class_num>0) 
-	  {  fprintf(output_file,"<table><tr><td><table id=\"similarity_matrix-split%d\" border=\"1\" align=\"center\"><caption>Similarity Matrix</caption> \n <tr><td></td>\n", split_index);
-         for (class_index=1;class_index<=class_num;class_index++)
-           fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);   
-         fprintf(output_file,"</tr>\n");
-         for (class_index=1;class_index<=class_num;class_index++)
-         {  fprintf(output_file,"<tr><td><b>%s</b></td>\n",class_labels[class_index]);
-            for (class_index2=1;class_index2<=class_num;class_index2++)
-              fprintf(output_file,"<td>%.2f</td>\n",similarity_matrix[class_index*class_num+class_index2]);
-            fprintf(output_file,"</tr>\n");
-         }
-		fprintf(output_file,"</table></td>\n");
-      }
-      /* write the normalization factors for each class */
-//      if (splits[split_index].similarity_normalization)
-//      {  fprintf(output_file,"<td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</td><td><table border=\"1\" align=\"center\"><caption>Norm. Factor</caption>\n");
-//         for (class_index=1;class_index<=class_num;class_index++)
-//          fprintf(output_file,"<TR><TD>%.2f</TD></TR>\n",splits[split_index].similarity_normalization[class_index]);
-//         fprintf(output_file,"</td></table> \n");  /* end of average similarity normalization factors list */
-//      }
-      fprintf(output_file,"</tr></table><br><br><br><br> \n");    
+		if (class_num>0) {
+		// print the confusion matrix
+			fprintf(output_file,"<table  id=\"confusion_matrix-split%d\" border=\"1\" align=\"center\"><caption>Confusion Matrix</caption> \n", split_index);
+ 
+ 			fprintf (output_file, "<tr><th></th>\n");
+			for (class_index=1;class_index<=class_num;class_index++)
+				fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);
+			fprintf(output_file,"</tr>\n");
+
+			for (class_index=1;class_index<=class_num;class_index++) {
+				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
+				for (class_index2=1;class_index2<=class_num;class_index2++)
+					fprintf(output_file,"<td>%d</td>\n",confusion_matrix[class_index*class_num+class_index2]);
+				fprintf(output_file,"</tr>\n");
+			}
+			fprintf(output_file,"</table> \n <br><br> \n");
+
+
+	  // print the similarity matrix
+			fprintf (output_file, "<table id=\"similarity_matrix-split%d\" border=\"1\" align=\"center\"><caption>Similarity Matrix</caption> \n", split_index);
+
+			fprintf (output_file, "<tr><th></th>\n");
+			for (class_index=1;class_index<=class_num;class_index++)
+				fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);   
+			fprintf(output_file,"</tr>\n");
+
+			for (class_index=1;class_index<=class_num;class_index++) {
+				fprintf(output_file,"<tr><th><b>%s</b></th>\n",class_labels[class_index]);
+				for (class_index2=1;class_index2<=class_num;class_index2++)
+					fprintf(output_file,"<td>%.2f</td>\n",similarity_matrix[class_index*class_num+class_index2]);
+				fprintf(output_file,"</tr>\n");
+			}
+			fprintf(output_file,"</table><br>\n");
+
+	// print the average class probabilities
+			fprintf (output_file, "<table id=\"class_probability_matrix-split%d\" border=\"1\" align=\"center\"><caption>Class Probability Matrix</caption> \n", split_index);
+			fprintf (output_file, "<tr><th></th>\n");
+			for (class_index=1;class_index<=class_num;class_index++)
+				fprintf(output_file,"<th><b>%s</b></td>\n",class_labels[class_index]);   
+			fprintf(output_file,"</tr>\n");
+
+			for (class_index=1;class_index<=class_num;class_index++) {
+				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
+				for (class_index2=1;class_index2<=class_num;class_index2++)
+					fprintf(output_file,"<td>%.2f</td>\n",class_probability_matrix[class_index*class_num+class_index2]);
+				fprintf(output_file,"</tr>\n");
+			}
+			fprintf(output_file,"</table>\n");
+
+		}
 
       /* add a dendrogram of the image similarities */
       if (image_similarities && splits[split_index].image_similarities)
@@ -3161,7 +3251,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
          {  labels[test_image_index]=new char[MAX_CLASS_NAME_LENGTH];
             strcpy(labels[test_image_index],class_labels[(int)(splits[split_index].image_similarities[test_image_index])]);
 		 }
-         dendrogram(output_file,file_name, phylib_path, test_set_size,(double *)(splits[split_index].image_similarities), labels,4,phylip_algorithm);	    
+         dendrogram(output_file,file_name, phylib_path, test_set_size,(double *)(splits[split_index].image_similarities), labels,6,phylip_algorithm);	    
          for (test_image_index=1;test_image_index<=test_set_size;test_image_index++) delete labels[test_image_index];
          delete labels;
       }
@@ -3194,7 +3284,6 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 				tr+1, featuregroups_stats->name.c_str(), featuregroups_stats->min, featuregroups_stats->max,
 				featuregroups_stats->mean, featuregroups_stats->stddev);
 		}
-
 		fprintf(output_file,"</table><br>\n");
 	  
       /* individual image predictions */

@@ -294,7 +294,7 @@ printf ("Max balanced training: %d\n",max_balanced_i);
 
 
 int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int method, int samples_per_image, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
-	int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int phylip_algorithm,int export_tsv,
+	int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int distance_method, int phylip_algorithm,int export_tsv,
 	long first_n, char *weight_file_buffer, char weight_vector_action, int N, TrainingSet *testset, int ignore_group, int tile_areas, int max_tile, int image_similarities, int random_splits) {
 	TrainingSet *train,*test,**TilesTrainingSets=NULL;
 	data_split splits[MAX_SPLITS];
@@ -373,7 +373,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        else test=new TrainingSet(ts->count,ts->class_num);
        splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
-       splits[split_index].similarity_normalization=new double[ts->class_num+1];
+       splits[split_index].class_probability_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
        if (tile_areas)
        {  splits[split_index].tile_area_accuracy=new double[samples_per_image];
           for (tile_index=0;tile_index<samples_per_image;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
@@ -482,7 +482,8 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	      if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
 	   }
 	   else output_file=stdout;     
-	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,n_train,phylib_path,phylip_algorithm,export_tsv,
+	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,n_train,
+	    phylib_path, distance_method, phylip_algorithm,export_tsv,
 	   	testset ? testset->source_path : NULL,image_similarities);   
 	   if (output_file!=stdout) fclose(output_file);
 	   /* copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files */
@@ -554,11 +555,24 @@ void ShowHelp()
    printf("        the class is ignored if it doesn't have at least N samples.\n");
    printf("jN - Set a maximal number of test images (for each class). \n");
    printf("nN - Number of repeated random splits. The default is 1.\n");
-   printf("p[+][k][#][path] - Output a full report in HTML format. 'path' is an optional path to phylip root dir\n");
-   printf("   for generating dendrograms. The optinal '+' creates a directory and exports the data into tsv files.\n");
-   printf("   'k' is an optional digit (1..3) of the specific phylip algorithm to be used. '#' generates a map of the test images\n");
+   printf("p[+][k][#][path] - Report options.\n");
+   printf("   'path' is an optional path to a PHYLIP installation root directory for generating dendrograms.\n");
+   printf("   The optinal '+' creates a 'tsv' directory and exports report data into tsv files.\n");
+   printf("   'k' is an optional digit (1..3) of the specific phylip algorithm to be used.\n");
+   printf("   '#' generates a similarity map of the test images\n");
+   printf("P[N] - pair-wise distance algorithms for comparing classes\n");
+   printf("   The class probability matrix is the average of marginal probabilities for the images in each class \n");
+   printf("   The similarity matrix is the class probability matrix, where each row is normalized to make the class identity column equal to 1.0\n");
+   printf("   The dis-similarity (i.e. 1.0 - similarity) between two classes can be interpreted as a \"morphological distance\".\n");
+   printf("   There are two entries in the similarity matrix for each comparison: Class 1 classified as Class 2, and Class 2 classified as Class 1.\n");
+   printf("   N = 1: Use the maximum of the two dis-similarities.\n");
+   printf("   N = 2: Use the average of the two dis-similarities.\n");
+   printf("   N = 3: Use the top triangle only (i.e. Class 1 classified as Class 2)\n");
+   printf("   N = 4: Use the bottom triangle only (i.e. Class 2 classified as Class 1)\n");
+   printf("   N = 5: Use the class probability matrix as a set of coordinates for each class centroid in a \"Marginal Probability Space\". Use Euclidean distance.\n");
+   printf("   The default method is 5. Method 2 was described in ref [1], and method 5 was described in ref [2].\n");
    printf("qN - the number of first closest classes among which the presence of the right class is considered a match.\n");
-   printf("v[r|w|+|-][path] - read/write the feature weights into a file.\n");   
+   printf("v[r|w|+|-][path] - read/write/add/subtract the feature weights from a file.\n");   
    printf("Nx - set the maximum number of classes (use only the first x classes).\n");
    printf("Sx[:y] - normalize the images such that the mean is set to x and (optinally) the stddev is set to y.\n");   
    printf("Bx,y,w,h - compute features only from the (x,y,w,h) block of the image.\n");      
@@ -590,7 +604,11 @@ void ShowHelp()
    printf("       The default -r for 'classify' is 1.0 rather than the 0.75 used in 'test'.\n");
    printf("\nAdditional help:\n================\n");
    printf("A detailed description can be found in: Shamir, L., Orlov, N., Eckley, D.M., Macura, T., Johnston, J., Goldberg, I.\n");
-   printf("  Wndchrm - an open source utility for biological image analysis, BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
+   printf("  [1] \"Wndchrm - an open source utility for biological image analysis\", BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
+   printf("An application of pattern recognition for a quantitative biological assay based on morphology can be found in:\n");
+   printf("  [2] Johnston, J., Iser W. B., Chow, D. K., Goldberg, I. G., Wolkow, C. A. \"Quantitative Image Analysis Reveals\n");
+   printf("  Distinct Structural Transitions during Aging in Caenorhabditis elegans Tissues\", PLoS ONE, 3:7:e2821, 2008.\n");
+   
    printf("\nIf you have more questions about this software, please email me (Ilya Goldberg) at <igg [at] nih [dot] gov> \n\n");
    return;
 }
@@ -618,6 +636,7 @@ int main(int argc, char *argv[])
     char *report_file=NULL;
     int export_tsv=0;
     int phylip_algorithm=0;
+    int distance_method=5;
     int exact_training_images=0;
     long first_n=1;
     char weight_file_buffer[256];
@@ -703,6 +722,7 @@ int main(int argc, char *argv[])
 		   arg_index++;
 		   continue;	/* so that the path will not trigger other switches */
         }
+        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 		if (argv[arg_index][1]=='v' && strlen(argv[arg_index])>3)
 		{  weight_vector_action=argv[arg_index][2];
 		   if (weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='+' && weight_vector_action!='-')
@@ -805,6 +825,7 @@ int main(int argc, char *argv[])
 	if (split_ratio<0 || split_ratio>1) showError(1,"training fraction (r) must be > 0 and < 1");
 	if (splits_num<1 || splits_num>MAX_SPLITS) showError(1,"splits num out of range");
 	if (weight_vector_action!='\0' && weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='-' && weight_vector_action!='+') showError(1,"-v must be followed with either 'w' (write) or 'r' (read) ");
+	if (distance_method < 1 || distance_method > 5) showError(1,"Unrecognized distance method %d.  Must be between 1 and 5.",distance_method);
 
 	 /* run */
 	randomize();   /* random numbers are used for selecting random samples for testing and training */
@@ -913,7 +934,7 @@ int main(int argc, char *argv[])
 
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
 				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts->tiles_x*sampling_opts->tiles_y, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
-					exact_training_images,max_test_images,phylib_path,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
+					exact_training_images,max_test_images,phylib_path,distance_method,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 					testset,ignore_group,tile_areas,max_tile,image_similarities, random_splits);
 			}
 	
