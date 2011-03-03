@@ -89,7 +89,7 @@ bin_PROGRAMS=wndchrm util/color_deconvolution
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -lFeatureNames -limfit -lfftw3
 
 util_color_deconvolution_SOURCES = 	\
 	util/readTiffData.c \

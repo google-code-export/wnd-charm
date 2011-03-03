@@ -285,7 +285,7 @@ libimfit_a_SOURCES = \
 
 AM_CPPFLAGS = -fPIC
 wndchrm_SOURCES = wndchrm.cpp
-wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -lFeatureNames -limfit -lfftw3
 util_color_deconvolution_SOURCES = \
 	util/readTiffData.c \
 	util/readTIFF.h \
