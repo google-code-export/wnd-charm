@@ -28,8 +28,9 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-
+#ifdef WIN32
 #pragma hdrstop
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -103,11 +104,8 @@ signatures *signatures::duplicate()
 */
 void signatures::Add(const char *name,double value)
 {
-   if (name && NamesTrainingSet)
-   {  if (strchr(name,'\n')) *(strchr(name,'\n'))='\0';  /* prevent end of lines inside the features names */      
-//      strcpy(data[count].name,name);
-      strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
-   }
+   if (name && NamesTrainingSet) strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
+
    if (value>INF) value=INF;        /* prevent error */
    if (value<-INF) value=-INF;      /* prevent error */
    if (value<1/INF && value>-1/INF) value=0;  /* prevent a numerical error */
@@ -142,7 +140,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
 {  char buffer[80];
    double vec[72];
    int a,b,c;
-   double mean, median, std, min, max, histogram[10], norm_avg, norm_std;
+   double mean, median, std, min, max, histogram[10];
    ImageMatrix *TempMatrix;
    ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*WaveletFourierSelector;
    if (print_to_screen) printf("start processing image...\n");   
@@ -845,7 +843,6 @@ void signatures::CompGroupD(ImageMatrix *matrix, const char *transform_label)
 */
 void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
 {
-  ImageMatrix *TempMatrix;
   ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*FourierWaveletSelector;
   ImageMatrix *FourierChebyshev,*WaveletFourier,*ChebyshevWavelet, *EdgeTransform, *EdgeFourier, *EdgeWavelet;
 
@@ -1136,8 +1133,9 @@ void signatures::ComputeFromDouble(double *data, int width, int height, int dept
    for (x=0;x<width;x++)
      for (y=0;y<height;y++)
        for (z=0;z<depth;z++)
-         matrix->SetInt(x,y,z,data[x*height*depth,y*depth,z]);   
-   compute(matrix,compute_color);
+         matrix->SetInt(x,y,z,data[x*height*depth + y * depth + z]);   
+ 
+	compute(matrix,compute_color);
    delete matrix;
 }
 
@@ -1161,7 +1159,7 @@ FILE *signatures::FileOpen(char *path, int overwrite)
        If we are able to get a file handle this way, it means that the file did not previously exist, and no other process has it open.
        If we cannot get the handle, it means some other process has this file opened.
    */
-   if (ret=fopen(filename,"r"))
+   if ( (ret=fopen(filename,"r")) )
    {  struct stat ft;
       fclose(ret);
       if (overwrite) 
@@ -1218,6 +1216,7 @@ int signatures::LoadFromFile(char *filename)
 
    /* read the feature values */
    p_buffer=fgets(buffer,sizeof(buffer),value_file);
+   chomp (p_buffer);
    while (p_buffer)
    {  char *p_name;
       p_name=strchr(buffer,' ');
@@ -1244,7 +1243,6 @@ int signatures::LoadFromFile(char *filename)
 */
 int signatures::ReadFromFile (FILE **fpp, bool wait) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
-	FILE *fp;
 	int fd;
 	struct flock fl;
 	struct stat stat_buf;
@@ -1411,7 +1409,7 @@ printf ("zernike2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",v
 }
 
 
-
+#ifdef WIN32
 #pragma package(smart_init)
-
+#endif
 
