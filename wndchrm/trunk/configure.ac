@@ -19,9 +19,6 @@ AC_PROG_CXX
 CXXFLAGS=$MY_CXXFLAGS
 # Put the usual defualt into AM_CXXFLAGS
 AM_CXXFLAGS="-Wall -g -O2"
-# Write both of them out
-AC_SUBST(CXXFLAGS)
-AC_SUBST(AM_CXXFLAGS)
 
 SVNREV=`( svnversion $srcdir | sed 's/:/_/' ) 2>/dev/null`
 if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported"; } ;
@@ -70,88 +67,132 @@ dnl ------------------------------------------------------------
 dnl check for C++0x
 dnl ------------------------------------------------------------
 # AC_COMPILE_STDCXX_OX
-AC_DEFUN([AC_COMPILE_STDCXX_0X], [
-  AC_CACHE_CHECK(if g++ supports C++0x features without additional flags,
-  ac_cv_cxx_compile_cxx0x_native,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  AC_TRY_COMPILE([
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;],,
-  ac_cv_cxx_compile_cxx0x_native=yes, ac_cv_cxx_compile_cxx0x_native=no)
-  AC_LANG_RESTORE
-  ])
-
-  AC_CACHE_CHECK(if g++ supports C++0x features with -std=c++0x,
-  ac_cv_cxx_compile_cxx0x_cxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=c++0x"
-  AC_TRY_COMPILE([
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;],,
-  ac_cv_cxx_compile_cxx0x_cxx=yes, ac_cv_cxx_compile_cxx0x_cxx=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-
-  AC_CACHE_CHECK(if g++ supports C++0x features with -std=gnu++0x,
-  ac_cv_cxx_compile_cxx0x_gxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  AC_TRY_COMPILE([
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;],,
-  ac_cv_cxx_compile_cxx0x_gxx=yes, ac_cv_cxx_compile_cxx0x_gxx=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-
-  if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
-    AC_DEFINE(HAVE_STDCXX_0X,,[Define if g++ supports C++0x features. ])
-  fi
-])
+# AC_DEFUN([AC_COMPILE_STDCXX_0X], [
+#   AC_CACHE_CHECK(if g++ supports C++0x features without additional flags,
+#   ac_cv_cxx_compile_cxx0x_native,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+# 
+#     typedef check<check<bool>> right_angle_brackets;
+# 
+#     int a;
+#     decltype(a) b;
+# 
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_native=yes, ac_cv_cxx_compile_cxx0x_native=no)
+#   AC_LANG_RESTORE
+#   ])
+# 
+#   AC_CACHE_CHECK(if g++ supports C++0x features with -std=c++0x,
+#   ac_cv_cxx_compile_cxx0x_cxx,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=c++0x"
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+# 
+#     typedef check<check<bool>> right_angle_brackets;
+# 
+#     int a;
+#     decltype(a) b;
+# 
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_cxx=yes, ac_cv_cxx_compile_cxx0x_cxx=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+# 
+#   AC_CACHE_CHECK(if g++ supports C++0x features with -std=gnu++0x,
+#   ac_cv_cxx_compile_cxx0x_gxx,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+# 
+#     typedef check<check<bool>> right_angle_brackets;
+# 
+#     int a;
+#     decltype(a) b;
+# 
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_gxx=yes, ac_cv_cxx_compile_cxx0x_gxx=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+# 
+#   if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
+#      test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
+#      test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
+#     AC_DEFINE(HAVE_STDCXX_0X,,[Define if g++ supports C++0x features. ])
+#   fi
+#   
+#   if test "$ac_cv_cxx_compile_cxx0x_cxx" = yes; then
+#   	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++0x"
+#   elif test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
+#   	AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x"
+#   fi
+# ])
+# AC_HEADER_UNORDERED_MAP
+# AC_DEFUN([AC_HEADER_UNORDERED_MAP], [
+#   AC_CACHE_CHECK(for unordered_map,
+#   ac_cv_cxx_unordered_map,
+#   [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+#   AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([#include <unordered_map>], [using std::unordered_map;],
+#   ac_cv_cxx_unordered_map=yes, ac_cv_cxx_unordered_map=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#   if test "$ac_cv_cxx_unordered_map" = yes; then
+#     AC_DEFINE(HAVE_UNORDERED_MAP,,[Define if unordered_map is present. ])
+#   fi
+# ])
+# AC_HEADER_UNORDERED_MAP
+# # AC_HEADER_UNORDERED_SET
+# AC_DEFUN([AC_HEADER_UNORDERED_SET], [
+#   AC_CACHE_CHECK(for unordered_set,
+#   ac_cv_cxx_unordered_set,
+#   [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+#   AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([#include <unordered_set>], [using std::unordered_set;],
+#   ac_cv_cxx_unordered_set=yes, ac_cv_cxx_unordered_set=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#   if test "$ac_cv_cxx_unordered_set" = yes; then
+#     AC_DEFINE(HAVE_UNORDERED_SET,,[Define if unordered_set is present. ])
+#   fi
+# ])
+# AC_HEADER_UNORDERED_SET
 
 
 dnl ------------------------------------------------------------
@@ -187,43 +228,9 @@ AC_DEFUN([AC_HEADER_TR1_UNORDERED_SET], [
   fi
 ])
 AC_HEADER_TR1_UNORDERED_SET
-# AC_HEADER_UNORDERED_MAP
-AC_DEFUN([AC_HEADER_UNORDERED_MAP], [
-  AC_CACHE_CHECK(for unordered_map,
-  ac_cv_cxx_unordered_map,
-  [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  AC_TRY_COMPILE([#include <unordered_map>], [using std::unordered_map;],
-  ac_cv_cxx_unordered_map=yes, ac_cv_cxx_unordered_map=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-  if test "$ac_cv_cxx_unordered_map" = yes; then
-    AC_DEFINE(HAVE_UNORDERED_MAP,,[Define if unordered_map is present. ])
-  fi
-])
-AC_HEADER_UNORDERED_MAP
-# AC_HEADER_UNORDERED_SET
-AC_DEFUN([AC_HEADER_UNORDERED_SET], [
-  AC_CACHE_CHECK(for unordered_set,
-  ac_cv_cxx_unordered_set,
-  [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  AC_TRY_COMPILE([#include <unordered_set>], [using std::unordered_set;],
-  ac_cv_cxx_unordered_set=yes, ac_cv_cxx_unordered_set=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-  if test "$ac_cv_cxx_unordered_set" = yes; then
-    AC_DEFINE(HAVE_UNORDERED_SET,,[Define if unordered_set is present. ])
-  fi
-])
-AC_HEADER_UNORDERED_SET
+
+# Write out our compile flags
+AC_SUBST(CXXFLAGS)
+AC_SUBST(AM_CXXFLAGS)
 
 AC_OUTPUT(Makefile)
