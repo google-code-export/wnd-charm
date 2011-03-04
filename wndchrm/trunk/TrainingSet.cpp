@@ -2022,11 +2022,11 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 	}
 // Sort the featuregroup vector by mean weight
 	sort_by_mean_weight_t sort_by_mean_weight_func;
-	sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
+	std::sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
 
 // Sort the features in our split by weight, and use the sorted list to get the threshold value
 	sort_by_weight_t sort_by_weight_func;
-	sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
+	std::sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
 	int last_index = floor( (used_signatures * (double)signature_count) + 0.5 );
 	threshold=split->feature_stats[last_index].weight;
 // Lop off the vector after the threshold
