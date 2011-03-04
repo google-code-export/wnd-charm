@@ -19,12 +19,12 @@ std::map:
 #include "config.h"
 #ifdef HAVE_UNORDERED_MAP
 # include <unordered_map>
-# define MAP std::unordered_map
-#elsif HAVE_TR1_UNORDERED_MAP
+# define FEATURENAMES_MAP std::unordered_map
+#elif defined ( HAVE_TR1_UNORDERED_MAP )
 # include <tr1/unordered_map>
-# define MAP std::tr1::unordered_map
+# define FEATURENAMES_MAP std::tr1::unordered_map
 #else
-# define MAP std::map
+# define FEATURENAMES_MAP std::map
 #endif
 
 
@@ -120,22 +120,22 @@ private:
 ////////////////////////////////////////
 // Private static object caches
 ////////////////////////////////////////
-	typedef MAP<std::string, Channel *> cnm_t;
+	typedef FEATURENAMES_MAP<std::string, Channel *> cnm_t;
 	static cnm_t  channels_;
 
-	typedef MAP<std::string, Transform *> tnm_t;
+	typedef FEATURENAMES_MAP<std::string, Transform *> tnm_t;
 	static tnm_t  transforms_;
 
-	typedef MAP<std::string, FeatureAlgorithm *> fam_t;
+	typedef FEATURENAMES_MAP<std::string, FeatureAlgorithm *> fam_t;
 	static fam_t  feature_algorithms_;
 
-	typedef MAP<std::string, FeatureGroup *> fgnm_t;
+	typedef FEATURENAMES_MAP<std::string, FeatureGroup *> fgnm_t;
 	static fgnm_t feature_groups_;
 
-	typedef MAP<std::string, FeatureInfo *> fnm_t;
+	typedef FEATURENAMES_MAP<std::string, FeatureInfo *> fnm_t;
 	static fnm_t  features_;
 
-	typedef MAP<std::string,std::string> ofnm_t;
+	typedef FEATURENAMES_MAP<std::string,std::string> ofnm_t;
 	static ofnm_t old_features_;
 
 	
