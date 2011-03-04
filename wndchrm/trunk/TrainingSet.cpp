@@ -2629,7 +2629,7 @@ long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phyli
 /* print the labels */
 	for (label_index=1;label_index<=nodes_num;label_index++) {
 		char label[128];
-		double dist=0.0;
+		double dist=0.0, diff;
 		int label_index2;
 		strcpy(label,labels[label_index]);
 		if (strlen(label)>8) strcpy(label,&(label[strlen(label)-8]));  /* make sure the labels are shorter or equal to 8 characters in length */
@@ -2674,9 +2674,11 @@ long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phyli
 			// The similarity matrix parameter is the average_class_probability matrix (a de-normalized similarity matrix).
 			// The average class probabilities are used as class centroid coordinates in a "marginal probability space"
 			// The distance is the euclidean distance between class centroid coordinates.
+				dist = 0;
 				for (int class_index = 0; class_index < nodes_num; class_index++) {
-					dist = similarity_matrix[label_index*nodes_num+class_index] - similarity_matrix[label_index2*nodes_num+class_index];
-					dist *= dist;
+					diff = similarity_matrix[label_index*nodes_num+class_index] - similarity_matrix[label_index2*nodes_num+class_index];
+					diff *= diff;
+					dist += diff;
 				}
 				dist=sqrt (dist);
 			break;
