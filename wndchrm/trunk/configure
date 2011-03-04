@@ -694,11 +694,11 @@ ac_ct_CXX
 CXXDEPMODE
 am__fastdepCXX_TRUE
 am__fastdepCXX_FALSE
-AM_CXXFLAGS
 SVNREV
 CPP
 GREP
 EGREP
+AM_CXXFLAGS
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -3888,9 +3888,6 @@ fi
 CXXFLAGS=$MY_CXXFLAGS
 # Put the usual defualt into AM_CXXFLAGS
 AM_CXXFLAGS="-Wall -g -O2"
-# Write both of them out
-
-
 
 SVNREV=`( svnversion $srcdir | sed 's/:/_/' ) 2>/dev/null`
 if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported"; } ;
@@ -5127,7 +5124,132 @@ fi
 
 
 # AC_COMPILE_STDCXX_OX
-
+# AC_DEFUN([AC_COMPILE_STDCXX_0X], [
+#   AC_CACHE_CHECK(if g++ supports C++0x features without additional flags,
+#   ac_cv_cxx_compile_cxx0x_native,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+#
+#     typedef check<check<bool>> right_angle_brackets;
+#
+#     int a;
+#     decltype(a) b;
+#
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_native=yes, ac_cv_cxx_compile_cxx0x_native=no)
+#   AC_LANG_RESTORE
+#   ])
+#
+#   AC_CACHE_CHECK(if g++ supports C++0x features with -std=c++0x,
+#   ac_cv_cxx_compile_cxx0x_cxx,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=c++0x"
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+#
+#     typedef check<check<bool>> right_angle_brackets;
+#
+#     int a;
+#     decltype(a) b;
+#
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_cxx=yes, ac_cv_cxx_compile_cxx0x_cxx=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#
+#   AC_CACHE_CHECK(if g++ supports C++0x features with -std=gnu++0x,
+#   ac_cv_cxx_compile_cxx0x_gxx,
+#   [AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([
+#   template <typename T>
+#     struct check
+#     {
+#       static_assert(sizeof(int) <= sizeof(T), "not big enough");
+#     };
+#
+#     typedef check<check<bool>> right_angle_brackets;
+#
+#     int a;
+#     decltype(a) b;
+#
+#     typedef check<int> check_type;
+#     check_type c;
+#     check_type&& cr = c;],,
+#   ac_cv_cxx_compile_cxx0x_gxx=yes, ac_cv_cxx_compile_cxx0x_gxx=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#
+#   if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
+#      test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
+#      test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
+#     AC_DEFINE(HAVE_STDCXX_0X,,[Define if g++ supports C++0x features. ])
+#   fi
+#
+#   if test "$ac_cv_cxx_compile_cxx0x_cxx" = yes; then
+#   	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++0x"
+#   elif test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
+#   	AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x"
+#   fi
+# ])
+# AC_HEADER_UNORDERED_MAP
+# AC_DEFUN([AC_HEADER_UNORDERED_MAP], [
+#   AC_CACHE_CHECK(for unordered_map,
+#   ac_cv_cxx_unordered_map,
+#   [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+#   AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([#include <unordered_map>], [using std::unordered_map;],
+#   ac_cv_cxx_unordered_map=yes, ac_cv_cxx_unordered_map=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#   if test "$ac_cv_cxx_unordered_map" = yes; then
+#     AC_DEFINE(HAVE_UNORDERED_MAP,,[Define if unordered_map is present. ])
+#   fi
+# ])
+# AC_HEADER_UNORDERED_MAP
+# # AC_HEADER_UNORDERED_SET
+# AC_DEFUN([AC_HEADER_UNORDERED_SET], [
+#   AC_CACHE_CHECK(for unordered_set,
+#   ac_cv_cxx_unordered_set,
+#   [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+#   AC_LANG_SAVE
+#   AC_LANG_CPLUSPLUS
+#   ac_save_CXXFLAGS="$CXXFLAGS"
+#   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+#   AC_TRY_COMPILE([#include <unordered_set>], [using std::unordered_set;],
+#   ac_cv_cxx_unordered_set=yes, ac_cv_cxx_unordered_set=no)
+#   CXXFLAGS="$ac_save_CXXFLAGS"
+#   AC_LANG_RESTORE
+#   ])
+#   if test "$ac_cv_cxx_unordered_set" = yes; then
+#     AC_DEFINE(HAVE_UNORDERED_SET,,[Define if unordered_set is present. ])
+#   fi
+# ])
+# AC_HEADER_UNORDERED_SET
 
 
 # AC_HEADER_TR1_UNORDERED_MAP
@@ -5279,412 +5401,9 @@ _ACEOF
 
   fi
 
-# AC_HEADER_UNORDERED_MAP
 
+# Write out our compile flags
 
-  { echo "$as_me:$LINENO: checking if g++ supports C++0x features without additional flags" >&5
-echo $ECHO_N "checking if g++ supports C++0x features without additional flags... $ECHO_C" >&6; }
-if test "${ac_cv_cxx_compile_cxx0x_native+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_cxx_compile_cxx0x_native=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_cxx_compile_cxx0x_native=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compile_cxx0x_native" >&5
-echo "${ECHO_T}$ac_cv_cxx_compile_cxx0x_native" >&6; }
-
-  { echo "$as_me:$LINENO: checking if g++ supports C++0x features with -std=c++0x" >&5
-echo $ECHO_N "checking if g++ supports C++0x features with -std=c++0x... $ECHO_C" >&6; }
-if test "${ac_cv_cxx_compile_cxx0x_cxx+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=c++0x"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_cxx_compile_cxx0x_cxx=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_cxx_compile_cxx0x_cxx=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compile_cxx0x_cxx" >&5
-echo "${ECHO_T}$ac_cv_cxx_compile_cxx0x_cxx" >&6; }
-
-  { echo "$as_me:$LINENO: checking if g++ supports C++0x features with -std=gnu++0x" >&5
-echo $ECHO_N "checking if g++ supports C++0x features with -std=gnu++0x... $ECHO_C" >&6; }
-if test "${ac_cv_cxx_compile_cxx0x_gxx+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-  template <typename T>
-    struct check
-    {
-      static_assert(sizeof(int) <= sizeof(T), "not big enough");
-    };
-
-    typedef check<check<bool>> right_angle_brackets;
-
-    int a;
-    decltype(a) b;
-
-    typedef check<int> check_type;
-    check_type c;
-    check_type&& cr = c;
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_cxx_compile_cxx0x_gxx=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_cxx_compile_cxx0x_gxx=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compile_cxx0x_gxx" >&5
-echo "${ECHO_T}$ac_cv_cxx_compile_cxx0x_gxx" >&6; }
-
-  if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_STDCXX_0X
-_ACEOF
-
-  fi
-
-
-  { echo "$as_me:$LINENO: checking for unordered_map" >&5
-echo $ECHO_N "checking for unordered_map... $ECHO_C" >&6; }
-if test "${ac_cv_cxx_unordered_map+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <unordered_map>
-int
-main ()
-{
-using std::unordered_map;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_cxx_unordered_map=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_cxx_unordered_map=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_cxx_unordered_map" >&5
-echo "${ECHO_T}$ac_cv_cxx_unordered_map" >&6; }
-  if test "$ac_cv_cxx_unordered_map" = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_UNORDERED_MAP
-_ACEOF
-
-  fi
-
-# AC_HEADER_UNORDERED_SET
-
-
-  { echo "$as_me:$LINENO: checking for unordered_set" >&5
-echo $ECHO_N "checking for unordered_set... $ECHO_C" >&6; }
-if test "${ac_cv_cxx_unordered_set+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <unordered_set>
-int
-main ()
-{
-using std::unordered_set;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_cxx_unordered_set=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_cxx_unordered_set=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_cxx_unordered_set" >&5
-echo "${ECHO_T}$ac_cv_cxx_unordered_set" >&6; }
-  if test "$ac_cv_cxx_unordered_set" = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_UNORDERED_SET
-_ACEOF
-
-  fi
 
 
 ac_config_files="$ac_config_files Makefile"
@@ -6420,11 +6139,11 @@ ac_ct_CXX!$ac_ct_CXX$ac_delim
 CXXDEPMODE!$CXXDEPMODE$ac_delim
 am__fastdepCXX_TRUE!$am__fastdepCXX_TRUE$ac_delim
 am__fastdepCXX_FALSE!$am__fastdepCXX_FALSE$ac_delim
-AM_CXXFLAGS!$AM_CXXFLAGS$ac_delim
 SVNREV!$SVNREV$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
+AM_CXXFLAGS!$AM_CXXFLAGS$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
