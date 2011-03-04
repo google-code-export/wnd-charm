@@ -30,29 +30,19 @@
 #ifdef WIN32
 #pragma hdrstop
 #endif
-
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <vector>
+#include <fstream>
+#include <algorithm>
 #include <cfloat> // Has definition of DBL_EPSILON
-#include <unistd.h> // unlink
+#include <cmath>
+#include "FeatureNames.hpp"
 
 // #include <iostream> // Debug
 //#include <limits>
-#include <vector>
-#include <fstream>
 
-#define FLOAT_EQ(x,v,y) (((v - FLT_EPSILON * y) < x) && (x < ( v + FLT_EPSILON * y)))
 
 #include "TrainingSet.h"
 //#include "cmatrix.h"
-#include "FeatureNames.hpp"
 
 #ifndef WIN32
 #include <stdlib.h>
@@ -60,6 +50,17 @@
 #include <dir.h>
 #endif
 
+#include <string.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <unistd.h> // unlink
+
+#define FLOAT_EQ(x,v,y) (((v - FLT_EPSILON * y) < x) && (x < ( v + FLT_EPSILON * y)))
 
 #define DEBUG_CREATE_INDIV_DISTANCE_FILES 0
 
@@ -2022,11 +2023,11 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 	}
 // Sort the featuregroup vector by mean weight
 	sort_by_mean_weight_t sort_by_mean_weight_func;
-	std::sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
+	sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
 
 // Sort the features in our split by weight, and use the sorted list to get the threshold value
 	sort_by_weight_t sort_by_weight_func;
-	std::sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
+	sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
 	int last_index = floor( (used_signatures * (double)signature_count) + 0.5 );
 	threshold=split->feature_stats[last_index].weight;
 // Lop off the vector after the threshold
@@ -2684,7 +2685,7 @@ long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phyli
 			break;
 			} // switch
 #ifndef WIN32
-			if (isnan (dist)) dist=0;
+			if (std::isnan (dist)) dist=0;
 #endif
 			fprintf(dend_file,"%.4f       ",fabs(dist*(dist>=0)));
 		}
