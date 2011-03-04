@@ -32,13 +32,14 @@
 #define TrainingSetH
 //---------------------------------------------------------------------------
 
-#include "signatures.h"
+// STL stuff
+#include <vector>
+#include <string>
 #include "FeatureNames.hpp"
+
 #include "config.h" // for version info
 
-// STL stuff
-#include <map>
-#include <string>
+#include "signatures.h"
 
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
@@ -149,7 +150,7 @@ typedef struct
    double pearson_coefficient;             /* pearson correlation between the predicted and actual value        */
    double avg_abs_dif;                     /* average absolute difference between the actual and the predicted values */
    double pearson_p_value;
-}data_split;
+} data_split;
 
 class TrainingSet
 {
