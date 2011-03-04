@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "FeatureNames.hpp"
@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <algorithm>
 
 // Storage for class statics
 FeatureNames::cnm_t  FeatureNames::channels_;
