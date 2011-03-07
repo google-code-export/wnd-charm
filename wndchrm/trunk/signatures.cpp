@@ -1352,8 +1352,8 @@ int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_
 	double vec[72];
 	int i,file_index;
 
-printf ("compare %s to computed with %le\n",filename,OUR_EPSILON);
 	if (! file_sigs.LoadFromFile (filename) ) return (0);
+	if (print_to_screen) printf ("compare %s to computed\n",filename);
 
 	// 20 features long: 323-342, standard: N/A
 	if (large_set) {
@@ -1364,47 +1364,35 @@ printf ("compare %s to computed with %le\n",filename,OUR_EPSILON);
 // ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
 // );
 		for (i = 0; i< 20; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-printf ("fractal2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
-(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
-,diffUlps(file_sigs.data[file_index+i].value,vec[i])
-);
+			if (print_to_screen) printf ("fractal2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 			return (0);
 		}
 	}
+	if (print_to_screen) printf ("fractal2D match\n");
 	
 	// 28 features long: 253-280, standard: 485-512
 	matrix->HaarlickTexture2D(0,vec);
 	if (large_set) file_index = 253;
 	else file_index = 485;
-// for (i = 0; i< 28; i++) printf ("HaarlickTexture2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
-// (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
-// ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
-// );
 	for (i = 0; i < 28; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-printf ("HaarlickTexture2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
-(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
-,diffUlps(file_sigs.data[file_index+i].value,vec[i])
-);
+		if (print_to_screen) printf ("HaarlickTexture2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 		return (0);
 	}
+	if (print_to_screen) printf ("HaarlickTexture2D match\n");
 	
 	// 72 features long: 133-204, standard: 881-952
 	long output_size;   /* output size is normally 72 */
 	matrix->zernike2D(vec,&output_size);
 	if (large_set) file_index = 133;
 	else file_index = 881;
-// for (i = 0; i< 72; i++) printf ("zernike2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
-// (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
-// ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
-// );
 	for (i = 0; i < 72; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-printf ("zernike2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
-(file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
-,diffUlps(file_sigs.data[file_index+i].value,vec[i])
-);
+		if (print_to_screen) printf ("zernike2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 		return (0);
 	}
 
+	if (print_to_screen) printf ("zernike2D match.\n");
+
+	if (print_to_screen) printf ("Match found.\n");
 	return (1);
 }
 
