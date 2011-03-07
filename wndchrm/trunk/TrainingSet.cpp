@@ -1169,7 +1169,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	} our_sigs[MAX_SAMPLES_PER_IMAGE];
 
 
-printf ("Processing image file '%s'.\n",filename);
+	if (print_to_screen) printf ("Processing image file '%s'.\n",filename);
 
 // pre-determine sig files for this image.
 // Primarily, this lets us pre-lock all the signature files for one image (see below).
@@ -1202,7 +1202,7 @@ printf ("Processing image file '%s'.\n",filename);
 	// if its the last sample, then we wait for the lock.
 		res = ImageSignatures->ReadFromFile(&sigfile,0);
 		if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
-printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
+			if (print_to_screen) printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 			our_sigs[n_sigs].sig = ImageSignatures;
 			our_sigs[n_sigs].file = sigfile;
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
@@ -1215,7 +1215,7 @@ printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 
 		} else if (res == 0) {
 		// File already has a lock.
-printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
+			if (print_to_screen) printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
 			if ( (res=AddSample(ImageSignatures)) < 0) break;
 
 		} else if (res == NO_SIGS_IN_FILE) {
@@ -1235,7 +1235,7 @@ printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileNam
 			strcpy(ImageSignatures->full_path,filename);
 			ImageSignatures->sample_class=sample_class;
 			ImageSignatures->sample_value=sample_value;
-printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
+			if (print_to_screen) printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 			if ( (res=AddSample(ImageSignatures)) < 0) break;
 		}
 	}
@@ -1273,7 +1273,7 @@ printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 		tile_index_y = our_sigs[sig_index].tile_index_y;
 		our_sigs[sig_index].saved = false; // don't unlink if true
 		our_sigs[sig_index].added = false; // don't delete if true
-printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
+		if (print_to_screen) printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
 
 		if (!image_matrix) { // for all samples
 			image_matrix = new ImageMatrix;
