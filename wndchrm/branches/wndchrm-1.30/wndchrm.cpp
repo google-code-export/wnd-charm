@@ -933,7 +933,7 @@ int main(int argc, char *argv[])
 			}
 
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
-				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts->tiles_x*sampling_opts->tiles_y, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
+				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts->tiles_x*sampling_opts->tiles_y * sampling_opts->rotations, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 					exact_training_images,max_test_images,phylib_path,distance_method,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 					testset,ignore_group,tile_areas,max_tile,image_similarities, random_splits);
 			}
