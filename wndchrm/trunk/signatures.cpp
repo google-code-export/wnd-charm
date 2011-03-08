@@ -1230,6 +1230,7 @@ int signatures::LoadFromFile(char *filename)
 	  }
       Add(p_name,atof(buffer));
       p_buffer=fgets(buffer,sizeof(buffer),value_file);
+      chomp (p_buffer);
    }
    fclose(value_file);
    return(1);
