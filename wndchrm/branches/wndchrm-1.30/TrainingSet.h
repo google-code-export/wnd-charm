@@ -67,7 +67,6 @@
 #define CONTINUOUS_DATASET_WITH_CLASSES    -7
 #define ADDING_SAMPLE_TO_UNDEFINED_CLASS   -8
 
-#define SAMPLE_DESC_LENGTH 128
 typedef struct {
 	char bounding_rect_base[16];
 	rect bounding_rect;
@@ -76,7 +75,6 @@ typedef struct {
 	char normalize_base[16];
 	int mean;
 	int stddev;
-	char desc[SAMPLE_DESC_LENGTH];
 } preproc_opts_t;
 
 typedef struct {
@@ -85,7 +83,6 @@ typedef struct {
 	char tile_base[16]; // CLI option+params
 	int tiles_x;
 	int tiles_y;
-	char desc[SAMPLE_DESC_LENGTH];
 } sampling_opts_t;
 
 typedef struct {
@@ -93,7 +90,6 @@ typedef struct {
 	int compute_colors;
 	char large_set_base[16]; // CLI option+params
 	int large_set;
-	char desc[SAMPLE_DESC_LENGTH];
 } feature_opts_t;
 
 typedef struct {
