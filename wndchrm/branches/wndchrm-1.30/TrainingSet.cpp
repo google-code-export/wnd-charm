@@ -2875,12 +2875,14 @@ void chomp (char *line) {
 }
 
 long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images, char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
-{  int class_index,class_index2,sample_index,split_index,test_set_size,train_set_size;
-   int test_images[MAX_CLASS_NUM];
-   double *avg_similarity_matrix,*avg_class_prob_matrix;
-   double splits_accuracy,splits_class_accuracy,avg_pearson=0.0,avg_abs_dif=0.0,avg_p=0.0;
-   FILE *tsvfile;
-   char tsv_filename[512];
+{
+	int class_index,class_index2,sample_index,split_index,test_set_size,train_set_size;
+	int test_images[MAX_CLASS_NUM];
+	double *avg_similarity_matrix,*avg_class_prob_matrix;
+	double splits_accuracy,splits_class_accuracy,avg_pearson=0.0,avg_abs_dif=0.0,avg_p=0.0;
+	FILE *tsvfile;
+	char tsv_filename[512];
+	char bgcolor[64];
    
    /* create a directory for the files */
 #ifndef WIN32
@@ -2897,10 +2899,10 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    /* print the number of samples table */
    fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%ld Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
    for (class_index=0;class_index<=class_num;class_index++)
-     fprintf(output_file,"<td>%s</td>\n",class_labels[class_index]);
-   fprintf(output_file,"<td>total</td></tr>\n");
+     fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);
+   fprintf(output_file,"<th>total</th></tr>\n");
    test_set_size=0;
-   fprintf(output_file,"<tr><td>Testing</td>\n");
+   fprintf(output_file,"<tr><th>Testing</th>\n");
    if (is_continuous) test_set_size=splits[0].confusion_matrix[0];
    else
    for (class_index=1;class_index<=class_num;class_index++)
@@ -2913,7 +2915,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    }
    fprintf(output_file,"<td>%d</td></tr>\n",test_set_size); /* add the total number of test samples */
    train_set_size=0;
-   fprintf(output_file,"<tr>\n<td>Training</td>\n");
+   fprintf(output_file,"<tr>\n<th>Training</th>\n");
    if (is_continuous) 
    {  train_set_size=count/(tiles*tiles)-test_set_size;
       if (max_train_images!=0 && max_train_images<train_set_size) train_set_size=max_train_images;
@@ -3012,17 +3014,16 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    if (class_num>0) fprintf(output_file,"<table id=\"master_confusion_matrix\" border=\"1\" align=\"center\"><caption>Confusion Matrix (sum of all splits)</caption> \n <tr><td></td> ");
    if (tsvfile) fprintf(tsvfile,"\t");         /* space (in the tsv file) */
    for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
+   {  fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);   /* print to the html file  */
       if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
    }
    fprintf(output_file,"</tr>\n");         /* end of the classes names */
    if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
    for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<tr><td><b>%s</b></td> ",class_labels[class_index]);  /* print the class name                   */
+   {  fprintf(output_file,"<tr><th>%s</th> ",class_labels[class_index]);  /* print the class name                   */
       if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);            /* print the class name into the tsv file */   
       for (class_index2=1;class_index2<=class_num;class_index2++)
       {  double sum=0.0;
-	     char bgcolor[64];
          for (split_index=0;split_index<split_num;split_index++)
            sum+=splits[split_index].confusion_matrix[class_index*class_num+class_index2];
 		 if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
@@ -3045,21 +3046,23 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	if (class_num>0) fprintf(output_file,"<table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
 	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
 	for (class_index=1;class_index<=class_num;class_index++) {
-		fprintf(output_file,"<td><b>%s</b></td> ",class_labels[class_index]);   /* print to the html file  */
+		fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);   /* print to the html file  */
 		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
 	}
 	fprintf(output_file,"</tr>\n");         /* end of the classes names */
 	if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
 
 	for (class_index=1;class_index<=class_num;class_index++) {
-		fprintf(output_file,"<tr><td><b>%s</b></td> ",class_labels[class_index]);
+		fprintf(output_file,"<tr><th>%s</th> ",class_labels[class_index]);
 		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print the class name into the tsv file */
 		for (class_index2=1;class_index2<=class_num;class_index2++) {
 			double sum=0.0;
 			for (split_index=0;split_index<split_num;split_index++)
 				sum+=splits[split_index].similarity_matrix[class_index*class_num+class_index2];
 			avg_similarity_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
-			fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
+			if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
+		 	else strcpy(bgcolor,"");  
+			fprintf(output_file,"<td%s>%.2f</td> ",bgcolor,sum/split_num);
 			if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
 		}
 		fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
@@ -3090,7 +3093,9 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 			for (split_index=0;split_index<split_num;split_index++)
 				sum+=splits[split_index].class_probability_matrix[class_index*class_num+class_index2];
 			avg_class_prob_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
-			fprintf(output_file,"<td>%.2f</td> ",sum/split_num);
+			if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
+			else strcpy(bgcolor,"");  
+			fprintf(output_file,"<td%s>%.2f</td> ",bgcolor,sum/split_num);
 			if (tsvfile) fprintf(tsvfile,"%.2f\t",sum/split_num);              /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 		 
 		}
 		fprintf(output_file,"</tr>\n");                         /* end of the line in the html report   */
@@ -3204,8 +3209,11 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
 			for (class_index=1;class_index<=class_num;class_index++) {
 				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
-				for (class_index2=1;class_index2<=class_num;class_index2++)
-					fprintf(output_file,"<td>%d</td>\n",confusion_matrix[class_index*class_num+class_index2]);
+				for (class_index2=1;class_index2<=class_num;class_index2++) {
+					if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
+					else strcpy(bgcolor,"");  
+					fprintf(output_file,"<td%s>%d</td>\n",bgcolor,confusion_matrix[class_index*class_num+class_index2]);
+				}
 				fprintf(output_file,"</tr>\n");
 			}
 			fprintf(output_file,"</table> \n <br><br> \n");
@@ -3216,13 +3224,16 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
 			fprintf (output_file, "<tr><th></th>\n");
 			for (class_index=1;class_index<=class_num;class_index++)
-				fprintf(output_file,"<td><b>%s</b></td>\n",class_labels[class_index]);   
+				fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);   
 			fprintf(output_file,"</tr>\n");
 
 			for (class_index=1;class_index<=class_num;class_index++) {
-				fprintf(output_file,"<tr><th><b>%s</b></th>\n",class_labels[class_index]);
-				for (class_index2=1;class_index2<=class_num;class_index2++)
-					fprintf(output_file,"<td>%.2f</td>\n",similarity_matrix[class_index*class_num+class_index2]);
+				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
+				for (class_index2=1;class_index2<=class_num;class_index2++) {
+					if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
+					else strcpy(bgcolor,"");  
+					fprintf(output_file,"<td%s>%.2f</td>\n",bgcolor,similarity_matrix[class_index*class_num+class_index2]);
+				}
 				fprintf(output_file,"</tr>\n");
 			}
 			fprintf(output_file,"</table><br>\n");
@@ -3231,13 +3242,16 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 			fprintf (output_file, "<table id=\"class_probability_matrix-split%d\" border=\"1\" align=\"center\"><caption>Class Probability Matrix</caption> \n", split_index);
 			fprintf (output_file, "<tr><th></th>\n");
 			for (class_index=1;class_index<=class_num;class_index++)
-				fprintf(output_file,"<th><b>%s</b></td>\n",class_labels[class_index]);   
+				fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);   
 			fprintf(output_file,"</tr>\n");
 
 			for (class_index=1;class_index<=class_num;class_index++) {
 				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
-				for (class_index2=1;class_index2<=class_num;class_index2++)
-					fprintf(output_file,"<td>%.2f</td>\n",class_probability_matrix[class_index*class_num+class_index2]);
+				for (class_index2=1;class_index2<=class_num;class_index2++) {
+					if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
+					else strcpy(bgcolor,"");  
+					fprintf(output_file,"<td%s>%.2f</td>\n",bgcolor,class_probability_matrix[class_index*class_num+class_index2]);
+				}
 				fprintf(output_file,"</tr>\n");
 			}
 			fprintf(output_file,"</table>\n");
