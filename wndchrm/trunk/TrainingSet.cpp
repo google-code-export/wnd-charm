@@ -1243,7 +1243,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	if (res < 0) {
 		for (sample_index=0; sample_index < n_sigs; sample_index++) {
 			if (our_sigs[sample_index].file) {
-				fclose (our_sigs[sample_index].file);
+				our_sigs[sample_index].sig->FileClose (our_sigs[sample_index].file);
 				unlink (our_sigs[sample_index].sig->GetFileName(buffer));
 			}
 			if (our_sigs[sample_index].sig) delete our_sigs[sample_index].sig;
@@ -1362,7 +1362,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 // this prevents another process from opening the same image to calculate a different sub-set of sigs
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		if (our_sigs[sig_index].file) {
-			fclose (our_sigs[sig_index].file);
+			our_sigs[sig_index].sig->FileClose (our_sigs[sig_index].file);
 		}
 		if (!our_sigs[sig_index].saved) {
 			unlink (our_sigs[sig_index].sig->GetFileName(buffer));

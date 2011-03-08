@@ -1172,11 +1172,15 @@ FILE *signatures::FileOpen(char *path, int overwrite)
 }
 
 /* FileClose
-   Closes a value file.
+   Closes a value file.  This is the closing command for files opened with ReadFromFile.
+   This closes the stream as well as filedescriptor
 */
 void signatures::FileClose(FILE *value_file)
 {
-   fclose(value_file);
+	if (!value_file) return;
+	int fd = fileno (value_file);
+	fclose(value_file);
+	close (fd);
 }
 
 int signatures::SaveToFile(FILE *value_file, int save_feature_names)
@@ -1266,9 +1270,11 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 		if (errno == EACCES || errno == EAGAIN) {
 		// locked by another process
 			errno = 0;
+			close (fd);
 			return (0);
 		} else {
 		// an unexpected error
+			close (fd);
 			return (-1);
         }
 	} else {
@@ -1288,6 +1294,7 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 			else return (1);
 		} else {
 		// We just made an empty file. Open it as a stream, keeping the lock
+		// Call FileClose to close the file.  It closes the stream and the filedes.  Probably not necessary.
 			if (fpp) *fpp = wait ? (fdopen (fd, "r")) : (fdopen (fd, "w"));
 			return (0);
 		}
