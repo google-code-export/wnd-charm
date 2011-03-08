@@ -487,22 +487,25 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	   	testset ? testset->source_path : NULL,image_similarities);   
 	   if (output_file!=stdout) fclose(output_file);
 	   /* copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files */
-	   if (export_tsv || phylib_path)
-	   {  char command_line[512],ps_file_path[512];
-            strcpy(ps_file_path,report_file_name);
-            (strrchr(ps_file_path,'/'))[1]='\0';	   
-            if (phylib_path && (strchr(phylib_path,'/'))) 
-            {  sprintf(command_line,"mv ./%s*.ps %s",dataset_name,ps_file_path);
-               system(command_line);
-               sprintf(command_line,"mv ./%s*.jpg %s",dataset_name,ps_file_path);
-               system(command_line);
-            }
-            if (export_tsv)
-            {  sprintf(command_line,"cp -r ./tsv %s",ps_file_path);
-               system(command_line);		  
-               sprintf(command_line,"rm -r ./tsv");
-               system(command_line);
-            }
+		if (export_tsv || phylib_path) {
+			char command_line[512],ps_file_path[512];
+			strcpy(ps_file_path,report_file_name);
+			if ( strrchr(ps_file_path,'/') ) {
+				(strrchr(ps_file_path,'/'))[1]='\0';
+				if (phylib_path) {
+					sprintf(command_line,"mv ./%s*.ps %s",dataset_name,ps_file_path);
+					system(command_line);
+					sprintf(command_line,"mv ./%s*.jpg %s",dataset_name,ps_file_path);
+					system(command_line);
+				}
+
+				if (export_tsv) {
+					sprintf(command_line,"cp -r ./tsv %s",ps_file_path);
+					system(command_line);		  
+					sprintf(command_line,"rm -r ./tsv");
+					system(command_line);
+				}
+			}
 	   }
     }
 
