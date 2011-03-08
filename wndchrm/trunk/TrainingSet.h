@@ -139,6 +139,8 @@ typedef struct
 {  double accuracy;
    double *tile_area_accuracy;            /* used for the different accuracies of the different tile areas     */
    unsigned short *confusion_matrix;      
+   unsigned short *training_images;       /* array to store number of training images per class */
+   unsigned short *testing_images;        /* array to store number of testing images per class */
    double *similarity_matrix;             /* matrix - used for the similarities between the classes            */
    double *class_probability_matrix;      /* matrix - average class probabilities (un-normalized similarities) */
    double *image_similarities;            /* matrix - used for the similarity values between all test images   */
@@ -187,7 +189,7 @@ public:
    int SaveWeightVector(char *filename);                           /* save the weights of the features into a file */
    double LoadWeightVector(char *filename, double factor);         /* load the weights of the features from a file and assign them to the features of the training set */
    void SetAttrib(TrainingSet *set);                               /* copy the attributes from one training set to another */   
-   int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples); /* random split to train and test */
+   int split(int randomize,double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples, data_split *split); /* random split to train and test */
    int SplitAreas(long tiles_num, TrainingSet **TrainingSets);    /* split a tiled dataset into several datasets such that each dataset is one tile location */
    void RemoveClass(long class_index);                             /* remove a class                            */
 	void MakeContinuous(char *label);                              /* Make an existing dataset with defined classes continuous - label is the "units" */
@@ -207,7 +209,7 @@ public:
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
-   long report(FILE *output_file, char *output_file_name, char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set,int image_similarities);  /* report on few splits */
+   long report(FILE *output_file, char *output_file_name, char *data_set_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set,int image_similarities);  /* report on few splits */
    void catError (const char *fmt, ...);
 };
 

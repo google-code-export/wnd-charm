@@ -171,8 +171,8 @@ void setup_featureset (featureset_t *featureset) {
 
 	for (rot_index=0;rot_index<rotations;rot_index++) {
 //			printf ("rotation:%d\n",rot_index);
-		for (tile_index_y=0;tile_index_y<tiles_x;tile_index_y++) {
-			for (tile_index_x=0;tile_index_x<tiles_y;tile_index_x++) {
+		for (tile_index_x=0;tile_index_x<tiles_x;tile_index_x++) {
+			for (tile_index_y=0;tile_index_y<tiles_y;tile_index_y++) {
 				strcpy (sample_name,preproc_name);
 				sample_name_lngth = strlen (sample_name);
 				// this code block should be made more generic with regards to sampling options and params
@@ -293,7 +293,7 @@ printf ("Max balanced training: %d\n",max_balanced_i);
 }
 
 
-int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int method, int samples_per_image, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
+int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int method, featureset_t *featureset, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
 	int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int distance_method, int phylip_algorithm,int export_tsv,
 	long first_n, char *weight_file_buffer, char weight_vector_action, int N, TrainingSet *testset, int ignore_group, int tile_areas, int max_tile, int image_similarities, int random_splits) {
 	TrainingSet *train,*test,**TilesTrainingSets=NULL;
@@ -305,6 +305,9 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	double train_frac;
 	int class_index;
 	int res;
+	
+	// set samples per image
+	int samples_per_image = featureset->n_samples;
 
 	// Remove classes from the end if N is specified
 	if (N>0) while (ts->class_num>N) ts->RemoveClass(ts->class_num);
@@ -372,6 +375,8 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        if (testset) test = testset;
        else test=new TrainingSet(ts->count,ts->class_num);
        splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
+       splits[split_index].training_images=new unsigned short[(ts->class_num+1)];
+       splits[split_index].testing_images=new unsigned short[(ts->class_num+1)];
        splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
        splits[split_index].class_probability_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
        if (tile_areas)
@@ -380,7 +385,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        }
        else splits[split_index].tile_area_accuracy=NULL;
 
-       res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test);
+       res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
        catError (ts->error_message);
        if ( res < 0) return (res);
        if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
@@ -415,7 +420,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
        else splits[split_index].individual_images=NULL;
        if (ignore_group)   /* assign to zero all features of the group */
        {  if (!(ts->IgnoreFeatureGroup(ignore_group,group_name))) {
-			delete train;if (!testset) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].similarity_matrix;delete splits[split_index].individual_images;
+			delete train;if (!testset) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].training_images;delete splits[split_index].testing_images;delete splits[split_index].similarity_matrix;delete splits[split_index].individual_images;
 			showError(1,"%sErrors while trying to ignore group %d '%s'\n",train->error_message,ignore_group,group_name);
 			return(0);
 		  }
@@ -482,7 +487,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	      if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
 	   }
 	   else output_file=stdout;     
-	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,samples_per_image,n_train,
+	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,featureset,n_train,
 	    phylib_path, distance_method, phylip_algorithm,export_tsv,
 	   	testset ? testset->source_path : NULL,image_similarities);   
 	   if (output_file!=stdout) fclose(output_file);
@@ -509,13 +514,15 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 	   }
     }
 
-    for (split_index=0;split_index<split_num;split_index++)
-    {  delete splits[split_index].confusion_matrix;	
-       delete splits[split_index].similarity_matrix;
-       if (splits[split_index].individual_images) delete splits[split_index].individual_images;
-       if (splits[split_index].tile_area_accuracy) delete splits[split_index].tile_area_accuracy;
-       if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
-    }
+	for (split_index=0;split_index<split_num;split_index++) {
+		delete splits[split_index].confusion_matrix;	
+		delete splits[split_index].training_images;	
+		delete splits[split_index].testing_images;	
+		delete splits[split_index].similarity_matrix;
+		if (splits[split_index].individual_images) delete splits[split_index].individual_images;
+		if (splits[split_index].tile_area_accuracy) delete splits[split_index].tile_area_accuracy;
+		if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
+	}
 
     return(1);
 }
@@ -658,6 +665,7 @@ int main(int argc, char *argv[])
 	int save_sigs=1;
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
+	memset (&featureset,0,sizeof(featureset));
 	preproc_opts_t *preproc_opts = &(featureset.preproc_opts);
 	sampling_opts_t *sampling_opts = &(featureset.sampling_opts);
 	feature_opts_t *feature_opts = &(featureset.feature_opts);
@@ -936,7 +944,7 @@ int main(int argc, char *argv[])
 			}
 
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
-				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, sampling_opts->tiles_x*sampling_opts->tiles_y * sampling_opts->rotations, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
+				split_and_test(dataset, report_file, MAX_CLASS_NUM, method, &featureset, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 					exact_training_images,max_test_images,phylib_path,distance_method,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 					testset,ignore_group,tile_areas,max_tile,image_similarities, random_splits);
 			}

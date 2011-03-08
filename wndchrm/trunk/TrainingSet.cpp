@@ -582,7 +582,7 @@ void TrainingSet::SetAttrib(TrainingSet *set)
     N.B.: It is a fatal error for train_samples+test_samples to be greater than the number of images in the class.
     Range-checking must occur outside of this call.
 */
-int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples)
+int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,TrainingSet *TestSet, unsigned short tiles, int train_samples, int test_samples, data_split *split)
 {
 	long *class_samples;
 	int res;
@@ -636,6 +636,11 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 			memmove( &( class_samples[ rand_index * tiles ] ), &( class_samples[ rand_index * tiles + tiles ] ), sizeof( long )*( tiles*( class_samples_count - rand_index ) ) );
 			class_samples_count--;
 		}
+
+	// Record the number of training and testing samples in the split.
+		split->training_images[ class_index ] = number_of_train_samples;
+		if (number_of_test_samples) split->testing_images[ class_index ] = number_of_test_samples;
+		else split->testing_images[ class_index ] = TestSet->class_nsamples [ class_index ] / tiles;
 
 		// now add the remaining samples to the Test Set up to the maximum
 		// Here we're adding samples, so we multiply the counter by samples per image
@@ -2874,10 +2879,9 @@ void chomp (char *line) {
 	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
-long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, int tiles, int max_train_images, char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
+long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images, char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
 {
-	int class_index,class_index2,sample_index,split_index,test_set_size,train_set_size;
-	int test_images[MAX_CLASS_NUM];
+	int class_index,class_index2,split_index,test_set_size,train_set_size;
 	double *avg_similarity_matrix,*avg_class_prob_matrix;
 	double splits_accuracy,splits_class_accuracy,avg_pearson=0.0,avg_abs_dif=0.0,avg_p=0.0;
 	FILE *tsvfile;
@@ -2896,39 +2900,39 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    if (path_to_test_set)  fprintf(output_file,"Testing with data file: %s<br>",path_to_test_set);
    fprintf(output_file,"<hr/><CENTER>\n");
    
-   /* print the number of samples table */
-   fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%ld Images in the dataset (tiles per image=%d)</caption> \n <tr>",(long)(count/pow(tiles,2)),tiles*tiles);
-   for (class_index=0;class_index<=class_num;class_index++)
-     fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);
-   fprintf(output_file,"<th>total</th></tr>\n");
-   test_set_size=0;
-   fprintf(output_file,"<tr><th>Testing</th>\n");
-   if (is_continuous) test_set_size=splits[0].confusion_matrix[0];
-   else
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  int inst_num=0;
-      for (class_index2=1;class_index2<=class_num;class_index2++)
-        inst_num+=(splits[0].confusion_matrix[class_index*class_num+class_index2]);
-      fprintf(output_file,"<td>%d</td>\n",inst_num);
-      test_images[class_index]=inst_num;
-      test_set_size+=inst_num;
-   }
-   fprintf(output_file,"<td>%d</td></tr>\n",test_set_size); /* add the total number of test samples */
-   train_set_size=0;
-   fprintf(output_file,"<tr>\n<th>Training</th>\n");
-   if (is_continuous) 
-   {  train_set_size=count/(tiles*tiles)-test_set_size;
-      if (max_train_images!=0 && max_train_images<train_set_size) train_set_size=max_train_images;
-   }
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  int inst_num=0;
-      for (sample_index=0;sample_index<count;sample_index++)
-        if (samples[sample_index]->sample_class==class_index) inst_num++;
-      inst_num=(int)(inst_num/(tiles*tiles))-test_images[class_index]*(path_to_test_set==NULL);
-      if (max_train_images>0 && inst_num>max_train_images) inst_num=max_train_images;
-      fprintf(output_file,"<td>%d</td>\n",inst_num);
-      train_set_size+=inst_num;
-   }
+   /* print the number of samples table */		
+	fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%ld Images in the dataset (samples per image=%d)",
+		(long)(count/featureset->n_samples),featureset->n_samples);
+	fprintf(output_file,"</caption> \n <tr>");
+	for (class_index=0;class_index<=class_num;class_index++)
+		fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);
+	fprintf(output_file,"<th>total</th></tr>\n");
+	test_set_size=0;
+	fprintf(output_file,"<tr><th>Testing</th>\n");
+
+	if (is_continuous) test_set_size=splits[0].confusion_matrix[0];
+	else
+		for (class_index=1;class_index<=class_num;class_index++) {
+			int inst_num=0;
+			for (split_index=0;split_index<split_num;split_index++)
+				inst_num += splits[split_index].testing_images[class_index];
+			fprintf(output_file,"<td>%d</td>\n",inst_num);
+			test_set_size+=inst_num;
+		}
+	fprintf(output_file,"<td>%d</td></tr>\n",test_set_size); /* add the total number of test samples */
+	train_set_size=0;
+	fprintf(output_file,"<tr>\n<th>Training</th>\n");
+	if (is_continuous) {  train_set_size=count/(featureset->n_samples)-test_set_size;
+		if (max_train_images!=0 && max_train_images<train_set_size) train_set_size=max_train_images;
+	}
+	for (class_index=1;class_index<=class_num;class_index++) {
+		int inst_num=0;
+		for (split_index=0;split_index<split_num;split_index++)
+			inst_num += splits[split_index].training_images[class_index];
+		fprintf(output_file,"<td>%d</td>\n",inst_num);
+		train_set_size+=inst_num;
+	}
+
    fprintf(output_file,"<td>%d</td>\n",train_set_size); /* add the total number of training samples */
    fprintf(output_file,"</tr> \n </table><br>\n");          /* close the number of samples table */
    
@@ -2993,9 +2997,9 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    {  double avg_p2=0.0;
 //      for (int correct=(long)((test_set_size+train_set_size)*(splits_accuracy/split_num));correct<=test_set_size+train_set_size;correct++)
 //	    avg_p2+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,test_set_size+train_set_size-correct)*factorial(test_set_size+train_set_size)/(factorial(correct)*factorial(test_set_size+train_set_size-correct));
-      for (int correct=(long)((long)(count/pow(tiles,2))*(splits_accuracy/split_num));correct<=(long)(count/pow(tiles,2));correct++)
-	    avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/pow(tiles,2))-correct)*factorial((long)(count/pow(tiles,2)))/(factorial(correct)*factorial((long)(count/pow(tiles,2))-correct));		
-//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/tiles),(long)((long)(count/tiles)*(splits_accuracy/split_num)),0.0,avg_p2);		
+      for (int correct=(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num));correct<=(long)(count/featureset->n_samples);correct++)
+	    avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/featureset->n_samples)-correct)*factorial((long)(count/featureset->n_samples))/(factorial(correct)*factorial((long)(count/featureset->n_samples)-correct));		
+//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
       fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
       fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
    }
@@ -3172,12 +3176,12 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    /* print the average accuracies of the tile areas */
    if (splits[0].tile_area_accuracy)
    {  fprintf(output_file,"<br><table id=\"tile_area_accuracy\" border=\"1\" align=\"center\"><caption>Tile Areas Accuracy</caption> \n");
-      for (int y=0;y<tiles;y++) 
+      for (int y=0;y<featureset->sampling_opts.tiles_y;y++) 
       {   fprintf(output_file,"<tr>\n");
-          for (int x=0;x<tiles;x++)
+          for (int x=0;x<featureset->sampling_opts.tiles_x;x++)
 	      {  splits_accuracy=0.0;
              for (split_index=0;split_index<split_num;split_index++)
-               splits_accuracy+=splits[split_index].tile_area_accuracy[y*tiles+x];
+               splits_accuracy+=splits[split_index].tile_area_accuracy[y*featureset->sampling_opts.tiles_x+x];
              fprintf(output_file,"<td>%.3f</td>\n",splits_accuracy/(double)split_num);
          }
          fprintf(output_file,"</tr>\n");
@@ -3308,7 +3312,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       {  char closest_image[256],interpolated_value[256];
          
          /* add the most similar image if WNN and no tiling */
-         if ((splits[split_index].method==WNN || is_continuous) && tiles==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
+         if ((splits[split_index].method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
          else strcpy(closest_image,"");
 		 
          fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
