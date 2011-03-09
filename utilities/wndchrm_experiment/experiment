@@ -123,13 +123,6 @@ while( <CONFIG_FILE> )
     $target_dir = $1;
     print "\tTarget dir: $target_dir\n" if( $DEBUG1 or $verbose or $dryrun );
   }
-  elsif( $_ =~ /^class\s+(\S+)\s+(\S+)\s+(\S+)/ )
-  {
-     if( $DEBUG1 or $verbose or $dryrun ) {
-       print "\t$3 images (and associated files) from directory $1 will go into class $2\n";
-     }
-     push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3 };
-  }
   elsif( $_ =~ /^class\s+(\S+)\s+(\S+)\s+(\S+)\s+group\s+(\S+)/ )
   {
     # Sturcture of hash table %class_config_info:
@@ -144,6 +137,13 @@ while( <CONFIG_FILE> )
     }
     push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3, group => $4 };
     push @{ $group_info{$4} }, $2;
+  }
+  elsif( $_ =~ /^class\s+(\S+)\s+(\S+)\s+(\S+)/ )
+  {
+     if( $DEBUG1 or $verbose or $dryrun ) {
+       print "\t$3 images (and associated files) from directory $1 will go into class $2\n";
+     }
+     push @{ $class_config_info{$2} }, { dir_name => $1, img_quant => $3 };
   }
   elsif( $_ =~ /^training_image\s+(\S+)\s+dir\s+(\S+)\s+class\s+(\S+)/ )
   {
