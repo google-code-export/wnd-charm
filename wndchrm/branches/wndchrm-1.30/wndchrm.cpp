@@ -436,7 +436,9 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 				for (class_index=1;class_index<=ts->class_num;class_index++) {
 					printf("p(%s)\t",ts->class_labels[class_index]);
 				}
-				printf("act. class\tpred. class\n");
+				printf("act. class\tpred. class");
+				if (ts->is_numeric) printf ("\tpred. val.");
+				printf ("\n");
 			}
 		}
 			

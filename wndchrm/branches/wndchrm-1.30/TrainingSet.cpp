@@ -1436,9 +1436,18 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				for( class_index = 1; class_index <= class_num; class_index++)
 					printf( "%.3f\t", probabilities[ class_index ] );
 				if( sample_class )
-					printf( "%s\t%s\n", class_labels[ sample_class ], class_labels[ predicted_class ] );
+					printf( "%s\t%s", class_labels[ sample_class ], class_labels[ predicted_class ] );
 				else
-					printf( "UNKNOWN\t%s\n", class_labels[ predicted_class ] );
+					printf( "UNKNOWN\t%s", class_labels[ predicted_class ] );
+
+				if (interpolate) {
+					TestSet->samples[ test_sample_index ]->interpolated_value = 0;
+					for( class_index = 1; class_index <= class_num; class_index++ )
+						TestSet->samples[ test_sample_index ]->interpolated_value += 
+							probabilities[ class_index ] * atof (TestSet->class_labels [class_index]) ;
+					printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				}
+				printf( "\n" );
 			}
 	//if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
 		}
@@ -1607,10 +1616,18 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	} else { // discrete classes
 	// if a known class, print actual class,predicted class.  Otherwise just predicted value.
 		if (sample_class) { // known class
-			if (print_to_screen) printf("%s\t%s\n",class_labels[sample_class],class_labels[predicted_class]);
+			if (print_to_screen) {
+				printf("%s\t%s",class_labels[sample_class],class_labels[predicted_class]);
+				if (interpolate) printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				printf("\n");
+			}
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s",class_labels[sample_class],class_labels[predicted_class],color,interpolated_value);
 		} else {
-			if (print_to_screen) printf("UNKNOWN\t%s\n",class_labels[predicted_class]);
+			if (print_to_screen) {
+				printf("UNKNOWN\t%s",class_labels[predicted_class]);
+				if (interpolate) printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				printf("\n");
+			}
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s","UNKNOWN",class_labels[predicted_class],color,interpolated_value);
 		}
 	}
