@@ -40,6 +40,9 @@
 #include <stdarg.h>
 // system errors
 #include <errno.h>
+// isdigit
+#include <ctype.h>
+
 
 #define MAX_SPLITS 100
 #define MAX_SAMPLES 190000
@@ -125,10 +128,6 @@ size_t len_error_message = strlen(error_message);
 		}
 	}
 	return(0);
-}
-
-int isdigit(char c)
-{  return(c>='0' && c<='9');
 }
 
 void randomize()
@@ -745,16 +744,16 @@ int main(int argc, char *argv[])
 		   continue;   /* so that the path will not trigger other switches */
 		}
         /* a block for computing features */
-        if (strchr(argv[arg_index],'B'))   
-        {  strcpy(arg,argv[arg_index]);
-           p=strtok(arg," ,;");
-           preproc_opts->bounding_rect.x=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.y=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.w=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.h=atoi(p);
+        if ( (char_p = strchr(argv[arg_index],'B'))  && isdigit (*(char_p+1)) ) {
+			strcpy(arg,char_p+1);
+			p=strtok(arg," ,;");
+			preproc_opts->bounding_rect.x=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.y=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.w=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.h=atoi(p);
 		}
         /* mean and stabndard deviation for normalizing the images */
         if (strchr(argv[arg_index],'S'))   
