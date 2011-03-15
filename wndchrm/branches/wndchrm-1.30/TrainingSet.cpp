@@ -1266,7 +1266,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// doing this in a more general way with functional programming (or some other technique).
 	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
 	int rot_matrix_indx=0;
-	int tiles = featureset->sampling_opts.tiles_x * featureset->sampling_opts.tiles_y;
+	int tiles_x = featureset->sampling_opts.tiles_x, tiles_y = featureset->sampling_opts.tiles_y, tiles = tiles_x * tiles_y;
 	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
 	feature_opts_t *feature_opts = &(featureset->feature_opts);
 	int rot_index,tile_index_x,tile_index_y;
@@ -1315,11 +1315,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			long tile_x_size;
 			long tile_y_size;
 			if (rot_index == 1 || rot_index == 3) {
-				tile_y_size=(long)(rot_matrix->width/tiles);
-				tile_x_size=(long)(rot_matrix->height/tiles);
+				tile_y_size=(long)(rot_matrix->width/tiles_x);
+				tile_x_size=(long)(rot_matrix->height/tiles_y);
 			} else {
-				tile_x_size=(long)(rot_matrix->width/tiles);
-				tile_y_size=(long)(rot_matrix->height/tiles);
+				tile_x_size=(long)(rot_matrix->width/tiles_x);
+				tile_y_size=(long)(rot_matrix->height/tiles_y);
 			}
 			tile_matrix = new ImageMatrix(rot_matrix,
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
