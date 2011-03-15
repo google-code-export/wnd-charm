@@ -65,7 +65,7 @@
 #define DEBUG_CREATE_INDIV_DISTANCE_FILES 0
 
 /* global variable */
-extern int print_to_screen;
+extern int verbosity;
 
 /* compare_two_doubles
    function used for qsort
@@ -503,7 +503,7 @@ int TrainingSet::SaveWeightVector(char *filename)
     catError ("Can't write weight vector to '%s'.\n",filename);
    	return(0);
    }
-   if (print_to_screen) printf("Saving weight vector to file '%s'...\n",filename);   
+   if (verbosity>=2) printf("Saving weight vector to file '%s'...\n",filename);   
    for (sig_index=0;sig_index<signature_count;sig_index++)
      fprintf(sig_file,"%f %s\n",SignatureWeights[sig_index],SignatureNames[sig_index]);
    fclose(sig_file);
@@ -525,7 +525,7 @@ double TrainingSet::LoadWeightVector(char *filename, double factor)
     catError ("Can't read weight vector from '%s'.\n",filename);
    	return(0);
    }
-   if (print_to_screen) printf("Loading weight vector from file '%s'...\n",filename);
+   if (verbosity>=2) printf("Loading weight vector from file '%s'...\n",filename);
    p_line=fgets(line,sizeof(line),sig_file);
    while (p_line)
    {  if (strlen(p_line)>0)
@@ -1007,7 +1007,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	strcpy (source_path,path);
 
 // Print out a summary
-	if (print_to_screen) {
+	if (verbosity>=2) {
 		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, featureset->sampling_opts.rotations*featureset->sampling_opts.tiles_x*featureset->sampling_opts.tiles_y);
 		if (class_num == 1) { // one known class or a continuous class
 			if (is_continuous) printf ("%ld samples with numerical values. Interpolation will be done instead of classification\n",class_nsamples[1]);
@@ -1055,7 +1055,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 	char buffer[512],*char_p,*sig_fullpath = NULL;
 	FILE *sigfile;
 
-printf ("Processing directory '%s'\n",path);
+	if( verbosity >=2 ) printf ("Processing directory '%s'\n",path);
 	if (! (class_dir=opendir(path)) ) { catError ("Can't open directory %s\n",path); return (0); }
 	while ( (ent = readdir(class_dir)) ) {
 		if (!strcmp (ent->d_name,".") || !strcmp (ent->d_name,"..")) continue;
@@ -1175,7 +1175,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	} our_sigs[MAX_SAMPLES_PER_IMAGE];
 
 
-	if (print_to_screen) printf ("Processing image file '%s'.\n",filename);
+	if (verbosity>=2) printf ("Processing image file '%s'.\n",filename);
 
 // pre-determine sig files for this image.
 // Primarily, this lets us pre-lock all the signature files for one image (see below).
@@ -1208,7 +1208,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// if its the last sample, then we wait for the lock.
 		res = ImageSignatures->ReadFromFile(&sigfile,0);
 		if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
-			if (print_to_screen) printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
+			if (verbosity>=2) printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 			our_sigs[n_sigs].sig = ImageSignatures;
 			our_sigs[n_sigs].file = sigfile;
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
@@ -1221,7 +1221,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 		} else if (res == 0) {
 		// File already has a lock.
-			if (print_to_screen) printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
+			if (verbosity>=2) printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
 			if ( (res=AddSample(ImageSignatures)) < 0) break;
 
 		} else if (res == NO_SIGS_IN_FILE) {
@@ -1241,7 +1241,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			strcpy(ImageSignatures->full_path,filename);
 			ImageSignatures->sample_class=sample_class;
 			ImageSignatures->sample_value=sample_value;
-			if (print_to_screen) printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
+			if (verbosity>=2) printf ("Sig '%s' read in.\n",ImageSignatures->GetFileName(buffer));
 			if ( (res=AddSample(ImageSignatures)) < 0) break;
 		}
 	}
@@ -1279,7 +1279,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		tile_index_y = our_sigs[sig_index].tile_index_y;
 		our_sigs[sig_index].saved = false; // don't unlink if true
 		our_sigs[sig_index].added = false; // don't delete if true
-		if (print_to_screen) printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
+		if (verbosity>=2) printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
 
 		if (!image_matrix) { // for all samples
 			image_matrix = new ImageMatrix;
@@ -1287,7 +1287,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		// One of these could be reachable if the image is not in the same directory as the sigs.
 		// There is no support for this now though - its an error for the image not to exist together with the sigs
 		// if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
-//	if (print_to_screen) printf("Loading image %s\n",filename);
+//	if (verbosity>=2) printf("Loading image %s\n",filename);
 			if ( (res = image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
 				catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
 				res = -1; // make sure its negative for cleanup below
@@ -1411,7 +1411,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
 	for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
 	for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++) {
-		if (print_to_screen && tiles>1)
+		if (verbosity>=2 && tiles>1)
 			printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
 		test_signature = TestSet->samples[ tile_index ]->duplicate();
 		if (tile_areas==0 || tiles==1)
@@ -1421,7 +1421,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 		if( is_continuous ) { //interpolate the value here 
 			val = ts_selector->InterpolateValue( test_signature, method, rank, &closest_sample, &dist );
 			value = value + val / ( double ) tiles;
-			if( print_to_screen && tiles > 1 ) {
+			if( verbosity>=2 && tiles > 1 ) {
 				if( sample_class )
 					printf( "%.3g\t%.3g\n", TestSet->samples[ test_sample_index ]->sample_value, val );
 				else
@@ -1432,7 +1432,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
 				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_sample_index, test_signature, probabilities, &normalization_factor );
-			if( print_to_screen && tiles>1) {
+			if( verbosity>=2 && tiles>1) {
 				printf( "%.3g\t", normalization_factor );
 				for( class_index = 1; class_index <= class_num; class_index++)
 					printf( "%.3f\t", probabilities[ class_index ] );
@@ -1523,27 +1523,27 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	if (split && split->individual_images) do_html = 1;
 
 	if (do_html) sprintf(one_image_string,"<tr><td>%d</td>",(test_sample_index/tiles)+1);  /* image index */
-	if (print_to_screen) {
+	if (verbosity>=1) {
 		printf("%s",TestSet->samples[test_sample_index]->full_path);
 		if (tiles > 1) printf(" (AVG)");
 		printf ("\t");
 	}
 
-	if (!is_continuous && (do_html || print_to_screen)) { /* normlization factor */
+	if (!is_continuous && (do_html || verbosity>=1)) { /* normlization factor */
 		if (do_html) {
 			sprintf( buffer,"<td>%.3g</td>", normalization_factor_avg );
 			strcat(one_image_string, buffer);
 		}
-		if (print_to_screen) printf ("%.3g\t",normalization_factor_avg);
+		if (verbosity>=1) printf ("%.3g\t",normalization_factor_avg);
 	}
-	if (do_html || print_to_screen) {
+	if (do_html || verbosity>=1) {
 		for (class_index=1;class_index<=class_num;class_index++) {
 			if (do_html) {
 				if (class_index==sample_class) sprintf(buffer,"<td><b>%.3f</b></td>",probabilities_sum[class_index]);  /* put the actual class in bold */
 			 	else sprintf(buffer,"<td>%.3f</td>",probabilities_sum[class_index]);
 			 	strcat(one_image_string,buffer);
 			 }
-			if (print_to_screen) printf ("%.3f\t",probabilities_sum[class_index]);
+			if (verbosity>=1) printf ("%.3f\t",probabilities_sum[class_index]);
 		}
 		if (do_html) {
 			if (sample_class) {
@@ -1595,23 +1595,23 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 		if (sample_class) { // known class
 			if (do_html) sprintf(buffer,"<td></td><td>%.3g</td><td>%.3f</td>",TestSet->samples[test_sample_index]->sample_value,TestSet->samples[test_sample_index]->interpolated_value);
 			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).
-			if (print_to_screen)
+			if (verbosity>=1)
 				printf("%f\t%f\t%f\n",TestSet->samples[test_sample_index]->sample_value,
 					TestSet->samples[test_sample_index]->interpolated_value,
 					fabs((TestSet->samples[test_sample_index]->sample_value-TestSet->samples[test_sample_index]->interpolated_value)/TestSet->samples[test_sample_index]->sample_value));
 		} else { // Unknown class
 			if (do_html) sprintf(buffer,"<td></td><td>UNKNOWN</td><td>%.3g</td>",TestSet->samples[test_sample_index]->interpolated_value);
 			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).  Otherwise just predicted value.
-			if (print_to_screen)
+			if (verbosity>=1)
 				printf("N/A\t%f\n",TestSet->samples[test_sample_index]->interpolated_value);
 		}
 	} else { // discrete classes
 	// if a known class, print actual class,predicted class.  Otherwise just predicted value.
 		if (sample_class) { // known class
-			if (print_to_screen) printf("%s\t%s\n",class_labels[sample_class],class_labels[predicted_class]);
+			if (verbosity>=1) printf("%s\t%s\n",class_labels[sample_class],class_labels[predicted_class]);
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s",class_labels[sample_class],class_labels[predicted_class],color,interpolated_value);
 		} else {
-			if (print_to_screen) printf("UNKNOWN\t%s\n",class_labels[predicted_class]);
+			if (verbosity>=1) printf("UNKNOWN\t%s\n",class_labels[predicted_class]);
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s","UNKNOWN",class_labels[predicted_class],color,interpolated_value);
 		}
 	}

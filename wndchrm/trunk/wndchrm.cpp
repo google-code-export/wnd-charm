@@ -45,7 +45,12 @@
 #define MAX_SAMPLES 190000
 
 /* global variable */
-int print_to_screen=1;
+// Verbosity levels:
+// 		0-Classification accuracy and similarity and confusion matrices only
+// 		1-Individual
+// 		2-Everything
+
+int verbosity=2;
 #define MAX_ERROR_MESSAGE 8192
 char error_message[MAX_ERROR_MESSAGE]="";
 
@@ -239,7 +244,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 	}
 	max_balanced_i = max_balanced_samples / samples_per_image;
-printf ("Max balanced training: %d\n",max_balanced_i);
+	if( verbosity >= 2 ) printf ("Max balanced training: %d\n",max_balanced_i);
 	// Check provided parameters against balanced testing/training
 	if (max_training_images > 0 && !exact_training_images) { // N.B.: -i overrides -r, except if exact_training_images
 		if (max_training_images > max_balanced_i && testset) {
@@ -363,73 +368,88 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
       // if ratio is 0, use the max_train_samples and max_test_samples (balanced training and testing)
       // if ratio is > 0 and <= 1, use ratio (unbalanced training)      
 */
-	if (print_to_screen) {
+	if (verbosity>=2) {
 		if (train_frac > 0) printf ("samples per image=%d, UNBALANCED training fraction=%f\n",samples_per_image,train_frac);
 		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
 	}
-     for (split_index=0;split_index<split_num;split_index++)
-     { double accuracy;
-       double feature_weight_distance=-1.0;
+	for (split_index=0;split_index<split_num;split_index++)
+	{
+		double accuracy;
+		double feature_weight_distance=-1.0;
 
-       train=new TrainingSet(ts->count,ts->class_num);
-       if (testset) test = testset;
-       else test=new TrainingSet(ts->count,ts->class_num);
-       splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
-       splits[split_index].training_images=new unsigned short[(ts->class_num+1)];
-       splits[split_index].testing_images=new unsigned short[(ts->class_num+1)];
-       splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
-       splits[split_index].class_probability_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
-       if (tile_areas)
-       {  splits[split_index].tile_area_accuracy=new double[samples_per_image];
-          for (tile_index=0;tile_index<samples_per_image;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
-       }
-       else splits[split_index].tile_area_accuracy=NULL;
+		train=new TrainingSet(ts->count,ts->class_num);
+		if (testset) test = testset;
+		else test=new TrainingSet(ts->count,ts->class_num);
+		splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
+		splits[split_index].training_images=new unsigned short[(ts->class_num+1)];
+		splits[split_index].testing_images=new unsigned short[(ts->class_num+1)];
+		splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
+		splits[split_index].class_probability_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
+		if (tile_areas) {
+			splits[split_index].tile_area_accuracy=new double[samples_per_image];
+			for (tile_index=0;tile_index<samples_per_image;tile_index++) splits[split_index].tile_area_accuracy[tile_index]=0.0;
+		}
+		else splits[split_index].tile_area_accuracy=NULL;
 
-       res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
-       catError (ts->error_message);
-       if ( res < 0) return (res);
-       if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
-       else splits[split_index].image_similarities=NULL;
+		res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
+		catError (ts->error_message);
+		if ( res < 0) return (res);
+		if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
+		else splits[split_index].image_similarities=NULL;
 
-//int temp=train->class_num;
-//train->class_num=1;
-       if (tile_areas)  /* split into several datasets such that each dataset contains tiles of the same location */
-       {  TilesTrainingSets=new TrainingSet*[samples_per_image];
-          res = train->SplitAreas(samples_per_image, TilesTrainingSets);
-          catError (train->error_message);
-          if (res < 0) return (res);
-          for (tile_index=0;tile_index<samples_per_image;tile_index++)
-          {  TilesTrainingSets[tile_index]->normalize();
-             TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
-          }
-       }
-	   else
-       {  train->normalize();                                           /* normalize the feature values of the training set */
-          train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  /* compute the Fisher Scores for the image features */
-       }
-//train->class_num=temp;
-       if (weight_vector_action=='w')
-         if(!train->SaveWeightVector(weight_file_buffer))
-           showError(1,"%sCould not write weight vector to '%s'\n",train->error_message,weight_file_buffer);
-       if (weight_vector_action=='r' || weight_vector_action=='+' || weight_vector_action=='-')
-       {  feature_weight_distance=train->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));
-          if (tile_areas) for (tile_index=0;tile_index<samples_per_image;tile_index++) feature_weight_distance=TilesTrainingSets[tile_index]->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));	   
-          if (feature_weight_distance<0) showError(1,"%sCould not load weight vector from '%s'\n",train->error_message,weight_file_buffer);
-       }
-       if (report) splits[split_index].individual_images=new char[(int)((test->count/(samples_per_image))*(class_num*15))];
-       else splits[split_index].individual_images=NULL;
-       if (ignore_group)   /* assign to zero all features of the group */
-       {  if (!(ts->IgnoreFeatureGroup(ignore_group,group_name))) {
-			delete train;if (!testset) delete test;delete splits[split_index].confusion_matrix;delete splits[split_index].training_images;delete splits[split_index].testing_images;delete splits[split_index].similarity_matrix;delete splits[split_index].individual_images;
-			showError(1,"%sErrors while trying to ignore group %d '%s'\n",train->error_message,ignore_group,group_name);
-			return(0);
-		  }
-       }
-       
-	// Label the columns
-		if (print_to_screen) {
+		//int temp=train->class_num;
+		//train->class_num=1;
+		if (tile_areas)  // split into several datasets such that each dataset contains tiles of the same location
+		{
+			TilesTrainingSets=new TrainingSet*[samples_per_image];
+			res = train->SplitAreas(samples_per_image, TilesTrainingSets);
+			catError (train->error_message);
+			if (res < 0) return (res);
+			for (tile_index=0;tile_index<samples_per_image;tile_index++)
+			{
+				TilesTrainingSets[tile_index]->normalize();
+				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
+			}
+		}
+		else
+		{
+			train->normalize(); // normalize the feature values of the training set
+			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
+		}
+		//train->class_num=temp;
+		if (weight_vector_action=='w')
+			if(!train->SaveWeightVector(weight_file_buffer))
+				showError(1,"%sCould not write weight vector to '%s'\n",train->error_message,weight_file_buffer);
+		if (weight_vector_action=='r' || weight_vector_action=='+' || weight_vector_action=='-')
+		{
+			feature_weight_distance=train->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));
+			if (tile_areas) for (tile_index=0;tile_index<samples_per_image;tile_index++) feature_weight_distance=TilesTrainingSets[tile_index]->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));	   
+			if (feature_weight_distance<0) showError(1,"%sCould not load weight vector from '%s'\n",train->error_message,weight_file_buffer);
+		}
+		if (report) splits[split_index].individual_images=new char[(int)((test->count/(samples_per_image))*(class_num*15))];
+		else splits[split_index].individual_images=NULL;
+		if (ignore_group)   /* assign to zero all features of the group */
+		{
+			if (!(ts->IgnoreFeatureGroup(ignore_group,group_name))) {
+				delete train;
+				if (!testset) delete test;
+				delete splits[split_index].confusion_matrix;
+				delete splits[split_index].training_images;
+				delete splits[split_index].testing_images;
+				delete splits[split_index].similarity_matrix;
+				delete splits[split_index].individual_images;
+				showError(1,"%sErrors while trying to ignore group %d '%s'\n",train->error_message,ignore_group,group_name);
+				return(0);
+			}
+		}
+		
+		// The following is the separator between split results
+		printf( "\n----------\n" );
+
+		// Label the columns
+		if (verbosity>=1) {
 			printf("image\t");
-			if (ts->is_continuous) { /* continouos values */
+			if (ts->is_continuous) {
 				printf("act. val.\tpred. val.\n");
 			} else {
 				printf ("norm. fact.\t");
@@ -439,59 +459,68 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 				printf("act. class\tpred. class\n");
 			}
 		}
-			
-       accuracy=train->Test(test,method,samples_per_image,tile_areas,TilesTrainingSets,max_tile,first_n,&(splits[split_index]));
 
-       splits[split_index].feature_weight_distance=feature_weight_distance;
-       splits[split_index].accuracy=accuracy;
-       splits[split_index].method=method;
-       splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
+		accuracy=train->Test(test,method,samples_per_image,tile_areas,TilesTrainingSets,max_tile,first_n,&(splits[split_index]));
 
-       if (!report && !ignore_group)   /* print the accuracy and confusion and similarity matrices */
-       {  ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
-          ts->PrintConfusion(stdout,NULL,splits[split_index].similarity_matrix);//,0,0);
-          if (ts->is_continuous) printf("Pearson Correlation: %f \n\n",splits[split_index].pearson_coefficient);
-		  else printf("\nAccuracy: %f \n\n",accuracy);
-       }
+		splits[split_index].feature_weight_distance=feature_weight_distance;
+		splits[split_index].accuracy=accuracy;
+		splits[split_index].method=method;
+		splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
-     if (TilesTrainingSets)    /* delete the training sets allocated for the different areas */
-     {  for (tile_index=0;tile_index<samples_per_image;tile_index++)
-        delete TilesTrainingSets[tile_index];
-        delete TilesTrainingSets;
-     }
-	 delete train;
-	 if (!testset) delete test;
-    } 
-    printf("\n\n");
-	if (!report)    /* print the average accuracy */
-	{  int split_index;
-       double avg_accuracy=0,avg_pearson=0;
-       for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
-       for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
-       if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
-       if (ts->is_continuous) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
-       else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
+		if (!report && !ignore_group && verbosity != 1 )   // print the accuracy and confusion and similarity matrices
+		{ 
+			printf( "\n" );
+			ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
+			ts->PrintConfusion(stdout,NULL,splits[split_index].similarity_matrix);//,0,0);
+			if (ts->is_continuous) printf("Pearson Correlation: %f \n\n",splits[split_index].pearson_coefficient);
+			else printf("\nAccuracy: %f \n",accuracy);
+		}
+
+		if (TilesTrainingSets)    // delete the training sets allocated for the different areas
+		{
+			for (tile_index=0;tile_index<samples_per_image;tile_index++)
+				delete TilesTrainingSets[tile_index];
+			delete TilesTrainingSets;
+		}
+		delete train;
+		if (!testset) delete test;
+	} // End for (split_index=0;split_index<split_num;split_index++)
+
+	// if( verbosity >= 2 ) printf("\n\n");
+	if (!report & verbosity != 1 )    // print the average accuracy
+	{
+		printf( "\n----------\n" );
+		int split_index;
+		double avg_accuracy=0,avg_pearson=0;
+		for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
+		for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
+		if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
+		if (ts->is_continuous) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
+		else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
+		printf("\n----------\n");
 	}
-	
-    strcpy(dataset_name,ts->source_path);
-    if (strrchr(dataset_name,'.')) *strrchr(dataset_name,'.')='\0';
-    if (strrchr(dataset_name,'/'))   /* extract the file name */
-    {  char buffer[128];
-       strcpy(buffer,&(strrchr(dataset_name,'/')[1]));
-       strcpy(dataset_name,buffer);
-    }
-    if (report)
-    {  if (report_file_name)
-	   {  if (!strchr(report_file_name,'.')) strcat(report_file_name,".html");
-	      output_file=fopen(report_file_name,"w");
-	      if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
-	   }
-	   else output_file=stdout;     
-	   ts->report(output_file,report_file_name,dataset_name,splits,split_num,featureset,n_train,
-	    phylib_path, distance_method, phylip_algorithm,export_tsv,
-	   	testset ? testset->source_path : NULL,image_similarities);   
-	   if (output_file!=stdout) fclose(output_file);
-	   /* copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files */
+
+	strcpy(dataset_name,ts->source_path);
+	if (strrchr(dataset_name,'.')) *strrchr(dataset_name,'.')='\0';
+	if (strrchr(dataset_name,'/'))   // extract the file name
+	{
+		char buffer[128];
+		strcpy(buffer,&(strrchr(dataset_name,'/')[1]));
+		strcpy(dataset_name,buffer);
+	}
+	if (report)
+	{
+		if (report_file_name){
+			if (!strchr(report_file_name,'.')) strcat(report_file_name,".html");
+			output_file=fopen(report_file_name,"w");
+			if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
+		}
+		else output_file=stdout;     
+		ts->report(output_file,report_file_name,dataset_name,splits,split_num,featureset,n_train,
+				phylib_path, distance_method, phylip_algorithm,export_tsv,
+				testset ? testset->source_path : NULL,image_similarities);   
+		if (output_file!=stdout) fclose(output_file);
+		// copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files
 		if (export_tsv || phylib_path) {
 			char command_line[512],ps_file_path[512];
 			strcpy(ps_file_path,report_file_name);
@@ -511,8 +540,8 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 					system(command_line);
 				}
 			}
-	   }
-    }
+		}
+	}
 
 	for (split_index=0;split_index<split_num;split_index++) {
 		delete splits[split_index].confusion_matrix;	
@@ -524,7 +553,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 		if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
 	}
 
-    return(1);
+	return(1);
 }
 
 
@@ -769,7 +798,16 @@ int main(int argc, char *argv[])
         }
 	    if (strchr(argv[arg_index],'m')) multi_processor=1;
         if (strchr(argv[arg_index],'n')) splits_num=atoi(&(strchr(argv[arg_index],'n')[1]));
-        if (strchr(argv[arg_index],'s')) print_to_screen=0;
+        if( (char_p = strchr( argv[arg_index],'s') ) )
+				{
+					if( isdigit( *(char_p+1) ) )
+					{
+						if( 1 == atoi( char_p+1 ) )
+							verbosity = 1;
+					}
+					else
+						verbosity=0;
+				}
         if (strchr(argv[arg_index],'o')) overwrite=1;
         if (strchr(argv[arg_index],'O')) skip_sig_check=1;
         if (strchr(argv[arg_index],'l')) feature_opts->large_set=1;
@@ -865,7 +903,7 @@ int main(int argc, char *argv[])
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			res = dataset->SaveToFile (dataset_save_fit);
 			if (res < 1) {catError (dataset->error_message); showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);}
-			if (print_to_screen) printf ("Saved dataset to '%s'.\n",dataset_save_fit);
+			if (verbosity>=2) printf ("Saved dataset to '%s'.\n",dataset_save_fit);
 	
 			// report any warnings
 			catError (dataset->error_message);
@@ -880,13 +918,13 @@ int main(int argc, char *argv[])
 				showError (1,"Couldn't open '%s' for writing\n",dataset_save_fit);
 				return(0);
 			} else if (dataset_save_fit) fclose (out_file);
-			if (print_to_screen) printf ("Processing training set '%s'.\n",dataset_path);
+			if (verbosity >=2) printf ("Processing training set '%s'.\n",dataset_path);
 			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 			if (res < 1) {catError (dataset->error_message); showError(1,"Errors reading from '%s'\n",dataset_path);}
 			if (dataset_save_fit) {
 				res = dataset->SaveToFile (dataset_save_fit);
 				if (res < 1) {catError (dataset->error_message); showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);}
-				if (print_to_screen) printf ("Saved dataset to '%s'.\n",dataset_save_fit);
+				if (verbosity>=2) printf ("Saved dataset to '%s'.\n",dataset_save_fit);
 			}
 			// Store a copy of the warnings etc
 			catError (dataset->error_message);
@@ -908,14 +946,14 @@ int main(int argc, char *argv[])
 					showError (1,"Couldn't open '%s' for writing\n",testset_save_fit);
 					return(0);
 				} else if (testset_save_fit) fclose (out_file);
-				if (print_to_screen) printf ("Processing test set '%s'.\n",testset_path);
+				if (verbosity>=2) printf ("Processing test set '%s'.\n",testset_path);
 				testset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
 				res=testset->LoadFromPath(testset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 				if (res < 1) {catError (testset->error_message); showError(1,"Errors reading from '%s'\n",testset_path);}
 				if (testset_save_fit) {
 					res = testset->SaveToFile (testset_save_fit);
 					if (res < 1) {catError (testset->error_message); showError (1,"Could not save testset to '%s'.\n",testset_save_fit);}
-					if (print_to_screen) printf ("Saved testset to '%s'.\n",testset_save_fit);
+					if (verbosity>=2) printf ("Saved testset to '%s'.\n",testset_save_fit);
 				}
 				// Store a copy of the warnings etc
 				catError (testset->error_message);
