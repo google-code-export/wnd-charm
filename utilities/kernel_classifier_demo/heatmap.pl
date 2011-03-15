@@ -34,7 +34,7 @@ sub RunWNDCHRM_atROI($$$$)
 }
 
 sub PrintLetter {
-	my $aref = @_;
+	my $aref = shift;
 	my $max = 0;
 	foreach (@$aref) {
 		if( $_ > $max ) {
@@ -59,16 +59,32 @@ sub main {
 	my $image_height = 1040;
 	my $kernel_width = 280;
 	my $kernel_height = 280;
-	my $granularity = 30;
+	my $granularity = 15;
 
+	my $starting_point = 0.0 # a number from 0 to 1 signifying percentage
+	                         # where this instance should start calculating sigs.
 	my $deltaX = int( $image_width / $granularity );
 	my $deltaY = int( $image_height / $granularity );
 
 	my $col = 0;
 	my $row = 0;
 
+	my $num_cols = int( ($image_width - $kernel_width) / $deltaX );
+	my $num_rows = int( ($image_height - $kernel_height) / $deltaY );
+
+	my $starting_col = int( $starting_point * $num_cols );
+
+	my( $x, $y );
 	my @results_matrix;
 
+	for( my $col = $starting_point; $x <= $num_cols; $cols++ ) {
+		for( my $row = 0; $y <= $num_rows; $row++ ) {
+			$x = $col * $deltaX;
+			$y = $row * $deltaY;
+			print "col $col, row $row, x: $x, y: $y, kernel width: $kernel_width, kernel height: $kernel_height\n";
+			@{ $results_matrix[$col][$row] } = RunWNDCHRM_atROI( $x, $y, $kernel_width, $kernel_height );
+		}
+	}
 	for( my $x = 0; $x <= $image_width - $kernel_width; $x += $deltaX ) {
 		$row = 0;
 		for( my $y = 0; $y <= $image_height - $kernel_height; $y += $deltaY ) {
@@ -81,7 +97,7 @@ sub main {
 
 	for( my $x = 0; $x <= $#results_matrix; $x++ ) {
 		for( my $y = 0; $y <= $#{ $results_matrix[0] }; $y++ ) {
-			PrintLetter( $results_matrix[$x][$y] );
+			PrintLetter( \@{ $results_matrix[$x][$y] } );
 		}
 		print "\n";
 	}
