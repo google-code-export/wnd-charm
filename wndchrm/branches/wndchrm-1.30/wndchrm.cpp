@@ -355,6 +355,13 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 		}
 	}
 
+// Check that the train and test sets have the same number of features
+	if (testset && testset->signature_count != ts->signature_count) {
+		catError ("The number of features in the train set '%s' (%d) is inconsistent with test set '%s' (%d).\n",
+			ts->source_path,ts->signature_count,testset->source_path,testset->signature_count);
+		return(showError(1, NULL));
+	}
+
 // Check the parameters and set train/test image numbers
 	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
 		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
