@@ -258,12 +258,23 @@ int TrainingSet::AddSample(signatures *new_sample)
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
 		return (ADDING_SAMPLE_TO_UNDEFINED_CLASS);
 	}
-   samples[count]=new_sample;
-   signature_count=new_sample->count;
-   class_nsamples[new_sample->sample_class]++;
+// Check to make sure that the signature count matches in all of the samples read in.
+	if (signature_count > 0 && signature_count != new_sample->count) {
+		char buffer[IMAGE_PATH_LENGTH];
+		catError ("Sample #%d, from '%s' has %d features, which does not match previous samples with %d features.\n",
+			count+1, new_sample->GetFileName(buffer), new_sample->count,signature_count);
+		catError ("Rename or delete the file to re-compute features.\n");
+		return (INCONSISTENT_FEATURE_COUNT);
+	} else {
+		signature_count = new_sample->count;
+	}
+
+	samples[count]=new_sample;
+	signature_count=new_sample->count;
+	class_nsamples[new_sample->sample_class]++;
 //printf ("Adding Sample to class: %d, total:%ld, signature_count:%ld\n",new_sample->sample_class,class_nsamples[new_sample->sample_class],signature_count);
-   count++;
-   return(1);
+	count++;
+	return(1);
 }
 
 /* SaveToFile
@@ -720,7 +731,7 @@ int TrainingSet::AddAllSignatures() {
 				catError ("0 feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 				return (CANT_LOAD_ALL_SIGS);
 			}
-			signature_count = samples[samp_index]->count;
+			
 		} else { // report error
 			catError ("Error reading feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 			return (CANT_LOAD_ALL_SIGS);
@@ -1267,7 +1278,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// doing this in a more general way with functional programming (or some other technique).
 	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
 	int rot_matrix_indx=0;
-	int tiles = featureset->sampling_opts.tiles_x * featureset->sampling_opts.tiles_y;
+	int tiles_x = featureset->sampling_opts.tiles_x, tiles_y = featureset->sampling_opts.tiles_y, tiles = tiles_x * tiles_y;
 	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
 	feature_opts_t *feature_opts = &(featureset->feature_opts);
 	int rot_index,tile_index_x,tile_index_y;
@@ -1316,11 +1327,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			long tile_x_size;
 			long tile_y_size;
 			if (rot_index == 1 || rot_index == 3) {
-				tile_y_size=(long)(rot_matrix->width/tiles);
-				tile_x_size=(long)(rot_matrix->height/tiles);
+				tile_y_size=(long)(rot_matrix->width/tiles_x);
+				tile_x_size=(long)(rot_matrix->height/tiles_y);
 			} else {
-				tile_x_size=(long)(rot_matrix->width/tiles);
-				tile_y_size=(long)(rot_matrix->height/tiles);
+				tile_x_size=(long)(rot_matrix->width/tiles_x);
+				tile_y_size=(long)(rot_matrix->height/tiles_y);
 			}
 			tile_matrix = new ImageMatrix(rot_matrix,
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
@@ -1437,9 +1448,18 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				for( class_index = 1; class_index <= class_num; class_index++)
 					printf( "%.3f\t", probabilities[ class_index ] );
 				if( sample_class )
-					printf( "%s\t%s\n", class_labels[ sample_class ], class_labels[ predicted_class ] );
+					printf( "%s\t%s", class_labels[ sample_class ], class_labels[ predicted_class ] );
 				else
-					printf( "UNKNOWN\t%s\n", class_labels[ predicted_class ] );
+					printf( "UNKNOWN\t%s", class_labels[ predicted_class ] );
+
+				if (interpolate) {
+					TestSet->samples[ test_sample_index ]->interpolated_value = 0;
+					for( class_index = 1; class_index <= class_num; class_index++ )
+						TestSet->samples[ test_sample_index ]->interpolated_value += 
+							probabilities[ class_index ] * atof (TestSet->class_labels [class_index]) ;
+					printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				}
+				printf( "\n" );
 			}
 	//if (method==WND) predicted_class=this->classify3(test_signature, probabilities, &normalization_factor);
 		}
@@ -1608,10 +1628,18 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	} else { // discrete classes
 	// if a known class, print actual class,predicted class.  Otherwise just predicted value.
 		if (sample_class) { // known class
-			if (verbosity>=1) printf("%s\t%s\n",class_labels[sample_class],class_labels[predicted_class]);
+			if (verbosity>=1) {
+				printf("%s\t%s",class_labels[sample_class],class_labels[predicted_class]);
+				if (interpolate) printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				printf("\n");
+			}
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s",class_labels[sample_class],class_labels[predicted_class],color,interpolated_value);
 		} else {
-			if (verbosity>=1) printf("UNKNOWN\t%s\n",class_labels[predicted_class]);
+			if (verbosity>=1) {
+				printf("UNKNOWN\t%s",class_labels[predicted_class]);
+				if (interpolate) printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
+				printf("\n");
+			}
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s","UNKNOWN",class_labels[predicted_class],color,interpolated_value);
 		}
 	}

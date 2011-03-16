@@ -1389,16 +1389,15 @@ int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_
 	if (verbosity>=2) printf ("HaarlickTexture2D match\n");
 	
 	// 72 features long: 133-204, standard: 881-952
-	long output_size;   /* output size is normally 72 */
-	matrix->zernike2D(vec,&output_size);
-	if (large_set) file_index = 133;
-	else file_index = 881;
-	for (i = 0; i < 72; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-		if (verbosity>=2) printf ("zernike2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
-		return (0);
-	}
-
-	if (verbosity>=2) printf ("zernike2D match.\n");
+// 	long output_size;   /* output size is normally 72 */
+// 	matrix->zernike2D(vec,&output_size);
+// 	if (large_set) file_index = 133;
+// 	else file_index = 881;
+// 	for (i = 0; i < 72; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
+// 		if (verbosity>=2) printf ("zernike2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+// 		return (0);
+// 	}
+// 	if (verbosity>=2) printf ("zernike2D match.\n");
 
 	if (verbosity>=2) printf ("Match found.\n");
 	return (1);

@@ -40,6 +40,9 @@
 #include <stdarg.h>
 // system errors
 #include <errno.h>
+// isdigit
+#include <ctype.h>
+
 
 #define MAX_SPLITS 100
 #define MAX_SAMPLES 190000
@@ -130,10 +133,6 @@ size_t len_error_message = strlen(error_message);
 		}
 	}
 	return(0);
-}
-
-int isdigit(char c)
-{  return(c>='0' && c<='9');
 }
 
 void randomize()
@@ -356,6 +355,13 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 		}
 	}
 
+// Check that the train and test sets have the same number of features
+	if (testset && testset->signature_count != ts->signature_count) {
+		catError ("The number of features in the train set '%s' (%d) is inconsistent with test set '%s' (%d).\n",
+			ts->source_path,ts->signature_count,testset->source_path,testset->signature_count);
+		return(showError(1, NULL));
+	}
+
 // Check the parameters and set train/test image numbers
 	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
 		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
@@ -456,7 +462,9 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int class_num, int m
 				for (class_index=1;class_index<=ts->class_num;class_index++) {
 					printf("p(%s)\t",ts->class_labels[class_index]);
 				}
-				printf("act. class\tpred. class\n");
+				printf("act. class\tpred. class");
+				if (ts->is_numeric) printf ("\tpred. val.");
+				printf ("\n");
 			}
 		}
 
@@ -775,16 +783,16 @@ int main(int argc, char *argv[])
 		   continue;   /* so that the path will not trigger other switches */
 		}
         /* a block for computing features */
-        if (strchr(argv[arg_index],'B'))   
-        {  strcpy(arg,argv[arg_index]);
-           p=strtok(arg," ,;");
-           preproc_opts->bounding_rect.x=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.y=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.w=atoi(p);
-           p=strtok(NULL," ,;");
-           preproc_opts->bounding_rect.h=atoi(p);
+        if ( (char_p = strchr(argv[arg_index],'B'))  && isdigit (*(char_p+1)) ) {
+			strcpy(arg,char_p+1);
+			p=strtok(arg," ,;");
+			preproc_opts->bounding_rect.x=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.y=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.w=atoi(p);
+			p=strtok(NULL," ,;");
+			preproc_opts->bounding_rect.h=atoi(p);
 		}
         /* mean and stabndard deviation for normalizing the images */
         if (strchr(argv[arg_index],'S'))   

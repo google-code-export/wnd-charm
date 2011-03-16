@@ -43,6 +43,11 @@
 #define IMAGE_PATH_LENGTH 256
 #define SAMPLE_NAME_LENGTH 64
 
+#define NUM_LC_FEATURES  4008
+#define NUM_L_FEATURES   2873
+#define NUM_C_FEATURES   2160
+#define NUM_DEF_FEATURES 1025
+
 #define NO_SIGS_IN_FILE -2
 
 struct signature
