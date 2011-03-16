@@ -204,6 +204,16 @@ void setup_featureset (featureset_t *featureset) {
 		}
 	}
 	featureset->n_samples = n_samples;
+
+	if (!feature_opts->large_set && !feature_opts->compute_colors)
+		featureset->n_features = NUM_DEF_FEATURES;
+	else if (!feature_opts->large_set && feature_opts->compute_colors)
+		featureset->n_features = NUM_C_FEATURES;
+	else if (feature_opts->large_set && !feature_opts->compute_colors)
+		featureset->n_features = NUM_L_FEATURES;
+	else if (feature_opts->large_set && feature_opts->compute_colors)
+		featureset->n_features = NUM_LC_FEATURES;
+				
 }
 
 

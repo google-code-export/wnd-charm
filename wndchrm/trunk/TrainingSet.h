@@ -97,6 +97,7 @@ typedef struct {
 	preproc_opts_t preproc_opts;
 	sampling_opts_t sampling_opts;
 	feature_opts_t feature_opts;
+	int n_features;
 	int n_samples;
 	struct {
 		char sample_name[SAMPLE_NAME_LENGTH];

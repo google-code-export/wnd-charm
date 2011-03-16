@@ -258,16 +258,8 @@ int TrainingSet::AddSample(signatures *new_sample)
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
 		return (ADDING_SAMPLE_TO_UNDEFINED_CLASS);
 	}
-// Check to make sure that the signature count matches in all of the samples read in.
-	if (signature_count > 0 && signature_count != new_sample->count) {
-		char buffer[IMAGE_PATH_LENGTH];
-		catError ("Sample #%d, from '%s' has %d features, which does not match previous samples with %d features.\n",
-			count+1, new_sample->GetFileName(buffer), new_sample->count,signature_count);
-		catError ("Rename or delete the file to re-compute features.\n");
-		return (INCONSISTENT_FEATURE_COUNT);
-	} else {
+	if (signature_count > 0)
 		signature_count = new_sample->count;
-	}
 
 	samples[count]=new_sample;
 	signature_count=new_sample->count;
@@ -727,9 +719,13 @@ int TrainingSet::AddAllSignatures() {
 
 			// FIXME: Its not enough that there's more than one, the count has to match.
 			// Really, the names have to match as well, but since we're dumping everything for now in fixed order, maybe OK.
-			if (samples[samp_index]->count < 1) {
-				catError ("0 feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
-				return (CANT_LOAD_ALL_SIGS);
+			if (samples[samp_index]->count != signature_count && signature_count > 0) {
+				catError ("Sample #%d, from '%s' has %d features, which does not match previous samples with %d features.\n",
+					samp_index, samples[samp_index]->GetFileName(buffer), samples[samp_index]->count,signature_count);
+				catError (" - Rename or delete the file to re-compute features.\n");
+				return (INCONSISTENT_FEATURE_COUNT);
+			} else if (signature_count == 0) {
+				signature_count = samples[samp_index]->count;
 			}
 			
 		} else { // report error
@@ -1015,6 +1011,11 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		catError ("No samples read from '%s'\n", path);
 		return (count);
 	}
+	if (signature_count != featureset->n_features) {
+		catError ("WARNING: Number of features specified (%d) do not match the number collected from '%s' (%d)\n", featureset->n_features, path, signature_count);
+		catError ("         Either command-line options don't match those stored in the dataset (.fit) file, or the file has been corrupted\n");
+	}
+
 	strcpy (source_path,path);
 
 // Print out a summary
