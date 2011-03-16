@@ -258,12 +258,23 @@ int TrainingSet::AddSample(signatures *new_sample)
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
 		return (ADDING_SAMPLE_TO_UNDEFINED_CLASS);
 	}
-   samples[count]=new_sample;
-   signature_count=new_sample->count;
-   class_nsamples[new_sample->sample_class]++;
+// Check to make sure that the signature count matches in all of the samples read in.
+	if (signature_count > 0 && signature_count != new_sample->count) {
+		char buffer[IMAGE_PATH_LENGTH];
+		catError ("Sample #%d, from '%s' has %d features, which does not match previous samples with %d features.\n",
+			count+1, new_sample->GetFileName(buffer), new_sample->count,signature_count);
+		catError ("Rename or delete the file to re-compute features.\n");
+		return (INCONSISTENT_FEATURE_COUNT);
+	} else {
+		signature_count = new_sample->count;
+	}
+
+	samples[count]=new_sample;
+	signature_count=new_sample->count;
+	class_nsamples[new_sample->sample_class]++;
 //printf ("Adding Sample to class: %d, total:%ld, signature_count:%ld\n",new_sample->sample_class,class_nsamples[new_sample->sample_class],signature_count);
-   count++;
-   return(1);
+	count++;
+	return(1);
 }
 
 /* SaveToFile
@@ -720,7 +731,7 @@ int TrainingSet::AddAllSignatures() {
 				catError ("0 feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 				return (CANT_LOAD_ALL_SIGS);
 			}
-			signature_count = samples[samp_index]->count;
+			
 		} else { // report error
 			catError ("Error reading feature values for sample %d from .sig file '%s'\n",samp_index,samples[samp_index]->GetFileName(buffer));
 			return (CANT_LOAD_ALL_SIGS);

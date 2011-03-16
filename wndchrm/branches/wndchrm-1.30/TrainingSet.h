@@ -66,6 +66,7 @@
 #define TOO_MANY_CLASSES                   -6
 #define CONTINUOUS_DATASET_WITH_CLASSES    -7
 #define ADDING_SAMPLE_TO_UNDEFINED_CLASS   -8
+#define INCONSISTENT_FEATURE_COUNT         -9
 
 typedef struct {
 	char bounding_rect_base[16];
