@@ -980,7 +980,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (classify) {
-				if (splits_num > 1) catError (0,"WARNING: -n option is ignored for 'classify'.  Results are based on a single test because there is no randomization.\n");
+				if (splits_num > 1) catError ("WARNING: -n option is ignored for 'classify'.  Results are based on a single test because there is no randomization.\n");
 				splits_num = 1;
 				random_splits = 0;
 				// defaults are different (-r = 1.0 and random_splits = 0.  Set above, though -r can still be modified).
