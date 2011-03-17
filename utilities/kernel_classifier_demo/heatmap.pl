@@ -3,65 +3,65 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Image::Magick;
+#use Image::Magick;
 
 #################################################################################
 # #FIXME: The pixel values are hard coded for a 4 class problem
 #################################################################################
 sub writeImage {
 
-	my $marg_probs_ref = shift;
-	my $num_cols = $#{ $marg_probs_ref };
-	my $num_rows = $#{ $marg_probs_ref->[0] };
-	my $image = Image::Magick->new;
-	my $res;
-	
-# This seems to be completely ignored.  The type is defined from the pixel values (!)
-	$res = $image->Set(type=>'TrueColorMatte');
-	warn "$res" if $res;
-	$res = $image->Set(size=>"$num_cols".'x'."$num_rows");
-	warn "$res" if $res;
-	$res = $image->Set(depth=>8);
-	warn "$res" if $res;
-# These are conveniently ignored...
-# use tiffcp -f msb2lsb for fill order
-	$res = $image->Set(option=>'tiff:alpha=associated');
-	warn "$res" if $res;
-	$res = $image->Set(option=>'tiff:fill-order:msb2lsb');
-	warn "$res" if $res;
-	my @pixels;
-	my ($row,$col);
-# This mysterious call supersedes anything we do with setting the image type.
-# It has to be transparent or the alpha channel is ignored
-# Also, if we fail to do something like this, the image will be undefined after writing pixels to it.
-# Of course, no error is reported while writing pixels - only when writing the file.
-	$res = $image->Read ('CANVAS:transparent');
-	warn "$res" if $res;
-
-	my $r = 0;
-	my $g = 0;
-	my $b = 0;
-	my $a = 0;
-	for( $row = 0; $row < $num_rows; $row++ ) {
-		for( $col = 0; $col < $num_cols; $col++ ) {
-		# For maximum efficiency, we can't set the RGB and Alpha in one call.
-			$a = $$marg_probs_ref[$col][$row]->[0];
-			@pixels = ( $a );
-			$res = $image->SetPixel(channel => 'Alpha', 'x' => $col, 'y' => $row, 'color' => \@pixels);
-			warn "$res" if $res;
-
-			$r = $$marg_probs_ref[$col][$row]->[1];
-			$g = $$marg_probs_ref[$col][$row]->[2];
-			$b = $$marg_probs_ref[$col][$row]->[3];
-			@pixels = ( $r, $g, $b );
-			$res = $image->SetPixel(channel => 'RGB', 'x' => $col, 'y' => $row, 'color' => \@pixels);
-			warn "$res" if $res;
-		}
-	}
-	printf "\n";
-	$res = $image->Write(filename=>'image.png');
-	$res = $image->Write(filename=>'image.tiff');
-	warn "$res" if $res;
+#	my $marg_probs_ref = shift;
+#	my $num_cols = $#{ $marg_probs_ref };
+#	my $num_rows = $#{ $marg_probs_ref->[0] };
+#	my $image = Image::Magick->new;
+#	my $res;
+#	
+## This seems to be completely ignored.  The type is defined from the pixel values (!)
+#	$res = $image->Set(type=>'TrueColorMatte');
+#	warn "$res" if $res;
+#	$res = $image->Set(size=>"$num_cols".'x'."$num_rows");
+#	warn "$res" if $res;
+#	$res = $image->Set(depth=>8);
+#	warn "$res" if $res;
+## These are conveniently ignored...
+## use tiffcp -f msb2lsb for fill order
+#	$res = $image->Set(option=>'tiff:alpha=associated');
+#	warn "$res" if $res;
+#	$res = $image->Set(option=>'tiff:fill-order:msb2lsb');
+#	warn "$res" if $res;
+#	my @pixels;
+#	my ($row,$col);
+## This mysterious call supersedes anything we do with setting the image type.
+## It has to be transparent or the alpha channel is ignored
+## Also, if we fail to do something like this, the image will be undefined after writing pixels to it.
+## Of course, no error is reported while writing pixels - only when writing the file.
+#	$res = $image->Read ('CANVAS:transparent');
+#	warn "$res" if $res;
+#
+#	my $r = 0;
+#	my $g = 0;
+#	my $b = 0;
+#	my $a = 0;
+#	for( $row = 0; $row < $num_rows; $row++ ) {
+#		for( $col = 0; $col < $num_cols; $col++ ) {
+#		# For maximum efficiency, we can't set the RGB and Alpha in one call.
+#			$a = $$marg_probs_ref[$col][$row]->[0];
+#			@pixels = ( $a );
+#			$res = $image->SetPixel(channel => 'Alpha', 'x' => $col, 'y' => $row, 'color' => \@pixels);
+#			warn "$res" if $res;
+#
+#			$r = $$marg_probs_ref[$col][$row]->[1];
+#			$g = $$marg_probs_ref[$col][$row]->[2];
+#			$b = $$marg_probs_ref[$col][$row]->[3];
+#			@pixels = ( $r, $g, $b );
+#			$res = $image->SetPixel(channel => 'RGB', 'x' => $col, 'y' => $row, 'color' => \@pixels);
+#			warn "$res" if $res;
+#		}
+#	}
+#	printf "\n";
+#	$res = $image->Write(filename=>'image.png');
+#	$res = $image->Write(filename=>'image.tiff');
+#	warn "$res" if $res;
 }
 
 #################################################################################
@@ -185,13 +185,18 @@ sub RunKernelScan( $$$$$;$ ) {
 	my $x = 0;
 	my $y = 0;
 
+	my $first_time_through = 1;
 	for( my $col = $starting_col; $col <= $num_cols; $col++ ) {
 		for( my $row = 0; $row <= $num_rows; $row++ ) {
+			if( $first_time_through ) {
+				$row = $starting_row;
+				$first_time_through = 0;
+			}
 			$x = $col * $deltaX;
 			$y = $row * $deltaY;
 			print "col $col, row $row, x: $x, y: $y, kernel width: $kernel_width, kernel height: $kernel_height\n";
 
-			my $cmd = "$path_to_wndchrm classify -l -s1 -B$x,$y,$deltaX,$deltaY $training_fit $test_image_shell 2>&1";
+			my $cmd = "$path_to_wndchrm classify -l -f0.4 -s1 -B$x,$y,$kernel_width,$kernel_height $training_fit $test_image_shell 2>&1";
 			print "Running wndchrm command:\n $cmd \n";
 			my @output = `$cmd`;
 			$retval = $? >> 8;
