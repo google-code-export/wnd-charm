@@ -35,7 +35,9 @@
 #include <algorithm>
 #include <cfloat> // Has definition of DBL_EPSILON
 #include <cmath>
+#include <ctime>
 #include "FeatureNames.hpp"
+#include "wndchrm_error.h"
 
 // #include <iostream> // Debug
 //#include <limits>
@@ -1016,7 +1018,18 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		catError ("         Either command-line options don't match those stored in the dataset (.fit) file, or the file has been corrupted\n");
 	}
 
+// Set the path and name
 	strcpy (source_path,path);
+	char *char_p = source_path+strlen(source_path)-1;
+	// kill terminal '/', ' ', '\t', etc
+	while ( char_p > source_path && *char_p && (*char_p == ' ' || *char_p == '\t' || *char_p == '\r' || *char_p == '\n' || *char_p == '/') )
+		*char_p-- = '\0';
+	char_p = strrchr(source_path,'/');
+	if (char_p) char_p++;
+	else char_p = source_path;
+	strcpy(name,char_p);
+	if (strrchr(name,'.')) *strrchr(name,'.')='\0';
+
 
 // Print out a summary
 	if (verbosity>=2) {
@@ -2653,7 +2666,7 @@ filename -char *- a file name for
 sim_method -unsigned short- the method of transforming the similarity values into a single distance (0 - min, 1 - average. 2 - top triangle, 3 - bottom triangle).
 phylip_algorithm -unsigned short- the method used by phylip
 */
-long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels, unsigned short sim_method,unsigned short phylip_algorithm)
+long TrainingSet::dendrogram(FILE *output_file, char *dataset_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels, unsigned short sim_method,unsigned short phylip_algorithm)
 {
 	FILE *dend_file;
 	int label_index,algorithm_index;
@@ -2747,13 +2760,13 @@ long TrainingSet::dendrogram(FILE *output_file, char *data_set_name, char *phyli
 	system(file_path);
 	sprintf(file_path,"%s/exe/drawtree < %s/drawtree.infile",phylib_path,phylib_path);
 	system(file_path);
-	sprintf(file_path,"mv plotfile ./%s.ps",data_set_name);
+	sprintf(file_path,"mv plotfile ./%s.ps",dataset_name);
 	system(file_path);			
-	sprintf(file_path,"convert ./%s.ps ./%s.jpg",data_set_name,data_set_name);
+	sprintf(file_path,"convert ./%s.ps ./%s.jpg",dataset_name,dataset_name);
 	system(file_path);
 	system("rm outfile outtree");  /* delete files from last run */			
-	fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",data_set_name,data_set_name);
-	fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",data_set_name,data_set_name);	/* the image files are copied in the file "wndchrm.cpp" */
+	fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",dataset_name,dataset_name);
+	fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",dataset_name,dataset_name);	/* the image files are copied in the file "wndchrm.cpp" */
 	return(1);
 }
 
@@ -2908,13 +2921,13 @@ void chomp (char *line) {
 	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
-long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_set_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images, char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set, int image_similarities)
+long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities)
 {
 	int class_index,class_index2,split_index,test_set_size,train_set_size;
 	double *avg_similarity_matrix,*avg_class_prob_matrix;
 	double splits_accuracy,splits_class_accuracy,avg_pearson=0.0,avg_abs_dif=0.0,avg_p=0.0;
 	FILE *tsvfile;
-	char tsv_filename[512];
+	char buffer[512];
 	char bgcolor[64];
    
    /* create a directory for the files */
@@ -2924,14 +2937,95 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    if (export_tsv) mkdir("tsv");
 #endif
 
+	time_t timeval = time(NULL);
+	
+	strftime (buffer, 512, "%Y-%m-%d %H:%M:%S %Z", localtime (&timeval));
    /* print the header */
-   fprintf(output_file,"<HTML>\n<HEAD>\n<TITLE> %s </TITLE>\n </HEAD> \n <BODY> \n <br> WNDCHRM "PACKAGE_VERSION"\n <br><br> <h1>%s</h1><br>\n ",output_file_name,data_set_name);
-   if (path_to_test_set)  fprintf(output_file,"Testing with data file: %s<br>",path_to_test_set);
-   fprintf(output_file,"<hr/><CENTER>\n");
+	fprintf(output_file,"<HTML>\n<HEAD>\n<TITLE> %s </TITLE>\n </HEAD> \n <BODY> \n <br> WNDCHRM "PACKAGE_VERSION".&nbsp;&nbsp;&nbsp;%s\n <br><br> <h1>%s</h1>\n ",
+		output_file_name,buffer,this->name);
+// print the training set summary
+	fprintf(output_file,"<table id=\"trainset_summary\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" > \n");
+	fprintf(output_file,"<caption>%ld Images.",(long)(count/featureset->n_samples));
+	if (featureset->n_samples > 1) fprintf(output_file," Samples per image: %d, total samples: %ld.",featureset->n_samples, count);
+	fprintf(output_file,"</caption> \n <tr>");
+	fprintf(output_file,"<tr><th>Class</th>");
+	if (is_numeric) fprintf(output_file,"<th>Value</th>");
+	fprintf(output_file,"<th>Images");
+	if (featureset->n_samples > 1) fprintf(output_file," (Samples)");
+	fprintf(output_file,"</th></tr>");
+	for (class_index=1;class_index<=class_num;class_index++) {
+		fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
+		if (is_numeric) fprintf(output_file,"<td>%.3g</td>",atof(class_labels[class_index]));
+		fprintf(output_file,"<td>%ld",class_nsamples[class_index]/featureset->n_samples);
+		if (featureset->n_samples > 1) fprintf(output_file," (%ld)", class_nsamples[class_index]);
+		fprintf(output_file,"</td></tr>");
+	}
+// print the unknown class
+	if (class_nsamples[0]) {
+		fprintf(output_file,"<tr><th>UNKNOWN</th>");
+		if (is_numeric) fprintf(output_file,"<td></td>");
+		fprintf(output_file,"<td>%ld",class_nsamples[0]/featureset->n_samples);
+		if (featureset->n_samples > 1) fprintf(output_file," (%ld)", class_nsamples[0]);
+		fprintf(output_file,"</td></tr>");
+	}
+	fprintf(output_file,"</table>\n");
+
+// print the test set summary
+	if (testset) {
+		fprintf(output_file,"<br><br><br>\n");
+		fprintf(output_file,"<h3>Testing with data file:<br>%s</h3>",testset->source_path);
+		fprintf(output_file,"<table id=\"testset_summary\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" > \n");
+		fprintf(output_file,"<caption>%ld Images.",(long)(testset->count/featureset->n_samples));
+		if (featureset->n_samples > 1) fprintf(output_file," Samples per image: %d, total samples: %ld.",featureset->n_samples, testset->count);
+		fprintf(output_file,"</caption> \n <tr>");
+		fprintf(output_file,"<tr><th>Class</th>");
+		if (testset->is_numeric) fprintf(output_file,"<th>Value</th>");
+		fprintf(output_file,"<th>Images");
+		if (featureset->n_samples > 1) fprintf(output_file," (Samples)");
+		fprintf(output_file,"</th></tr>");
+		for (class_index=1;class_index<=testset->class_num;class_index++) {
+			fprintf(output_file,"<tr><th>%s</th>\n",testset->class_labels[class_index]);
+			if (is_numeric) fprintf(output_file,"<td>%.3g</td>",atof(testset->class_labels[class_index]));
+			fprintf(output_file,"<td>%ld",testset->class_nsamples[class_index]/featureset->n_samples);
+			if (featureset->n_samples > 1) fprintf(output_file," (%ld)", testset->class_nsamples[class_index]);
+			fprintf(output_file,"</td></tr>");
+		}
+	// print the unknown class
+		if (testset->class_nsamples[0]) {
+			fprintf(output_file,"<tr><th>UNKNOWN</th>");
+			if (testset->is_numeric) fprintf(output_file,"<td></td>");
+			fprintf(output_file,"<td>%ld",testset->class_nsamples[0]/featureset->n_samples);
+			if (featureset->n_samples > 1) fprintf(output_file," (%ld)", testset->class_nsamples[0]);
+			fprintf(output_file,"</td></tr>");
+		}
+		fprintf(output_file,"</table>\n");
+	}
+	
+// print the command line
+	if (argc && argv && *argv) {
+		int i;
+		fprintf(output_file,"<br><br>Command line: <pre>");
+		for (i = 0; i < argc; i++)
+			fprintf(output_file," %s",argv[i]);
+		fprintf(output_file,"</pre><br>");
+	}
+	
+// print the warnings
+	std::string html_errors = getErrorString();
+
+	if (html_errors.size()) {
+		fprintf(output_file,"<font color=\"#FF0000\">Warnings:<pre>");
+		fprintf(output_file,"%s",html_errors.c_str());
+		fprintf(output_file,"</font></pre><br>");
+	}
+
+
+
+	fprintf(output_file,"<hr/><CENTER>\n");
    
    /* print the number of samples table */		
-	fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>%ld Images in the dataset (samples per image=%d)",
-		(long)(count/featureset->n_samples),featureset->n_samples);
+	fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>Images for training and testing");
+	if (split_num > 1) fprintf(output_file," (per-split)");
 	fprintf(output_file,"</caption> \n <tr>");
 	for (class_index=0;class_index<=class_num;class_index++)
 		fprintf(output_file,"<th>%s</th>\n",class_labels[class_index]);
@@ -2942,11 +3036,8 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	if (is_continuous) test_set_size=splits[0].confusion_matrix[0];
 	else
 		for (class_index=1;class_index<=class_num;class_index++) {
-			int inst_num=0;
-			for (split_index=0;split_index<split_num;split_index++)
-				inst_num += splits[split_index].testing_images[class_index];
-			fprintf(output_file,"<td>%d</td>\n",inst_num);
-			test_set_size+=inst_num;
+			fprintf(output_file,"<td>%d</td>\n",splits[0].testing_images[class_index]);
+			test_set_size += splits[0].testing_images[class_index];
 		}
 	fprintf(output_file,"<td>%d</td></tr>\n",test_set_size); /* add the total number of test samples */
 	train_set_size=0;
@@ -2955,11 +3046,8 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 		if (max_train_images!=0 && max_train_images<train_set_size) train_set_size=max_train_images;
 	}
 	for (class_index=1;class_index<=class_num;class_index++) {
-		int inst_num=0;
-		for (split_index=0;split_index<split_num;split_index++)
-			inst_num += splits[split_index].training_images[class_index];
-		fprintf(output_file,"<td>%d</td>\n",inst_num);
-		train_set_size+=inst_num;
+		fprintf(output_file,"<td>%d</td>\n",splits[0].training_images[class_index]);
+		train_set_size += splits[0].training_images[class_index];
 	}
 
    fprintf(output_file,"<td>%d</td>\n",train_set_size); /* add the total number of training samples */
@@ -3020,30 +3108,33 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       splits_accuracy+=splits[split_index].accuracy;
 	  splits_class_accuracy+=avg_accuracy;
    }
-   /* average of all splits */
-   fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
-   if (class_num>0)
-   {  double avg_p2=0.0;
-//      for (int correct=(long)((test_set_size+train_set_size)*(splits_accuracy/split_num));correct<=test_set_size+train_set_size;correct++)
-//	    avg_p2+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,test_set_size+train_set_size-correct)*factorial(test_set_size+train_set_size)/(factorial(correct)*factorial(test_set_size+train_set_size-correct));
-      for (int correct=(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num));correct<=(long)(count/featureset->n_samples);correct++)
-	    avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/featureset->n_samples)-correct)*factorial((long)(count/featureset->n_samples))/(factorial(correct)*factorial((long)(count/featureset->n_samples)-correct));		
-//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
-      fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
-      fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
-   }
-   if (avg_pearson!=0) 
-   {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
-      fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
-   }   
    
+   if (split_num > 1) {
+	   /* average of all splits */
+	   fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
+	   if (class_num>0)
+	   {  double avg_p2=0.0;
+	//      for (int correct=(long)((test_set_size+train_set_size)*(splits_accuracy/split_num));correct<=test_set_size+train_set_size;correct++)
+	//	    avg_p2+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,test_set_size+train_set_size-correct)*factorial(test_set_size+train_set_size)/(factorial(correct)*factorial(test_set_size+train_set_size-correct));
+		  for (int correct=(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num));correct<=(long)(count/featureset->n_samples);correct++)
+			avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/featureset->n_samples)-correct)*factorial((long)(count/featureset->n_samples))/(factorial(correct)*factorial((long)(count/featureset->n_samples)-correct));		
+	//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
+		  fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
+		  fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
+	   }
+	   if (avg_pearson!=0) 
+	   {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
+		  fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
+	   }   
+   }
    fprintf(output_file,"</table>\n");   /* close the splits table */
+
    fprintf(output_file,"<br><br><br><br> \n\n\n\n\n\n\n\n");
 
    /* average (sum) confusion matrix */
-   sprintf(tsv_filename,"tsv/avg_confusion.tsv");                /* determine the tsv file name           */
+   sprintf(buffer,"tsv/avg_confusion.tsv");                /* determine the tsv file name           */
    tsvfile=NULL;                                                 /* keep it null if the file doesn't open */
-   if (export_tsv) tsvfile=fopen(tsv_filename,"w");              /* open the file for tsv                 */
+   if (export_tsv) tsvfile=fopen(buffer,"w");              /* open the file for tsv                 */
    if (class_num>0) fprintf(output_file,"<table id=\"master_confusion_matrix\" border=\"1\" align=\"center\"><caption>Confusion Matrix (sum of all splits)</caption> \n <tr><td></td> ");
    if (tsvfile) fprintf(tsvfile,"\t");         /* space (in the tsv file) */
    for (class_index=1;class_index<=class_num;class_index++)
@@ -3072,9 +3163,9 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
    if (tsvfile) fclose(tsvfile);
 
    /* average similarity matrix */
-	sprintf(tsv_filename,"tsv/avg_similarity.tsv");                 /* determine the tsv file name               */
+	sprintf(buffer,"tsv/avg_similarity.tsv");                 /* determine the tsv file name               */
 	tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
-	if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
+	if (export_tsv) tsvfile=fopen(buffer,"w");                /* open the file for tsv                     */   
 	avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
 	if (class_num>0) fprintf(output_file,"<table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
 	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
@@ -3105,9 +3196,9 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	if (tsvfile) fclose(tsvfile);
 
    /* average class probability matrix */
-	sprintf(tsv_filename,"tsv/avg_class_prob.tsv");                 /* determine the tsv file name               */
+	sprintf(buffer,"tsv/avg_class_prob.tsv");                 /* determine the tsv file name               */
 	tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
-	if (export_tsv) tsvfile=fopen(tsv_filename,"w");                /* open the file for tsv                     */   
+	if (export_tsv) tsvfile=fopen(buffer,"w");                /* open the file for tsv                     */   
 	avg_class_prob_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
 	if (class_num>0) fprintf(output_file,"<table id=\"average_class_probability_matrix\" border=\"1\" align=\"center\"><caption>Average Class Probability Matrix</caption>\n <tr><td></td> ");
 	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
@@ -3141,12 +3232,12 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 	/* *** generate a dendrogram *** */
 	if (phylib_path && class_num>0 ) {  /* generate a dendrogram only if phlyb path was specified */
 		if (distance_method == 5)
-			dendrogram(output_file,data_set_name, phylib_path, class_num,avg_class_prob_matrix, class_labels,distance_method,phylip_algorithm);
+			dendrogram(output_file,this->name, phylib_path, class_num,avg_class_prob_matrix, class_labels,distance_method,phylip_algorithm);
 		else
-			dendrogram(output_file,data_set_name, phylib_path, class_num,avg_similarity_matrix, class_labels,distance_method,phylip_algorithm);
+			dendrogram(output_file,this->name, phylib_path, class_num,avg_similarity_matrix, class_labels,distance_method,phylip_algorithm);
 		if (export_tsv) {  /* write the phylip file to the tsv directory */
-			sprintf(tsv_filename,"cp %s/dend_file tsv/dend_file.txt",phylib_path);
-			system(tsv_filename);
+			sprintf(buffer,"cp %s/dend_file tsv/dend_file.txt",phylib_path);
+			system(buffer);
 		}   
 	}
 
@@ -3191,13 +3282,13 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 //            system(file_path);
 //            sprintf(file_path,"%s/exe/drawtree < %s/drawtree.infile",phylib_path,phylib_path);
 //            system(file_path);
-//            sprintf(file_path,"mv plotfile ./%s.ps",data_set_name);
+//            sprintf(file_path,"mv plotfile ./%s.ps",name);
 //            system(file_path);			
-//            sprintf(file_path,"convert ./%s.ps ./%s.jpg",data_set_name,data_set_name);
+//            sprintf(file_path,"convert ./%s.ps ./%s.jpg",name,name);
 //            system(file_path);
 //            system("rm outfile outtree");  /* delete files from last run */			
-//            fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",data_set_name,data_set_name);
-//            fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",data_set_name,data_set_name);			
+//            fprintf(output_file,"<A HREF=\"%s.ps\"><IMG SRC=\"%s.jpg\"></A><br>",name,name);
+//            fprintf(output_file,"<A HREF=\"%s.ps\">%s.ps</A><br>",name,name);			
 //         }
 //	}		   
 //   }
@@ -3295,7 +3386,7 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
       if (image_similarities && splits[split_index].image_similarities)
       {  char file_name[256],**labels;
          int test_image_index;
-         sprintf(file_name,"%s_%d",data_set_name,split_index);
+         sprintf(file_name,"%s_%d",name,split_index);
          labels=new char *[test_set_size+1];
          for (test_image_index=1;test_image_index<=test_set_size;test_image_index++)
          {  labels[test_image_index]=new char[MAX_CLASS_NAME_LENGTH];
@@ -3351,8 +3442,8 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 			fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index]);
    	     if (is_numeric) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
          else strcpy(interpolated_value,"");
-         if (is_continuous) fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
-         else fprintf(output_file,"<td>&nbsp</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
+         if (is_continuous) fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
+         else fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
          fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
          fprintf(output_file,"%s",splits[split_index].individual_images);
          fprintf(output_file,"</table><br><br>\n");
@@ -3363,30 +3454,6 @@ long TrainingSet::report(FILE *output_file, char *output_file_name,char *data_se
 
    fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
    return (1);
-}
-
-void TrainingSet::catError (const char *fmt, ...) {
-va_list ap;
-size_t len_error_message = strlen(error_message);
-char newline=0;
-
-	// process the printf-style parameters
-	va_start (ap, fmt);
-	len_error_message += vsnprintf (error_message+len_error_message,ERROR_MESSAGE_LNGTH-len_error_message, fmt, ap);
-	va_end (ap);
-	
-	if (errno != 0) {
-	// Append any system error string
-		if ( *(error_message+len_error_message-1) == '\n' ) {
-			len_error_message--;
-			newline = 1;
-		}
-		len_error_message += snprintf (error_message+len_error_message,ERROR_MESSAGE_LNGTH-len_error_message, ": ");
-		strerror_r(errno, error_message+len_error_message, ERROR_MESSAGE_LNGTH-len_error_message);
-		len_error_message = strlen(error_message);
-		if (newline) snprintf (error_message+len_error_message,ERROR_MESSAGE_LNGTH-len_error_message, "\n");
-		errno = 0;
-	}
 }
 
 
