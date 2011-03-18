@@ -21,6 +21,8 @@ libFeatureNames_a_SOURCES = \
 libFeatureNames_a_CXXFLAGS = -g -O0
 
 libimfit_a_SOURCES = \
+	wndchrm_error.cpp \
+	wndchrm_error.h \
 	cmatrix.cpp \
 	cmatrix.h \
 	colors/FuzzyCalc.cpp \

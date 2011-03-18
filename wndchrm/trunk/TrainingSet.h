@@ -57,7 +57,6 @@
 // N.B.: There is almost certainly code to fix if this is other than 0
 #define UNKNOWN_CLASS_INDEX 0
 
-#define ERROR_MESSAGE_LNGTH    8192
 #define CANT_OPEN_DIRECTORY                -1
 #define CANT_OPEN_FIT                      -2
 #define CANT_LOAD_ALL_SIGS                 -3
@@ -160,7 +159,7 @@ class TrainingSet
 {
 public:
 /* properties */
-	char error_message[ERROR_MESSAGE_LNGTH];                       /* Information about errors encountered      */
+	char name[256];                       /* Name of dataset - source_path from last '/' to last '.'    */
 	char source_path[256];                       /* Path we read this set from     */
    signatures **samples;                                           /* samples data                              */
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
@@ -211,8 +210,7 @@ public:
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
-   long report(FILE *output_file, char *output_file_name, char *data_set_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, char *path_to_test_set,int image_similarities);  /* report on few splits */
-   void catError (const char *fmt, ...);
+   long report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
 };
 
 int check_numeric (char *s, double *samp_val);
