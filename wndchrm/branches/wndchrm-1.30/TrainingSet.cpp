@@ -44,6 +44,8 @@
 
 
 #include "TrainingSet.h"
+
+#include "gsl/specfunc.h"
 //#include "cmatrix.h"
 
 #ifndef WIN32
@@ -1730,27 +1732,50 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 			 }
 		 }
 	 }
-
 /*
   normalize the similarity matrix
   Method: The similarity matrix now contains the sum of marginal probabilities for each class.
     The number of known test samples is the sum of the row for each class in the confusion matrix.
     The normalization is simply to divide each cell in the similarity matrix by the sum of the corresponding row in the confusion matrix.
 */
-	if (split && split->similarity_matrix)
+	if (split && split->similarity_matrix) {
+		double P = 0, choose;
+	 	split->known_images = 0;
+	 	split->accurate_predictions = 0;
 		for (class_index=1;class_index<=class_num;class_index++) {
 			double class_sim;
 			int class_test_samples=0;
      	// Get the number of known test samples
 			for (b=1;b<=class_num;b++)
 				class_test_samples+=split->confusion_matrix[class_num*class_index+b];
-			class_sim=split->similarity_matrix[class_num*class_index+class_index]/class_test_samples; 
+			split->known_images += class_test_samples;
+			class_sim=split->similarity_matrix[class_num*class_index+class_index]/class_test_samples;
+			split->accurate_predictions += split->confusion_matrix[class_num*class_index+class_index];
+			split->class_accuracies[class_index] = (double)split->confusion_matrix[class_num*class_index+class_index] / (double)class_test_samples;
 			for (b=1;b<=class_num;b++) {
 				split->class_probability_matrix[class_num*class_index+b] =
 					split->similarity_matrix[class_num*class_index+b] / class_test_samples;
 				split->similarity_matrix[class_num*class_index+b] /= (class_test_samples*class_sim);
 			}
 		}
+	// Calculate the per-class accuracy statistics
+		split->accuracy = (double)split->accurate_predictions / (double)split->known_images;
+		double plus_minus = 0, avg_class_accuracies = 0;
+		for (class_index=1;class_index<=class_num;class_index++) {
+			if (fabs(split->class_accuracies[class_index] - split->accuracy) > plus_minus) plus_minus = fabs(split->class_accuracies[class_index] - split->accuracy);
+			avg_class_accuracies += split->class_accuracies[class_index];
+		}
+		split->plus_minus = plus_minus;
+		split->avg_class_accuracies = (double)avg_class_accuracies / (double)class_num;
+
+	// Find the P-value
+		for (int correct = split->accurate_predictions; correct <= split->known_images; correct++)  /* find the P */
+		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
+			if ( gsl_sf_choose (split->known_images,correct,&choose) == GSL_SUCCESS )
+				P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,split->known_images-correct)*choose;
+		split->classification_p_value = P;
+printf ("Accuracy: %.3g, P=%.3g\n",split->accuracy,P);
+	}
 
    /* normalize the image similarities */
    if (split && split->image_similarities)
@@ -2614,12 +2639,6 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
     tiles -int- the number of tiles
     avg_abs_dif -double *- the average absolute difference from the predicted and actual value
 */
-double gamma(double z)   /* implementation of the gamma function -  used for computing the P value */
-{  double res=1;
-   for (int n=1;n<1000000;n++)
-     res*=(1/(1+z/n))*pow(2.7183,z/n);
-   return(res*(pow(2.7183,-1*z*0.57721)/z));
-}
 
 double TrainingSet::pearson(int tiles, double *avg_abs_dif, double *p_value)
 {  double mean=0,stddev=0,mean_ground=0,stddev_ground=0,z_score_sum=0,pearson_cor,N;
@@ -2653,10 +2672,14 @@ double TrainingSet::pearson(int tiles, double *avg_abs_dif, double *p_value)
 	 else z_score_sum+=((samples[test_sample_index]->interpolated_value-mean)/stddev)*((atof(class_labels[samples[test_sample_index]->sample_class])-mean_ground)/stddev_ground);
    pearson_cor=z_score_sum/(N-1);
 
-   if (p_value) /* compute the P value of the pearson correlation */
-   {  double t=pearson_cor*(sqrt(N-2)/sqrt(1-pearson_cor*pearson_cor));
-      *p_value=(gamma(((N-2)+1)/2)/(sqrt((N-2)*3.14159265)*gamma((N-2)/2)))  *  pow((1+pow(t,2)/(N-2)),-1*(N-2+1)/2);
-   }
+	if (p_value) { // compute the P value of the pearson correlation
+		double t=pearson_cor*(sqrt(N-2)/sqrt(1-pearson_cor*pearson_cor));
+		double gamma_N1, gamma_N2;
+		if ( gsl_sf_gamma (((N-2)+1)/2, &gamma_N1) == GSL_SUCCESS && gsl_sf_gamma ((N-2)/2, &gamma_N2) == GSL_SUCCESS )
+			*p_value=(gamma_N1/(sqrt((N-2)*3.14159265) * gamma_N2))  *  pow((1+pow(t,2)/(N-2)),-1*(N-2+1)/2);
+		else
+			*p_value=0;
+	}
    return(pearson_cor);
 }
 
@@ -2857,12 +2880,6 @@ long TrainingSet::PrintConfusion(FILE *output_file,unsigned short *confusion_mat
    return(1);
 }
 
-long double factorial(long num)
-{  long double res=1.0;
-   for (int i=1; i<=num; ++i) res=res*i;
-   return(res);
-}
-
 /*
    Returns 0 if the string in *s cannot be interpreted numerically.
    Returns 1 if the string can be interpreted numerically, but contains additional characters
@@ -3056,77 +3073,60 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
    /* print the splits */
    splits_accuracy=0.0;
    splits_class_accuracy=0.0;
+   unsigned long total_tested=0, total_correct=0;
    fprintf(output_file,"<h2>Results</h2> \n <table id=\"test_results\" border=\"1\" align=\"center\"><caption></caption> \n");
-   for (split_index=0;split_index<split_num;split_index++)
-   {  unsigned short *confusion_matrix;
-      double *similarity_matrix,*class_probability_matrix,P=0.0;
-      double avg_accuracy=0.0,plus_minus=0;
+   for (split_index=0;split_index<split_num;split_index++) {
+		unsigned short *confusion_matrix;
+		double *similarity_matrix,*class_probability_matrix;
 
-      confusion_matrix=splits[split_index].confusion_matrix;
-      similarity_matrix=splits[split_index].similarity_matrix;
-      class_probability_matrix=splits[split_index].class_probability_matrix;
+		data_split *split = &(splits[split_index]);
+		confusion_matrix = split->confusion_matrix;
+		similarity_matrix = split->similarity_matrix;
+		class_probability_matrix = split->class_probability_matrix;
 
-      for (class_index=1;class_index<=class_num;class_index++)
-      {  double class_avg=0.0,class_sum=0.0;
-         for (class_index2=1;class_index2<=class_num;class_index2++)
-           if (class_index==class_index2) class_avg+=confusion_matrix[class_index*class_num+class_index2];
-           else class_sum+=confusion_matrix[class_index*class_num+class_index2];
-         if (class_avg+class_sum>0) avg_accuracy=avg_accuracy+(class_avg/(class_avg+class_sum))/class_num;
-      }
-      for (int correct=(long)ceil(avg_accuracy*test_set_size);correct<=test_set_size;correct++)  /* find the P */
-        P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,test_set_size-correct)*factorial(test_set_size)/(factorial(correct)*factorial(test_set_size-correct));		 		   
-//      for (int correct=(long)class_avg;correct<=class_avg+class_sum;correct++)  /* find the P */
-//        P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(class_avg+class_sum)-correct)*factorial((long)(class_avg+class_sum))/(factorial(correct)*factorial((long)(class_avg+class_sum)-correct));		 		   
-//      avg_accuracy/=class_num;
-      for (class_index=1;class_index<=class_num;class_index++)
-      {  double class_avg=0.0,class_sum=0.0;
-         for (class_index2=1;class_index2<=class_num;class_index2++)
-           if (class_index==class_index2) class_avg+=confusion_matrix[class_index*class_num+class_index2];
-           else class_sum+=confusion_matrix[class_index*class_num+class_index2];
-         if (fabs((class_avg/(class_avg+class_sum))-avg_accuracy)>plus_minus) plus_minus=fabs((class_avg/(class_avg+class_sum))-avg_accuracy);
-      }
+		total_tested += split->known_images;
+		total_correct += split->accurate_predictions;
 
-      fprintf(output_file,"<tr> <td>Split %d</td> \n <td align=\"center\" valign=\"top\"> \n",split_index+1);
-      if (class_num>0)
-      {  fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g) </b><br> \n",splits[split_index].accuracy,P);	  
-         fprintf(output_file,"<b>%.2f &plusmn; %.1f Avg per Class Correct of total</b><br> \n",avg_accuracy,plus_minus);
-      }
-	  if (splits[split_index].pearson_coefficient!=0) 
-      {  fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%.3g) <br>\n",splits[split_index].pearson_coefficient,splits[split_index].pearson_p_value);
-         fprintf(output_file,"Mean absolute difference: %.4f <br>\n",splits[split_index].avg_abs_dif);
-//      }
-//	  else
-//      {  
-	     avg_pearson+=splits[split_index].pearson_coefficient;
-         avg_abs_dif+=splits[split_index].avg_abs_dif; 
-         avg_p+=splits[split_index].pearson_p_value;
-      }
-      if (splits[split_index].feature_weight_distance>=0)
-	    fprintf(output_file,"Feature weight distance: %.2f<br>\n",splits[split_index].feature_weight_distance);	  	  
+		fprintf(output_file,"<tr> <td>Split %d</td> \n <td align=\"center\" valign=\"top\"> \n",split_index+1);
+		if (class_num>0) {
+			fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g) </b><br> \n",split->accuracy,split->classification_p_value);	  
+			fprintf(output_file,"<b>%.2f &plusmn; %.2f Avg per Class Correct of total</b><br> \n",split->avg_class_accuracies,split->plus_minus);
+		}
+
+		if (split->pearson_coefficient!=0) {
+			fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%.3g) <br>\n",split->pearson_coefficient,split->pearson_p_value);
+			fprintf(output_file,"Mean absolute difference: %.4f <br>\n",split->avg_abs_dif);
+			avg_pearson+=split->pearson_coefficient;
+			avg_abs_dif+=split->avg_abs_dif; 
+			avg_p+=split->pearson_p_value;
+		}
+
+      if (split->feature_weight_distance>=0)
+	    fprintf(output_file,"Feature weight distance: %.2f<br>\n",split->feature_weight_distance);	  	  
       fprintf(output_file,"<a href=\"#split%d\">Full details</a><br> \n",split_index);
 //      fprintf(output_file,"<a href=\"#features%d\">Features used</a><br> </td> </tr> \n",split_index);
-      splits_accuracy+=splits[split_index].accuracy;
-	  splits_class_accuracy+=avg_accuracy;
+      splits_accuracy+=split->accuracy;
+	  splits_class_accuracy+=split->avg_class_accuracies;
    }
    
-   if (split_num > 1) {
-	   /* average of all splits */
-	   fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
-	   if (class_num>0)
-	   {  double avg_p2=0.0;
-	//      for (int correct=(long)((test_set_size+train_set_size)*(splits_accuracy/split_num));correct<=test_set_size+train_set_size;correct++)
-	//	    avg_p2+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,test_set_size+train_set_size-correct)*factorial(test_set_size+train_set_size)/(factorial(correct)*factorial(test_set_size+train_set_size-correct));
-		  for (int correct=(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num));correct<=(long)(count/featureset->n_samples);correct++)
-			avg_p2=avg_p2+pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,(long)(count/featureset->n_samples)-correct)*factorial((long)(count/featureset->n_samples))/(factorial(correct)*factorial((long)(count/featureset->n_samples)-correct));		
-	//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
-		  fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
-		  fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
-	   }
-	   if (avg_pearson!=0) 
-	   {  fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
-		  fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
-	   }   
-   }
+/* average of all splits */
+	fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
+	if (class_num>0) {
+		double avg_p2=0.0;
+		double choose;
+		for (unsigned long correct = total_correct; correct <= total_tested; correct++)
+		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
+			if ( gsl_sf_choose (total_tested,correct,&choose) == GSL_SUCCESS )
+				avg_p2 += pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,total_tested-correct)*choose;		
+//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
+		fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
+		fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
+	}
+	if (avg_pearson!=0) {
+		fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
+		fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
+	}   
+
    fprintf(output_file,"</table>\n");   /* close the splits table */
 
    fprintf(output_file,"<br><br><br><br> \n\n\n\n\n\n\n\n");
@@ -3301,7 +3301,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
           for (int x=0;x<featureset->sampling_opts.tiles_x;x++)
 	      {  splits_accuracy=0.0;
              for (split_index=0;split_index<split_num;split_index++)
-               splits_accuracy+=splits[split_index].tile_area_accuracy[y*featureset->sampling_opts.tiles_x+x];
+               splits_accuracy+=splits[0].tile_area_accuracy[y*featureset->sampling_opts.tiles_x+x];
              fprintf(output_file,"<td>%.3f</td>\n",splits_accuracy/(double)split_num);
          }
          fprintf(output_file,"</tr>\n");
@@ -3315,9 +3315,10 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		double *similarity_matrix, *class_probability_matrix;
 		unsigned short features_num=0,class_index;
 
-		confusion_matrix=splits[split_index].confusion_matrix;
-		similarity_matrix=splits[split_index].similarity_matrix;
-		class_probability_matrix=splits[split_index].class_probability_matrix;
+		data_split *split = &(splits[split_index]);
+		confusion_matrix = split->confusion_matrix;
+		similarity_matrix = split->similarity_matrix;
+		class_probability_matrix = split->class_probability_matrix;
 
 		fprintf(output_file,"<HR><BR><A NAME=\"split%d\">\n",split_index);   /* for the link to the split */
 		fprintf(output_file,"<B>Split %d</B><br><br>\n",split_index+1);
@@ -3383,22 +3384,22 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		}
 
       /* add a dendrogram of the image similarities */
-      if (image_similarities && splits[split_index].image_similarities)
+      if (image_similarities && split->image_similarities)
       {  char file_name[256],**labels;
          int test_image_index;
          sprintf(file_name,"%s_%d",name,split_index);
          labels=new char *[test_set_size+1];
          for (test_image_index=1;test_image_index<=test_set_size;test_image_index++)
          {  labels[test_image_index]=new char[MAX_CLASS_NAME_LENGTH];
-            strcpy(labels[test_image_index],class_labels[(int)(splits[split_index].image_similarities[test_image_index])]);
+            strcpy(labels[test_image_index],class_labels[(int)(split->image_similarities[test_image_index])]);
 		 }
-         dendrogram(output_file,file_name, phylib_path, test_set_size,(double *)(splits[split_index].image_similarities), labels,6,phylip_algorithm);	    
+         dendrogram(output_file,file_name, phylib_path, test_set_size,(double *)(split->image_similarities), labels,6,phylip_algorithm);	    
          for (test_image_index=1;test_image_index<=test_set_size;test_image_index++) delete labels[test_image_index];
          delete labels;
       }
 	  
       /* add the sorted features */
-		features_num = splits[split_index].feature_stats.size();
+		features_num = split->feature_stats.size();
 		if (features_num > 0) fprintf(output_file,"<br>%d features selected (out of %ld features computed).<br> "
       		"<a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesUsed_split%d'); "
       		"if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false;"
@@ -3407,12 +3408,12 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"<tr><th>Rank</th><th>Name</th><th>Weight</th></tr>\n");
 		for (int tr=0; tr < features_num; tr++) {
 			fprintf(output_file,"<tr><td>%d</td><td>%s</td><td>%.4g</td></tr>\n",tr+1,
-				splits[split_index].feature_stats[tr].name.c_str(),splits[split_index].feature_stats[tr].weight);
+				split->feature_stats[tr].name.c_str(),split->feature_stats[tr].weight);
 		}
 		fprintf(output_file,"</table><br>\n"); 
 	  
 		/* add the feature groups */
-		features_num = splits[split_index].featuregroups_stats.size();
+		features_num = split->featuregroups_stats.size();
 		if( features_num > 0 ) fprintf( output_file, "<a href=\"#\" onClick=\"sigs_used=document.getElementById('FeaturesGroups_split%d'); "
         	"if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; "
         	"\">Analysis of Fisher scores for each feature family, ranked by mean Fisher score</a><br><br>\n",split_index);
@@ -3420,7 +3421,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"<tr><th>Rank</th><th>Name</th><th>Min</th><th>Max</th><th>Mean</th><th>Std. dev.</th></tr>\n");
 		featuregroup_stats_t *featuregroups_stats;
 		for (int tr=0; tr < features_num; tr++) {
-   			featuregroups_stats = &(splits[split_index].featuregroups_stats[tr]);
+   			featuregroups_stats = &(split->featuregroups_stats[tr]);
 			fprintf(output_file,"<tr><td>%d</td><td>%s</td><td>%.4g</td><td>%.4g</td><td>%.4g</td><td>%.4g</td></tr>\n",
 				tr+1, featuregroups_stats->name.c_str(), featuregroups_stats->min, featuregroups_stats->max,
 				featuregroups_stats->mean, featuregroups_stats->stddev);
@@ -3428,11 +3429,11 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"</table><br>\n");
 	  
       /* individual image predictions */
-      if (splits[split_index].individual_images)
+      if (split->individual_images)
       {  char closest_image[256],interpolated_value[256];
          
          /* add the most similar image if WNN and no tiling */
-         if ((splits[split_index].method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
+         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
          else strcpy(closest_image,"");
 		 
          fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
@@ -3445,7 +3446,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
          if (is_continuous) fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
          else fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
          fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
-         fprintf(output_file,"%s",splits[split_index].individual_images);
+         fprintf(output_file,"%s",split->individual_images);
          fprintf(output_file,"</table><br><br>\n");
       }
    }

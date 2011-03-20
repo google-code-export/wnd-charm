@@ -319,6 +319,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		splits[split_index].confusion_matrix=new unsigned short[(ts->class_num+1)*(ts->class_num+1)];
 		splits[split_index].training_images=new unsigned short[(ts->class_num+1)];
 		splits[split_index].testing_images=new unsigned short[(ts->class_num+1)];
+		splits[split_index].class_accuracies=new double[(ts->class_num+1)];
 		splits[split_index].similarity_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
 		splits[split_index].class_probability_matrix=new double[(ts->class_num+1)*(ts->class_num+1)];
 		if (tile_areas) {
@@ -370,6 +371,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 				delete splits[split_index].confusion_matrix;
 				delete splits[split_index].training_images;
 				delete splits[split_index].testing_images;
+				delete splits[split_index].class_accuracies;
 				delete splits[split_index].similarity_matrix;
 				delete splits[split_index].individual_images;
 				showError(1,"Errors while trying to ignore group %d '%s'\n",ignore_group,group_name);
@@ -399,7 +401,6 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		accuracy=train->Test(test,method,samples_per_image,tile_areas,TilesTrainingSets,max_tile,first_n,&(splits[split_index]));
 
 		splits[split_index].feature_weight_distance=feature_weight_distance;
-		splits[split_index].accuracy=accuracy;
 		splits[split_index].method=method;
 		splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
@@ -475,6 +476,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		delete splits[split_index].confusion_matrix;	
 		delete splits[split_index].training_images;	
 		delete splits[split_index].testing_images;	
+		delete splits[split_index].class_accuracies;	
 		delete splits[split_index].similarity_matrix;
 		if (splits[split_index].individual_images) delete splits[split_index].individual_images;
 		if (splits[split_index].tile_area_accuracy) delete splits[split_index].tile_area_accuracy;
@@ -841,11 +843,9 @@ int main(int argc, char *argv[])
 				showError (1,"Couldn't open '%s' for writing\n",dataset_save_fit);
 				return(0);
 			} else if (dataset_save_fit) fclose (out_file);
-
 	
 			/* check if there is a test set feature file */
 			if (arg_index<argc && strstr(argv[arg_index],".htm")==NULL) testset_path=argv[arg_index++];
-
 			if (classify && !testset_path) {
 				showError (1,"The classify command must have a test set to work on.\n");
 			}
