@@ -18,9 +18,11 @@ libFeatureNames_a_SOURCES = \
 # not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
 # The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
 # The result is that it only blows up if the user has -O set in their CXXFLAGS.
-libFeatureNames_a_CXXFLAGS = -g -O0
+libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 
 libimfit_a_SOURCES = \
+	gsl/specfunc.cpp \
+	gsl/specfunc.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
 	cmatrix.cpp \

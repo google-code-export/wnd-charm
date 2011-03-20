@@ -56,8 +56,8 @@ am_libFeatureNames_a_OBJECTS =  \
 libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
-am_libimfit_a_OBJECTS = wndchrm_error.$(OBJEXT) cmatrix.$(OBJEXT) \
-	FuzzyCalc.$(OBJEXT) signatures.$(OBJEXT) \
+am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
+	cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) signatures.$(OBJEXT) \
 	CombFirst4Moments.$(OBJEXT) FeatureStatistics.$(OBJEXT) \
 	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
 	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
@@ -219,8 +219,10 @@ libFeatureNames_a_SOURCES = \
 # not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
 # The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
 # The result is that it only blows up if the user has -O set in their CXXFLAGS.
-libFeatureNames_a_CXXFLAGS = -g -O0
+libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 libimfit_a_SOURCES = \
+	gsl/specfunc.cpp \
+	gsl/specfunc.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
 	cmatrix.cpp \
@@ -428,6 +430,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/radon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readTiffData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signatures.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/specfunc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tamura.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm_error.Po@am__quote@
@@ -503,6 +506,20 @@ libFeatureNames_a-FeatureNames.obj: FeatureNames.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+
+specfunc.o: gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT specfunc.o -MD -MP -MF $(DEPDIR)/specfunc.Tpo -c -o specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/specfunc.Tpo $(DEPDIR)/specfunc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='specfunc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
+
+specfunc.obj: gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT specfunc.obj -MD -MP -MF $(DEPDIR)/specfunc.Tpo -c -o specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/specfunc.Tpo $(DEPDIR)/specfunc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='specfunc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
 
 FuzzyCalc.o: colors/FuzzyCalc.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FuzzyCalc.o -MD -MP -MF $(DEPDIR)/FuzzyCalc.Tpo -c -o FuzzyCalc.o `test -f 'colors/FuzzyCalc.cpp' || echo '$(srcdir)/'`colors/FuzzyCalc.cpp

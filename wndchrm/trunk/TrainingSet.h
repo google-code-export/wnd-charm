@@ -136,12 +136,19 @@ typedef struct sort_by_weight_t {
 typedef std::vector<feature_stats_t> features_t;
 
 
-typedef struct
-{  double accuracy;
+typedef struct {
+	double accuracy;
+	double avg_class_accuracies;
+	long known_images;
+	long accurate_predictions;
+	double plus_minus;
+	double classification_p_value;
+
    double *tile_area_accuracy;            /* used for the different accuracies of the different tile areas     */
    unsigned short *confusion_matrix;      
    unsigned short *training_images;       /* array to store number of training images per class */
    unsigned short *testing_images;        /* array to store number of testing images per class */
+   double *class_accuracies;              /* array to store accuracies per class */
    double *similarity_matrix;             /* matrix - used for the similarities between the classes            */
    double *class_probability_matrix;      /* matrix - average class probabilities (un-normalized similarities) */
    double *image_similarities;            /* matrix - used for the similarity values between all test images   */
