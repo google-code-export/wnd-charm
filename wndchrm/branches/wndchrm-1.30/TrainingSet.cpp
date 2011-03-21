@@ -1458,6 +1458,11 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
 				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_sample_index, test_signature, probabilities, &normalization_factor );
+		// This should not really happen...
+			if (predicted_class < 1) {
+				predicted_class = 0;
+			}
+
 			if( verbosity>=2 && tiles>1) {
 				printf( "%.3g\t", normalization_factor );
 				for( class_index = 1; class_index <= class_num; class_index++)
@@ -2244,6 +2249,7 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
     dist_sum = 0.0;
     for( sig_index = 0; sig_index < signature_count; sig_index++ )
 		{
+			if (SignatureWeights[ sig_index ] < DBL_EPSILON) continue;
 			dist = fabs( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value );
 			if( dist < DBL_EPSILON )
 			//if( FLOAT_EQ( test_sample->data[ sig_index ].value, samples[ sample_index ]->data[ sig_index ].value, 100000000 ) )
@@ -2261,16 +2267,15 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
 				/*	cout << "### Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
 						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
 							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl; */
-				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value, 2 );
+				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( dist, 2 );
 			}
 		}
 
-    if( dist_sum < FLT_EPSILON ) {
+    if( dist_sum < DBL_EPSILON ) {
 			//cout << "Small dist: " << test_sample_index << " & " << sample_index << endl;
 			num_collisions[ samples[ sample_index ]->sample_class ]++;
 			continue;
-		}
-    
+	}
     similarity = pow( dist_sum, -5 ); 
     indiv_distances[ sample_index ] = dist_sum;
     indiv_similarities[ sample_index ] = similarity;
