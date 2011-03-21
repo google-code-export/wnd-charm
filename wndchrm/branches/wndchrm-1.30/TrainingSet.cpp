@@ -620,7 +620,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 
 		// Determine number of training samples.
 		if( ratio > 0.0 && ratio <= 1.0 ) // unbalanced training
-			number_of_train_samples = floor( (ratio * (float)class_samples_count) + 0.5 );
+			number_of_train_samples = (int)floor( (ratio * (float)class_samples_count) + 0.5 );
 		else
 			number_of_train_samples = train_samples;
 		// add the samples to the training set
@@ -2100,7 +2100,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 // Sort the features in our split by weight, and use the sorted list to get the threshold value
 	sort_by_weight_t sort_by_weight_func;
 	sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
-	int last_index = floor( (used_signatures * (double)signature_count) + 0.5 );
+	int last_index = (int)floor( (used_signatures * (double)signature_count) + 0.5 );
 	threshold=split->feature_stats[last_index].weight;
 // Lop off the vector after the threshold
 	split->feature_stats.erase (split->feature_stats.begin() + last_index,split->feature_stats.end());

@@ -190,7 +190,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 		split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
 	} else { // -i unspecified or used for exact_training_images, use split_ratio (default or specified - already set in main)
-		max_training_images = floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
+		max_training_images = (int)floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
 		if (max_training_images >= max_balanced_i && testset == NULL) { // rounding error left no test images
 			catError("ERROR: No images left for testing using specified -r=%f.\n",split_ratio);
 			catError("  Use -rN with N < %f\n", ((float)max_balanced_i - 1.0) / (float)max_balanced_i);
