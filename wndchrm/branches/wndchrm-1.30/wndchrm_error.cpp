@@ -1,6 +1,8 @@
 #include <errno.h>
 #include <iostream>
 #include <sstream>
+#include <stdarg.h>
+
 
 #include "wndchrm_error.h"
 
