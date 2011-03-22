@@ -108,8 +108,9 @@ sub OutputASCIIpic {
 #       output: @results_matrix
 # #FIXME: This is also a 4-class application specific function
 #################################################################################
-sub LoadInputFile {
+sub LoadInputFile ($;$) {
 	my $input_file = shift;
+	my $quiet = shift;
 	my @results_matrix;
 
 	open( IN, '<', $input_file ) or die "Couldn't open input file $input_file: $!\n";
@@ -118,7 +119,7 @@ sub LoadInputFile {
 
 	while( <IN> ) {
 		if( /col (\d+), row (\d+): \((\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)/ ) {
-			print "loading col $1, row $2, marg probs( $3, $4, $5, $6 )\n";
+			print "loading col $1, row $2, marg probs( $3, $4, $5, $6 )\n" if !$quiet;
 			@{ $results_matrix[$1][$2] } = ( $3, $4, $5, $6 );
 		}
 	}
@@ -157,9 +158,9 @@ sub WriteOutputFile{
 #   optional inputs: $starting_fraction
 #   output:          @results_matrix
 #################################################################################
-sub RunKernelScan( $$$$$;$$ ) {
+sub RunKernelScan( $$$$$;$$$ ) {
 
-	my( $path_to_wndchrm, $test_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args )= @_;
+	my( $path_to_wndchrm, $test_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args, $quiet )= @_;
 
 	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
 
@@ -185,7 +186,7 @@ sub RunKernelScan( $$$$$;$$ ) {
 	my $remainder = ( $starting_point * $num_cols ) - $starting_col;
 	my $starting_row = int( $remainder * $num_rows );
 
-	print "Image will be scanned with $num_cols columns and $num_rows rows, starting at column $starting_col\n";
+	print "Image will be scanned with $num_cols columns and $num_rows rows, starting at column $starting_col\n" if !$quiet;
 	my $x = 0;
 	my $y = 0;
 
@@ -198,24 +199,24 @@ sub RunKernelScan( $$$$$;$$ ) {
 			}
 			$x = $col * $deltaX;
 			$y = $row * $deltaY;
-			print "col $col, row $row, x: $x, y: $y, kernel width: $kernel_width, kernel height: $kernel_height\n";
+			print "col $col, row $row, x: $x, y: $y, kernel width: $kernel_width, kernel height: $kernel_height\n" if !$quiet;
 
 			my $cmd = "$path_to_wndchrm classify $wndchrm_args -s1 -B$x,$y,$kernel_width,$kernel_height $training_fit $test_image_shell 2>&1";
-			print "Running wndchrm command:\n $cmd \n";
+			print "Running wndchrm command:\n $cmd \n" if !$quiet;
 			my @output = `$cmd`;
 			$retval = $? >> 8;
 
 			if( $retval != 1 ) {
-				print "WNDCHRM returned error: $retval\n";
-				print "Wndchrm output:\n";
-				foreach (@output) { print "$_\n"; }
-				print "\n";
+				warn "WNDCHRM returned error: $retval\n";
+				warn "Wndchrm output:\n";
+				foreach (@output) { warn "$_\n"; }
+				warn "\n";
 				die;
 			}
 			#print "Here was the output: $output\n\n";
 			foreach (@output) {
 				if( /^$test_image_reg_exp\s+\S+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/ ) {
-					print "Caught marginal probabilities $1, $2, $3, $4\n";
+					print "Caught marginal probabilities $1, $2, $3, $4\n" if !$quiet;
 					@{ $results_matrix[$col][$row] } = ($1, $2, $3, $4 );
 				}
 			}
@@ -252,6 +253,7 @@ sub ShowHelp {
 	print "\t-o <path>  : Specify a filename and path to the generate heatmap image.\n";
 	print "\t           : otherwise, image is created with deafult name \"image.tif\"\n";
 	print "\t-a \"string\"  : Specify wndchrm command line arguments, e.g., -a \"-l -f0.03\"\n";
+	print "\t-q   : Quiet: print only essential information to console\n";
 }
 
 #################################################################################
@@ -269,11 +271,12 @@ sub main {
 	my $heatmap_image_path = undef;
 	my $heatmap_resolution_string = undef;
 	my $wndchrm_args = undef;
+	my $quiet = undef;
 	my( $deltaX, $deltaY );
 	my %opts;
 	my @results_matrix;
 
-	if( getopts( 'w:i:t:p:;s:d:l:o:a:', \%opts ) ) {
+	if( getopts( 'w:i:t:p:;s:d:l:o:a:q', \%opts ) ) {
 		$path_to_wndchrm = $opts{'w'};
 		$input_image = $opts{'i'};
 		$training_fit = $opts{'t'};
@@ -283,6 +286,7 @@ sub main {
 		$input_file = $opts{'l'};
 		$heatmap_image_path = $opts{'o'};
 		$wndchrm_args = $opts{'a'};
+		$quiet = $opts{'q'};
 	} else {
 		&ShowHelp;
 		return -1;
@@ -302,57 +306,57 @@ sub main {
 			$deltaX = $1;
 			$deltaY = $2;
 		} else {
-			print "Incorrectly formatted pixel dimensions ($heatmap_resolution_string)\n";
-			print "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
+			warn "Incorrectly formatted pixel dimensions ($heatmap_resolution_string)\n";
+			warn "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
 			return -2;
 		}
 	}
 
-	if( $path_to_wndchrm ) {
+	if( !$quiet && $path_to_wndchrm ) {
 		print "path to wndchrm: $path_to_wndchrm\n";
 	}
-	if( $input_image ) {
+	if( !$quiet && $input_image ) {
 		print "input image: $input_image\n";
 	}
-	if( $training_fit ) {
+	if( !$quiet && $training_fit ) {
 		print "training set: $training_fit\n";
 	}
-	if( $heatmap_resolution_string ) {
+	if( !$quiet && $heatmap_resolution_string ) {
 		print "heatmap resolution: $heatmap_resolution_string\n";
 	}
-	if( $starting_point ) {
+	if( !$quiet && $starting_point ) {
 		print "found starting point: $starting_point\n";
 	}
-	if( $output_file ) {
+	if( !$quiet && $output_file ) {
 		print "marginal probs will be output to file $output_file\n";
 	}
-	if( $input_file ) {
+	if( !$quiet && $input_file ) {
 		print "marginal probs inputted from file $input_file\n";
 	}
-	if( $wndchrm_args ) {
+	if( !$quiet && $wndchrm_args ) {
 		print "wndchrm arguments: $wndchrm_args\n";
 	}
 
 	if( $heatmap_image_path && $heatmap_image_path ne "" ) {
 		if( $heatmap_image_path =~ /tif$|tiff$|png$/ ) {
-			print "Output heatmap image will be saved to file $heatmap_image_path\n";
+			print "Output heatmap image will be saved to file $heatmap_image_path\n" if !$quiet;
 		}
 		else {
 			warn "Filename $heatmap_image_path is invalid: Must end with a .tif, .tiff, or .png extension. Using default name \"image.tif\"\n";
 			$heatmap_image_path = "image.tif";
 		}
 	} else {
-		print "Output heatmap image will be saved to default file name ./image.tif\n";
+		print "Output heatmap image will be saved to default file name ./image.tif\n" if !$quiet;
 		$heatmap_image_path = "image.tif";
 	}
 
 	if( defined $input_file ) {
-		@results_matrix = LoadInputFile( $input_file );
+		@results_matrix = LoadInputFile( $input_file, $quiet);
 	} else {
-		@results_matrix = RunKernelScan( $path_to_wndchrm, $input_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args);
+		@results_matrix = RunKernelScan( $path_to_wndchrm, $input_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args, $quiet);
 	}
 
-	print "Loaded results matrix with $#results_matrix columns and $#{ $results_matrix[0] } rows.\n";
+	print "Loaded results matrix with $#results_matrix columns and $#{ $results_matrix[0] } rows.\n" if !$quiet;
 
 	if( defined $output_file ) {
 		WriteOutputFile( \@results_matrix, $output_file );
