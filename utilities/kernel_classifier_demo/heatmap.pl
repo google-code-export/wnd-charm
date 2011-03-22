@@ -1,67 +1,68 @@
 #!/usr/bin/perl
 
+
 use strict;
 use warnings;
 use Getopt::Std;
-#use Image::Magick;
+use Image::Magick;
 
 #################################################################################
 # #FIXME: The pixel values are hard coded for a 4 class problem
 #################################################################################
 sub writeImage {
 
-#	my $marg_probs_ref = shift;
-#	my $num_cols = $#{ $marg_probs_ref };
-#	my $num_rows = $#{ $marg_probs_ref->[0] };
-#	my $image = Image::Magick->new;
-#	my $res;
-#	
-## This seems to be completely ignored.  The type is defined from the pixel values (!)
-#	$res = $image->Set(type=>'TrueColorMatte');
-#	warn "$res" if $res;
-#	$res = $image->Set(size=>"$num_cols".'x'."$num_rows");
-#	warn "$res" if $res;
-#	$res = $image->Set(depth=>8);
-#	warn "$res" if $res;
-## These are conveniently ignored...
-## use tiffcp -f msb2lsb for fill order
-#	$res = $image->Set(option=>'tiff:alpha=associated');
-#	warn "$res" if $res;
-#	$res = $image->Set(option=>'tiff:fill-order:msb2lsb');
-#	warn "$res" if $res;
-#	my @pixels;
-#	my ($row,$col);
-## This mysterious call supersedes anything we do with setting the image type.
-## It has to be transparent or the alpha channel is ignored
-## Also, if we fail to do something like this, the image will be undefined after writing pixels to it.
-## Of course, no error is reported while writing pixels - only when writing the file.
-#	$res = $image->Read ('CANVAS:transparent');
-#	warn "$res" if $res;
-#
-#	my $r = 0;
-#	my $g = 0;
-#	my $b = 0;
-#	my $a = 0;
-#	for( $row = 0; $row < $num_rows; $row++ ) {
-#		for( $col = 0; $col < $num_cols; $col++ ) {
-#		# For maximum efficiency, we can't set the RGB and Alpha in one call.
-#			$a = $$marg_probs_ref[$col][$row]->[0];
-#			@pixels = ( $a );
-#			$res = $image->SetPixel(channel => 'Alpha', 'x' => $col, 'y' => $row, 'color' => \@pixels);
-#			warn "$res" if $res;
-#
-#			$r = $$marg_probs_ref[$col][$row]->[1];
-#			$g = $$marg_probs_ref[$col][$row]->[2];
-#			$b = $$marg_probs_ref[$col][$row]->[3];
-#			@pixels = ( $r, $g, $b );
-#			$res = $image->SetPixel(channel => 'RGB', 'x' => $col, 'y' => $row, 'color' => \@pixels);
-#			warn "$res" if $res;
-#		}
-#	}
-#	printf "\n";
-#	$res = $image->Write(filename=>'image.png');
-#	$res = $image->Write(filename=>'image.tiff');
-#	warn "$res" if $res;
+	my $marg_probs_ref = shift;
+	my $output_image_path = shift;
+	my $num_cols = $#{ $marg_probs_ref };
+	my $num_rows = $#{ $marg_probs_ref->[0] };
+	my $image = Image::Magick->new;
+	my $res;
+	
+# This seems to be completely ignored.  The type is defined from the pixel values (!)
+	$res = $image->Set(type=>'TrueColorMatte');
+	warn "$res" if $res;
+	$res = $image->Set(size=>"$num_cols".'x'."$num_rows");
+	warn "$res" if $res;
+	$res = $image->Set(depth=>8);
+	warn "$res" if $res;
+# These are conveniently ignored...
+# use tiffcp -f msb2lsb for fill order
+	$res = $image->Set(option=>'tiff:alpha=associated');
+	warn "$res" if $res;
+	$res = $image->Set(option=>'tiff:fill-order:msb2lsb');
+	warn "$res" if $res;
+	my @pixels;
+	my ($row,$col);
+# This mysterious call supersedes anything we do with setting the image type.
+# It has to be transparent or the alpha channel is ignored
+# Also, if we fail to do something like this, the image will be undefined after writing pixels to it.
+# Of course, no error is reported while writing pixels - only when writing the file.
+	$res = $image->Read ('CANVAS:transparent');
+	warn "$res" if $res;
+
+	my $r = 0;
+	my $g = 0;
+	my $b = 0;
+	my $a = 0;
+	for( $row = 0; $row < $num_rows; $row++ ) {
+		for( $col = 0; $col < $num_cols; $col++ ) {
+		# For maximum efficiency, we can't set the RGB and Alpha in one call.
+			$a = $$marg_probs_ref[$col][$row]->[0];
+			@pixels = ( $a );
+			$res = $image->SetPixel(channel => 'Alpha', 'x' => $col, 'y' => $row, 'color' => \@pixels);
+			warn "$res" if $res;
+
+			$r = $$marg_probs_ref[$col][$row]->[1];
+			$g = $$marg_probs_ref[$col][$row]->[2];
+			$b = $$marg_probs_ref[$col][$row]->[3];
+			@pixels = ( $r, $g, $b );
+			$res = $image->SetPixel(channel => 'RGB', 'x' => $col, 'y' => $row, 'color' => \@pixels);
+			warn "$res" if $res;
+		}
+	}
+	printf "\n";
+	$res = $image->Write(filename=>$output_image_path);
+	warn "$res" if $res;
 }
 
 #################################################################################
@@ -156,9 +157,12 @@ sub WriteOutputFile{
 #   optional inputs: $starting_fraction
 #   output:          @results_matrix
 #################################################################################
-sub RunKernelScan( $$$$$;$ ) {
+sub RunKernelScan( $$$$$;$$ ) {
 
-	my( $path_to_wndchrm, $test_image, $training_fit, $deltaX, $deltaY, $starting_point )= @_;
+	my( $path_to_wndchrm, $test_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args )= @_;
+
+	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
+
 	my $image_width = 1392; #FIXME: use tiffinfo to automatically extract image pixel dimensions
 	my $image_height = 1040;
 	my $kernel_width = 280; #FIXME: this should be a command line input
@@ -196,7 +200,7 @@ sub RunKernelScan( $$$$$;$ ) {
 			$y = $row * $deltaY;
 			print "col $col, row $row, x: $x, y: $y, kernel width: $kernel_width, kernel height: $kernel_height\n";
 
-			my $cmd = "$path_to_wndchrm classify -l -f0.4 -s1 -B$x,$y,$kernel_width,$kernel_height $training_fit $test_image_shell 2>&1";
+			my $cmd = "$path_to_wndchrm classify $wndchrm_args -s1 -B$x,$y,$kernel_width,$kernel_height $training_fit $test_image_shell 2>&1";
 			print "Running wndchrm command:\n $cmd \n";
 			my @output = `$cmd`;
 			$retval = $? >> 8;
@@ -224,26 +228,30 @@ sub RunKernelScan( $$$$$;$ ) {
 #
 #################################################################################
 sub ShowHelp {
-	print "WNDCHRM heatmap generator, ver 1.30\n\n";
-	print "usage: heatmap.pl -i input_image.tiff -w /path/to/wndchrm -t /path/to/training_set.fit -p 20x20\n";
+	print "WNDCHRM heatmap generator, ver 1.30\n";
 	print "\n";
-	print "Required arguments:\n";
-	print "-i <path>  : Input image: the image which will be scanned.\n";
-	print "-w <path>  : WNDCHRM path: path to the wndchrm executable.\n";
-	print "-t <path>  : Training Set: path to the .fit file containing the classifier.\n";
-	print "             must be generated beforehand usind WNDCHRM\n";
-	print "-p <#x#>   : Pixel dimensions: Defining the resolution of the heatmap image\n";
-	print "             one heatmap pixel will represent NxN original image pixels\n";
+	print "There are two options to specify input for heatmap generator:\n";
+	print "Method 1: Perform a fresh window scan by specifying the -i, -w, -t, and -p parameters.\n";
+	print "\t-i <path>  : Input image: the image which will be scanned.\n";
+	print "\t-w <path>  : WNDCHRM path: path to the wndchrm executable.\n";
+	print "\t-t <path>  : Training Set: path to the .fit file containing the classifier.\n";
+	print "\t             must be generated beforehand usind WNDCHRM\n";
+	print "\t-p <#x#>   : Set displacement of scanning window to move NxN pixels. \n";
+	print "\te.g., heatmap.pl -i input_image.tiff -w /path/to/wndchrm -t /path/to/training_set.fit -p 20x20\n";
+	print "\n";
+	print "Method 2: Create heatmap using a marginal probability dumpfile generated by a previous scan.\n";
+	print "\t-l <path>  : Load a file containing dumped marginal probabilities created by previously running this script\n";
+	print "\t             using the -d option.\n";
+	print "\te.g., heatmap.pl -l dumpfile.txt\n";
 	print "\n";
 	print "additional optional arguments:\n";
-	print "-s <#>     : Starting point: where # is a decimal between 0.0 and 1.0 indicating where this instance of\n";
-	print "             the script should start calculating features for given input image\n";
-	print "-d <path>  : Dump marginal probabilities to this file to save time when re-running\n";
-	print "             this script later.\n";
-	print "-l <path>  : Load a file containing dumped marginal probabilities created by previously running this script\n";
-	print "             using the -d option.\n";
-	print "-o <path>  : Specify a filename and path to the generate heatmap image.\n";
-	print "           : otherwise, image is created with deafult name \"image.png\"\n";
+	print "\t-s <#>     : Starting point: where # is a decimal between 0.0 and 1.0 indicating where this instance of\n";
+	print "\t             the script should start calculating features for given input image\n";
+	print "\t-d <path>  : Dump marginal probabilities to this file to save time when re-running\n";
+	print "\t             this script later.\n";
+	print "\t-o <path>  : Specify a filename and path to the generate heatmap image.\n";
+	print "\t           : otherwise, image is created with deafult name \"image.tif\"\n";
+	print "\t-a \"string\"  : Specify wndchrm command line arguments, e.g., -a \"-l -f0.03\"\n";
 }
 
 #################################################################################
@@ -260,10 +268,12 @@ sub main {
 	my $training_fit = undef;
 	my $heatmap_image_path = undef;
 	my $heatmap_resolution_string = undef;
+	my $wndchrm_args = undef;
+	my( $deltaX, $deltaY );
 	my %opts;
 	my @results_matrix;
 
-	if( getopts( 'w:i:t:p:;s:d:l:o:', \%opts ) ) {
+	if( getopts( 'w:i:t:p:;s:d:l:o:a:', \%opts ) ) {
 		$path_to_wndchrm = $opts{'w'};
 		$input_image = $opts{'i'};
 		$training_fit = $opts{'t'};
@@ -272,48 +282,74 @@ sub main {
 		$output_file = $opts{'d'};
 		$input_file = $opts{'l'};
 		$heatmap_image_path = $opts{'o'};
+		$wndchrm_args = $opts{'a'};
 	} else {
 		&ShowHelp;
 		return -1;
 	}
 
-	if( !$path_to_wndchrm || !$input_image || !$training_fit || !$heatmap_resolution_string ) {
-		&ShowHelp;
-		return -1;
+  # you need to have an input. there are two ways to specify inputs:
+	# the four parameters to run the kernel scan, or the one parameter to use the
+	# dumpfile generated by a previous scan.
+	if( !( $path_to_wndchrm && $input_image && $training_fit && $heatmap_resolution_string ) ) {
+		if( !$input_file ) {
+			&ShowHelp;
+			return -1;
+		}
 	}
-	else {
+	else { # we have all four parameters required for fresh kernel scan
+		if( $heatmap_resolution_string =~ /(\d+)x(\d+)/ ) {
+			$deltaX = $1;
+			$deltaY = $2;
+		} else {
+			print "Incorrectly formatted pixel dimensions ($heatmap_resolution_string)\n";
+			print "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
+			return -2;
+		}
+	}
+
+	if( $path_to_wndchrm ) {
 		print "path to wndchrm: $path_to_wndchrm\n";
+	}
+	if( $input_image ) {
 		print "input image: $input_image\n";
+	}
+	if( $training_fit ) {
 		print "training set: $training_fit\n";
+	}
+	if( $heatmap_resolution_string ) {
 		print "heatmap resolution: $heatmap_resolution_string\n";
-		if( $starting_point ) {
-			print "found starting point: $starting_point\n";
-		}
-		if( $output_file ) {
-			print "marginal probs will be output to file $output_file\n";
-		}
-		if( $input_file ) {
-			print "marginal probs inputted from file $input_file\n";
-		}
-		if( $heatmap_image_path ) {
-			print "Heatmap image will be named: $heatmap_image_path\n";
-		}
+	}
+	if( $starting_point ) {
+		print "found starting point: $starting_point\n";
+	}
+	if( $output_file ) {
+		print "marginal probs will be output to file $output_file\n";
+	}
+	if( $input_file ) {
+		print "marginal probs inputted from file $input_file\n";
+	}
+	if( $wndchrm_args ) {
+		print "wndchrm arguments: $wndchrm_args\n";
 	}
 
-	my( $deltaX, $deltaY );
-	if( $heatmap_resolution_string =~ /(\d+)x(\d+)/ ) {
-		$deltaX = $1;
-		$deltaY = $2;
+	if( $heatmap_image_path && $heatmap_image_path ne "" ) {
+		if( $heatmap_image_path =~ /tif$|tiff$|png$/ ) {
+			print "Output heatmap image will be saved to file $heatmap_image_path\n";
+		}
+		else {
+			warn "Filename $heatmap_image_path is invalid: Must end with a .tif, .tiff, or .png extension. Using default name \"image.tif\"\n";
+			$heatmap_image_path = "image.tif";
+		}
 	} else {
-		print "Incorrectly formatted pixel dimensions ($heatmap_resolution_string)\n";
-		print "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
-		return -2;
+		print "Output heatmap image will be saved to default file name ./image.tif\n";
+		$heatmap_image_path = "image.tif";
 	}
 
 	if( defined $input_file ) {
 		@results_matrix = LoadInputFile( $input_file );
 	} else {
-		@results_matrix = RunKernelScan( $path_to_wndchrm, $input_image, $training_fit, $deltaX, $deltaY, $starting_point );
+		@results_matrix = RunKernelScan( $path_to_wndchrm, $input_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args);
 	}
 
 	print "Loaded results matrix with $#results_matrix columns and $#{ $results_matrix[0] } rows.\n";
