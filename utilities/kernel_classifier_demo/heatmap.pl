@@ -163,21 +163,37 @@ sub RunKernelScan( $$$$$;$$$ ) {
 	my( $path_to_wndchrm, $test_image, $training_fit, $deltaX, $deltaY, $starting_point, $wndchrm_args, $quiet )= @_;
 
 	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
-
-	my $image_width = 1392; #FIXME: use tiffinfo to automatically extract image pixel dimensions
-	my $image_height = 1040;
+	
+	my $image_width = undef; #1392; #FIXME: use tiffinfo to automatically extract image pixel dimensions
+	my $image_height = undef; #1040;
 	my $kernel_width = 280; #FIXME: this should be a command line input
 	my $kernel_height = 280;
 
 	my @results_matrix;
 
-  my $test_image_shell = $test_image;
+ 	my $test_image_shell = $test_image;
 	my $test_image_reg_exp = $test_image;
 
 	$test_image_shell =~ s/([ \(\)])/\\$1/g; # for shell, spaces and parentheses need to be escaped
 	$test_image_reg_exp =~ s/([\(\)\.])/\\$1/g; # for regular expressions, parens and periods need to be escaped
 
 	my $retval = 0;
+	my @output = `tiffinfo $test_image_shell`;
+	foreach (@output) {
+		if( /Image Width: (\d+) Image Length: (\d+)/ ) {
+			print "Image Width: $1, height $2\n" if !$quiet;
+			$image_width = $1;
+			$image_height = $2;
+			last;
+		}
+	}
+	$retval = $? >> 8;
+	print "tiff info return val = $retval\n" if !$quiet;
+	if( !defined $image_width || !defined $image_height ) {
+		die "Error reading image dimensions from file $test_image\n";
+	}
+ 
+	$retval = 0; @output = ();
 
 	my $num_cols = int( ($image_width - $kernel_width) / $deltaX );
 	my $num_rows = int( ($image_height - $kernel_height) / $deltaY );
@@ -203,7 +219,7 @@ sub RunKernelScan( $$$$$;$$$ ) {
 
 			my $cmd = "$path_to_wndchrm classify $wndchrm_args -s1 -B$x,$y,$kernel_width,$kernel_height $training_fit $test_image_shell 2>&1";
 			print "Running wndchrm command:\n $cmd \n" if !$quiet;
-			my @output = `$cmd`;
+			@output = `$cmd`;
 			$retval = $? >> 8;
 
 			if( $retval != 1 ) {
