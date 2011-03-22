@@ -765,7 +765,7 @@ int TrainingSet::AddAllSignatures() {
          Unknown classes go into class 0 with value 0 (sample_class = 0).
    If multi_processor is true, AddAllSignatures is called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous) {
+int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous, int skip_sig_comparison_check ) {
 	int path_len = strlen(path);
 	DIR *root_dir,*class_dir;
 	struct dirent *ent;
@@ -788,7 +788,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 			if (IsSupportedFormat(buffer)) {
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
-				res=LoadFromFilesDir (path, 0, 0, save_sigs, featureset);
+				res=LoadFromFilesDir (path, 0, 0, save_sigs, featureset, skip_sig_comparison_check);
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -838,7 +838,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 		if (IsSupportedFormat(path)) {
 
 		// A single supported image file
-			res = AddImageFile(path, 0, 0, save_sigs, featureset);
+			res = AddImageFile(path, 0, 0, save_sigs, featureset, skip_sig_comparison_check);
 			if (res < 1) return (res-1);
 		// For a set of unknowns, number of classes is 1, with all samples sample_class = 0
 			class_num = 1;
@@ -935,7 +935,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 				sprintf(buffer,"%s/%s",path,classes_found[class_found_index]);
 			// reset the system error
 				errno = 0;
-				res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, featureset);
+				res=LoadFromFilesDir (buffer, class_index, samp_val, save_sigs, featureset, skip_sig_comparison_check);
 				if (res < 0) return (res);
 			// Since we made the class, we have to get rid of it if its empty.
 				if (class_nsamples[class_index] < 1) {
@@ -984,7 +984,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	
 			// reset the system error
 				errno = 0;
-				res = AddImageFile(filename, file_class_num, samp_val, save_sigs, featureset);
+				res = AddImageFile(filename, file_class_num, samp_val, save_sigs, featureset, skip_sig_comparison_check);
 				if (res < 0) return (res);
 	
 			} // while reading file of filenames
@@ -1073,7 +1073,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
    Scan the files in the directory, calling AddImageFile on each image file encountered.
    If multi_processor is true, AddAllSignatures should be called after all the class direcories are processed to load the skipped features.
 */
-int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset) {
+int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset, int skip_sig_comparison_check ) {
 	DIR *class_dir;
 	struct dirent *ent;
 	char img_basenames[MAX_FILES_IN_CLASS][64];
@@ -1145,7 +1145,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 	// Process the files in sort order
 	for (file_index=0; file_index<n_img_basenames; file_index++) {
 		sprintf(buffer,"%s/%s",path,img_basenames[file_index]);
-		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, featureset);
+		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, featureset, skip_sig_comparison_check);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
 	}
@@ -1177,12 +1177,13 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
      stddev -double- normalize to stddev as well as mean.
      bounding_rect -rect *- a sub image area from which features are computed. ignored if NULL.
      overwrite -int- 1 for forcely overwriting pre-computed .sig files
+   skip_sig_comparison_check -int- true if the user wants to bypass checking if the current experiment params match those in the pre-computed sig.
    Returns 0 if the image cannot be opened, 1 otherwise.
    If multi_processor is true, AddAllSignatures should be called after all the class files are processed to load the skipped features.
 */
 
  
-int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset) {
+int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset, int skip_sig_comparison_check ) {
 	int res=0;
 	int sample_index;
 	signatures *ImageSignatures;
@@ -1360,7 +1361,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
 		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-		if ( (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
+		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
 			ImageSignatures->LoadFromFile (old_sig_filename);
 			if (ImageSignatures->count < 1) {
 				catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));

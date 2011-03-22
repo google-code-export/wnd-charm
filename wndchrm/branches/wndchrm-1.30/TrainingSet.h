@@ -186,9 +186,9 @@ public:
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
    int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
-	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset);
-	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset);
-	int LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous);
+	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset, int skip_sig_comparison_check = 0);
+	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset, int skip_sig_comparison_check = 0);
+	int LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous, int skip_sig_comparison_check = 0);
    double ClassifyImage(TrainingSet *TestSet, int test_sample_index,int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,int rank, data_split *split, double *similarities);  /* classify one or more images */
    double Test(TrainingSet *TestSet, int method, int tiles, int tile_areas, TrainingSet *TilesTrainingSets[], int max_tile,long rank, data_split *split);     /* test      */
    int SaveToFile(char *filename);                                 /* save the training set values to a file    */

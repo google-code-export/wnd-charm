@@ -516,6 +516,8 @@ void ShowHelp()
    printf("dN - Downsample the images (N percents, where N is 1 to 100)\n");
    printf("s - silent mode.\n");
    printf("o - force overwriting pre-computed .sig files.\n");   
+   printf("O - if there are pre-computed .sig files accompanying images that have the old-style naming pattern,\n" );
+	 printf("    skip the check to see that they were calculated with the same wndchrm parameters as the current experiment.\n");   
    printf("w - Classify with wnn instead of wnd. \n");
    printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
    printf("r[#]N - Fraction of images/samples to be used for training (0,1). The default is 0.75 of\n");
@@ -622,6 +624,7 @@ int main(int argc, char *argv[])
 	int random_splits=1;             /* when 1 randomly chose training images, when 0 add them in read order */
 	int do_continuous=0;
 	int save_sigs=1;
+	int skip_sig_check = 0;
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));
@@ -736,6 +739,7 @@ int main(int argc, char *argv[])
 						verbosity=0;
 				}
         if (strchr(argv[arg_index],'o')) overwrite=1;
+        if (strchr(argv[arg_index],'O')) skip_sig_check=1;
         if (strchr(argv[arg_index],'l')) feature_opts->large_set=1;
         if (strchr(argv[arg_index],'c')) feature_opts->compute_colors=1;
         if (strchr(argv[arg_index],'C')) do_continuous=1;
@@ -825,7 +829,7 @@ int main(int argc, char *argv[])
 				return(0);
 			}
 			fclose (out_file);
-			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check );
 			if (res < 1) showError(1,"Errors reading from '%s'\n",dataset_path);
 			res = dataset->SaveToFile (dataset_save_fit);
 			if (res < 1) showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);
@@ -852,7 +856,7 @@ int main(int argc, char *argv[])
 
 
 			if (verbosity>=2) printf ("Processing training set '%s'.\n",dataset_path);
-			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 			if (res < 1) showError(1,"Errors reading from '%s'\n",dataset_path);
 			if (dataset_save_fit) {
 				res = dataset->SaveToFile (dataset_save_fit);
@@ -875,7 +879,7 @@ int main(int argc, char *argv[])
 				} else if (testset_save_fit) fclose (out_file);
 				if (verbosity>=2) printf ("Processing test set '%s'.\n",testset_path);
 				testset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
-				res=testset->LoadFromPath(testset_path, save_sigs, &featureset, do_continuous);
+				res=testset->LoadFromPath(testset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 				if (res < 1) showError(1,"Errors reading from '%s'\n",testset_path);
 				if (testset_save_fit) {
 					res = testset->SaveToFile (testset_save_fit);
