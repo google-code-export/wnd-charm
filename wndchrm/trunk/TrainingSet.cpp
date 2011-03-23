@@ -259,6 +259,7 @@ int TrainingSet::AddSample(signatures *new_sample)
 {
    /* check if the sample can be added */
 	if (new_sample->sample_class > class_num) {
+		errno = 0;
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
 		return (ADDING_SAMPLE_TO_UNDEFINED_CLASS);
 	}
@@ -789,6 +790,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
 				res=LoadFromFilesDir (path, 0, 0, save_sigs, featureset, skip_sig_comparison_check);
+				errno = 0;
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -1241,6 +1243,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
 			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
 			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
+		// Initialize the next one 
 			n_sigs++;
 			our_sigs[n_sigs].sig = NULL;
 			our_sigs[n_sigs].file = NULL;
@@ -1368,6 +1371,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 				res=0;
 			} else {
 				catError ("Old signature file '%s' converted to '%s' with %d features.\n",old_sig_filename,ImageSignatures->GetFileName(buffer),ImageSignatures->count);
+				strcpy(ImageSignatures->full_path,filename);
+				ImageSignatures->sample_class=sample_class;
+				ImageSignatures->sample_value=sample_value;
+
 				unlink (old_sig_filename);
 			}
 		}
@@ -1382,7 +1389,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// This uses our open sigfile handle, so it doesn't call close on it, which would release the lock.
 		ImageSignatures->SaveToFile (sigfile,1);
 		our_sigs[sig_index].saved = true;
-		if ( (res=AddSample(ImageSignatures)) < 0) break;
+		if ( (res=AddSample(ImageSignatures)) < 0) {
+			break;
+		}
 		our_sigs[sig_index].added = true;
 
 		if (tiles > 1) {
@@ -1408,7 +1417,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
 	if (image_matrix) delete image_matrix;
 
-	return (1);
+	return (res);
 }
 
 
@@ -1459,6 +1468,11 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
 				predicted_class = ts_selector->classify2( TestSet->samples[ test_sample_index ]->full_path, test_sample_index, test_signature, probabilities, &normalization_factor );
+		// This should not really happen...
+			if (predicted_class < 1) {
+				predicted_class = 0;
+			}
+
 			if( verbosity>=2 && tiles>1) {
 				printf( "%.3g\t", normalization_factor );
 				for( class_index = 1; class_index <= class_num; class_index++)
@@ -2245,6 +2259,7 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
     dist_sum = 0.0;
     for( sig_index = 0; sig_index < signature_count; sig_index++ )
 		{
+			if (SignatureWeights[ sig_index ] < DBL_EPSILON) continue;
 			dist = fabs( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value );
 			if( dist < DBL_EPSILON )
 			//if( FLOAT_EQ( test_sample->data[ sig_index ].value, samples[ sample_index ]->data[ sig_index ].value, 100000000 ) )
@@ -2262,16 +2277,15 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
 				/*	cout << "### Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
 						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
 							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl; */
-				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value, 2 );
+				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( dist, 2 );
 			}
 		}
 
-    if( dist_sum < FLT_EPSILON ) {
+    if( dist_sum < DBL_EPSILON ) {
 			//cout << "Small dist: " << test_sample_index << " & " << sample_index << endl;
 			num_collisions[ samples[ sample_index ]->sample_class ]++;
 			continue;
-		}
-    
+	}
     similarity = pow( dist_sum, -5 ); 
     indiv_distances[ sample_index ] = dist_sum;
     indiv_similarities[ sample_index ] = similarity;

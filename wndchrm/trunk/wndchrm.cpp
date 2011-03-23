@@ -829,7 +829,7 @@ int main(int argc, char *argv[])
 				return(0);
 			}
 			fclose (out_file);
-			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check );
 			if (res < 1) showError(1,"Errors reading from '%s'\n",dataset_path);
 			res = dataset->SaveToFile (dataset_save_fit);
 			if (res < 1) showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);
@@ -856,7 +856,7 @@ int main(int argc, char *argv[])
 
 
 			if (verbosity>=2) printf ("Processing training set '%s'.\n",dataset_path);
-			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous);
+			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 			if (res < 1) showError(1,"Errors reading from '%s'\n",dataset_path);
 			if (dataset_save_fit) {
 				res = dataset->SaveToFile (dataset_save_fit);
