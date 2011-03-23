@@ -259,6 +259,7 @@ int TrainingSet::AddSample(signatures *new_sample)
 {
    /* check if the sample can be added */
 	if (new_sample->sample_class > class_num) {
+		errno = 0;
 		catError ("Adding sample with class index %d, but only %d classes defined.\n",new_sample->sample_class,class_num);
 		return (ADDING_SAMPLE_TO_UNDEFINED_CLASS);
 	}
@@ -789,6 +790,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 			// The class assignment for these is unknown (we don't interpret directory elements in path)
 			// So, these are loaded into the unknown class (class index 0).
 				res=LoadFromFilesDir (path, 0, 0, save_sigs, featureset, skip_sig_comparison_check);
+				errno = 0;
 				if (res < 0) return (res);
 			// Unknown classes are not pure numeric
 				pure_numeric = 0;
@@ -1415,7 +1417,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
 	if (image_matrix) delete image_matrix;
 
-	return (1);
+	return (res);
 }
 
 
