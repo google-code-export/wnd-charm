@@ -1299,7 +1299,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
 	feature_opts_t *feature_opts = &(featureset->feature_opts);
 	int rot_index,tile_index_x,tile_index_y;
-printf ("n_sigs: %d\n",n_sigs);
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		ImageSignatures = our_sigs[sig_index].sig;
 		sigfile = our_sigs[sig_index].file;
@@ -1389,7 +1388,6 @@ printf ("n_sigs: %d\n",n_sigs);
 		ImageSignatures->SaveToFile (sigfile,1);
 		our_sigs[sig_index].saved = true;
 		if ( (res=AddSample(ImageSignatures)) < 0) {
-printf ("red: %d\n",res);
 			break;
 		}
 		our_sigs[sig_index].added = true;
