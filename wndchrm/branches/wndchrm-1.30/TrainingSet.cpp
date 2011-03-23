@@ -1241,6 +1241,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
 			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
 			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
+		// Initialize the next one 
 			n_sigs++;
 			our_sigs[n_sigs].sig = NULL;
 			our_sigs[n_sigs].file = NULL;
@@ -1298,6 +1299,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
 	feature_opts_t *feature_opts = &(featureset->feature_opts);
 	int rot_index,tile_index_x,tile_index_y;
+printf ("n_sigs: %d\n",n_sigs);
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		ImageSignatures = our_sigs[sig_index].sig;
 		sigfile = our_sigs[sig_index].file;
@@ -1368,6 +1370,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 				res=0;
 			} else {
 				catError ("Old signature file '%s' converted to '%s' with %d features.\n",old_sig_filename,ImageSignatures->GetFileName(buffer),ImageSignatures->count);
+				strcpy(ImageSignatures->full_path,filename);
+				ImageSignatures->sample_class=sample_class;
+				ImageSignatures->sample_value=sample_value;
+
 				unlink (old_sig_filename);
 			}
 		}
@@ -1382,7 +1388,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// This uses our open sigfile handle, so it doesn't call close on it, which would release the lock.
 		ImageSignatures->SaveToFile (sigfile,1);
 		our_sigs[sig_index].saved = true;
-		if ( (res=AddSample(ImageSignatures)) < 0) break;
+		if ( (res=AddSample(ImageSignatures)) < 0) {
+printf ("red: %d\n",res);
+			break;
+		}
 		our_sigs[sig_index].added = true;
 
 		if (tiles > 1) {
