@@ -2761,8 +2761,8 @@ long TrainingSet::dendrogram(FILE *output_file, char *dataset_name, char *phylib
 			// The average class probabilities are used as class centroid coordinates in a "marginal probability space"
 			// The distance is the euclidean distance between class centroid coordinates.
 				dist = 0;
-				for (int class_index = 0; class_index < nodes_num; class_index++) {
-					diff = similarity_matrix[label_index*nodes_num+class_index] - similarity_matrix[label_index2*nodes_num+class_index];
+				for (int class_index = 1; class_index <= nodes_num; class_index++) {
+					diff = fabs(similarity_matrix[label_index*nodes_num+class_index] - similarity_matrix[label_index2*nodes_num+class_index]);
 					diff *= diff;
 					dist += diff;
 				}
