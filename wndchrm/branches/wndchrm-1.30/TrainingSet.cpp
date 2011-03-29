@@ -1824,12 +1824,12 @@ void TrainingSet::normalize()
 {  
   int sig_index, samp_index;
   double *sig_data;
-	double min_value = INF, max_value = -INF;
 
   sig_data = new double[ count ];
 
   for( sig_index = 0; sig_index < signature_count; sig_index++ )
   {  
+		double min_value = INF, max_value = -INF;
     // Get the values for this particular feature across entire training set
     for( samp_index = 0; samp_index < count; samp_index++ ) 
 		{
