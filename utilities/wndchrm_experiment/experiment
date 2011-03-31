@@ -503,10 +503,10 @@ sub RunExperiment {
           }
 
           if( $DEBUG2 or $verbose or $dryrun ) {
-            print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/$class_name\n";
+            print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/$class_name\n";
           }
           if( !$dryrun ) {
-            @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+            @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}*.sig` );
             foreach (@list_of_sigs) {
               /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
               link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
@@ -527,7 +527,7 @@ sub RunExperiment {
 	}
 
 	my $cmd;
-	$cmd = "$path_to_wndchrm train -m $tile_scheme $large_feature_set $target_dir $target_dir/$experiment_name.fit $silence_wndchrm";
+	$cmd = "$path_to_wndchrm train -m $test_args $tile_scheme $large_feature_set $target_dir $target_dir/$experiment_name.fit $silence_wndchrm";
 	if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm) {
 	  print "\nWndchrm train command: \n$cmd\n";
 	}
@@ -695,10 +695,10 @@ sub RunExperimentTrainTestSplitsSpecified {
         }
 
         if( $DEBUG6 or $verbose or $dryrun ) {
-          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/training_set/$class_name\n";
+          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/training_set/$class_name\n";
         }
         if( !$dryrun ) {
-          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}*.sig` );
           foreach (@list_of_sigs) {
             /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
             link( "$source_dir/$dir_name/$1", "$target_dir/training_set/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/training_set/$class_name/$1: $!\n";
@@ -741,10 +741,10 @@ sub RunExperimentTrainTestSplitsSpecified {
         }
 
         if( $DEBUG6 or $verbose or $dryrun ) {
-          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}_*.sig to $target_dir/test_set/$class_name\n";
+          print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/test_set/$class_name\n";
         }
         if( !$dryrun ) {
-          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}_*.sig` );
+          @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}*.sig` );
           foreach (@list_of_sigs) {
             /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
             link( "$source_dir/$dir_name/$1", "$target_dir/test_set/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/test_set/$class_name/$1: $!\n";
