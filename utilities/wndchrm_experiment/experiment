@@ -376,11 +376,11 @@ if( $experiment_repetitions == 1 ) {
 }
 elsif( $experiment_repetitions > 1 ) {
   # Make a top level directory to contain the individual experiments
-  $target_dir .= "/" . $experiment_name;
+  $original_target_dir .= "/" . $experiment_name;
   if( $DEBUG3 or $verbose or $dryrun ) {
-    print "Making top-level organizational directory $target_dir\n";
+    print "Making top-level organizational directory $original_target_dir\n";
   }
-  if( !$dryrun ) { mkdir "$target_dir" or print $! };
+  if( !$dryrun ) { mkdir "$original_target_dir" or print $! };
   for( my $ii = 1; $ii <= $experiment_repetitions; $ii++ ) {
     # The experiment name changes every time
     $experiment_name = $original_experiment_name . "_" . $ii;
@@ -428,7 +428,7 @@ sub RunExperiment {
     print "\t*******$target_dir exists... skipping...\n\n";
     return;
   }
-  if( !$dryrun ) { mkdir "$target_dir" or print $! };
+  if( !$dryrun ) { mkdir "$target_dir" or die $! };
   ITERATE_OVER_CLASSES: foreach $class_name ( sort keys %class_config_info ) {
     if( $DEBUG2 or $verbose or $dryrun ){
       print "\tClass $class_name:\n";
@@ -506,9 +506,9 @@ sub RunExperiment {
             print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/$class_name\n";
           }
           if( !$dryrun ) {
-            @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name ${file_stem}*.sig` );
+            @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name \"${file_stem}\"*.sig` );
             foreach (@list_of_sigs) {
-              /^\S*\/(\S+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+              /^.*\/(.+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
               link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
             }
           }
@@ -566,7 +566,7 @@ sub RunExperiment {
 	    }
 	    # Reset for next time through loop
 	    $old_fit_filename = $new_fit_filename;
-	    $cmd = "$path_to_wndchrm test $weighted_nearest_neighbor $test_args $tile_scheme $training_images $test_images -f$feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $self_set $target_dir/$new_fit_filename $html_file $silence_wndchrm";
+	    $cmd = "$path_to_wndchrm test $weighted_nearest_neighbor $test_args $large_feature_set $tile_scheme $training_images $test_images -f$feature_usage_fraction $test_repetitions $write_fisher_weights $phylip_command $self_set $target_dir/$new_fit_filename $html_file $silence_wndchrm";
 	    if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm ) {
 	      print "\nWndchrn test command: \n$cmd\n";
 	    }
