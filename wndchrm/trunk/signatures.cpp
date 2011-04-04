@@ -1105,7 +1105,7 @@ void signatures::normalize(void *TrainSet)
 			data[ sig_index ].value = ts->SignatureMins[ sig_index ];
 		else if( data[ sig_index ].value > ts->SignatureMaxes[ sig_index ] )
 			data[ sig_index ].value = ts->SignatureMaxes[ sig_index ];
-		else if( ts->SignatureMins[ sig_index ] >= ts->SignatureMaxes[ sig_index ] )
+		if( ts->SignatureMins[ sig_index ] >= ts->SignatureMaxes[ sig_index ] )
 			data[ sig_index ].value = 0; /* prevent possible division by zero */
 		else
 			data[ sig_index ].value=100*(data[sig_index].value-ts->SignatureMins[sig_index])/(ts->SignatureMaxes[sig_index]-ts->SignatureMins[sig_index]);
