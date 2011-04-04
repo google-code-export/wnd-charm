@@ -1789,7 +1789,6 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 			if ( gsl_sf_choose (split->known_images,correct,&choose) == GSL_SUCCESS )
 				P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,split->known_images-correct)*choose;
 		split->classification_p_value = P;
-printf ("Accuracy: %.3g, P=%.3g\n",split->accuracy,P);
 	}
 
    /* normalize the image similarities */
@@ -2103,9 +2102,8 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 	for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it ) {
 		fg_it->second.mean = fg_it->second.sum_weight / (double)(fg_it->second.n_features);
 		fg_it->second.stddev = sqrt (
-			(fg_it->second.sum_weight2 / (double)(fg_it->second.n_features)) // mean of the squares
-			- (fg_it->second.mean * fg_it->second.mean)                      // minus square of the mean
-			); // sqrt (variance) for stddev
+			(fg_it->second.sum_weight2 - (fg_it->second.sum_weight * fg_it->second.mean)) / (double)(fg_it->second.n_features - 1)
+		); // sqrt (variance) for stddev
 		split->featuregroups_stats.push_back (fg_it->second);
 	}
 // Sort the featuregroup vector by mean weight
