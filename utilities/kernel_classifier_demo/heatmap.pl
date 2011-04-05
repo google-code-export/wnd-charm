@@ -201,8 +201,8 @@ sub main {
 		       (1+$#results_matrix) . " times.\n" if !$quiet;
 		print "Results:\n";
 		for( my $i = 0; $i <= $#results_matrix; $i++ ) {
-			print "Samp ". ($i+1) . "\tx:$results_matrix[$i]{'x'}\ty:$results_matrix[$i]{'y'}\t-  ";
-			foreach ( @{ $results_matrix[$i]{'marg_probs'} } ) { print $_ . "  "; };
+			print "Samp ". ($i+1) . "\tx:$results_matrix[$i]{'x'}\ty:$results_matrix[$i]{'y'}\t";
+			foreach ( @{ $results_matrix[$i]{'marg_probs'} } ) { print $_ . "\t"; };
 			print "\n";
 		}
 	}
@@ -271,7 +271,7 @@ sub writeImage {
 }
 
 #################################################################################
-# #FIXME: The ASCII output is hardcoded for a 4 class problem,
+# #FIXME: The ASCII output is hardcoded for a 5 class problem,
 #         with a specific order of specific classes in the marginal probabilities
 #################################################################################
 sub OutputASCIIpic {
@@ -296,8 +296,10 @@ sub OutputASCIIpic {
 			} elsif( $index_of_highest == 1 ) {
 				print 'D';
 			} elsif( $index_of_highest == 2 ) {
-				print 'H';
+				print 'C';
 			} elsif( $index_of_highest == 3 ) {
+				print 'H';
+			} elsif( $index_of_highest == 4 ) {
 				print 'T';
 			} else {
 				print '?';
@@ -311,7 +313,7 @@ sub OutputASCIIpic {
 # LoadInputFile()
 #       inputs: $input_file
 #       output: @results_matrix
-# #FIXME: This is also a 4-class application specific function
+# #FIXME: This is also a 5-class application specific function
 #################################################################################
 sub LoadInputFile {
 	my $input_file = shift;
@@ -323,9 +325,9 @@ sub LoadInputFile {
 	# ex: "col 7, row 4: (0.000	0.810	0.188	0.003	)"
 
 	while( <IN> ) {
-		if( /col (\d+), row (\d+): \((\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)/ ) {
-			print "loading col $1, row $2, marg probs( $3, $4, $5, $6 )\n" if !$quiet;
-			@{ $results_matrix[$1][$2] } = ( $3, $4, $5, $6 );
+		if( /col (\d+), row (\d+): \((\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)/ ) {
+			print "loading col $1, row $2, marg probs( $3, $4, $5, $6, $7 )\n" if !$quiet;
+			@{ $results_matrix[$1][$2] } = ( $3, $4, $5, $6, $7 );
 		}
 	}
 	close IN;
@@ -375,13 +377,18 @@ sub RunWNDCHARM_atROI {
 		warn "\n";
 		die;
 	}
+	my @return_ary = ();
+
 	#print "Here was the output: $output\n\n";
 	foreach (@output) {
-		if( /^$test_image_reg_exp\s+\S+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/ ) {
-			print "Caught marginal probabilities $1, $2, $3, $4\n" if !$quiet;
-			 return ($1, $2, $3, $4 );
+		#print;
+		if( /^$test_image_reg_exp\s+\S+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/ ) {
+			print "Caught marginal probabilities $1, $2, $3, $4, $5\n" if !$quiet;
+			 @return_ary = ($1, $2, $3, $4, $5);
 		}
 	}
+	die "Didn't catch any marginal probs\n" if( $#return_ary <= 0 );
+	return @return_ary;
 }
 #################################################################################
 # FullKernelScan()
