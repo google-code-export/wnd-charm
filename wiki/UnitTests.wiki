@@ -1,0 +1,5 @@
+#summary Contains current and proposed wndchrm unit tests
+#labels Phase-QA
+
+Here is a list of current and proposed wndchrm unit tests
+  # Calculation of signatures (not yet implemented)
