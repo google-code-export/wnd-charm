@@ -16,23 +16,24 @@ my $path = TestUtil::getTestPath();
 
 my @lines = getExpectedClassifications();
 my ($expected_2as4,$expected_4as2,$expected_accuracies,$expected_avg) = parseClassifications (\@lines);
+my $cmd = "$ex test -ls -i25 -j20 -n100 $path/test-l.fit";
 
-
-my @res = `$ex test -ls -i25 -j20 -n100 $path/test-l.fit`;
-my ($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg) = parseClassifications (\@res);
-
+# Note that we only need to pass this test once
 my $compRes;
-if (! ($compRes = compareClassifications($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg,$expected_2as4,$expected_4as2,$expected_accuracies,$expected_avg)) ) {
-	print "Distribution comparison (2 as 4, 4 as 2, accuracies) for ".scalar(@$reported_accuracies)." classifications - passed\n";
-} else {
-	@res = `$ex test -ls -i25 -j20 -n100 $path/test-l.fit`;
-	($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg) = parseClassifications (\@res);
-	if ( ($compRes = compareClassifications($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg,$expected_2as4,$expected_4as2,$expected_accuracies,$expected_avg)) ) {
-		print @res;
-		TestUtil::exit_fail("Distribution comparison failed: $compRes\n");
-	} else {
+my @res;
+my $tries = 2;
+while ($tries) {
+	@res = `$cmd`;
+	my ($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg) = parseClassifications (\@res);
+	if (! ($compRes = compareClassifications($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg,$expected_2as4,$expected_4as2,$expected_accuracies,$expected_avg)) ) {
 		print "Distribution comparison (2 as 4, 4 as 2, accuracies) for ".scalar(@$reported_accuracies)." classifications - passed\n";
+		last;
 	}
+	$tries--;
+}
+if ($compRes) {
+	print @res;
+	TestUtil::exit_fail("Distribution comparison failed: $compRes\n");
 }
 
 
@@ -68,18 +69,26 @@ sub compareClassifications {
 
 	my ($exp_acc_mean,$exp_acc_stddev);
 	my ($rep_acc_mean,$rep_acc_stddev);
-	my $t_prob;
+	my ($t_prob,$f_prob);
 
-	$t_prob = TestUtil::t_test($expected_2as4,$reported_2as4);
-	return "Class 2 as 4 distributions differ (P=$t_prob)" unless $t_prob > 0.1;
+ 	$t_prob = TestUtil::t_test($expected_2as4,$reported_2as4);
+ 	return "Class 2 as 4 distributions differ (P=$t_prob)" unless $t_prob > 0.15;
+	$f_prob = TestUtil::f_test($expected_2as4,$reported_2as4,99.9);
+	return "Class 2 as 4 distributions have different variances (P<99.9%)" unless $f_prob;
 
 	$t_prob = TestUtil::t_test($expected_4as2,$reported_4as2);
-	return "Class 4 as 2 distributions differ (P=$t_prob)" unless $t_prob > 0.1;
+	return "Class 4 as 2 distributions differ (P=$t_prob)" unless $t_prob > 0.15;
+	$f_prob = TestUtil::f_test($expected_4as2,$reported_4as2,99.9);
+	return "Class 4 as 2 distributions have different variances (P<99.9%)" unless $f_prob;
 
 	$t_prob = TestUtil::t_test($expected_accuracies,$reported_accuracies);
-	return "Accuracy distributions differ (P=$t_prob)" unless $t_prob > 0.1;
+	return "Accuracy distributions differ (P=$t_prob)" unless $t_prob > 0.15;
+	$f_prob = TestUtil::f_test($expected_accuracies,$reported_accuracies,99.9);
+	return "Accuracy distributions have different variances (P<99.9%)" unless $f_prob;
 	
 	my $mean = TestUtil::getMean($reported_accuracies);
+	$reported_avg = sprintf "%.5f",$reported_avg;
+	$mean = sprintf "%.5f",$mean;
 	return "Average accuracy ($mean) does not match reported average ($reported_avg)" unless abs ($mean-$reported_avg) < TestUtil::FLT_EPSILON;
 
 	return ("");
