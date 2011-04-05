@@ -57,8 +57,7 @@ int verbosity=2;
 
 void randomize()
 {
-  time_t t;
-  srand((unsigned) time(&t));
+  srand((unsigned) time(NULL));
 }
 
 void setup_featureset (featureset_t *featureset) {
@@ -250,9 +249,9 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	if (testset) {
 		for (class_index = 1; class_index <= ts->class_num; class_index++) {
 //printf("comparing train class '%s' with test '%s'\n",ts->class_labels[class_index],testset->class_labels[class_index]);
-			while ( testset->class_num && strcmp(ts->class_labels[class_index],testset->class_labels[class_index]) ) {
+			while ( testset->class_num && ts->class_labels[class_index].compare (testset->class_labels[class_index]) ) {
 //printf("dropping test class %d '%s'\n",class_index,testset->class_labels[class_index]);
-				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index]);
+				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index].c_str());
 				testset->MarkUnknown (class_index);
 //printf("test class %d now '%s'\n",class_index,testset->class_labels[class_index]);
 			}
@@ -260,7 +259,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		// mark any extra classes as unknown
 		for (class_index = ts->class_num+1; class_index <= testset->class_num;class_index++) {
 //printf("dropping extra test class '%s'\n",testset->class_labels[class_index]);
-			catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index]);
+			catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index].c_str());
 			testset->MarkUnknown (class_index);
 		}
 
@@ -296,8 +295,6 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
 		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
 			return(showError(1, NULL));
-
-
 /*
 	In ts-split(),
       if (test->count > 0) number_of_test_samples = 0; // test already has samples from a file
@@ -390,7 +387,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 			} else {
 				printf ("norm. fact.\t");
 				for (class_index=1;class_index<=ts->class_num;class_index++) {
-					printf("p(%s)\t",ts->class_labels[class_index]);
+					printf("p(%s)\t",ts->class_labels[class_index].c_str());
 				}
 				printf("act. class\tpred. class");
 				if (ts->is_numeric) printf ("\tpred. val.");

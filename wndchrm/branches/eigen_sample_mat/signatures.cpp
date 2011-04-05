@@ -31,6 +31,7 @@
 #ifdef WIN32
 #pragma hdrstop
 #endif
+#include "TrainingSet.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -46,7 +47,6 @@
 #define OUR_EQ(x,v) (((v - OUR_EPSILON) < x) && (x <( v + OUR_EPSILON)))
 #include "signatures.h"
 #include "cmatrix.h"
-#include "TrainingSet.h"
 #include "colors/FuzzyCalc.h"
 
 #ifndef WIN32
@@ -63,6 +63,7 @@ extern int verbosity;
 */
 signatures::signatures()
 {  int sig_index;
+	data = new signature[MAX_SIGNATURE_NUM];
    for (sig_index=0;sig_index<MAX_SIGNATURE_NUM;sig_index++)
    {  //data[sig_index].name[0]='\0';
       data[sig_index].value=0;
@@ -73,6 +74,15 @@ signatures::signatures()
    sample_name[0]='\0';
    NamesTrainingSet=NULL;   
    ScoresTrainingSet=NULL;
+	sample_col = -1;
+	sample_mat = NULL;
+}
+
+//---------------------------------------------------------------------------
+/*  ~signatures (destructor)
+*/
+signatures::~signatures() {
+	if (data) delete data;
 }
 //---------------------------------------------------------------------------
 
@@ -89,11 +99,10 @@ signatures *signatures::duplicate()
    new_samp->NamesTrainingSet=NamesTrainingSet;   
    new_samp->ScoresTrainingSet=ScoresTrainingSet;
    strcpy(new_samp->full_path,full_path);
-   for (sig_index=0;sig_index<count;sig_index++)
+   new_samp->sample_mat = sample_mat;
+   new_samp->sample_col = sample_col;
+   if (data) for (sig_index=0;sig_index<count;sig_index++)
      new_samp->data[sig_index]=data[sig_index];
-//   {  new_samp->data[sig_index].value=data[sig_index].value;
-//      strcpy(new_samp->data[sig_index].name,data[sig_index].name);
-//   }
    return(new_samp);
 }
 
@@ -106,6 +115,13 @@ void signatures::Add(const char *name,double value)
 {
    if (name && NamesTrainingSet) strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
 
+	// FIXME:  Alternative - make invalid values -DBL_MAX
+	// this will make them 0 when normalized.
+	// This will happen to all non-numerical doubles (INF, NEG_INF, NAN, etc).
+	// For calculating ranges, only values in the range of OUR_DBL_MIN - OUR_DBL_MAX could be considered,
+	// Where, OUR_DBL_MIN = -DBL_MAX + DBL_EPSILON and OUR_DBL_MAX = DBL_MAX - DBL_EPSILON
+	// if (value > -DBL_MAX && value < DBL_MAX) data[count].value=value;
+	// else data[count].value=-DBL_MAX;
    if (value>INF) value=INF;        /* prevent error */
    if (value<-INF) value=-INF;      /* prevent error */
    if (value<1/INF && value>-1/INF) value=0;  /* prevent a numerical error */
@@ -113,11 +129,22 @@ void signatures::Add(const char *name,double value)
    count++;
 }
 
+/* Finalize
+   store the_sample_indx, and clear out data
+*/
+void signatures::Finalize(Eigen::MatrixXd &the_mat, int the_col) {
+	sample_mat = &the_mat;
+	sample_col = the_col;
+//	if (data) delete data;
+//	data = NULL;
+}
+
 /* Clear
    clear all signature values
 */
 void signatures::Clear()
 {  count=0;
+	if (data) delete data;
 }
 
 int signatures::IsNeeded(long start_index, long group_length)
@@ -1092,23 +1119,26 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
    normalize the signature values using the maximum and minimum values of the training set
    ts -TrainingSet *- the training set according which the signature values should be normalized
 */
-void signatures::normalize(void *TrainSet)
-{
-	int sig_index;
+void signatures::normalize(void *TrainSet, Eigen::VectorXd &sample) {
 	TrainingSet *ts;
 	ts=(TrainingSet *)TrainSet;
-	for( sig_index = 0; sig_index < count; sig_index++ )
-	{
-		if( data[ sig_index ].value >= INF )
-			data[sig_index].value=0;
-		else if( data[ sig_index ].value < ts->SignatureMins[ sig_index ] )
-			data[ sig_index ].value = ts->SignatureMins[ sig_index ];
-		else if( data[ sig_index ].value > ts->SignatureMaxes[ sig_index ] )
-			data[ sig_index ].value = ts->SignatureMaxes[ sig_index ];
-		if( ts->SignatureMins[ sig_index ] >= ts->SignatureMaxes[ sig_index ] )
-			data[ sig_index ].value = 0; /* prevent possible division by zero */
-		else
-			data[ sig_index ].value=100*(data[sig_index].value-ts->SignatureMins[sig_index])/(ts->SignatureMaxes[sig_index]-ts->SignatureMins[sig_index]);
+	Eigen::VectorXd &mins = ts->SignatureMins;
+	Eigen::VectorXd &ranges = ts->SignatureRanges;
+	Eigen::VectorXi &FeatureIndexes = ts->ReducedFeatureIndexes;
+	int sig_index, nsigs = FeatureIndexes.size();
+	sample.resize(nsigs);
+	double sample_feature;
+	int orig_index;
+	for (sig_index = 0; sig_index < nsigs; sig_index++) {
+		orig_index = FeatureIndexes[sig_index];
+		sample_feature = (*sample_mat)( orig_index, sample_col );
+		if ( sample_feature > -DBL_MAX && sample_feature < DBL_MAX && ranges[orig_index] > DBL_EPSILON ) {
+			sample[sig_index] = 100*((sample_feature - mins[orig_index])/ranges[orig_index]);
+// 			if (sample[sig_index] > 100) sample[sig_index] = 100;
+// 			if (sample[sig_index] < 0) sample[sig_index] = 0;
+		} else {
+			sample[sig_index] = 0;
+		}
 	}
 }
 

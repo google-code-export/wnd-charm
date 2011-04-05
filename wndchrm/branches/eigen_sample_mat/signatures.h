@@ -34,6 +34,9 @@
 
 #include <stdio.h>
 
+// Eigen stuff
+#include <Eigen/Dense>
+
 #include "cmatrix.h"
 
 #define MAX_SIGNATURE_NUM 5000
@@ -61,8 +64,11 @@ class signatures
   private:
     int IsNeeded(long start_index, long group_length);  /* check if the group of signatures is needed */
   public:
-    signature data[MAX_SIGNATURE_NUM];
-    unsigned short sample_class;        /* the class of the sample             */
+  	Eigen::MatrixXd *sample_mat;      // reference to the matrix where this sample is stored
+  	int sample_col;                // column number of this sample in the Eigen::MatrixXd for this sample's class
+    signature *data;
+    Eigen::VectorXd *sample_ref;
+    unsigned short sample_class;        /* the class of the sample.  Also index into class_features vector */
     double sample_value;                /* a continous value (if TrainingSet->is_continuous is true, sample_value = 1 for known samples, and 0 for unknown samples */      
 	double interpolated_value;          /* a predicted continous value if class_num==1, or an interploated class value if class labels are all numerical */
     long count;
@@ -70,9 +76,12 @@ class signatures
     char sample_name[SAMPLE_NAME_LENGTH];  /* A string to identify the image sample (e.g. tile). For .sig files, added before last '.' of the image name */
 	void *NamesTrainingSet;             /* the training set in which this set of signatures belongs - is assigned so that the signature names will be added */
     void *ScoresTrainingSet;            /* a pointer to a training set with computed Fisher scores (to avoid computing 0-scored signatures)                 */
+
     signatures();                       /* constructor                                 */
+	~signatures();                      /* destructor                                  */
     signatures *duplicate();            /* create an identical signature vector object */
     void Add(const char *name, double value);
+    void Finalize(Eigen::MatrixXd &the_mat, int the_col); // inform the object where sample_indx is, and have it clear out temporary storage.
     void Clear();
     void compute(ImageMatrix *matrix, int compute_colors);
     void CompGroupA(ImageMatrix *matrix, const char *transform_label);
@@ -80,7 +89,7 @@ class signatures
     void CompGroupC(ImageMatrix *matrix, const char *transform_label);
     void CompGroupD(ImageMatrix *matrix, const char *transform_label);
     void ComputeGroups(ImageMatrix *matrix, int compute_colors);
-    void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
+    void normalize(void *TrainSet, Eigen::VectorXd &sample);                /* normalize the signatures based on the values of the training set */
     void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
     FILE *FileOpen(char *path, int overwrite);
     void FileClose(FILE *value_file);
