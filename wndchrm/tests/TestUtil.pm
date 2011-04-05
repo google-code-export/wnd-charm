@@ -38,6 +38,17 @@ sub t_test {
 	return $ttest->{t_prob};
 }
 
+sub f_test {
+	my ($r1,$r2,$sig) = (shift,shift,shift);
+	my $do_cutoff = 1 if $sig;
+	$sig = 99.9 unless $sig;
+	my $ttest = new Statistics::TTest;
+	$ttest->load_data($r1,$r2);
+	$ttest->set_significance($sig);
+	return $ttest->{f_statistic} unless $do_cutoff;
+	return ($ttest->{f_statistic} < $ttest->{f_cutoff});
+}
+
 sub getMean {
 	my $stat = Statistics::Descriptive::Sparse->new();
 	$stat->add_data(shift);
