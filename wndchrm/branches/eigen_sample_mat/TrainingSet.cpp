@@ -38,6 +38,9 @@
 #include <cfloat> // Has definition of DBL_EPSILON
 #include <cmath>
 #include <ctime>
+
+#include <assert.h>
+
 #include "FeatureNames.hpp"
 #include "wndchrm_error.h"
 
@@ -133,6 +136,8 @@ TrainingSet::TrainingSet(long samples_num, long class_num) {
 
 	std::vector<signatures *> class_sample_vec;
 	class_samples.push_back (class_sample_vec);
+	
+	DR = NULL;
 }
 
 /* destructor of a training set object
@@ -149,6 +154,7 @@ TrainingSet::~TrainingSet() {
 			projected_features.pop_back();
 		}
 	}
+	if (DR) delete (DR);
 }
 
 
@@ -691,17 +697,34 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 	// Record the number of training and testing samples in the split.
 		split->training_images[ class_index ] = number_of_train_samples;
 		if (number_of_test_samples) {
-			split->testing_images[ class_index ] = number_of_test_samples;
+			Eigen::MatrixXd &test_raw_features = TestSet->raw_test_features;
+			int previous_cols = test_raw_features.cols();
+			test_raw_features.conservativeResize(signature_count, previous_cols + number_of_test_samples*tiles);
 		// now add the remaining samples to the TestSet up to the maximum
 			for( sample_index = number_of_train_samples; sample_index < (number_of_test_samples + number_of_train_samples); sample_index++ ) {
+				test_raw_features.block(0,previous_cols + ( (sample_index-number_of_train_samples)*tiles ), signature_count,tiles) =
+					raw_features[class_index].block(0,train_test_split[sample_index]*tiles,signature_count,tiles);
 				for (int i=0; i < tiles; i++)
 					TestSet->test_samples.push_back (class_samples[class_index].at( (train_test_split[sample_index]*tiles)+i ));
 			}
+			split->testing_images[ class_index ] = number_of_test_samples;
 		} else {
+		// Make sure the test set has its feature matrix set up properly
+			if (! TestSet->raw_test_features.rows() ) {
+				TestSet->raw_test_features.resize(signature_count, TestSet->count);
+				int last_col=0;
+				for (int tmp_class = 0; tmp_class <= TestSet->class_num; tmp_class++) {
+					if (! TestSet->raw_features[tmp_class].cols() ) continue;
+					TestSet->raw_test_features.block (0, last_col, signature_count, TestSet->class_nsamples [ tmp_class ]) = 
+						TestSet->raw_features[tmp_class].block (0,0,signature_count,TestSet->class_nsamples [ tmp_class ]);
+					last_col += TestSet->class_nsamples [ tmp_class ];
+				}
+			}
 			split->testing_images[ class_index ] = TestSet->class_nsamples [ class_index ] / tiles;
 		}
 	}
 
+	errno = 0;
 	return (1);
 }
 
@@ -1510,7 +1533,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 			if( method == WNN )
 				predicted_class = ts_selector->WNNclassify( test_signature, probabilities, &normalization_factor, &closest_sample );
 			if( method == WND )
-				predicted_class = ts_selector->classify2( test_sample_index, test_signature, probabilities, &normalization_factor );
+				predicted_class = ts_selector->classify2( TestSet, test_sample_index, probabilities, &normalization_factor );
 		// This should not really happen...
 			if (predicted_class < 1) {
 				predicted_class = 0;
@@ -1777,6 +1800,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 // If its a pure testset, use the samples vector instead of test_samples
 	std::vector<signatures *> &testset_samples = TestSet->test_samples.size() > 0 ? TestSet->test_samples : TestSet->samples;
 	n_test_samples = testset_samples.size();
+	
+	normalize (TestSet);
 	 for( test_sample_index = 0; test_sample_index < n_test_samples; test_sample_index += tiles )
 	 {
 		 if( is_continuous )
@@ -1863,6 +1888,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 
 /* normalize
    normalize the signature in the training set to the interval [0,100]
+   The no-parameter version sets up the internal normalization variables, then uses these to normalize
+   the raw_features array of matrixes.
 */
 
 void TrainingSet::normalize() {  
@@ -1896,6 +1923,51 @@ void TrainingSet::normalize() {
 			raw_features_ref.col(sample_index) = (SignatureRanges.array() > DBL_EPSILON).select (((raw_features_ref.col(sample_index) - SignatureMins).array() / SignatureRanges.array()) * 100, 0);
 		}
 	}
+}
+
+
+/* normalize
+   normalize the signature in the training set to the interval [0,100]
+   The version with a TrainingSet parameter uses the internally stored normalization parameters to normalize
+   the given TrainingSet.
+   N.B.: Unlike the parameterless normalize(), this version projects the normalized raw features into ts->projected_features
+   It does not affect values in ts->raw_features;
+*/
+
+void TrainingSet::normalize(TrainingSet *ts) {  
+	assert ( ts != NULL && DR != NULL);
+
+	// If we're filtering, reduce features first
+	Eigen::MatrixXd &raw_features_ref = ts->raw_test_features;
+	Eigen::MatrixXd &projected_features_ref = ts->projected_test_features;
+	if (! raw_features_ref.cols() ) return;
+	if ( DR->isFilter() ) {
+		DR->Filter (projected_features_ref, raw_features_ref);
+		const Eigen::VectorXi &ReducedFeatureIndexes = DR->GetReducedFeatureIndexes();
+		const Eigen::VectorXd &ReducedFeatureWeights = DR->GetReducedFeatureWeights();
+		int orig_index, n_features = ReducedFeatureIndexes.size(), n_samples = raw_features_ref.cols();
+		projected_features_ref.resize(n_features,n_samples);
+		for (int feature_index = 0; feature_index < n_features; feature_index++) {
+			orig_index = ReducedFeatureIndexes[feature_index];
+			if (SignatureRanges[orig_index] > DBL_EPSILON) {
+				projected_features_ref.row(feature_index) = 100*((raw_features_ref.row(orig_index).array() - SignatureMins[orig_index])/SignatureRanges[orig_index]) * ReducedFeatureWeights[feature_index];
+			} else {
+				projected_features_ref.row(feature_index).setConstant (0);
+			}
+		}
+	} else {
+		int n_features = raw_features_ref.rows(), n_samples = raw_features_ref.cols();
+		Eigen::MatrixXd norm_features(n_features,n_samples);
+		for (int feature_index = 0; feature_index < n_features; feature_index++) {
+			if (SignatureRanges[feature_index] > DBL_EPSILON) {
+				norm_features.row(feature_index) = 100*((raw_features_ref.row(feature_index).array() - SignatureMins[feature_index])/SignatureRanges[feature_index]);
+			} else {
+				norm_features.row(feature_index).setConstant (0);
+			}
+		}
+		DR->ProjectFeatures (projected_features_ref,norm_features);
+	}
+
 }
 
 
@@ -1954,6 +2026,101 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
 	  fclose(mrmr_file);
       remove("mrmr_output");	 
    }   
+}
+
+void TrainingSet::SetDimensionalityReduction(DimensionalityReductionBase *DR_init, double feature_fraction, data_split *split) {
+	int sig_index,class_index;
+//	double mean,var,class_dev_from_mean,mean_inner_class_var;
+// Make a featuregroup map and iterator
+	std::map<std::string, featuregroup_stats_t> featuregroups;
+	std::map<std::string, featuregroup_stats_t>::iterator fg_it;
+// An object instance to collect the stats for each feature + group
+	featuregroup_stats_t featuregroup_stats;
+	feature_stats_t feature_stats;
+// And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
+	FeatureNames::FeatureInfo const *featureinfo;
+
+	DR = DR_init;
+
+	if (split) {
+		split->feature_stats.clear();
+		split->featuregroups_stats.clear();
+	}
+
+	if (DR->isFilter()) {
+		SignatureWeights = DR->GetFeatureWeights();
+		ReducedFeatureWeights = DR->GetReducedFeatureWeights();
+		ReducedFeatureIndexes = DR->GetReducedFeatureIndexes();
+ 		for (sig_index=0;sig_index<signature_count;sig_index++)  {
+	
+		// add the sums of the scores of each group of features */
+		// Get feature information from the name and store the feature and group name in our maps
+			featureinfo = FeatureNames::getFeatureInfoByName ( SignatureNames[ sig_index ] );
+		// find it in our map by name
+			fg_it = featuregroups.find(featureinfo->group->name);
+		// if its a new feature group, initialize a stats structure, and add it to our map
+			if (fg_it == featuregroups.end()) {
+				featuregroup_stats.name = featureinfo->group->name;
+				featuregroup_stats.featuregroup_info = featureinfo->group;
+				featuregroup_stats.sum_weight = SignatureWeights[ sig_index ];
+				featuregroup_stats.sum_weight2 = (SignatureWeights[ sig_index ] * SignatureWeights[ sig_index ]);
+				featuregroup_stats.min = SignatureWeights[ sig_index ];
+				featuregroup_stats.max = SignatureWeights[ sig_index ];
+				featuregroup_stats.mean = 0;
+				featuregroup_stats.stddev = 0;
+				featuregroup_stats.n_features = 1;
+				featuregroups[featureinfo->group->name] = featuregroup_stats; // does a copy
+			} else {
+				if (SignatureWeights[ sig_index ] < fg_it->second.min)
+					fg_it->second.min = SignatureWeights[ sig_index ];
+				if (SignatureWeights[ sig_index ] > fg_it->second.max)
+					fg_it->second.max = SignatureWeights[ sig_index ];
+				fg_it->second.sum_weight += SignatureWeights[ sig_index ];
+				fg_it->second.sum_weight2 += (SignatureWeights[ sig_index ] * SignatureWeights[ sig_index ]);
+				fg_it->second.n_features++;
+			}
+			
+			
+		}
+
+	   // Feature group sorting code:
+	// Copy the map to the vector while updating summary stats
+		split->featuregroups_stats.clear();
+		for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it ) {
+			fg_it->second.mean = fg_it->second.sum_weight / (double)(fg_it->second.n_features);
+			fg_it->second.stddev = sqrt (
+				(fg_it->second.sum_weight2 - (fg_it->second.sum_weight * fg_it->second.mean)) / (double)(fg_it->second.n_features - 1)
+				); // sqrt (variance) for stddev
+			split->featuregroups_stats.push_back (fg_it->second);
+		}
+
+	// Sort the featuregroup vector by mean weight
+		sort_by_mean_weight_t sort_by_mean_weight_func;
+		sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
+
+	// Collect the individual feature statistics
+		const Eigen::VectorXi &ReducedFeatureIndexes = DR->GetReducedFeatureIndexes();
+
+		int n_reduced_sigs = ReducedFeatureIndexes.size();
+		int real_feature_index;
+		split->feature_stats.resize(n_reduced_sigs);
+		for (sig_index = 0; sig_index < n_reduced_sigs; sig_index++) {
+			real_feature_index = ReducedFeatureIndexes[sig_index];
+		// Initialize a feature stats structure, and add it to our vector
+			feature_stats.name = SignatureNames[ real_feature_index ];
+			feature_stats.feature_info = FeatureNames::getFeatureInfoByName ( SignatureNames[ real_feature_index ] );
+			feature_stats.weight = SignatureWeights[ real_feature_index ];
+			feature_stats.index = real_feature_index;
+			split->feature_stats[sig_index] = feature_stats; // makes a copy
+		}
+	}
+
+// Use the dimensionality algorithm to make projected_features
+	for (class_index = 0; class_index <= class_num; class_index++) {
+		DR->ProjectFeatures (projected_features[class_index],raw_features[class_index]);
+	}
+
+
 }
 
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split) {
@@ -2158,19 +2325,20 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 // now set up the projected_features based on the feature_stats vector
 	int n_kept_sigs=split->feature_stats.size();
 	ReducedFeatureIndexes.resize (n_kept_sigs);
-	ReducedFeatureWeights2.resize (n_kept_sigs);
+	ReducedFeatureWeights.resize (n_kept_sigs);
 	
 	for (sig_index = 0; sig_index < n_kept_sigs; sig_index++) {
 		ReducedFeatureIndexes[sig_index] = split->feature_stats[sig_index].index;
-		ReducedFeatureWeights2[sig_index] = pow (split->feature_stats[sig_index].weight,2);
+		ReducedFeatureWeights[sig_index] = split->feature_stats[sig_index].weight;
 	}
 
 	for (class_index = 0; class_index <= class_num; class_index++) {
 		if (raw_features[class_index].cols()) {
 			projected_features[class_index].resize(n_kept_sigs,raw_features[class_index].cols());
 			for (sig_index=0; sig_index < n_kept_sigs; sig_index++) {
-				projected_features[class_index].row(sig_index) = raw_features[class_index].row(ReducedFeatureIndexes[sig_index]);
+				projected_features[class_index].row(sig_index) = raw_features[class_index].row(ReducedFeatureIndexes[sig_index]) * ReducedFeatureWeights[sig_index];
 			}
+//			projected_features[class_index] *= ReducedFeatureWeights.asDiagonal();
 		}
 	}
 
@@ -2282,7 +2450,7 @@ long TrainingSet::WNNclassify(signatures *test_sample, double *probabilities, do
 
    comment: must set weights before calling to this function
 */
-long TrainingSet::classify2( int test_sample_index, signatures *test_sample, double *probabilities, double *normalization_factor) { 
+long TrainingSet::classify2(TrainingSet *TestSet, int test_sample_index, double *probabilities, double *normalization_factor) { 
 	using namespace std;
 	vector<int> num_samples_per_class( class_num + 1, 0 ); 
 	vector<double> indiv_distances( count, 0.0 ); 
@@ -2294,16 +2462,22 @@ long TrainingSet::classify2( int test_sample_index, signatures *test_sample, dou
 
 	/* normalize the test sample */
 	Eigen::VectorXd sample_vec, weight_vec;
-	test_sample->normalize(this,sample_vec);
-
+	std::vector<signatures *> &testset_samples = TestSet->test_samples.size() > 0 ? TestSet->test_samples : TestSet->samples;
+	signatures *test_sample = testset_samples[test_sample_index];
+// printf ("testset_samples.size(): %d test_sample_index: %d\n",testset_samples.size(), test_sample_index);
+// printf ("test_sample->sample_class: %d test_sample->sample_col: %d\n",test_sample->sample_class, test_sample->sample_col);
+// printf ("TestSet->projected_features[ test_sample->sample_class ].rows(): %d TestSet->projected_features[ test_sample->sample_class ].cols(): %d\n",
+// TestSet->projected_features[ test_sample->sample_class ].rows(), TestSet->projected_features[ test_sample->sample_class ].cols());
+//	test_sample->normalize(this,sample_vec);
+	sample_vec = TestSet->projected_test_features.col ( test_sample_index );
 	int class_index, sample_index, n_samples;
 	double dist;
 	for (class_index = 1; class_index <= class_num; class_index++) {
-		n_samples = raw_features[class_index].cols();
+		n_samples = projected_features[class_index].cols();
 		num_samples_per_class[ class_index ] = class_distances[ class_index ] = class_similarities[ class_index ] = 0;
 		for (sample_index = 0; sample_index < n_samples; sample_index++) {
 			Eigen::VectorXd dist_vec = projected_features[class_index].col(sample_index) - sample_vec;
-			dist_vec = (dist_vec.array().abs() < DBL_EPSILON).select(0, dist_vec.array().square() * ReducedFeatureWeights2.array());
+			dist_vec = (dist_vec.array().abs() < DBL_EPSILON).select(0, dist_vec.array().square());
 
 			dist = dist_vec.sum();
 			if (dist > DBL_EPSILON) {

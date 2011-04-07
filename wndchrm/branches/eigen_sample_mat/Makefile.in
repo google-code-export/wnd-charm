@@ -56,12 +56,13 @@ am_libFeatureNames_a_OBJECTS =  \
 libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
-am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
-	cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) signatures.$(OBJEXT) \
-	CombFirst4Moments.$(OBJEXT) FeatureStatistics.$(OBJEXT) \
-	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
-	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
-	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
+am_libimfit_a_OBJECTS = FischerWeights.$(OBJEXT) specfunc.$(OBJEXT) \
+	wndchrm_error.$(OBJEXT) cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) \
+	signatures.$(OBJEXT) CombFirst4Moments.$(OBJEXT) \
+	FeatureStatistics.$(OBJEXT) gabor.$(OBJEXT) \
+	CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) mapkit.$(OBJEXT) \
+	mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) complex.$(OBJEXT) \
+	zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
 	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
 	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
@@ -221,6 +222,8 @@ libFeatureNames_a_SOURCES = \
 # The result is that it only blows up if the user has -O set in their CXXFLAGS.
 libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 libimfit_a_SOURCES = \
+	dimensionality_reduction/FischerWeights.cpp \
+	dimensionality_reduction/FischerWeights.h \
 	gsl/specfunc.cpp \
 	gsl/specfunc.h \
 	wndchrm_error.cpp \
@@ -410,6 +413,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureStatistics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FilterSet.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FischerWeights.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FuzzyCalc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Symlet5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TrainingSet.Po@am__quote@
@@ -506,6 +510,20 @@ libFeatureNames_a-FeatureNames.obj: FeatureNames.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+
+FischerWeights.o: dimensionality_reduction/FischerWeights.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FischerWeights.o -MD -MP -MF $(DEPDIR)/FischerWeights.Tpo -c -o FischerWeights.o `test -f 'dimensionality_reduction/FischerWeights.cpp' || echo '$(srcdir)/'`dimensionality_reduction/FischerWeights.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/FischerWeights.Tpo $(DEPDIR)/FischerWeights.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dimensionality_reduction/FischerWeights.cpp' object='FischerWeights.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FischerWeights.o `test -f 'dimensionality_reduction/FischerWeights.cpp' || echo '$(srcdir)/'`dimensionality_reduction/FischerWeights.cpp
+
+FischerWeights.obj: dimensionality_reduction/FischerWeights.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FischerWeights.obj -MD -MP -MF $(DEPDIR)/FischerWeights.Tpo -c -o FischerWeights.obj `if test -f 'dimensionality_reduction/FischerWeights.cpp'; then $(CYGPATH_W) 'dimensionality_reduction/FischerWeights.cpp'; else $(CYGPATH_W) '$(srcdir)/dimensionality_reduction/FischerWeights.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/FischerWeights.Tpo $(DEPDIR)/FischerWeights.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dimensionality_reduction/FischerWeights.cpp' object='FischerWeights.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FischerWeights.obj `if test -f 'dimensionality_reduction/FischerWeights.cpp'; then $(CYGPATH_W) 'dimensionality_reduction/FischerWeights.cpp'; else $(CYGPATH_W) '$(srcdir)/dimensionality_reduction/FischerWeights.cpp'; fi`
 
 specfunc.o: gsl/specfunc.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT specfunc.o -MD -MP -MF $(DEPDIR)/specfunc.Tpo -c -o specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp

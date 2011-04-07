@@ -42,6 +42,7 @@
 
 #include "config.h" // for version info
 #include "signatures.h"
+#include "dimensionality_reduction/DimensionalityReductionBase.h"
 
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
@@ -177,13 +178,15 @@ public:
 	std::vector<signatures *> samples;                // samples - in read order - these pointers "own" the samples - this vector is empty in train/test split TrainingSets.
 	std::vector< std::vector<signatures *> > class_samples; // samples for training sorted by class (correspond to raw_features order)
 	std::vector<signatures *> test_samples; // test samples (unsorted) 
+	Eigen::MatrixXd raw_test_features;
+	Eigen::MatrixXd projected_test_features;
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
    Eigen::VectorXd SignatureWeights;                     /* weights of the samples                    */
    Eigen::VectorXd SignatureMins;                        /* minimum value of each signature           */
    Eigen::VectorXd SignatureMaxes;                       /* maximum value of each signature           */
    Eigen::VectorXd SignatureRanges;                      /* range of each signature           */
    Eigen::VectorXi ReducedFeatureIndexes;                /* indexes of the features kept after reduction of raw_features */
-   Eigen::VectorXd ReducedFeatureWeights2;                /* Weights of the features kept after reduction of raw_features - squared*/
+   Eigen::VectorXd ReducedFeatureWeights;                /* Weights of the features kept after reduction of raw_features - squared*/
    long class_num;                                                 /* number of known/defined classes (may be 0 if all samples are unknown, may be 1 when is_continuous, or for 1 known discrete class */
    std::vector<std::string> class_labels;                          /* labels of the classes                     */
    std::vector<long> class_nsamples;                               /* sample counts in each class               */
@@ -193,6 +196,7 @@ public:
    long count;                                                     /* the number of samples in the training set */
    long signature_count;                                           /* the number of signatures (< MAX_SIGNATURE_NUM) */
    long color_features;                                            /* color signatures are used                 */
+DimensionalityReductionBase *DR;
 /* methods */
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
@@ -217,12 +221,14 @@ public:
    int AddContinuousClass (char *label);                           /* add a continuous class - not that only one can be added */
    int AddSample(signatures *new_sample);                          /* add signatures computed from one image    */
    void normalize();                                               /* normalize the values of the signatures to [0,100] */
+	void normalize(TrainingSet *ts);                               /* normalize the values of the provided TrainingSet to [0,100] based on stored normalization params */
    void SetmRMRScores(double used_signatures,double used_mrmr);                     /* set mRMR scores to the features           */
+	void SetDimensionalityReduction(DimensionalityReductionBase *DR, double feature_fraction, data_split *split);
    void SetFisherScores(double used_signatures, double used_mrmr, data_split *split);/* compute the fisher scores for the signatures  */
    int IgnoreFeatureGroup(long index,char *group_name);            /* set the Fisher Score of a group of image features to zero */
    double distance(signatures *sample1, signatures *sample2,double power);  /* Find the weighted Euclidean distance between two samples  */
    long WNNclassify(signatures *test_sample, double *probabilities, double *normalization_factor, signatures **closest_sample);/* classify a sample using weighted nearest neighbor */
-   long classify2( int test_sample_index, signatures *test_sample, double *probabilities, double *normalization_factor); /* classify using -5                         */
+   long classify2(TrainingSet *TestSet, int test_sample_index, double *probabilities, double *normalization_factor); /* classify using -5                         */
    double InterpolateValue(signatures *test_sample, int method, int N, signatures **closest_sample, double *closest_dist);  /* interpolate a value */
    long classify3(signatures *test_sample, double *probabilities,double *normalization_factor);
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */

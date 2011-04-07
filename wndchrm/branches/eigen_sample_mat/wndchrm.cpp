@@ -30,6 +30,7 @@
 
 #include "TrainingSet.h"
 #include "wndchrm_error.h"
+#include "dimensionality_reduction/FischerWeights.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -340,13 +341,17 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 			for (tile_index=0;tile_index<samples_per_image;tile_index++)
 			{
 				TilesTrainingSets[tile_index]->normalize();
-				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
+				FischerWeights *dim_reduce = new FischerWeights(TilesTrainingSets[tile_index]->raw_features, max_features);
+				TilesTrainingSets[tile_index]->SetDimensionalityReduction(dim_reduce, max_features, NULL);
+//				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
 			}
 		}
 		else
 		{
 			train->normalize(); // normalize the feature values of the training set
-			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
+			FischerWeights *dim_reduce = new FischerWeights(train->raw_features, max_features);
+			train->SetDimensionalityReduction (dim_reduce, max_features, &(splits[split_index]));  // compute the Fisher Scores for the image features
+//			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
 		}
 		//train->class_num=temp;
 		if (weight_vector_action=='w')
