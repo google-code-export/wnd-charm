@@ -47,7 +47,10 @@ sub main {
 	my( $x1, $y1, $x2, $y2 );
 	my %opts;
 	my @results_matrix;
-
+	my $test_image_shell;
+	my $test_image_reg_exp;
+	my( $image_width, $image_height);
+  
 	GetOptions(
 		"wndchrm=s" => \$path_to_wndchrm,
 		"input_image=s" => \$input_image,
@@ -88,14 +91,16 @@ sub main {
 		return -3;
 	}
 
-	if( $kernel_size =~ /(\d+)x(\d+)/) {
-		$kernel_width = $1;
-		$kernel_height = $2;
-		print "Kernel width: $kernel_width, height $kernel_height\n" if !$quiet;
-	} else {
-		warn "Incorrectly formatted pixel dimensions ($kernel_displacement)\n";
-		warn "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
-		return -2;
+	if( $kernel_size ) {
+		if( $kernel_size =~ /(\d+)x(\d+)/) {
+			$kernel_width = $1;
+			$kernel_height = $2;
+			print "Kernel width: $kernel_width, height $kernel_height\n" if !$quiet;
+		} else {
+			warn "Incorrectly formatted pixel dimensions ($kernel_displacement)\n";
+			warn "Please enxer pixel dimension in the form of #x#, for example, 20x20\n";
+			return -2;
+		}
 	}
 	if( $kernel_displacement ) {
 		if( $kernel_displacement =~ /(-?\d+)x(-?\d+)/ ) {
@@ -121,8 +126,9 @@ sub main {
 	}
 	if( $end_coords ) {
 		if( $end_coords =~ /(\d+),(\d+)/ ) {
+			$x2 = $1;
 			$y2 = $2;
-			print "Begin coords for linear scan: x: $x2, y: $y2\n" if !$quiet;
+			print "End coords for linear scan: x: $x2, y: $y2\n" if !$quiet;
 		} else {
 			warn "Incorrectly formatted end coordinates ($end_coords)\n";
 			warn "Please enter pixel coords in the form of #,#, for example, 20,20\n";
@@ -158,27 +164,28 @@ sub main {
 		print "input image will be sampled maximum $granularity times over defined end points.\n";
 	}
 
-	my $test_image_shell = $input_image;
-	my $test_image_reg_exp = $input_image;
+	if( !$input_file ) {
+		$test_image_shell = $input_image;
+		$test_image_reg_exp = $input_image;
 
-	$test_image_shell =~ s/([ \(\)])/\\$1/g; # for shell, spaces and parentheses need to be escaped
-	$test_image_reg_exp =~ s/([\(\)\.])/\\$1/g; # for regular expressions, parens and periods need to be escaped
+		$test_image_shell =~ s/([ \(\)])/\\$1/g; # for shell, spaces and parentheses need to be escaped
+		$test_image_reg_exp =~ s/([\(\)\.])/\\$1/g; # for regular expressions, parens and periods need to be escaped
 
-	my( $image_width, $image_height);
-	my $retval = 0;
-	my @output = `tiffinfo $test_image_shell`;
-	foreach (@output) {
-		if( /Image Width: (\d+) Image Length: (\d+)/ ) {
-			print "Image Width: $1, height $2\n" if !$quiet;
-			$image_width = $1;
-			$image_height = $2;
-			last;
+		my $retval = 0;
+		my @output = `tiffinfo $test_image_shell`;
+		foreach (@output) {
+			if( /Image Width: (\d+) Image Length: (\d+)/ ) {
+				print "Image Width: $1, height $2\n" if !$quiet;
+				$image_width = $1;
+				$image_height = $2;
+				last;
+			}
 		}
-	}
-	$retval = $? >> 8;
-	print "tiff info return val = $retval\n" if !$quiet;
-	if( !defined $image_width || !defined $image_height ) {
-		die "Error reading image dimensions from input image $test_image_shell\n";
+		$retval = $? >> 8;
+		#print "tiff info return val = $retval\n" if !$quiet;
+		if( !defined $image_width || !defined $image_height ) {
+			die "Error reading image dimensions from input image $test_image_shell\n";
+		}	
 	}
 
 	if( $input_file || $full_scan ) {
@@ -212,8 +219,6 @@ sub main {
 	}
 	elsif( $start_end_line_scan || $start_displacement_line_scan ) {
 		@results_matrix = LinearKernelScan( $start_end_line_scan, $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $deltaX, $deltaY, $granularity, $starting_percentage, $wndchrm_args, $quiet);
-		print "Desired num samples was $granularity, actual num samples " .
-				 ( 1 + $#results_matrix ) . " times.\n" if !$quiet;
 		PrintLinearKernelScan( \@results_matrix, $granularity );
 	}
 
@@ -323,21 +328,26 @@ sub OutputASCIIpic {
 # LoadInputFile()
 #       inputs: $input_file
 #       output: @results_matrix
-# #FIXME: This is also a 5-class application specific function
 #################################################################################
 sub LoadInputFile {
 	my $input_file = shift;
 	my $quiet = shift;
 	my @results_matrix;
+	my $line;
+	my $marg_probs;
+	my( $col, $row );
 
 	open( IN, '<', $input_file ) or die "Couldn't open input file $input_file: $!\n";
 
 	# ex: "col 7, row 4: (0.000	0.810	0.188	0.003	)"
+	# or: "col 7, row 4: (0.000	0.810	0.188	0.003	0.000 )"
 
 	while( <IN> ) {
-		if( /col (\d+), row (\d+): \((\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)\s+(\d\.\d+)/ ) {
-			print "loading col $1, row $2, marg probs( $3, $4, $5, $6, $7 )\n" if !$quiet;
-			@{ $results_matrix[$1][$2] } = ( $3, $4, $5, $6, $7 );
+		my $line = $_;
+		if( /col (\d+), row (\d+): \((.*)\)/ ) {
+			$col = $1; $row = $2; $marg_probs = $3;
+			@{ $results_matrix[$col][$row] } = split /\s+/, $marg_probs;
+			print "loading col $1, row $2, marg probs( $marg_probs )\n" if !$quiet;
 		}
 	}
 	close IN;
@@ -447,6 +457,7 @@ sub FullKernelScan {
 sub LinearKernelScan {
 	my( $is_endpoints_scan, $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $deltaX, $deltaY, $num_samples, $starting_percentage, $wndchrm_args, $quiet )= @_;
 
+	print "Processing line scan...\n" if !$quiet;
 	if( !defined $num_samples ) {
 		if( !defined $deltaX and !defined $deltaY ) {
 			die "To run a linear kernel scan, you must specify a \"number of samples\" \n value using the --g argument or a deltaX/deltaY step parameter using the --p argument.\n";
@@ -472,19 +483,25 @@ sub LinearKernelScan {
 	my $previousX = -1;
 	my $previousY = -1;
 	my @results_table;
-	my @coordinate_pairs;
 
-
-
+	my $count = -1;
 	while (1) {
-
+		$count++;
+		if( $num_samples ) {
+			last if $count > $num_samples;
+		}
 		# use sprintf for proper rounding of pixel coordinates
 		if( $is_endpoints_scan ) {
-			$x = sprintf( "%.0f", ( $x1 + $run * $index / ($num_samples-1) ) );
-			$y = sprintf( "%.0f", ( $y1 + $rise * $index / ($num_samples-1) ) );
+			$x = sprintf( "%.0f", ( $x1 + $run * $count / ($num_samples-1) ) );
+			$y = sprintf( "%.0f", ( $y1 + $rise * $count / ($num_samples-1) ) );
 		} else {
-			$x = $x1 + ($index * $deltaX);
-			$y = $y1 + ($index * $deltaY);
+			$x = $x1 + ($count * $deltaX);
+			$y = $y1 + ($count * $deltaY);
+		}
+		# exit conditions for 
+		if( !$is_endpoints_scan ){
+			last if abs( $x - $x1 ) >= abs( $run );
+			last if abs( $y - $y1 ) >= abs( $rise );
 		}
 		$x_topleft = $x - $x_offset;
 		$y_topleft = $y - $y_offset;
@@ -501,19 +518,20 @@ sub LinearKernelScan {
 		}
 
 		next if( $x == $previousX and $y == $previousY );
-		push @coordinate_pairs, { x => $x, y => $y };
+		$results_table[$count]{'x'} = $x;
+		$results_table[$count]{'y'} = $y;
+		print "sample $count will occur at x: $results_table[$count]{'x'}, y: $results_table[$count]{'y'}\n" if !$quiet;
 
 		$previousX = $x;
 		$previousY = $y;
-		last if ;
 	}
+
+	print "Line will effectively be sampled $#results_table times\n" if !$quiet;
 
 	my $starting_index = $num_samples * $starting_percentage;
 
-	for( my $i = $starting_index; $i <= $#coordinate_pairs; $i++ ){
-		@{ $results_table[$index]{"marg_probs"} } = RunWNDCHARM_atROI( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $wndchrm_args, $coordinate_pairs[$i]{x}, $coordinate_pairs[$i]{y}, $kernel_width, $kernel_height, $training_fit, $quiet );
-		$results_table[$index]{'x'} = $coordinate_pairs[$i]{x} + $x_offset;
-		$results_table[$index]{'y'} = $coordinate_pairs[$i]{y} + $y_offset;
+	for( my $i = $starting_index; $i <= $#results_table; $i++ ){
+		@{ $results_table[$i]{"marg_probs"} } = RunWNDCHARM_atROI( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $wndchrm_args, $results_table[$i]{'x'} - $x_offset, $results_table[$i]{'y'} - $y_offset, $kernel_width, $kernel_height, $training_fit, $quiet );
 	}
 	return @results_table;
 }
@@ -548,21 +566,13 @@ sub ShowHelp {
 	print "  --p <#x#>      - Specify horizontal and vertical displacement of scanning window.\n";
 	print "  ex: heatmap.pl --i input_image.tiff --w /path/to/wndchrm --t /path/to/training_set.fit -k 280x280 -p 20x20\n";
 	print "\n";
-	print "Operation 2: Perform a linear kernel scan over input image using a line defined by start\n";
-	print "             coordinates, kernel displacement, and desired number of samples.\n";
-	print "             Output is a table of marg. probs.\n";
+	print "Operation 2: Perform a linear kernel scan (line scan) over input image\n";
+	print "             Use three out of the four following arguments to define line geometry:\n";
 	print "  --b <#,#>      - Beginning of line pixel coordinates x1=# and y1=#\n";
+	print "  --e <#,#>      - End of line pixel coortinates x2=# and y2=#\n";
 	print "  --p <#x#>      - Specify horizontal and vertical displacement of scanning window.\n";
 	print "  --g #          - Number of samples (number of window displacements)\n"; 
 	print "  ex: heatmap.pl --i input_image.tiff --w /path/to/wndchrm --t /path/to/training_set.fit --k 280x280 --b 123,456 --p 20x0 -g 30\n";
-	print "\n";
-	print "Operation 3: Perform a linear kernel scan over input image using a line defined by start\n";
-	print "             and end coordinates, and the desired number of samples. Samples are equidistantly\n";
-	print "             spaced along line. Output is a table of marg. probs.\n";
-	print "  --b <#,#>      - Beginning of line pixel coordinates x1=# and y1=#\n";
-	print "  --e <#,#>      - End of line pixel coortinates x2=# and y2=#\n";
-	print "  --g #          - Number of samples (number of window displacements)\n"; 
-	print "  ex: heatmap.pl --i input_image.tiff --w /path/to/wndchrm --t /path/to/training_set.fit --k 280x280 --p 20x20 --b 123,456 --e 789,1011 --g 25\n";
 	print "\n";
 	print "Additional optional arguments:\n";
 	print "  --h /path/name - Specify a filename and path to the generate heatmap image.\n";
