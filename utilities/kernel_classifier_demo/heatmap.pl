@@ -14,6 +14,7 @@ sub WriteOutputFile;
 sub RunWNDCHARM_atROI;
 sub FullKernelScan;
 sub LinearKernelScan;
+sub PrintLinearKernelScan;
 sub ShowHelp;
 sub main;
 
@@ -39,8 +40,10 @@ sub main {
 	my $end_coords = undef;
 	my $granularity = undef;
 	my $kernel_size = undef;
-	my( $kernel_width, $kernel_height );
-	my( $deltaX, $deltaY );
+	my $kernel_width = undef;
+	my $kernel_height = undef;
+	my $deltaX = undef;
+	my $deltaY = undef;
 	my( $x1, $y1, $x2, $y2 );
 	my %opts;
 	my @results_matrix;
@@ -59,7 +62,8 @@ sub main {
 		"quiet" => \$quiet, 
 		"begin_coords=s" => \$start_coords,
 		"granularity=i" => \$granularity,
-		"end_coords=s" => \$end_coords,		"help|?" => sub { &ShowHelp; return -1; }
+		"end_coords=s" => \$end_coords,
+		"help|?" => sub { &ShowHelp; return -1; }
 		);
 
 	# Figure out what the user wants
@@ -160,6 +164,23 @@ sub main {
 	$test_image_shell =~ s/([ \(\)])/\\$1/g; # for shell, spaces and parentheses need to be escaped
 	$test_image_reg_exp =~ s/([\(\)\.])/\\$1/g; # for regular expressions, parens and periods need to be escaped
 
+	my( $image_width, $image_height);
+	my $retval = 0;
+	my @output = `tiffinfo $test_image_shell`;
+	foreach (@output) {
+		if( /Image Width: (\d+) Image Length: (\d+)/ ) {
+			print "Image Width: $1, height $2\n" if !$quiet;
+			$image_width = $1;
+			$image_height = $2;
+			last;
+		}
+	}
+	$retval = $? >> 8;
+	print "tiff info return val = $retval\n" if !$quiet;
+	if( !defined $image_width || !defined $image_height ) {
+		die "Error reading image dimensions from input image $test_image_shell\n";
+	}
+
 	if( $input_file || $full_scan ) {
 		if( $heatmap_image_path && $heatmap_image_path ne "" ) {
 			if( $heatmap_image_path =~ /tif$|tiff$|png$/ ) {
@@ -176,12 +197,11 @@ sub main {
 		}
 
 		if( $input_file ) {
-			@results_matrix = LoadInputFile( $input_file, $quiet);
+			@results_matrix = LoadInputFile( $input_file, $quiet );
 		}
 		else {
 			@results_matrix = FullKernelScan( $path_to_wndchrm, $test_image_shell, 
-				$test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $deltaX, 
-				$deltaY, $starting_percentage, $wndchrm_args, $quiet);
+				$test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $deltaX, $deltaY, $starting_percentage, $wndchrm_args, $quiet);
 		}
 		print "Loaded results matrix with $#results_matrix columns and ";
 		print "$#{ $results_matrix[0] } rows.\n" if !$quiet;
@@ -191,20 +211,10 @@ sub main {
 		writeImage( \@results_matrix, $heatmap_image_path );
 	}
 	elsif( $start_end_line_scan || $start_displacement_line_scan ) {
-		if( $start_end_line_scan ) {
-			@results_matrix = EndpointsLinearKernelScan( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $granularity, $starting_percentage, $wndchrm_args, $quiet);
-		}
-		else {
-			@results_matrix = FixedDeltaLinearKernelScan( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $deltaX, $deltaY, $granularity, $starting_percentage, $wndchrm_args, $quiet);
-		}
+		@results_matrix = LinearKernelScan( $start_end_line_scan, $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $deltaX, $deltaY, $granularity, $starting_percentage, $wndchrm_args, $quiet);
 		print "Desired num samples was $granularity, actual num samples " .
-		       (1+$#results_matrix) . " times.\n" if !$quiet;
-		print "Results:\n";
-		for( my $i = 0; $i <= $#results_matrix; $i++ ) {
-			print "Samp ". ($i+1) . "\tx:$results_matrix[$i]{'x'}\ty:$results_matrix[$i]{'y'}\t";
-			foreach ( @{ $results_matrix[$i]{'marg_probs'} } ) { print $_ . "\t"; };
-			print "\n";
-		}
+				 ( 1 + $#results_matrix ) . " times.\n" if !$quiet;
+		PrintLinearKernelScan( \@results_matrix, $granularity );
 	}
 
 	return 1;
@@ -398,32 +408,11 @@ sub RunWNDCHARM_atROI {
 #################################################################################
 sub FullKernelScan {
 
-	my( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $deltaX, $deltaY, $starting_percentage, $wndchrm_args, $quiet )= @_;
+	my( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $deltaX, $deltaY, $starting_percentage, $wndchrm_args, $quiet )= @_;
 
 	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
 	
-	my $image_width = undef;
-	my $image_height = undef;
-
 	my @results_matrix;
-
-	my $retval = 0;
-	my @output = `tiffinfo $test_image_shell`;
-	foreach (@output) {
-		if( /Image Width: (\d+) Image Length: (\d+)/ ) {
-			print "Image Width: $1, height $2\n" if !$quiet;
-			$image_width = $1;
-			$image_height = $2;
-			last;
-		}
-	}
-	$retval = $? >> 8;
-	print "tiff info return val = $retval\n" if !$quiet;
-	if( !defined $image_width || !defined $image_height ) {
-		die "Error reading image dimensions from input image $test_image_shell\n";
-	}
- 
-	$retval = 0; @output = ();
 
 	my $num_cols = int( ($image_width - $kernel_width) / $deltaX );
 	my $num_rows = int( ($image_height - $kernel_height) / $deltaY );
@@ -455,65 +444,93 @@ sub FullKernelScan {
 #################################################################################
 #
 #################################################################################
-sub EndpointsLinearKernelScan {
-	my( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $num_samples, $starting_percentage, $wndchrm_args, $quiet )= @_;
+sub LinearKernelScan {
+	my( $is_endpoints_scan, $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $image_width, $image_height, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $x2, $y2, $deltaX, $deltaY, $num_samples, $starting_percentage, $wndchrm_args, $quiet )= @_;
 
-	if( !defined $num_samples || $num_samples < 2 ) {
-		die "To run a linear kernel scan, you must specify a \"number of samples\" \n value of at least 2 indicating how many times along the line that the image is to be sampled\n";
+	if( !defined $num_samples ) {
+		if( !defined $deltaX and !defined $deltaY ) {
+			die "To run a linear kernel scan, you must specify a \"number of samples\" \n value using the --g argument or a deltaX/deltaY step parameter using the --p argument.\n";
+		}
 	}
 
 	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
 
-	my $rise = $y2 - $y1;
-	my $run = $x2 - $x1;
-	my( $x, $y );
+	# Start and end coordinates are specified by the user as the center of
+	# the kernel. These coordinates must be translated to the upper left corner
+	# because that's how wndchrm specifies a sub image.
+	# The x offset will be to subtract half the kernel width, and the y offset will
+	# be to subtract half the kernel height.
+	my $x_offset = 0.5 * $kernel_width;
+	my $y_offset = 0.5 * $kernel_height;
+
+	my( $rise, $run );
+	if( $is_endpoints_scan ) {
+		$rise = $y2 - $y1;
+		$run = $x2 - $x1;
+	}
+	my( $x, $y, $x_topleft, $y_topleft, $x_botright, $y_botright );
 	my $previousX = -1;
 	my $previousY = -1;
 	my @results_table;
-	my $starting_index = $num_samples * $starting_percentage;
+	my @coordinate_pairs;
 
-	foreach my $index ( $starting_index .. ($num_samples-1) ) {
+
+
+	while (1) {
 
 		# use sprintf for proper rounding of pixel coordinates
-		$x = sprintf( "%.0f", ( $x1 + $run * $index / ($num_samples-1) ) );
-		$y = sprintf( "%.0f", ( $y1 + $rise * $index / ($num_samples-1) ) );
+		if( $is_endpoints_scan ) {
+			$x = sprintf( "%.0f", ( $x1 + $run * $index / ($num_samples-1) ) );
+			$y = sprintf( "%.0f", ( $y1 + $rise * $index / ($num_samples-1) ) );
+		} else {
+			$x = $x1 + ($index * $deltaX);
+			$y = $y1 + ($index * $deltaY);
+		}
+		$x_topleft = $x - $x_offset;
+		$y_topleft = $y - $y_offset;
+		$x_botright = $x + $x_offset;
+		$y_botright = $y + $y_offset;
 
-		next if( $x == $previousX && $y == $previousY );
+		if( $x_topleft < 0 or $y_topleft < 0 ) {
+			warn "Kernel center location of ($x,$y) with a kernel size of ($kernel_width,$kernel_height) results in a top left location of ($x_topleft,$y_topleft) which is past the edge of the image. Skipping...\n";
+			next;
+		}
+		if( $x_botright > $image_width or $y_botright > $image_height) {
+			warn "Kernel center location of ($x,$y) with a kernel size of ($kernel_width,$kernel_height) results in a bottom right corner location of ($x_botright,$y_botright) which is past the edge of the image. Skipping...\n";
+			next;
+		}
 
-		@{ $results_table[$index]{"marg_probs"} } = RunWNDCHARM_atROI( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $wndchrm_args, $x, $y, $kernel_width, $kernel_height, $training_fit, $quiet );
-		$results_table[$index]{'x'} = $x;
-		$results_table[$index]{'y'} = $y;
+		next if( $x == $previousX and $y == $previousY );
+		push @coordinate_pairs, { x => $x, y => $y };
+
+		$previousX = $x;
+		$previousY = $y;
+		last if ;
+	}
+
+	my $starting_index = $num_samples * $starting_percentage;
+
+	for( my $i = $starting_index; $i <= $#coordinate_pairs; $i++ ){
+		@{ $results_table[$index]{"marg_probs"} } = RunWNDCHARM_atROI( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $wndchrm_args, $coordinate_pairs[$i]{x}, $coordinate_pairs[$i]{y}, $kernel_width, $kernel_height, $training_fit, $quiet );
+		$results_table[$index]{'x'} = $coordinate_pairs[$i]{x} + $x_offset;
+		$results_table[$index]{'y'} = $coordinate_pairs[$i]{y} + $y_offset;
 	}
 	return @results_table;
 }
 #################################################################################
 #
 #################################################################################
-sub FixedDeltaLinearKernelScan {
-	my( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $training_fit, $kernel_width, $kernel_height, $x1, $y1, $deltaX, $deltaY, $num_samples, $starting_percentage, $wndchrm_args, $quiet )= @_;
+sub PrintLinearKernelScan {
+	my $results_matrix_ref = shift;
 
-	if( !defined $num_samples || $num_samples < 2 ) {
-		die "To run a linear kernel scan, you must specify a \"number of samples\" \n value of at least 2 indicating how many times along the line that the image is to be sampled\n";
+	print "Results:\n";
+	for( my $i = 0; $i <= $#{ $results_matrix_ref }; $i++ ) {
+		print "Samp ". ($i+1) . "\tx:$$results_matrix_ref[$i]{'x'}\ty:$$results_matrix_ref[$i]{'y'}\t";
+		foreach ( @{ $$results_matrix_ref[$i]{'marg_probs'} } ) { print $_ . "\t"; };
+		print "\n";
 	}
-
-	if( !defined $wndchrm_args ) { $wndchrm_args = ""; }
-
-	my( $x, $y );	my @results_table;
-
-	my $starting_index = $num_samples * $starting_percentage;
-
-	foreach my $index ( $starting_index .. ($num_samples-1) ) {
-
-		# use sprintf for proper rounding of pixel coordinates
-		$x = $x1 + ($index * $deltaX);
-		$y = $y1 + ($index * $deltaY);
-
-		@{ $results_table[$index]{"marg_probs"} } = RunWNDCHARM_atROI( $path_to_wndchrm, $test_image_shell, $test_image_reg_exp, $wndchrm_args, $x, $y, $kernel_width, $kernel_height, $training_fit, $quiet );
-		$results_table[$index]{'x'} = $x;
-		$results_table[$index]{'y'} = $y;
-	}
-	return @results_table;
 }
+
 #################################################################################
 #
 #################################################################################
