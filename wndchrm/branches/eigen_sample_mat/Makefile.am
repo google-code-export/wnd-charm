@@ -23,6 +23,10 @@ libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 libimfit_a_SOURCES = \
 	dimensionality_reduction/FischerWeights.cpp \
 	dimensionality_reduction/FischerWeights.h \
+	dimensionality_reduction/PearsonWeights.cpp \
+	dimensionality_reduction/PearsonWeights.h \
+	dimensionality_reduction/LinearDiscriminantAnalysis.cpp \
+	dimensionality_reduction/LinearDiscriminantAnalysis.h \
 	gsl/specfunc.cpp \
 	gsl/specfunc.h \
 	wndchrm_error.cpp \
