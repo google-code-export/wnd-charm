@@ -619,6 +619,11 @@ void TrainingSet::SetAttrib(TrainingSet *set)
    set->is_pure_numeric = is_pure_numeric;
    set->is_continuous = is_continuous;
 
+   set->name = name;
+   set->source_path = source_path;
+   set->report_path = report_path;
+   set->do_report = do_report;
+
    /* copy the class labels to the train and test */
    for (class_index=0;class_index<=class_num;class_index++) {
      set->AddClass( class_labels[class_index].c_str() );
@@ -1086,16 +1091,19 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	}
 
 // Set the path and name
-	strcpy (source_path,path);
-	char *char_p = source_path+strlen(source_path)-1;
-	// kill terminal '/', ' ', '\t', etc
-	while ( char_p > source_path && *char_p && (*char_p == ' ' || *char_p == '\t' || *char_p == '\r' || *char_p == '\n' || *char_p == '/') )
-		*char_p-- = '\0';
-	char_p = strrchr(source_path,'/');
-	if (char_p) char_p++;
-	else char_p = source_path;
-	strcpy(name,char_p);
-	if (strrchr(name,'.')) *strrchr(name,'.')='\0';
+	source_path = path;
+	// clean trailing whitespace and slashes
+	size_t found;
+	found=source_path.find_last_not_of(" \t\f\v\n\r/");
+	if (found != std::string::npos)
+		source_path.erase(found+1);
+
+	// name is between the last '/' and the end of the string
+	found=source_path.find_last_of('/');
+	if (found != std::string::npos) name = source_path.substr(found+1);
+	else name = source_path;
+	// clean trailing '.'
+	name.erase (name.find_last_of('.'));
 
 // Print out a summary
 	if (verbosity>=2) {
@@ -1496,12 +1504,12 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 {  int predicted_class=0,tile_index,class_index,cand,sample_class,test_tile_index,interpolate=1;
    double probabilities[MAX_CLASS_NUM],probabilities_sum[MAX_CLASS_NUM],normalization_factor,normalization_factor_avg=0;
    signatures *closest_sample=NULL, *tile_closest_sample=NULL,*test_signature;
-   char interpolated_value[128],last_path[IMAGE_PATH_LENGTH];
+   char last_path[IMAGE_PATH_LENGTH];
    TrainingSet *ts_selector;
    int most_similar_tile=1,most_similar_predicted_class=0;
    double val=0.0,sum_prob=0.0,dist,value=0.0,most_similar_value=0.0,closest_value_dist=INF,max_tile_similarity=0.0;  /* use for the continouos value */
-   int do_html=0;
-   char buffer[512],closest_image[512],color[128],one_image_string[MAX_CLASS_NUM*15];
+   
+	per_image_split_data image_res;
 
 // If its a pure testset, use the samples vector instead of test_samples
 	std::vector<signatures *> &testset_samples = TestSet->test_samples.size() > 0 ? TestSet->test_samples : TestSet->samples;
@@ -1635,115 +1643,66 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
    if (split && split->similarity_matrix && class_num>0) /* update the similarity matrix */
 	 for (class_index=1;class_index<=class_num;class_index++) split->similarity_matrix[class_num*sample_class+class_index]+=probabilities_sum[class_index];
 
-   /* print the report line to a string (for the final report) */
-	if (split && split->individual_images) do_html = 1;
+	image_res.index = (test_sample_index/tiles)+1;
+	image_res.normalization_factor_avg = normalization_factor_avg;
+	image_res.probabilities_sum.resize (class_num+1);
+	for (class_index=1;class_index<=class_num;class_index++) {
+		image_res.probabilities_sum[class_index] = probabilities_sum[class_index];
+	}
+	image_res.predicted_class = predicted_class;
+	image_res.sample_class = sample_class;
+	image_res.sample_value = testset_samples[ test_sample_index ]->sample_value;
+	if (closest_sample) image_res.closest_sample = closest_sample->full_path;
+	image_res.full_path = testset_samples[ test_sample_index ]->full_path;
+	
 
-	if (do_html) sprintf(one_image_string,"<tr><td>%d</td>",(test_sample_index/tiles)+1);  /* image index */
 	if (verbosity>=1) {
 		printf("%s",testset_samples[test_sample_index]->full_path);
 		if (tiles > 1) printf(" (AVG)");
 		printf ("\t");
-	}
-
-	if (!is_continuous && (do_html || verbosity>=1)) { /* normlization factor */
-		if (do_html) {
-			sprintf( buffer,"<td>%.3g</td>", normalization_factor_avg );
-			strcat(one_image_string, buffer);
-		}
-		if (verbosity>=1) printf ("%.3g\t",normalization_factor_avg);
-	}
-	if (do_html || verbosity>=1) {
+		if (!is_continuous) printf ("%.3g\t",normalization_factor_avg);
 		for (class_index=1;class_index<=class_num;class_index++) {
-			if (do_html) {
-				if (class_index==sample_class) sprintf(buffer,"<td><b>%.3f</b></td>",probabilities_sum[class_index]);  /* put the actual class in bold */
-			 	else sprintf(buffer,"<td>%.3f</td>",probabilities_sum[class_index]);
-			 	strcat(one_image_string,buffer);
-			 }
-			if (verbosity>=1) printf ("%.3f\t",probabilities_sum[class_index]);
-		}
-		if (do_html) {
-			if (sample_class) {
-				if (predicted_class==sample_class) sprintf(color,"<font color=\"#00FF00\">Correct</font>");
-				else sprintf(color,"<font color=\"#FF0000\">Incorrect</font>");
-			} else {
-				sprintf(color,"<font color=\"#FFFF00\">Predicted</font>");
-			}
+			printf ("%.3f\t",probabilities_sum[class_index]);
 		}
 	}
 
       /* add the interpolated value */
 	if (interpolate) {
 		if( !is_continuous && class_num > 1 )  {/* interpolate by the values of the class names is is_continuous, we already did it by continuous classification */
-          // Method 1: create an interpolated value based only on the top
-          // two marginal probabilities
-//          double second_highest_prob = -1.0, min_prob = INF;
-//          int second_highest_class;
-//          for( class_index = 1; class_index <= class_num; class_index++ )
-//          if( probabilities_sum[class_index] < min_prob )
-//            min_prob=probabilities_sum[class_index];
-//
-//          /* subtract the min value from all classes to reduce the noise */
-//          for( class_index = 1; class_index <= class_num; class_index++ )
-//            probabilities_sum[class_index] -= min_prob;
-//
-//          for (class_index=1;class_index<=class_num;class_index++)
-//            if (probabilities_sum[class_index]>second_highest_prob && class_index!=predicted_class) 
-//            {  second_highest_prob=probabilities_sum[class_index];
-//               second_highest_class=class_index;
-//            }
-//          testset_samples[test_sample_index]->interpolated_value=(second_highest_prob*atof(class_labels[second_highest_class].c_str())+probabilities_sum[predicted_class]*atof(class_labels[predicted_class].c_str()))/(second_highest_prob+probabilities_sum[predicted_class]);
           // Method 2: use all the marginal probabilities
 			testset_samples[test_sample_index]->interpolated_value=0;			
 			for( class_index = 1; class_index <= class_num; class_index++ )
 				testset_samples[ test_sample_index ]->interpolated_value += 
 					probabilities_sum[class_index] * atof( class_labels[ class_index ].c_str() );
-
 		}
-		if (do_html) sprintf(interpolated_value,"<td>%.3g</td>",testset_samples[test_sample_index]->interpolated_value);
-	} else if (do_html) strcpy(interpolated_value,"");
-
-	if (do_html) {
-		if (closest_sample) sprintf(closest_image,"<td><A HREF=\"%s\"><IMG WIDTH=40 HEIGHT=40 SRC=\"%s__1\"></A></td>",closest_sample->full_path,closest_sample->full_path);
-		else strcpy(closest_image,"");
+		image_res.interpolated_value = testset_samples[test_sample_index]->interpolated_value;
 	}
 
-	if (is_continuous) {
+	if (is_continuous && verbosity>=1) {
 		if (sample_class) { // known class
-			if (do_html) sprintf(buffer,"<td></td><td>%.3g</td><td>%.3f</td>",testset_samples[test_sample_index]->sample_value,testset_samples[test_sample_index]->interpolated_value);
-			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).
-			if (verbosity>=1)
-				printf("%f\t%f\t%f\n",testset_samples[test_sample_index]->sample_value,
-					testset_samples[test_sample_index]->interpolated_value,
-					fabs((testset_samples[test_sample_index]->sample_value-testset_samples[test_sample_index]->interpolated_value)/testset_samples[test_sample_index]->sample_value));
+		// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).
+			printf("%f\t%f\t%f\n",testset_samples[test_sample_index]->sample_value,
+				testset_samples[test_sample_index]->interpolated_value,
+				fabs((testset_samples[test_sample_index]->sample_value-testset_samples[test_sample_index]->interpolated_value)/testset_samples[test_sample_index]->sample_value));
 		} else { // Unknown class
-			if (do_html) sprintf(buffer,"<td></td><td>UNKNOWN</td><td>%.3g</td>",testset_samples[test_sample_index]->interpolated_value);
-			// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).  Otherwise just predicted value.
-			if (verbosity>=1)
-				printf("N/A\t%f\n",testset_samples[test_sample_index]->interpolated_value);
+		// if a known class, print actual value,predicted value, percent error(abs((actual-predicted)/actual)).  Otherwise just predicted value.
+			printf("N/A\t%f\n",testset_samples[test_sample_index]->interpolated_value);
 		}
-	} else { // discrete classes
+	} else if (verbosity>=1) { // discrete classes
 	// if a known class, print actual class,predicted class.  Otherwise just predicted value.
 		if (sample_class) { // known class
-			if (verbosity>=1) {
-				printf("%s\t%s",class_labels[sample_class].c_str(),class_labels[predicted_class].c_str());
-				if (interpolate) printf ("\t%.3f",testset_samples[ test_sample_index ]->interpolated_value);
-				printf("\n");
-			}
-			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s",class_labels[sample_class].c_str(),class_labels[predicted_class].c_str(),color,interpolated_value);
+			printf("%s\t%s",class_labels[sample_class].c_str(),class_labels[predicted_class].c_str());
+			if (interpolate) printf ("\t%.3f",testset_samples[ test_sample_index ]->interpolated_value);
+			printf("\n");
 		} else {
-			if (verbosity>=1) {
-				printf("UNKNOWN\t%s",class_labels[predicted_class].c_str());
-				if (interpolate) printf ("\t%.3f",testset_samples[ test_sample_index ]->interpolated_value);
-				printf("\n");
-			}
-			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s","UNKNOWN",class_labels[predicted_class].c_str(),color,interpolated_value);
+			printf("UNKNOWN\t%s",class_labels[predicted_class].c_str());
+			if (interpolate) printf ("\t%.3f",testset_samples[ test_sample_index ]->interpolated_value);
+			printf("\n");
 		}
 	}
-	if (do_html) {
-		strcat(one_image_string,buffer);
-		sprintf(buffer,"<td><A HREF=\"%s\"><IMG WIDTH=40 HEIGHT=40 SRC=\"%s__1\"></A></td>%s</tr>\n",testset_samples[test_sample_index]->full_path,testset_samples[test_sample_index]->full_path,closest_image); /* add the links to the image */
-		strcat(one_image_string,buffer);
-		strcat(split->individual_images,one_image_string);   /* add the image to the string */
+
+	if (do_report && split) {
+		split->image_results.push_back(image_res);
 	}
 
    /* end of reporting */
@@ -1769,7 +1728,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 
    if (tiles<1) tiles=1;       /* make sure the number of tiles is at least 1 */
    if (rank<=0) rank=1;  /* set a valid value to rank                */
-   if (split && split->individual_images) strcpy(split->individual_images,"");    /* make sure the string is initially empty */
+   if (split) split->image_results.clear();    /* make sure the string is initially empty */
            
    /*initialize the confusion and similarity matrix */
    if (split && split->confusion_matrix)
@@ -2898,7 +2857,7 @@ filename -char *- a file name for
 sim_method -unsigned short- the method of transforming the similarity values into a single distance (0 - min, 1 - average. 2 - top triangle, 3 - bottom triangle).
 phylip_algorithm -unsigned short- the method used by phylip
 */
-long TrainingSet::dendrogram(FILE *output_file, char *dataset_name, char *phylib_path, int nodes_num,double *similarity_matrix, const std::vector<std::string> &labels, unsigned short sim_method,unsigned short phylip_algorithm)
+long TrainingSet::dendrogram(FILE *output_file, const char *dataset_name, char *phylib_path, int nodes_num,double *similarity_matrix, const std::vector<std::string> &labels, unsigned short sim_method,unsigned short phylip_algorithm)
 {
 	FILE *dend_file;
 	int label_index,algorithm_index;
@@ -3147,7 +3106,7 @@ void chomp (char *line) {
 	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
-long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities)
+long TrainingSet::report(FILE *output_file, int argc, char **argv, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities)
 {
 	int class_index,class_index2,split_index,test_set_size,train_set_size;
 	double *avg_similarity_matrix,*avg_class_prob_matrix;
@@ -3168,7 +3127,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	strftime (buffer, 512, "%Y-%m-%d %H:%M:%S %Z", localtime (&timeval));
    /* print the header */
 	fprintf(output_file,"<HTML>\n<HEAD>\n<TITLE> %s </TITLE>\n </HEAD> \n <BODY> \n <br> WNDCHRM "PACKAGE_VERSION".&nbsp;&nbsp;&nbsp;%s\n <br><br> <h1>%s</h1>\n ",
-		output_file_name,buffer,this->name);
+		report_path.c_str(),buffer,this->name.c_str());
 // print the training set summary
 	fprintf(output_file,"<table id=\"trainset_summary\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" > \n");
 	fprintf(output_file,"<caption>%ld Images.",(long)(count/featureset->n_samples));
@@ -3199,7 +3158,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 // print the test set summary
 	if (testset) {
 		fprintf(output_file,"<br><br><br>\n");
-		fprintf(output_file,"<h3>Testing with data file:<br>%s</h3>",testset->source_path);
+		fprintf(output_file,"<h3>Testing with data file:<br>%s</h3>",testset->source_path.c_str());
 		fprintf(output_file,"<table id=\"testset_summary\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" > \n");
 		fprintf(output_file,"<caption>%ld Images.",(long)(testset->count/featureset->n_samples));
 		if (featureset->n_samples > 1) fprintf(output_file," Samples per image: %d, total samples: %ld.",featureset->n_samples, testset->count);
@@ -3441,9 +3400,9 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	/* *** generate a dendrogram *** */
 	if (phylib_path && class_num>0 ) {  /* generate a dendrogram only if phlyb path was specified */
 		if (distance_method == 5)
-			dendrogram(output_file,this->name, phylib_path, class_num,avg_class_prob_matrix, class_labels,distance_method,phylip_algorithm);
+			dendrogram(output_file,this->name.c_str(), phylib_path, class_num,avg_class_prob_matrix, class_labels,distance_method,phylip_algorithm);
 		else
-			dendrogram(output_file,this->name, phylib_path, class_num,avg_similarity_matrix, class_labels,distance_method,phylip_algorithm);
+			dendrogram(output_file,this->name.c_str(), phylib_path, class_num,avg_similarity_matrix, class_labels,distance_method,phylip_algorithm);
 		if (export_tsv) {  /* write the phylip file to the tsv directory */
 			sprintf(buffer,"cp %s/dend_file tsv/dend_file.txt",phylib_path);
 			system(buffer);
@@ -3596,7 +3555,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       if (image_similarities && split->image_similarities)
       {  char file_name[256];
          int test_image_index;
-         sprintf(file_name,"%s_%d",name,split_index);
+         sprintf(file_name,"%s_%d",name.c_str(),split_index);
          std::vector<std::string> labels;
          for (test_image_index=1;test_image_index<=test_set_size;test_image_index++)
          	labels.push_back (class_labels[(int)(split->image_similarities[test_image_index])].c_str());
@@ -3634,26 +3593,59 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"</table><br>\n");
 	  
       /* individual image predictions */
-      if (split->individual_images)
-      {  char closest_image[256],interpolated_value[256];
-         
-         /* add the most similar image if WNN and no tiling */
-         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
-         else strcpy(closest_image,"");
-		 
-         fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
-         fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><td><b>Image No.</b></td>",split_index);
-		 if (!is_continuous) fprintf(output_file,"<td><b>Normalization<br>Factor</b></td>");
-         for (class_index=1;class_index<=class_num;class_index++)
-			fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index].c_str());
-   	     if (is_numeric) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
-         else strcpy(interpolated_value,"");
-         if (is_continuous) fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
-         else fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
-         fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
-         fprintf(output_file,"%s",split->individual_images);
-         fprintf(output_file,"</table><br><br>\n");
-      }
+		if (split->image_results.size()) {
+			fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
+			fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><th>Image No.</th>",split_index);
+			if (!is_continuous) fprintf(output_file,"<th>Normalization<br>Factor</th>");
+			for (class_index=1;class_index<=class_num;class_index++)
+				fprintf(output_file,"<th>%s</th>",class_labels[class_index].c_str());
+	
+			if (is_continuous) fprintf(output_file,"<th>&nbsp;</th><th>Actual<br>Value</th><th>Predicted<br>Value</th>");
+			else fprintf(output_file,"<th>&nbsp;</th><th>Actual<br>Class</th><th>Predicted<br>Class</th><th>Classification<br>Correctness</th>");
+
+			if (is_numeric) fprintf(output_file,"<th>Interpolated<br>Value</th>");
+			
+			fprintf(output_file,"<th>Image</th>");		 
+
+			/* add the most similar image if WNN and no tiling */
+			if ((split->method==WNN || is_continuous) && featureset->n_samples==1) {
+				fprintf(output_file,"<th>Most similar image</th>");
+			}
+			fprintf(output_file,"</tr>\n");		 
+
+			int n_samples = split->image_results.size();
+			for (int sample_index = 0; sample_index < n_samples; sample_index++) {
+				per_image_split_data &image_res = split->image_results[sample_index];
+				fprintf(output_file,"<tr><td>%d</td>",image_res.index);  /* image index */
+				fprintf(output_file,"<td>%.3g</td>", image_res.normalization_factor_avg );
+	
+				for (class_index=1;class_index<=class_num;class_index++) {
+					if (class_index==image_res.sample_class) fprintf(output_file,"<td><b>%.3f</b></td>",image_res.probabilities_sum[class_index]);  /* put the actual class in bold */
+					else fprintf(output_file,"<td>%.3f</td>",image_res.probabilities_sum[class_index]);
+				}
+		
+				if (is_continuous) {
+					if (image_res.sample_class) fprintf(output_file,"<td></td><td>%.3g</td><td>%.3f</td>",image_res.sample_value,image_res.interpolated_value);
+					else fprintf(output_file,"<td></td><td>UNKNOWN</td><td>%.3g</td>",image_res.interpolated_value);
+				} else {
+					if (image_res.sample_class) {
+						fprintf(output_file,"<td></td><td>%s</td><td>%s</td>",class_labels[image_res.sample_class].c_str(), class_labels[image_res.predicted_class].c_str());
+						if (image_res.predicted_class == image_res.sample_class) fprintf(output_file,"<td><font color=\"#00FF00\">Correct</font></td>");
+						else fprintf(output_file,"<td><font color=\"#FF0000\">Incorrect</font></td>");
+						if (is_numeric) fprintf(output_file,"<td>%.3g</td>",image_res.interpolated_value);
+					} else {
+						fprintf(output_file,"<td></td><td>%s</td><td>%s</td>","UNKNOWN",class_labels[image_res.predicted_class].c_str());
+						fprintf(output_file,"<td><font color=\"#FFFF00\">Predicted</font></td>");
+						if (is_numeric) fprintf(output_file,"<td>%.3g</td>",image_res.interpolated_value);
+					}
+				}
+				fprintf(output_file,"<td><A HREF=\"%s\"><IMG WIDTH=40 HEIGHT=40 SRC=\"%s__1\"></A></td>\n",image_res.full_path.c_str(),image_res.full_path.c_str()); /* add the links to the image */
+				if (image_res.closest_sample.size()) fprintf(output_file,"<td><A HREF=\"%s\"><IMG WIDTH=40 HEIGHT=40 SRC=\"%s__1\"></A></td>",image_res.closest_sample.c_str(),image_res.closest_sample.c_str());
+				fprintf(output_file,"</tr>\n");
+			}
+
+			fprintf(output_file,"</table><br><br>\n");
+		}
    }
 
    fprintf(output_file,"<br><br><br><br><br><br> \n\n\n\n\n\n\n\n");

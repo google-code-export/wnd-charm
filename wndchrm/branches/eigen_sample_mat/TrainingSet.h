@@ -140,6 +140,18 @@ typedef struct sort_by_weight_t {
 } sort_by_weight_func;
 typedef std::vector<feature_stats_t> features_t;
 
+typedef struct {
+	int index;
+	double normalization_factor_avg;
+	std::vector<double> probabilities_sum;
+	int predicted_class;
+	int sample_class;
+	double sample_value;
+	double interpolated_value;
+	std::string closest_sample;
+	std::string full_path;
+} per_image_split_data;
+
 
 typedef struct {
 	double accuracy;
@@ -160,19 +172,23 @@ typedef struct {
    features_t feature_stats;
    featuregroups_t featuregroups_stats;
    double feature_weight_distance;
-   char *individual_images;                /* a string of the individual image predictions. used for the report */
+	std::vector<per_image_split_data> image_results;
    unsigned short method; 
    double pearson_coefficient;             /* pearson correlation between the predicted and actual value        */
    double avg_abs_dif;                     /* average absolute difference between the actual and the predicted values */
    double pearson_p_value;
 } data_split;
 
+
 class TrainingSet
 {
 public:
 /* properties */
-	char name[256];                       /* Name of dataset - source_path from last '/' to last '.'    */
-	char source_path[256];                       /* Path we read this set from     */
+	std::string name;                       /* Name of dataset - source_path from last '/' to last '.'    */
+	std::string source_path;                       /* Path we read this set from     */
+	std::string report_path;                       /* Path to the report file     */
+	bool do_report;                       /* wether or not to store data for report     */
+
 	std::vector<Eigen::MatrixXd> raw_features;        // per-class vector of sample feature matrixes.  Corresponds to train_samples or test_samples
 	std::vector<Eigen::MatrixXd> projected_features;  // feature matrixes in reduced feature space, i.e. "weighted feature space", "LDA", etc
 	std::vector<signatures *> samples;                // samples - in read order - these pointers "own" the samples - this vector is empty in train/test split TrainingSets.
@@ -233,8 +249,8 @@ DimensionalityReductionBase *DR;
    long classify3(signatures *test_sample, double *probabilities,double *normalization_factor);
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
-   long dendrogram(FILE *output_file, char *dataset_name, char *phylib_path, int nodes_num,double *similarity_matrix, const std::vector<std::string> &labels, unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
-   long report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
+   long dendrogram(FILE *output_file, const char *dataset_name, char *phylib_path, int nodes_num,double *similarity_matrix, const std::vector<std::string> &labels, unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
+   long report(FILE *output_file, int argc, char **argv, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
 };
 
 int check_numeric (const char *s, double *samp_val);
