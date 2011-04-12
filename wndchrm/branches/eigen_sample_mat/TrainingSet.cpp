@@ -144,8 +144,10 @@ TrainingSet::TrainingSet(long samples_num, long class_num) {
 */
 TrainingSet::~TrainingSet() {
 	int indx;
-	for (indx=0;indx<count;indx++)
+	int n_samples = samples.size();
+	for (indx = 0; indx < n_samples; indx++)
 		if (samples[indx]) delete samples[indx];
+
 	for (indx=class_num;indx>=0;indx--) {
 		if ((int)raw_features.size() > indx) {
 			raw_features.pop_back();
@@ -713,6 +715,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 					TestSet->test_samples.push_back (class_samples[class_index].at( (train_test_split[sample_index]*tiles)+i ));
 			}
 			split->testing_images[ class_index ] = number_of_test_samples;
+			TestSet->count = test_raw_features.cols();
 		} else {
 		// Make sure the test set has its feature matrix set up properly
 			if (! TestSet->raw_test_features.rows() ) {
@@ -2808,37 +2811,40 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
     avg_abs_dif -double *- the average absolute difference from the predicted and actual value
 */
 
-double TrainingSet::pearson(int tiles, double *avg_abs_dif, double *p_value)
-{  double mean=0,stddev=0,mean_ground=0,stddev_ground=0,z_score_sum=0,pearson_cor,N;
-   int test_sample_index,class_index;
-   if (tiles<=0) tiles=1;
-   N=(double)count/(double)tiles;
-   if (avg_abs_dif) *avg_abs_dif=0.0;
-   /* check if the data can be interpolated (all class labels are numbers) */
-   for (class_index=1;class_index<=class_num;class_index++)
-     if (atof(class_labels[class_index].c_str())==0.0 && !class_labels[class_index].empty()) return(0);
+double TrainingSet::pearson(int tiles, double *avg_abs_dif, double *p_value) {
+	double mean=0,stddev=0,mean_ground=0,stddev_ground=0,z_score_sum=0,pearson_cor,N;
+	int test_sample_index;
+
+	if (!is_numeric) return (0);
+
+	if (tiles<=0) tiles=1;
+	N=(double)count/(double)tiles;
+	if (avg_abs_dif) *avg_abs_dif=0.0;
+	std::vector<signatures *> &testset_samples = test_samples.size() > 0 ? test_samples : samples;
+
    /* compute the mean */
-   for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles)
-   {  mean+=samples[test_sample_index]->interpolated_value;
-      if (is_continuous) mean_ground+=samples[test_sample_index]->sample_value;
-      else mean_ground+=atof(class_labels[samples[test_sample_index]->sample_class].c_str());
-      if (avg_abs_dif) *avg_abs_dif=*avg_abs_dif+fabs(samples[test_sample_index]->sample_value-samples[test_sample_index]->interpolated_value)/N;
-   }
-   mean=mean/N;
-   mean_ground=mean_ground/N;
-   /* compute the stddev */
-   for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles)
-   {  stddev+=pow(samples[test_sample_index]->interpolated_value-mean,2);
-      if (is_continuous) stddev_ground+=pow(samples[test_sample_index]->sample_value-mean_ground,2);
-	  else stddev_ground+=pow(atof(class_labels[samples[test_sample_index]->sample_class].c_str())-mean_ground,2);
-   }
-   stddev=sqrt(stddev/(N-1));
-   stddev_ground=sqrt(stddev_ground/(N-1));   
-   /* now compute the pearson correlation */
-   for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles)
-     if (is_continuous) z_score_sum+=((samples[test_sample_index]->interpolated_value-mean)/stddev)*((samples[test_sample_index]->sample_value-mean_ground)/stddev_ground);
-	 else z_score_sum+=((samples[test_sample_index]->interpolated_value-mean)/stddev)*((atof(class_labels[samples[test_sample_index]->sample_class].c_str())-mean_ground)/stddev_ground);
-   pearson_cor=z_score_sum/(N-1);
+	for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles) {
+		mean+=testset_samples[test_sample_index]->interpolated_value;
+		if (is_continuous) mean_ground+=testset_samples[test_sample_index]->sample_value;
+		else mean_ground+=atof(class_labels[testset_samples[test_sample_index]->sample_class].c_str());
+		if (avg_abs_dif) *avg_abs_dif=*avg_abs_dif+fabs(testset_samples[test_sample_index]->sample_value-testset_samples[test_sample_index]->interpolated_value)/N;
+	}
+	mean=mean/N;
+	mean_ground=mean_ground/N;
+	/* compute the stddev */
+	for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles) {
+		stddev+=pow(testset_samples[test_sample_index]->interpolated_value-mean,2);
+		if (is_continuous) stddev_ground+=pow(testset_samples[test_sample_index]->sample_value-mean_ground,2);
+		else stddev_ground+=pow(atof(class_labels[testset_samples[test_sample_index]->sample_class].c_str())-mean_ground,2);
+	}
+
+	stddev=sqrt(stddev/(N-1));
+	stddev_ground=sqrt(stddev_ground/(N-1));   
+	/* now compute the pearson correlation */
+	for (test_sample_index=0;test_sample_index<count;test_sample_index+=tiles)
+		if (is_continuous) z_score_sum+=((testset_samples[test_sample_index]->interpolated_value-mean)/stddev)*((testset_samples[test_sample_index]->sample_value-mean_ground)/stddev_ground);
+		else z_score_sum+=((testset_samples[test_sample_index]->interpolated_value-mean)/stddev)*((atof(class_labels[testset_samples[test_sample_index]->sample_class].c_str())-mean_ground)/stddev_ground);
+	pearson_cor=z_score_sum/(N-1);
 
 	if (p_value) { // compute the P value of the pearson correlation
 		double t=pearson_cor*(sqrt(N-2)/sqrt(1-pearson_cor*pearson_cor));
@@ -2848,7 +2854,7 @@ double TrainingSet::pearson(int tiles, double *avg_abs_dif, double *p_value)
 		else
 			*p_value=0;
 	}
-   return(pearson_cor);
+	return(pearson_cor);
 }
 
 /* dendrogram
