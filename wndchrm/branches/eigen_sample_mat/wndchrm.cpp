@@ -31,6 +31,7 @@
 #include "TrainingSet.h"
 #include "wndchrm_error.h"
 #include "dimensionality_reduction/FischerWeights.h"
+#include "dimensionality_reduction/PearsonWeights.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -342,7 +343,8 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 			for (tile_index=0;tile_index<samples_per_image;tile_index++)
 			{
 				TilesTrainingSets[tile_index]->normalize();
-				FischerWeights *dim_reduce = new FischerWeights(TilesTrainingSets[tile_index]->raw_features, max_features);
+//				FischerWeights *dim_reduce = new FischerWeights(TilesTrainingSets[tile_index]->raw_features, max_features);
+				PearsonWeights *dim_reduce = new PearsonWeights(TilesTrainingSets[tile_index]->raw_features, TilesTrainingSets[tile_index]->GetSampleValueVecs(), max_features);
 				TilesTrainingSets[tile_index]->SetDimensionalityReduction(dim_reduce, max_features, NULL);
 //				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
 			}
@@ -350,7 +352,8 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 		else
 		{
 			train->normalize(); // normalize the feature values of the training set
-			FischerWeights *dim_reduce = new FischerWeights(train->raw_features, max_features);
+//			FischerWeights *dim_reduce = new FischerWeights(train->raw_features, max_features);
+			PearsonWeights *dim_reduce = new PearsonWeights(train->raw_features, train->GetSampleValueVecs(), max_features);
 			train->SetDimensionalityReduction (dim_reduce, max_features, &(splits[split_index]));  // compute the Fisher Scores for the image features
 //			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
 		}
