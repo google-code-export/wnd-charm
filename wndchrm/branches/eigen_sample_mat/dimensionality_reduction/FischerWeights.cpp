@@ -28,9 +28,8 @@ FischerWeights::FischerWeights (const std::vector <Eigen::MatrixXd> &raw_feature
 	mean_class_var /= class_num-1;
 
 	mean_inter_class_var = class_var.rowwise().mean();
-	mean_inter_class_var = (mean_inter_class_var.array() < DBL_EPSILON).select (DBL_EPSILON, mean_inter_class_var);
 
-	FeatureWeights = mean_class_var.array() / mean_inter_class_var.array();
+	FeatureWeights = (mean_inter_class_var.array() < DBL_EPSILON).select (0, mean_class_var.array() / mean_inter_class_var.array());
 
 	InitReducedFeatureVecs (fraction);
 
