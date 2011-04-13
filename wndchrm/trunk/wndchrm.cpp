@@ -683,10 +683,11 @@ int main(int argc, char *argv[])
     	split_ratio = 1.0;
     	random_splits = 0; // use order in the input file
     }
-    if (!train && !test && !classify)
-    {  ShowHelp();
-       return(1);
-    }
+	if (!train && !test && !classify) {
+		ShowHelp();
+		showError(1,"Either 'train', 'test' or 'classify' must be specified.\n");
+		return(1);
+	}
     arg_index++;
 
 	/* read the switches */
@@ -713,6 +714,16 @@ int main(int argc, char *argv[])
 		   strcpy(weight_file_buffer,&(strchr(argv[arg_index],'v')[2]));
 		   arg_index++;
 		   continue;   /* so that the path will not trigger other switches */
+		}
+		if (argv[arg_index][1]=='D') {
+			dataset_save_fit = argv[arg_index]+1;
+	    	arg_index++;
+			continue;	/* so that the path will not trigger other switches */
+		}
+		if (argv[arg_index][1]=='T') {
+			testset_save_fit = argv[arg_index]+1;
+	    	arg_index++;
+			continue;	/* so that the path will not trigger other switches */
 		}
         /* a block for computing features */
         if ( (char_p = strchr(argv[arg_index],'B'))  && isdigit (*(char_p+1)) ) {
@@ -793,16 +804,6 @@ int main(int argc, char *argv[])
         {  ShowHelp();
            return(1);
         }
-		if (argv[arg_index][1]=='D') {
-			dataset_save_fit = argv[arg_index]+1;
-	    	arg_index++;
-			continue;	/* so that the path will not trigger other switches */
-		}
-		if (argv[arg_index][1]=='T') {
-			testset_save_fit = argv[arg_index]+1;
-	    	arg_index++;
-			continue;	/* so that the path will not trigger other switches */
-		}
 
 
         arg_index++;
