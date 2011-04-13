@@ -522,9 +522,9 @@ void ShowHelp()
 	printf("o - force overwriting pre-computed .sig files.\n");   
 	printf("O - if there are pre-computed .sig files accompanying images that have the old-style naming pattern,\n" );
 	printf("    skip the check to see that they were calculated with the same wndchrm parameters as the current experiment.\n");   
-	printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
 	
 	printf("\nFeature reduction options:\n==========================\n");
+	printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
 	printf("v[r|w|+|-][path] - read/write/add/subtract the feature weights from a file.\n");   
 	printf("A - assess the contribution of each group of image features independently.\n");
 	
