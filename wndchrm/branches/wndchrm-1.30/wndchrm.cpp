@@ -706,7 +706,6 @@ int main(int argc, char *argv[])
 		   arg_index++;
 		   continue;	/* so that the path will not trigger other switches */
         }
-        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 		if (argv[arg_index][1]=='v' && strlen(argv[arg_index])>3)
 		{  weight_vector_action=argv[arg_index][2];
 		   if (weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='+' && weight_vector_action!='-')
@@ -804,6 +803,7 @@ int main(int argc, char *argv[])
         {  ShowHelp();
            return(1);
         }
+        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 
 
         arg_index++;

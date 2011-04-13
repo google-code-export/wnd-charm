@@ -804,6 +804,7 @@ int main(int argc, char *argv[])
         {  ShowHelp();
            return(1);
         }
+        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 
 
         arg_index++;
