@@ -606,7 +606,7 @@ int LoadColorsFunctions(char *filename)
     }
     if (strstr(p_line,"rules:"))
     {  *(strchr(p_line,'\0'))='\n';
-       return(1);
+       break;
        //colorfunctions=0;
        //p_line=getline(&(p_line[strlen(p_line)]));
        //continue;
