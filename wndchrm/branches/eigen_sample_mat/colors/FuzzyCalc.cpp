@@ -31,11 +31,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#ifdef WIN32
 #pragma hdrstop
-
-#ifndef WIN32
-#include <stdlib.h>
 #endif
+#include <stdlib.h>
 
 #include "FuzzyCalc.h"
 
@@ -552,7 +551,7 @@ char *getline(char *buffer)
 
 int LoadRules(char *rulesfile)
 { char *p_line;
-  int RulesCounter=0,rules=0,color_functions=0;
+  int RulesCounter=0,rules=0;
 //  FILE *file;
 //  file=fopen(filename,"r");
 //  if (!file) return(0);
@@ -583,7 +582,7 @@ int LoadRules(char *rulesfile)
   }
   /* add the last rule which is an empty rule */
   fuzzy_rules[RulesCounter].hue=-1;
-  fuzzy_rules[RulesCounter].saturation-1;
+  fuzzy_rules[RulesCounter].saturation=-1;
   fuzzy_rules[RulesCounter].value=-1;
   fuzzy_rules[RulesCounter].color=-1;
 //  fclose(file);
@@ -837,7 +836,6 @@ loop:
 long FindColor(short hue, short saturation, short value, float *color_certainties)
 {  double max_membership,membership;
    int color_index,res;
-   int random1;
    if (!rules_loaded)
    {  char *ColorFunctionsStart,*RulesStart;
 
@@ -867,5 +865,7 @@ long FindColor(short hue, short saturation, short value, float *color_certaintie
 //---------------------------------------------------------------------------
 
 
-#pragma package(smart_init)
 
+#ifdef WIN32
+#pragma package(smart_init)
+#endif
