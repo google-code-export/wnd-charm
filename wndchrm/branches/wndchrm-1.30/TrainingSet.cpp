@@ -620,10 +620,13 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 		class_counts[ class_index ] = class_samples_count;
 
 		// Determine number of training samples.
-		if( ratio > 0.0 && ratio <= 1.0 ) // unbalanced training
+		if( ratio > 0.0 && ratio <= 1.0 ) {// unbalanced training
 			number_of_train_samples = (int)floor( (ratio * (float)class_samples_count) + 0.5 );
-		else
+			number_of_test_samples = class_samples_count - number_of_train_samples;
+		} else {
 			number_of_train_samples = train_samples;
+			number_of_test_samples = test_samples;
+		}
 		// add the samples to the training set
 		if( number_of_train_samples + number_of_test_samples > class_samples_count ) {
 			printf("While splitting class %s, training images (%d) + testing images (%d) is greater than total images in the class (%d)\n",

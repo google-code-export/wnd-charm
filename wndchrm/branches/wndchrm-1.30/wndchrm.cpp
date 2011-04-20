@@ -141,14 +141,13 @@ void setup_featureset (featureset_t *featureset) {
 check_split_params - checks parameters for consistency with regards to training/testing a given dataset.
 Returns 1 on success, 0 upon failure.
 */
-int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, double split_ratio, int balanced_splits, int max_training_images, int max_test_images, int exact_training_images) {
+int check_split_params (int *n_train_p, int *n_test_p, double *split_ratio, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, int balanced_splits, int max_training_images, int max_test_images, int exact_training_images) {
 	int class_index, smallest_class=0;
 	int max_balanced_samples,max_balanced_i;
 
 	// Initialize what we will be returning
 	*n_train_p = 0;
 	*n_test_p = 0;
-	*train_frac_p = 0.0;
 
 	/*
 	  Bounds checking on samples.
@@ -188,11 +187,11 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 			delete dataset;
 			return (0);
 		}
-		split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
+		*split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
 	} else { // -i unspecified or used for exact_training_images, use split_ratio (default or specified - already set in main)
-		max_training_images = (int)floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
+		max_training_images = (int)floor( (*split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
 		if (max_training_images >= max_balanced_i && testset == NULL) { // rounding error left no test images
-			catError("ERROR: No images left for testing using specified -r=%f.\n",split_ratio);
+			catError("ERROR: No images left for testing using specified -r=%f.\n",*split_ratio);
 			catError("  Use -rN with N < %f\n", ((float)max_balanced_i - 1.0) / (float)max_balanced_i);
 			catError("  Or, use -iN with N < %d.\n",max_balanced_i);
 			catError("Exiting - no testing performed\n");
@@ -201,7 +200,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 		// If an exact split ratio was specified, then use it.
 		// Otherwise, the same number of training images is used in each class, specified by max_training_images
-		if (balanced_splits) split_ratio = 0.0;
+		if (balanced_splits) *split_ratio = 0.0;
 	}
 	// Note that checks above leave max_training_images < max_balanced_i
 	
@@ -236,7 +235,6 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	FILE *output_file;
 	int split_index,tile_index;
 	int n_train,n_test;
-	double train_frac;
 	int class_index;
 	int res;
 	
@@ -293,8 +291,8 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	}
 
 // Check the parameters and set train/test image numbers
-	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
-		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
+	if (!check_split_params (&n_train, &n_test, &split_ratio, ts, testset,
+		class_num, samples_per_image, balanced_splits, max_training_images, max_test_images, exact_training_images))
 			return(showError(1, NULL));
 
 
@@ -305,7 +303,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
       // if ratio is > 0 and <= 1, use ratio (unbalanced training)      
 */
 	if (verbosity>=2) {
-		if (train_frac > 0) printf ("samples per image=%d, UNBALANCED training fraction=%f\n",samples_per_image,train_frac);
+		if (split_ratio > 0) printf ("samples per image=%d, UNBALANCED training fraction=%g\n",samples_per_image,split_ratio);
 		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
 	}
 	for (split_index=0;split_index<split_num;split_index++)
@@ -328,7 +326,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		}
 		else splits[split_index].tile_area_accuracy=NULL;
 
-		res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
+		res=ts->split(random_splits,split_ratio,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
 		if ( res < 0) return (res);
 		if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
 		else splits[split_index].image_similarities=NULL;
@@ -706,6 +704,7 @@ int main(int argc, char *argv[])
 		   arg_index++;
 		   continue;	/* so that the path will not trigger other switches */
         }
+        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 		if (argv[arg_index][1]=='v' && strlen(argv[arg_index])>3)
 		{  weight_vector_action=argv[arg_index][2];
 		   if (weight_vector_action!='r' && weight_vector_action!='w' && weight_vector_action!='+' && weight_vector_action!='-')
