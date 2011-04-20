@@ -21,10 +21,10 @@ my $expected_classifications = parseClassifications (\@lines);
 my $reported_classifications = parseClassifications (\@res);
 my $compRes;
 if (! ($compRes = compareClassifications($reported_classifications,$expected_classifications)) ) {
-	print "Exact comparison (order, scale, probs., values) for ".scalar(@$expected_classifications)." classifications - passed\n";
+	print "Passed: Exact comparison (order, scale, probs., values) for ".scalar(@$expected_classifications)." classifications\n";
 } else {
 	print @res;
-	TestUtil::exit_fail("Exact comparison failed: $compRes\n");
+	TestUtil::exit_fail("FAILED: $compRes\n");
 }
 
 
@@ -66,7 +66,9 @@ sub compareClassifications {
 	my ($reported_classifications,$expected_classifications) = (shift,shift);
 	my $indx=0;
 	
-	for ($indx = 0; $indx < scalar(@$reported_classifications); $indx++) {
+	return ("Number of reported classifications (".scalar(@$reported_classifications).") don't match number expected (".scalar(@$expected_classifications).")\n")
+		unless scalar(@$reported_classifications) == scalar(@$expected_classifications);
+	for ($indx = 0; $indx < scalar(@$expected_classifications); $indx++) {
 		my $expected = $expected_classifications->[$indx];
 		my $reported = $reported_classifications->[$indx];
 		

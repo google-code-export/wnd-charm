@@ -25,15 +25,25 @@ my $tries = 2;
 while ($tries) {
 	@res = `$cmd`;
 	my ($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg) = parseClassifications (\@res);
+
+	print @res and TestUtil::exit_fail("FAILED: Number of reported classifications does not match expected:\n".
+		"    2 as 4 expected: ".scalar (@$expected_2as4).", got ".scalar (@$reported_2as4)."\n".
+		"    4 as 2 expected: ".scalar (@$expected_4as2).", got ".scalar (@$reported_4as2)."\n".
+		"accuracies expected: ".scalar (@$expected_accuracies).", got ".scalar (@$reported_accuracies)."\n")
+		unless
+			scalar (@$reported_2as4) == scalar (@$expected_2as4) and
+			scalar (@$reported_4as2) == scalar (@$expected_4as2) and
+			scalar (@$reported_accuracies) == scalar (@$expected_accuracies);
+
 	if (! ($compRes = compareClassifications($reported_2as4,$reported_4as2,$reported_accuracies,$reported_avg,$expected_2as4,$expected_4as2,$expected_accuracies,$expected_avg)) ) {
-		print "Distribution comparison (2 as 4, 4 as 2, accuracies) for ".scalar(@$reported_accuracies)." classifications - passed\n";
+		print "Passed - Distribution comparison (2 as 4, 4 as 2, accuracies) for ".scalar(@$reported_accuracies)." classifications.\n";
 		last;
 	}
 	$tries--;
 }
 if ($compRes) {
 	print @res;
-	TestUtil::exit_fail("Distribution comparison failed: $compRes\n");
+	TestUtil::exit_fail("FAILED: $compRes\n");
 }
 
 
