@@ -598,6 +598,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 	int number_of_test_samples, number_of_train_samples;
 	long class_counts[MAX_CLASS_NUM];
 	class_samples = new long[count];
+	bool make_test_set = true;
 
 	SetAttrib( TrainSet );      // copy the same attributes to the training and test set
 	if( !TestSet-> count > 0 )
@@ -605,10 +606,8 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 	if( tiles < 1 )
 		tiles = 1;    // make sure the number of tiles is valid 
 	TrainSet->class_num = TestSet->class_num = class_num;
-	number_of_test_samples = test_samples;
-	number_of_train_samples = train_samples; // balanced training
 	if( TestSet->count > 0 )
-		number_of_test_samples = 0; // test already has samples from a file
+		make_test_set = false; // test already has samples from a file
 	for( class_index = 1; class_index <= class_num; class_index++ )
 	{
 		int sample_index,sample_count=0;
@@ -622,10 +621,13 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 		// Determine number of training samples.
 		if( ratio > 0.0 && ratio <= 1.0 ) {// unbalanced training
 			number_of_train_samples = (int)floor( (ratio * (float)class_samples_count) + 0.5 );
-			number_of_test_samples = class_samples_count - number_of_train_samples;
+			if (!test_samples && make_test_set) number_of_test_samples = class_samples_count - number_of_train_samples;
+			else if (make_test_set) number_of_test_samples = test_samples;
+			else number_of_test_samples = 0;
 		} else {
 			number_of_train_samples = train_samples;
-			number_of_test_samples = test_samples;
+			if (make_test_set) number_of_test_samples = test_samples;
+			else number_of_test_samples = 0;
 		}
 		// add the samples to the training set
 		if( number_of_train_samples + number_of_test_samples > class_samples_count ) {

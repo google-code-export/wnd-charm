@@ -216,6 +216,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *split_ratio, Trai
 		}
 	} else { // -jN not specified
 		max_test_images = max_balanced_i - max_training_images;
+		if (!balanced_splits) max_test_images = 0;
 	}
 
 	// Set the return values
