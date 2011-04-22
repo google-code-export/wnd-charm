@@ -56,12 +56,13 @@ am_libFeatureNames_a_OBJECTS =  \
 libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
-am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
-	cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) signatures.$(OBJEXT) \
-	CombFirst4Moments.$(OBJEXT) FeatureStatistics.$(OBJEXT) \
-	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
-	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
-	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
+am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) AlgorithmTiming.$(OBJEXT) \
+	wndchrm_error.$(OBJEXT) cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) \
+	signatures.$(OBJEXT) CombFirst4Moments.$(OBJEXT) \
+	FeatureStatistics.$(OBJEXT) gabor.$(OBJEXT) \
+	CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) mapkit.$(OBJEXT) \
+	mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) complex.$(OBJEXT) \
+	zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
 	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
 	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
@@ -223,6 +224,8 @@ libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 libimfit_a_SOURCES = \
 	gsl/specfunc.cpp \
 	gsl/specfunc.h \
+	AlgorithmTiming.cpp \
+	AlgorithmTiming.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
 	cmatrix.cpp \
@@ -401,6 +404,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AlgorithmTiming.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CVIPtexture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ChebishevFourier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CombFirst4Moments.Po@am__quote@

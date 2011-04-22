@@ -44,6 +44,7 @@ typedef struct {
 	unsigned long npix;
 	clock_t start;
 	bool running;
+	double total;
 	double min, max;
 	double old_mean;
 	double mean;
@@ -68,6 +69,7 @@ public:
 			npix,
 			0,
 			true,
+			0.0,
 			DBL_MAX, 0.0,
 			0.0, 0.0, 0.0, 0.0,
 			0
@@ -89,7 +91,6 @@ public:
 	}
 	
 	void stop (AlgorithmTimeRef alg_timer) {
-		struct timeval stoptime;
 		clock_t t_stop = clock();
 		double delta_t;
 
@@ -103,6 +104,7 @@ public:
 	// std_dev = sqrt (var);
 	// See Knuth TAOCP vol 2, 3rd edition, page 232
 		alg_timer.nsamples++;
+		alg_timer.total += delta_t;
 		if (alg_timer.nsamples == 1) {
 			alg_timer.old_mean = alg_timer.mean = delta_t;
 			alg_timer.old_sum_var = 0.0;
@@ -121,13 +123,18 @@ public:
 	}
 	
 	void report () {
+		printf ("GCC %s, %s SSE2, Eigen is %s\n",
+			getGCCvers().c_str(),
+			SSE2Supported() ? "with" : "without",
+			EigenVectorized() ? "vectorized" : "not vectorized");
+
 		AlgorithmTimings_T::iterator AT_map_it = AlgorithmTimings.begin ();
-		printf ("Name\tparam\tn samp\tmin\tmax\tmean\tstddev\n");
+		printf ("Name\tparam\tn samp\ttotal\tmin\tmax\tmean\tstddev\n");
 		while (AT_map_it != AlgorithmTimings.end()) {
 			std::map<unsigned long, AlgorithmTime>::iterator AP_map_it = AT_map_it->second.begin();
 			while (AP_map_it != AT_map_it->second.end()) {
-				printf ("%s\t%lu\t%lu\t%.6g\t%.6g\t%.6g\t%.6g\n",AP_map_it->second.name.c_str(), AP_map_it->second.npix,
-					AP_map_it->second.nsamples, AP_map_it->second.min, AP_map_it->second.max,
+				printf ("%s\t%lu\t%lu\t%.6g\t%.6g\t%.6g\t%.6g\t%.6g\n",AP_map_it->second.name.c_str(), AP_map_it->second.npix,
+					AP_map_it->second.nsamples, AP_map_it->second.total, AP_map_it->second.min, AP_map_it->second.max,
 					AP_map_it->second.nsamples > 0 ? AP_map_it->second.mean : 0.0,
 					AP_map_it->second.nsamples > 1 ? sqrt ( AP_map_it->second.sum_var / (AP_map_it->second.nsamples - 1)) : 0.0
 				);
@@ -188,7 +195,7 @@ public:
 private:
 	AlgorithmTiming() {}; // ctor hidden
 	AlgorithmTiming(AlgorithmTiming const&) {}; // copy ctor hidden
-	AlgorithmTiming& operator=(AlgorithmTiming const&) {}; // assign op. hidden
+	AlgorithmTiming& operator=(AlgorithmTiming const&) {return this->Instance();}; // assign op. hidden
 	~AlgorithmTiming() {}; // dtor hidden
 	static AlgorithmTimings_T AlgorithmTimings;
 };

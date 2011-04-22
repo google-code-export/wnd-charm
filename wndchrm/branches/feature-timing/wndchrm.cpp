@@ -28,6 +28,10 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
+#ifdef DO_FEATURE_TIMING
+#include "AlgorithmTiming.h"
+#endif
+
 #include "TrainingSet.h"
 #include "wndchrm_error.h"
 
@@ -936,6 +940,11 @@ int main(int argc, char *argv[])
        
      } // no params left for dataset / test set.
      else ShowHelp();
+
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	myFT.report();
+#endif
 
      return(1);
 }

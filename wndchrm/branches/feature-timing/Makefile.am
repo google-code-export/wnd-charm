@@ -23,6 +23,8 @@ libFeatureNames_a_CXXFLAGS = -Wall -g -O0
 libimfit_a_SOURCES = \
 	gsl/specfunc.cpp \
 	gsl/specfunc.h \
+	AlgorithmTiming.cpp \
+	AlgorithmTiming.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
 	cmatrix.cpp \

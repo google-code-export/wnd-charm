@@ -29,11 +29,18 @@
 
 
 
+#ifdef WIN32
 #pragma hdrstop
+#endif
 
 #include <math.h>
 #include <stdio.h>
 #include "cmatrix.h"
+
+#ifdef DO_FEATURE_TIMING
+#include "AlgorithmTiming.h"
+#endif
+
 #include "colors/FuzzyCalc.h"
 #include "transforms/fft/bcb_fftw3/fftw3.h"
 #include "transforms/chevishev.h"
@@ -62,7 +69,7 @@
 
 RGBcolor HSV2RGB(HSVcolor hsv)
 {   RGBcolor rgb;
-    float R, G, B;
+    float R=0, G=0, B=0;
     float H, S, V;
     float i, f, p, q, t;
 
@@ -111,6 +118,7 @@ HSVcolor RGB2HSV(RGBcolor rgb)
     hsv.saturation = 0;
   if (hsv.saturation == 0) hsv.hue = 0; //-1;
   else {
+  	h = 0;
     if (r == max)
       h = (g - b) / delta;
     else if (g == max)
@@ -118,6 +126,7 @@ HSVcolor RGB2HSV(RGBcolor rgb)
     else if (b == max)
       h = 4 + (r - g) / delta;
     h *= 60.0;
+    if (h >= 360) h -= 360.0;
     if (h < 0.0) h += 360.0;
     hsv.hue = (byte)(h *(240.0/360.0));
   }
@@ -188,16 +197,16 @@ int ImageMatrix::LoadBMP(char *filename,int ColorMode)
 int ImageMatrix::LoadTIFF(char *filename)
 {
 //#ifndef WIN32
-   unsigned long h,w,x,y,z;
+   int h,w,x,y,z;
    unsigned short int spp,bps;
    TIFF *tif = NULL;
    //tdata_t buf;
    unsigned char *buf8;
    unsigned short *buf16;
    double max_val;
-   pix_data pix;
+   pix_data pix={{{0}},0};
    TIFFSetWarningHandler(NULL);
-   if (tif = TIFFOpen(filename, "r"))
+   if ( (tif = TIFFOpen(filename, "r")) )
    {
      TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
      width = w;
@@ -227,7 +236,7 @@ int ImageMatrix::LoadTIFF(char *filename)
             while (x<width)
             { unsigned char byte_data;
               unsigned short short_data;
-              double val;
+              double val=0;
               int sample_index;
               for (sample_index=0;sample_index<spp;sample_index++)
               {  byte_data=buf8[col+sample_index];
@@ -238,7 +247,7 @@ int ImageMatrix::LoadTIFF(char *filename)
                  {  if (sample_index==0) pix.clr.RGB.red=(unsigned char)(255*(val/max_val));
                     if (sample_index==1) pix.clr.RGB.green=(unsigned char)(255*(val/max_val));
                     if (sample_index==2) pix.clr.RGB.blue=(unsigned char)(255*(val/max_val));
-                    if (ColorMode=cmHSV) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
+                    if ( ColorMode==cmHSV ) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
                  }
               }
               if (spp==3) pix.intensity=COLOR2GRAY(RGB2COLOR(pix.clr.RGB));
@@ -308,7 +317,7 @@ int ImageMatrix::SaveTiff(char *filename)
 
 int ImageMatrix::LoadPPM(char *filename, int ColorMode)
 {  FILE *fi;
-   char ty[256],line[256],*p;
+   char ty[256],line[256];
    byte *buffer;
    int x, y, w, h, m=-1;
    pix_data pix;
@@ -498,7 +507,7 @@ void ImageMatrix::diff(ImageMatrix *matrix)
        {  pix_data pix1,pix2;
           pix1=pixel(x,y,z);
           pix2=matrix->pixel(x,y,z);
-          pix1.intensity==fabs(pix1.intensity-pix2.intensity);
+          pix1.intensity=fabs(pix1.intensity-pix2.intensity);
           pix1.clr.RGB.red=(byte)fabs(pix1.clr.RGB.red-pix2.clr.RGB.red);		  
           pix1.clr.RGB.green=(byte)fabs(pix1.clr.RGB.green-pix2.clr.RGB.green);		  
           pix1.clr.RGB.blue=(byte)fabs(pix1.clr.RGB.blue-pix2.clr.RGB.blue);
@@ -511,7 +520,12 @@ void ImageMatrix::diff(ImageMatrix *matrix)
    create another matrix the same as the first
 */
 ImageMatrix *ImageMatrix::duplicate()
-{  ImageMatrix *new_matrix;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Duplicate",width*height*depth);
+#endif
+	ImageMatrix *new_matrix;
    new_matrix=new ImageMatrix;
    new_matrix->data=new pix_data[width*height*depth];
 	if (!(new_matrix->data)) {
@@ -524,6 +538,10 @@ ImageMatrix *ImageMatrix::duplicate()
    new_matrix->bits=bits;
    new_matrix->ColorMode=ColorMode;
    memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
+
    return(new_matrix);
 }
 
@@ -754,7 +772,13 @@ int compare_doubles (const void *a, const void *b)
    if one of the pointers is NULL, the corresponding value is not computed.
 */
 void ImageMatrix::BasicStatistics(double *mean, double *median, double *std, double *min, double *max, double *hist, int bins)
-{  long pixel_index,num_pixels;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Pixel Intensity Statistics",width*height*depth);
+#endif
+
+	long pixel_index,num_pixels;
    double *pixels;
    double min1=INF,max1=-INF,mean_sum=0;
    
@@ -791,6 +815,9 @@ void ImageMatrix::BasicStatistics(double *mean, double *median, double *std, dou
       *median=pixels[num_pixels/2];
    }
    delete pixels;	     
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* normalize the pixel values into a given range 
@@ -877,7 +904,8 @@ for (int k=-depth2;k<=depth2;++k) {
 */
 
 void ImageMatrix::GetColorStatistics(double *hue_avg, double *hue_std, double *sat_avg, double *sat_std, double *val_avg, double *val_std, double *max_color, double *colors)
-{  long x,y,a,color_index;
+{
+	long a,color_index;
    color hsv;
    double max,pixel_num;
    float certainties[COLORS_NUM+1];
@@ -941,7 +969,12 @@ void ImageMatrix::GetColorStatistics(double *hue_avg, double *hue_std, double *s
    grey level represents a different color
 */
 void ImageMatrix::ColorTransform(double *color_hist, int use_hue)
-{  long x,y,z,base_color;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Color",width*height*depth);
+#endif
+	long x,y,z;
    double cb_intensity;
    double max_value;
    pix_data hsv_pixel;
@@ -974,6 +1007,9 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue)
    if (color_hist) 
      for (color_index=0;color_index<=COLORS_NUM;color_index++)
        color_hist[color_index]/=(width*height);	 
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* get image histogram */
@@ -1008,7 +1044,12 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist)
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
 double ImageMatrix::fft2()
-{  fftw_complex *out;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Fourier",width*height*depth);
+#endif
+	fftw_complex *out;
    double *in;
    fftw_plan p;
    long x,y,z;
@@ -1068,43 +1109,67 @@ double ImageMatrix::fft2()
 
    /* calculate the magnitude and angle */
 
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
    return(0);
 }
 
 /* chebyshev transform */
 void ImageMatrix::ChebyshevTransform(int N)
-{  double *out;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Chebyshev",width*height*depth);
+#endif
+	double *out;
    int x,y,old_width;
 
-   if (N<2) N=min(width,height);
+   if (N<2) N=MIN(width,height);
    out=new double[height*N];
    Chebyshev2D(this, out,N);
 
    old_width=width;  /* keep the old width to free the memory */
    width=N;
-   height=min(height,N);   /* prevent error */
+   height=MIN(height,N);   /* prevent error */
 
    for(y=0;y<height;y++)
      for(x=0;x<width;x++)
        SetInt(x,y,0,out[y*width+x]);
    delete out;
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* chebyshev transform
    coeff -array of double- a pre-allocated array of 32 doubles
 */
 void ImageMatrix::ChebyshevFourierTransform2D(double *coeff)
-{  ImageMatrix *matrix;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Chebyshev-Fourier Coefficients",width*height*depth);
+#endif
+	ImageMatrix *matrix;
    matrix=duplicate();
-   if (width*height>300*300) matrix->Downsample(min(300.0/(double)width,300.0/(double)height),min(300.0/(double)width,300.0/(double)height));  /* downsample for avoiding memory problems */
+   if (width*height>300*300) matrix->Downsample(MIN(300.0/(double)width,300.0/(double)height),MIN(300.0/(double)width,300.0/(double)height));  /* downsample for avoiding memory problems */
    ChebyshevFourier2D(matrix, 0, coeff,32);
    delete matrix;
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 
 /* Symlet5 transform */
 void ImageMatrix::Symlet5Transform()
-{  long x,y,z;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Wavelet",width*height*depth);
+#endif
+	long x,y,z;
    DataGrid2D *grid2d=NULL;
    DataGrid3D *grid3d=NULL;
    DataGrid *grid;
@@ -1139,6 +1204,9 @@ void ImageMatrix::Symlet5Transform()
    delete Sym5;
    if (grid2d) delete grid2d;
    if (grid3d) delete grid3d;   
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* chebyshev statistics
@@ -1147,17 +1215,31 @@ void ImageMatrix::Symlet5Transform()
 */
 void ImageMatrix::ChebyshevStatistics2D(double *coeff, int N, int bins_num)
 {
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Chebyshev Coefficients",width*height*depth);
+#endif
+
    if (N<2) N=20;
-   if (N>min(width,height)) N=min(width,height);   
+   if (N>MIN(width,height)) N=MIN(width,height);   
    ChebyshevTransform(N);
    histogram(coeff,bins_num,0);
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
+
 }
 
 /* CombFirstFourMoments
    vec should be pre-alocated array of 48 doubles
 */
 int ImageMatrix::CombFirstFourMoments2D(double *vec)
-{  int count;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Comb Moments",width*height*depth);
+#endif
+	int count;
    ImageMatrix *matrix;
    if (bits==16) 
    {  matrix=this->duplicate();
@@ -1167,22 +1249,31 @@ int ImageMatrix::CombFirstFourMoments2D(double *vec)
    count=CombFirst4Moments2D(matrix, vec);   
    vd_Comb4Moments(vec);   
    if (bits==16) delete matrix;
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
    return(count);
 }
 
 /* Edge Transform */
 void ImageMatrix::EdgeTransform()
-{  long x,y,z;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Edge",width*height*depth);
+#endif
+	long x,y,z;
    ImageMatrix *TempMatrix;
    TempMatrix=duplicate();
    for (y=0;y<TempMatrix->height;y++)
      for (x=0;x<TempMatrix->width;x++)
        for (z=0;z<TempMatrix->depth;z++)	 
        {  double max_x=0,max_y=0,max_z=0;
-          if (y>0 && y<height-1) max_y=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y-1,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y+1,z).intensity));
-          if (x>0 && x<width-1) max_x=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x-1,y,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x+1,y,z).intensity));
-          if (z>0 && z<depth-1) max_z=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z-1).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z+1).intensity));
-          SetInt(x,y,z,max(max(max_x,max_z),max_y));
+          if (y>0 && y<height-1) max_y=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y-1,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y+1,z).intensity));
+          if (x>0 && x<width-1) max_x=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x-1,y,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x+1,y,z).intensity));
+          if (z>0 && z<depth-1) max_z=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z-1).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z+1).intensity));
+          SetInt(x,y,z,MAX(MAX(max_x,max_z),max_y));
        }
 
    /* use otsu global threshold to set edges to 0 or 1 */
@@ -1196,12 +1287,14 @@ void ImageMatrix::EdgeTransform()
        else data[x][y].intensity=0;
 */
    delete TempMatrix;
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* transform by gradient magnitude */
 void ImageMatrix::GradientMagnitude(int span)
 {  long x,y,z;
-   double sum;
    if (span==0) span=2;  /* make sure 0 is not a default */
    for (x=0;x<width-span;x++)
      for (y=0;y<height-span;y++)
@@ -1299,7 +1392,13 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output)
 */
 
 void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins)
-{  ImageMatrix *GradientMagnitude,*GradientDirection;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Edge Features",width*height*depth);
+#endif
+
+	ImageMatrix *GradientMagnitude,*GradientDirection;
    long a,bin_index;
    double min,max,sum,max_intensity;
    
@@ -1342,17 +1441,25 @@ void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMed
 
    delete GradientMagnitude;
    delete GradientDirection;
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* radon transform
    vec -array of double- output column. a pre-allocated vector of the size 3*4=12
 */
 void ImageMatrix::RadonTransform2D(double *vec)
-{   int x,y,val_index,output_size,vec_index,bin_index;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Radon Coefficients",width*height*depth);
+#endif
+	int x,y,val_index,output_size,vec_index,bin_index;
     double *pixels,*ptr,bins[3];
     int angle,num_angles=4;
     double theta[4]={0,45,90,135};
-    double min,max;
     int rLast,rFirst;
     rLast = (int) ceil(sqrt(pow(width-1-(width-1)/2,2)+pow(height-1-(height-1)/2,2))) + 1;
     rFirst = -rLast;
@@ -1393,6 +1500,9 @@ void ImageMatrix::RadonTransform2D(double *vec)
     vd_RadonTextures(vec);
     delete pixels;
     delete ptr;
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 //-----------------------------------------------------------------------------------
@@ -1400,7 +1510,7 @@ void ImageMatrix::RadonTransform2D(double *vec)
    Find otsu threshold
 */
 double ImageMatrix::Otsu()
-{  long a,x,y;
+{  long a;
    double hist[256],omega[256],mu[256],sigma_b2[256],maxval=-INF,sum,count;
    double max=pow(2,bits)-1;
    histogram(hist,256,1);
@@ -1496,7 +1606,13 @@ int compare_ints (const void *a, const void *b)
 void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, double *centroid_z, int *AreaMin, int *AreaMax,
                                     double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
                                     double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins)
-{  int object_index,inv_count;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Object Features",width*height*depth);
+#endif
+
+	int object_index,inv_count;
    double sum_areas,sum_dists;
    ImageMatrix *BWImage,*BWInvert,*temp;
    int *object_areas;
@@ -1576,13 +1692,26 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    delete BWImage;
    delete object_areas;
    delete centroid_dists;
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* GaborFilters */
 /* ratios -array of double- a pre-allocated array of double[7]
 */
 void ImageMatrix::GaborFilters2D(double *ratios)
-{  GaborTextureFilters2D(this, ratios);
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Gabor Textures",width*height*depth);
+#endif
+
+	GaborTextureFilters2D(this, ratios);
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 
@@ -1590,8 +1719,18 @@ void ImageMatrix::GaborFilters2D(double *ratios)
    output -array of double- a pre-allocated array of 28 doubles
 */
 void ImageMatrix::HaarlickTexture2D(double distance, double *out)
-{  if (distance<=0) distance=1;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Haralick Textures",width*height*depth);
+#endif
+
+	if (distance<=0) distance=1;
    haarlick2D(this,distance,out);
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* MultiScaleHistogram
@@ -1603,7 +1742,13 @@ void ImageMatrix::HaarlickTexture2D(double distance, double *out)
    out -array of double- a pre-allocated array of 24 bins
 */
 void ImageMatrix::MultiScaleHistogram(double *out)
-{  int a;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Multiscale Histograms",width*height*depth);
+#endif
+
+	int a;
    double max=0;
    histogram(out,3,0);
    histogram(&(out[3]),5,0);
@@ -1613,6 +1758,10 @@ void ImageMatrix::MultiScaleHistogram(double *out)
      if (out[a]>max) max=out[a];
    for (a=0;a<24;a++)
      out[a]=out[a]/max;
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* TamuraTexture
@@ -1621,7 +1770,16 @@ void ImageMatrix::MultiScaleHistogram(double *out)
 */
 void ImageMatrix::TamuraTexture2D(double *vec)
 {
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Tamura Textures",width*height*depth);
+#endif
+
   Tamura3Sigs2D(this,vec);
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* zernike
@@ -1630,7 +1788,17 @@ void ImageMatrix::TamuraTexture2D(double *vec)
    output_size -* long- the number of enteries in the array "zvalues" (normally 72)
 */
 void ImageMatrix::zernike2D(double *zvalues, long *output_size)
-{  mb_zernike2D(this, 0, 0, zvalues, output_size);
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Zernike Coefficients",width*height*depth);
+#endif
+
+	mb_zernike2D(this, 0, 0, zvalues, output_size);
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
 /* fractal 
@@ -1642,8 +1810,14 @@ void ImageMatrix::zernike2D(double *zvalues, long *output_size)
 */
    
 void ImageMatrix::fractal2D(int bins,double *output)
-{  int x,y,k,bin=0;
-   int K=min(width,height)/5;
+{
+#ifdef DO_FEATURE_TIMING
+	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
+	AlgorithmTimeRef timealg = myFT.start("Fractal Features",width*height*depth);
+#endif
+
+	int x,y,k,bin=0;
+   int K=MIN(width,height)/5;
    int step=(long)floor(K/bins);
    if (step<1) step=1;   /* avoid an infinite loop if the image is small */
    for (k=1;k<K;k=k+step)
@@ -1656,10 +1830,12 @@ void ImageMatrix::fractal2D(int bins,double *output)
 		  sum+=fabs(pixel(x,y,0).intensity-pixel(x+k,y,0).intensity);
       if (bin<bins) output[bin++]=sum/(width*(width-k)+height*(height-k));	  
    }
+
+#ifdef DO_FEATURE_TIMING
+   myFT.stop(timealg);
+#endif
 }
 
+#ifdef WIN32
 #pragma package(smart_init)
-
-
-
-
+#endif
