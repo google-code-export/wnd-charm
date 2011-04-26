@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cfloat> // Has definition of DBL_MAX
 #include <cmath> // Has definition of DBL_MAX
+#include <stdio.h>
 /*
 Example:
 #include "AlgorithmTiming.h"
