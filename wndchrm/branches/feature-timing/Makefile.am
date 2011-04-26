@@ -49,8 +49,6 @@ libimfit_a_SOURCES = \
 	textures/haarlick/mapkit_generic.h \
 	textures/tamura.cpp \
 	textures/tamura.h \
-	textures/zernike/complex.cpp \
-	textures/zernike/complex.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \

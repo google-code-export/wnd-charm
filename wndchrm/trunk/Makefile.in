@@ -61,7 +61,7 @@ am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
 	CombFirst4Moments.$(OBJEXT) FeatureStatistics.$(OBJEXT) \
 	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
 	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
-	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
+	zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
 	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
 	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
@@ -247,8 +247,6 @@ libimfit_a_SOURCES = \
 	textures/haarlick/mapkit_generic.h \
 	textures/tamura.cpp \
 	textures/tamura.h \
-	textures/zernike/complex.cpp \
-	textures/zernike/complex.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
@@ -420,7 +418,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chevishev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmatrix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_deconvolution.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/complex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convolution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gabor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/haarlick.Po@am__quote@
@@ -646,20 +643,6 @@ tamura.obj: textures/tamura.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/tamura.cpp' object='tamura.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tamura.obj `if test -f 'textures/tamura.cpp'; then $(CYGPATH_W) 'textures/tamura.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/tamura.cpp'; fi`
-
-complex.o: textures/zernike/complex.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT complex.o -MD -MP -MF $(DEPDIR)/complex.Tpo -c -o complex.o `test -f 'textures/zernike/complex.cpp' || echo '$(srcdir)/'`textures/zernike/complex.cpp
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/complex.Tpo $(DEPDIR)/complex.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/complex.cpp' object='complex.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o complex.o `test -f 'textures/zernike/complex.cpp' || echo '$(srcdir)/'`textures/zernike/complex.cpp
-
-complex.obj: textures/zernike/complex.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT complex.obj -MD -MP -MF $(DEPDIR)/complex.Tpo -c -o complex.obj `if test -f 'textures/zernike/complex.cpp'; then $(CYGPATH_W) 'textures/zernike/complex.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/complex.cpp'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/complex.Tpo $(DEPDIR)/complex.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/complex.cpp' object='complex.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o complex.obj `if test -f 'textures/zernike/complex.cpp'; then $(CYGPATH_W) 'textures/zernike/complex.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/complex.cpp'; fi`
 
 zernike.o: textures/zernike/zernike.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT zernike.o -MD -MP -MF $(DEPDIR)/zernike.Tpo -c -o zernike.o `test -f 'textures/zernike/zernike.cpp' || echo '$(srcdir)/'`textures/zernike/zernike.cpp
