@@ -65,6 +65,10 @@
 #ifndef M_SQRTPI
 #define M_SQRTPI   1.77245385090551602729816748334      /* sqrt(pi) */
 #endif
+#ifndef M_PI
+#define M_PI       3.14159265358979323846264338328      /* pi */
+#endif
+
 #define GSL_SF_GAMMA_XMAX  171.0
 #define GSL_IS_ODD(n)  ((n) & 1)
 #define GSL_IS_EVEN(n) (!(GSL_IS_ODD(n)))
@@ -1732,6 +1736,28 @@ gsl_sf_gamma_e(const double x, gsl_sf_result * result)
   return GSL_SUCCESS;
 }
 
+
+int gsl_sf_fact_e (const unsigned int n, gsl_sf_result * result)
+{
+  /* CHECK_POINTER(result) */
+
+  if(n < 18) {
+    result->val = fact_table[n].f;
+    result->err = 0.0;
+    return GSL_SUCCESS;
+  }
+  else if(n <= GSL_SF_FACT_NMAX){
+    result->val = fact_table[n].f;
+    result->err = 2.0 * GSL_DBL_EPSILON * fabs(result->val);
+    return GSL_SUCCESS;
+  }
+  else {
+    OVERFLOW_ERROR(result);
+  }
+  return (1);
+}
+
+
 int gsl_sf_choose(unsigned int n, unsigned int m, double *result)
 {
    gsl_sf_result gsl_result;
@@ -1748,4 +1774,15 @@ int gsl_sf_gamma(const double x, double *result)
    if (status == GSL_SUCCESS) *result = gsl_result.val;
    return (status);
 }
+
+double gsl_sf_fact(const int n)
+{
+	if (n <= 0) return (1);
+	else if(n <= GSL_SF_FACT_NMAX) {
+		return (fact_table[n].f);
+	} else {
+		return (GSL_POSINF);
+	}
+}
+
 
