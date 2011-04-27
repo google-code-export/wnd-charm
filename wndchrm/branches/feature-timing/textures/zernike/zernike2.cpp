@@ -56,8 +56,8 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 	else L = 15;
 	assert (L < MAX_L);
 
-	if (rad > 0) D = rad*2;
-	else D = N;
+	if (! rad > 0.0) rad = N;
+	D = rad * 2;
 
 	static double H1[MAX_L][MAX_L];
 	static double H2[MAX_L][MAX_L];
@@ -76,7 +76,7 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 	int cols = I->width;
 	int rows = I->height;
 
-// compute moments to center the unit circle on the centroid
+// compute x/0, y/0 and 0/0 moments to center the unit circle on the centroid
 	double moment10 = 0.0, moment00 = 0.0, moment01 = 0.0;
 	double intensity;
 	for (i = 0; i < cols; i++)
@@ -96,7 +96,7 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 		for (n = 0; n < MAX_L; n++) {
 			for (m = 0; m <= n; m++) {
 				if (n != m) {
-					H3[n][m] = -  (double)(4.0 * (m+2.0) * (m + 1.0) ) / (double)( (n+m+2.0) * (n - m) ) ;
+					H3[n][m] = -(double)(4.0 * (m+2.0) * (m + 1.0) ) / (double)( (n+m+2.0) * (n - m) ) ;
 					H2[n][m] = ( (double)(H3[n][m] * (n+m+4.0)*(n-m-2.0)) / (double)(4.0 * (m+3.0)) ) + (m+2.0);
 					H1[n][m] = ( (double)((m+4.0)*(m+3.0))/2.0) - ( (m+4.0)*H2[n][m] ) + ( (double)(H3[n][m]*(n+m+6.0)*(n-m-4.0)) / 8.0 );
 				}
@@ -112,15 +112,15 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 		}
 	}
 
-	area = PI * (D*D) / 4.0;
+	area = PI * rad * rad;
 	for (i = 0; i < cols; i++) {
 	// In the paper, the center of the unit circle was the center of the image
 	//	x = (double)(2*i+1-N)/(double)D;
-		x = (i+1 - m10_m00) / ((double)D/2.0);
+		x = (i+1 - m10_m00) / rad;
 		for (j = 0; j < rows; j++) {
 		// In the paper, the center of the unit circle was the center of the image
 		//	y = (double)(2*j+1-N)/(double)D;
-			y = (j+1 - m01_m00) / ((double)D/2.0);
+			y = (j+1 - m01_m00) / rad;
 			r2 = x*x + y*y;
 			r = sqrt (r2);
 			if ( r < DBL_EPSILON || r > 1.0) continue;
@@ -135,11 +135,15 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 				SINT[m] = a * SINT[m-1] + b * COST[m-1];
 			}
 
-			/* compute contribution to Zernike moments for all 
-			orders and repetitions by the pixel at (i,j) */
+		// compute contribution to Zernike moments for all 
+		// orders and repetitions by the pixel at (i,j)
+		// In the paper, the intensity was the raw image intensity
 			f = I->pixel(i,j,0).intensity / sum;
+
 			Rnmp2 = Rnm2 = 0;
 			for (n = 0; n <= L; n++) {
+			// In the paper, this was divided by the area in pixels
+			// seemed that pi was supposed to be the area of a unit circle.
 				const_t = (n+1) * f/PI;
 				Rn = R[n];
 				if (n >= 2) Rnm2 = R[n-2];
