@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "gsl/specfunc.h"
 
-#include "../../cmatrix.h"
+#include "cmatrix.h"
 
 #include "zernike.h"
 #define PI 3.14159265358979323846264338328
@@ -104,6 +104,7 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		}
 	}
 
+// int nfoo=0;
 	for(i = 0 ; i < size ; i++) {
 		x = (X[i] - m10_m00)/R;
 		y = (Y[i] - m01_m00)/R;
@@ -111,6 +112,8 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		if (sqr_x2y2 > 1.0) continue;
 
 		p = P[i] / psum;
+// if (nfoo < 50) printf ("(%g,%g) = %g\n",x,y,p);
+// nfoo++;
 		double atan2yx = atan2(y,x);
 		theLUT = 0;
 		for (theZ = 0; theZ < numZ; theZ++) {
@@ -130,6 +133,7 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		sum [theZ] *= ((n_s[theZ]+1)/PI);
 		preal = real ( sum [theZ] );
 		pimag = imag ( sum [theZ] );
+//printf ("[%d][%d] = (%g,%g)\n",n_s[theZ],l_s[theZ],real ( sum [theZ] ),imag ( sum [theZ] ));
 		zvalues[theZ] = fabs(sqrt(preal*preal+pimag*pimag));
 	}
 
@@ -169,6 +173,7 @@ void mb_zernike2D(ImageMatrix *I, double D, double R, double *zvalues, long *out
 			moment10 += (x+1) * intensity;
 			moment00 += intensity;
 			moment01 += (y+1) * intensity;
+// if (x < 10 && y < 10) printf ("(%d,%d) = %g\n",x,y,intensity);
 		}
 
    /* Normalize the coordinates to the center of mass and normalize
