@@ -1787,14 +1787,22 @@ void ImageMatrix::TamuraTexture2D(double *vec)
                             (the actual size is returned by "output_size))
    output_size -* long- the number of enteries in the array "zvalues" (normally 72)
 */
-void ImageMatrix::zernike2D(double *zvalues, long *output_size)
+void ImageMatrix::zernike2D(bool use_Zernike2, double *zvalues, long *output_size)
 {
 #ifdef DO_FEATURE_TIMING
 	AlgorithmTiming &myFT = AlgorithmTiming::Instance();
-	AlgorithmTimeRef timealg = myFT.start("Zernike Coefficients",width*height*depth);
+	char label[32];
+	if (use_Zernike2)
+		strcpy (label,"Zernike2 Coefficients");
+	else
+		strcpy (label,"Zernike Coefficients");
+	AlgorithmTimeRef timealg = myFT.start(label,width*height*depth);
 #endif
 
-	mb_zernike2D(this, 0, 0, zvalues, output_size);
+	if (use_Zernike2)
+		mb_zernike2D_2 (this, 0, 0, zvalues, output_size);
+	else
+		mb_zernike2D (this, 0, 0, zvalues, output_size);
 
 #ifdef DO_FEATURE_TIMING
    myFT.stop(timealg);

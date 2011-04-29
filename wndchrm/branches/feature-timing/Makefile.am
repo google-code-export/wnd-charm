@@ -50,6 +50,7 @@ libimfit_a_SOURCES = \
 	textures/tamura.cpp \
 	textures/tamura.h \
 	textures/zernike/zernike.cpp \
+	textures/zernike/zernike2.cpp \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
 	TrainingSet.h \

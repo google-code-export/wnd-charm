@@ -134,7 +134,7 @@ class ImageMatrix
    void GaborFilters2D(double *ratios);
    void HaarlickTexture2D(double distance, double *out);
    void TamuraTexture2D(double *vec);
-   void zernike2D(double *zvalues, long *output_size);
+   void zernike2D(bool use_Zernike2, double *zvalues, long *output_size);
    void fractal2D(int bins,double *output);
 };
 

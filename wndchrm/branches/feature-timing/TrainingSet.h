@@ -168,6 +168,7 @@ public:
 /* properties */
 	char name[256];                       /* Name of dataset - source_path from last '/' to last '.'    */
 	char source_path[256];                       /* Path we read this set from     */
+	bool use_Zernike2;
    signatures **samples;                                           /* samples data                              */
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
    double SignatureWeights[MAX_SIGNATURE_NUM];                     /* weights of the samples                    */

@@ -62,9 +62,9 @@ am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) AlgorithmTiming.$(OBJEXT) \
 	FeatureStatistics.$(OBJEXT) gabor.$(OBJEXT) \
 	CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) mapkit.$(OBJEXT) \
 	mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) zernike.$(OBJEXT) \
-	TrainingSet.$(OBJEXT) ChebishevFourier.$(OBJEXT) \
-	chevishev.$(OBJEXT) radon.$(OBJEXT) Common.$(OBJEXT) \
-	convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
+	zernike2.$(OBJEXT) TrainingSet.$(OBJEXT) \
+	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
+	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
 	Symlet5.$(OBJEXT) Wavelet.$(OBJEXT) WaveletHigh.$(OBJEXT) \
 	WaveletLow.$(OBJEXT) WaveletMedium.$(OBJEXT) wt.$(OBJEXT)
@@ -251,6 +251,7 @@ libimfit_a_SOURCES = \
 	textures/tamura.cpp \
 	textures/tamura.h \
 	textures/zernike/zernike.cpp \
+	textures/zernike/zernike2.cpp \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
 	TrainingSet.h \
@@ -437,6 +438,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm_error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zernike.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zernike2.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -661,6 +663,20 @@ zernike.obj: textures/zernike/zernike.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/zernike.cpp' object='zernike.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o zernike.obj `if test -f 'textures/zernike/zernike.cpp'; then $(CYGPATH_W) 'textures/zernike/zernike.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/zernike.cpp'; fi`
+
+zernike2.o: textures/zernike/zernike2.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT zernike2.o -MD -MP -MF $(DEPDIR)/zernike2.Tpo -c -o zernike2.o `test -f 'textures/zernike/zernike2.cpp' || echo '$(srcdir)/'`textures/zernike/zernike2.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/zernike2.Tpo $(DEPDIR)/zernike2.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/zernike2.cpp' object='zernike2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o zernike2.o `test -f 'textures/zernike/zernike2.cpp' || echo '$(srcdir)/'`textures/zernike/zernike2.cpp
+
+zernike2.obj: textures/zernike/zernike2.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT zernike2.obj -MD -MP -MF $(DEPDIR)/zernike2.Tpo -c -o zernike2.obj `if test -f 'textures/zernike/zernike2.cpp'; then $(CYGPATH_W) 'textures/zernike/zernike2.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/zernike2.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/zernike2.Tpo $(DEPDIR)/zernike2.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/zernike2.cpp' object='zernike2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o zernike2.obj `if test -f 'textures/zernike/zernike2.cpp'; then $(CYGPATH_W) 'textures/zernike/zernike2.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/zernike2.cpp'; fi`
 
 ChebishevFourier.o: transforms/ChebishevFourier.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ChebishevFourier.o -MD -MP -MF $(DEPDIR)/ChebishevFourier.Tpo -c -o ChebishevFourier.o `test -f 'transforms/ChebishevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebishevFourier.cpp

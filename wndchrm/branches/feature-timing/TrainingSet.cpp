@@ -570,6 +570,7 @@ void TrainingSet::SetAttrib(TrainingSet *set)
    set->is_numeric = is_numeric;
    set->is_pure_numeric = is_pure_numeric;
    set->is_continuous = is_continuous;
+   set->use_Zernike2 = use_Zernike2;
    
 }
 

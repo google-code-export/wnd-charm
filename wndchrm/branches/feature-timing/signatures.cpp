@@ -435,18 +435,22 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
 
    /* zernike (signatures 881 - 1024) */
    { long x,y,output_size;   /* output size is normally 72 */
-     matrix->zernike2D(vec,&output_size);
+     bool use_Zernike2 = NamesTrainingSet ? ((TrainingSet *)(NamesTrainingSet))->use_Zernike2 : true;
+     char zernike_lab[32];
+     if (use_Zernike2) strcpy (zernike_lab,"ZernikeMoments2");
+     else strcpy (zernike_lab,"ZernikeMoments");
+     matrix->zernike2D(use_Zernike2,vec,&output_size);
      x=0;y=0;
      for (a=0;a<output_size;a++)
-     {  sprintf(buffer,"ZernikeMoments Z_%02d_%02d",(int)y,(int)x);
+     {  sprintf(buffer,"%s Z_%02d_%02d",zernike_lab,(int)y,(int)x);
         Add(buffer,vec[a]);
         if (x>=y) x=1-(y++ % 2);
         else x+=2;
      }
     x=0;y=0;
-    FourierTransform->zernike2D(vec,&output_size);
+    FourierTransform->zernike2D(use_Zernike2,vec,&output_size);
     for (a=0;a<output_size;a++)
-    {  sprintf(buffer,"ZernikeMoments_FFT Z_%02d_%02d",(int)y,(int)x);
+    {  sprintf(buffer,"%s_FFT Z_%02d_%02d",zernike_lab,(int)y,(int)x);
        Add(buffer,vec[a]);
        if (x>=y) x=1-(y++ % 2);
        else x+=2;
@@ -677,10 +681,14 @@ void signatures::CompGroupB(ImageMatrix *matrix, const char *transform_label)
 
    /* zernike (signatures 881 - 1024) */
    long output_size;   /* output size is normally 72 */
+   bool use_Zernike2 = NamesTrainingSet ? ((TrainingSet *)(NamesTrainingSet))->use_Zernike2 : true;
+   char zernike_lab[32];
+   if (use_Zernike2) strcpy (zernike_lab,"Zernike2");
+   else strcpy (zernike_lab,"Zernike");
    if (IsNeeded(count,72))
-     matrix->zernike2D(vec,&output_size);
+     matrix->zernike2D(use_Zernike2,vec,&output_size);
    for (a=0;a<72;a++)
-   {  sprintf(buffer,"Zernike %d (%s)",a,transform_label);
+   {  sprintf(buffer,"%s %d (%s)",zernike_lab, a,transform_label);
       Add(buffer,vec[a]);
    }
 }

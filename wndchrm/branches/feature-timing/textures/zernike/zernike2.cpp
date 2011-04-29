@@ -47,7 +47,7 @@
 #include "zernike.h"
 #define PI 3.14159265358979323846264338328
 
-void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, long *output_size) {
+void mb_zernike2D_2 (ImageMatrix *I, double order, double rad, double *zvalues, long *output_size) {
 	int L, N, D;
 
 // N is the smaller of I->width and I->height
@@ -91,7 +91,7 @@ void mb_zernike2D(ImageMatrix *I, double order, double rad, double *zvalues, lon
 	double m01_m00 = moment01/moment00;
 			
 
-// Pre-initialization of static statics
+// Pre-initialization of statics
 	if (init) {
 		for (n = 0; n < MAX_L; n++) {
 			for (m = 0; m <= n; m++) {

@@ -525,6 +525,7 @@ void ShowHelp()
 	printf("o - force overwriting pre-computed .sig files.\n");   
 	printf("O - if there are pre-computed .sig files accompanying images that have the old-style naming pattern,\n" );
 	printf("    skip the check to see that they were calculated with the same wndchrm parameters as the current experiment.\n");   
+	printf("Zn- Zernike coefficients version. If -Z1, use original Zernike moments.  Default is Z2 (10x faster and somewhat \"better\")\n" );
 	
 	printf("\nFeature reduction options:\n==========================\n");
 	printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
@@ -638,6 +639,8 @@ int main(int argc, char *argv[])
 	int do_continuous=0;
 	int save_sigs=1;
 	int skip_sig_check = 0;
+	bool use_Zernike2 = true;
+
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));
@@ -752,16 +755,21 @@ int main(int argc, char *argv[])
         }
 	    if (strchr(argv[arg_index],'m')) multi_processor=1;
         if (strchr(argv[arg_index],'n')) splits_num=atoi(&(strchr(argv[arg_index],'n')[1]));
-        if( (char_p = strchr( argv[arg_index],'s') ) )
-				{
-					if( isdigit( *(char_p+1) ) )
-					{
-						if( 1 == atoi( char_p+1 ) )
-							verbosity = 1;
-					}
-					else
-						verbosity=0;
-				}
+        if( (char_p = strchr( argv[arg_index],'s') ) ) {
+			if( isdigit( *(char_p+1) ) ) {
+				if( 1 == atoi( char_p+1 ) )
+					verbosity = 1;
+			} else
+				verbosity=0;
+		}
+        if( (char_p = strchr( argv[arg_index],'Z') ) ) {
+			if( isdigit( *(char_p+1) ) ) {
+				if( 1 == atoi( char_p+1 ) )
+					use_Zernike2 = false;
+			}
+		}
+		
+		
         if (strchr(argv[arg_index],'o')) overwrite=1;
         if (strchr(argv[arg_index],'O')) skip_sig_check=1;
         if (strchr(argv[arg_index],'l')) feature_opts->large_set=1;
@@ -832,6 +840,7 @@ int main(int argc, char *argv[])
 		int res;
 		dataset_path=argv[arg_index++];
 		TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
+		dataset->use_Zernike2 = use_Zernike2;
 
 		if (train) {
 			if (!dataset_save_fit && arg_index < argc && argv[arg_index] && *(argv[arg_index])) dataset_save_fit = argv[arg_index];
@@ -894,6 +903,7 @@ int main(int argc, char *argv[])
 				} else if (testset_save_fit) fclose (out_file);
 				if (verbosity>=2) printf ("Processing test set '%s'.\n",testset_path);
 				testset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
+				testset->use_Zernike2 = use_Zernike2;
 				res=testset->LoadFromPath(testset_path, save_sigs, &featureset, do_continuous, skip_sig_check);
 				if (res < 1) showError(1,"Errors reading from '%s'\n",testset_path);
 				if (testset_save_fit) {
