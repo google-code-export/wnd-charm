@@ -54,17 +54,7 @@
 #endif
 
 #include <string>
-#include <map>
-#ifdef HAVE_UNORDERED_MAP
-# include <unordered_map>
-# define MAP std::unordered_map
-#elif defined ( HAVE_TR1_UNORDERED_MAP )
-# include <tr1/unordered_map>
-# define MAP std::tr1::unordered_map
-#else
-# define MAP std::map
-#endif
-
+#include "MAP.h"
 
 /* global variable */
 extern int verbosity;

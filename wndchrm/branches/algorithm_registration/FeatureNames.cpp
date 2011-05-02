@@ -3,25 +3,11 @@
 #include <time.h>
 
 #include "FeatureNames.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
-#include <map>
 #include <set>
 #include <algorithm>
-
-// Storage for class statics
-FeatureNames::cnm_t  FeatureNames::channels_;
-FeatureNames::tnm_t  FeatureNames::transforms_;
-FeatureNames::fam_t  FeatureNames::feature_algorithms_;
-FeatureNames::fgnm_t FeatureNames::feature_groups_;
-FeatureNames::fnm_t  FeatureNames::features_;
-FeatureNames::ofnm_t FeatureNames::old_features_;
-// initialization pre-main
-const bool initOldFeatureNameLookup_ = FeatureNames::initOldFeatureNameLookup ();
-const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
-
-
-
 
 // testing only
 // #define CYCLES 100
@@ -121,6 +107,59 @@ const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
 // 
 // }
 
+bool FeatureNames::instanceFlag = false;
+FeatureNames* FeatureNames::pInstance = NULL;
+
+static FeatureNames* __FeatureNames_instance = FeatureNames::getInstance();
+
+FeatureNames::FeatureNames() {
+	initFeatureAlgorithms();
+	initOldFeatureNameLookup();
+}
+
+FeatureNames* FeatureNames::getInstance()
+{
+	if( !instanceFlag ) {
+		std::cout << "Instantiating new FeatureNames singleton" << std::endl;
+		pInstance = new FeatureNames();
+		instanceFlag = true;
+		return pInstance;
+	}
+	else {
+		return pInstance;
+	}
+}
+
+void FeatureInfo::print_info() const {
+	std::cout << "\tname:\t" << name << std::endl;
+	if( group )
+		group->print_info();
+}
+void FeatureGroup::print_info() const {
+	std::cout << "\tgroup name:\t" << name << std::endl;
+	if( algorithm )
+		algorithm->print_info();
+	if( channel )
+		channel->print_info();
+	for( TransformList::iterator t_it = transforms.begin(); t_it != transforms.end(); ++t_it ) {
+		std::cout << "\t";
+		(*t_it).print_info();
+	}
+}
+
+void FeatureAlgorithm::print_info() const {
+	std::cout << "\talg name:\t" << name << " (" << n_features << " features) " << std::endl;
+}
+
+void Transform::print_info() const {
+	std::cout << "\ttransform name\t" << name << std::endl;
+}
+
+void Channel::print_info() const {
+	std::cout << "\tchannel name\t" << name << std::endl;
+}
+
+
 /*
 New-style feature names follow this style:
   Zernike Coefficients (Wavelet (Edge ())) [21]
@@ -137,7 +176,7 @@ In the example above, Edge transform first, then Wavelet, then Zernike coefficie
 The feature and group names reported in .name fields are normalized for whitespace as in the example above.
 */
 
-const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
+const FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
 	if (! (featurename_in && *featurename_in) ) return (NULL);
 	fnm_t::const_iterator fnm_it = features_.find(featurename_in);
 	if (fnm_it != features_.end()) return (fnm_it->second);
@@ -196,7 +235,7 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char 
 }
 
 // This returns an iterator to the algorithm map by string lookup
-const FeatureNames::FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
+const FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
 	fam_t::const_iterator fam_it = feature_algorithms_.find(name);
 	FeatureAlgorithm *algorithm = NULL;
 	
@@ -212,7 +251,7 @@ const FeatureNames::FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (s
 
 
 // This should return a channel object by string lookup
-const FeatureNames::Channel *FeatureNames::getChannelByName (std::string &name) {
+const Channel *FeatureNames::getChannelByName (std::string &name) {
 	cnm_t::const_iterator cnm_it = channels_.find(name);
 	Channel *channel = NULL;
 
@@ -227,7 +266,7 @@ const FeatureNames::Channel *FeatureNames::getChannelByName (std::string &name) 
 }
 
 // This should return a transform object by string lookup
-const FeatureNames::Transform *FeatureNames::getTransformByName (std::string &name) {
+const Transform *FeatureNames::getTransformByName (std::string &name) {
 	tnm_t::const_iterator tnm_it = transforms_.find(name);
 	Transform *transform = NULL;
 
@@ -242,7 +281,7 @@ const FeatureNames::Transform *FeatureNames::getTransformByName (std::string &na
 }
 
 
-const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
+const FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
 	fgnm_t::const_iterator fgnm_it = feature_groups_.find(name);
 	if (fgnm_it != feature_groups_.end()) return (fgnm_it->second);
 

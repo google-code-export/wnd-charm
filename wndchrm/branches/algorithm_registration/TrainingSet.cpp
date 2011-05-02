@@ -39,13 +39,14 @@
 #include "FeatureNames.hpp"
 #include "wndchrm_error.h"
 
-// #include <iostream> // Debug
+#include <iostream> // Debug
 //#include <limits>
 
 
 #include "TrainingSet.h"
 
 #include "gsl/specfunc.h"
+#include "MAP.h"
 //#include "cmatrix.h"
 
 #ifndef WIN32
@@ -1951,128 +1952,158 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
 }
 
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split)
-{  int sample_index,sig_index,class_index;
-   double mean,var,class_dev_from_mean,mean_inner_class_var;
-   double *class_mean,*class_var,*class_count;
-   double threshold;   
+{ 
+	int sample_index,sig_index,class_index;
+	double mean,var,class_dev_from_mean,mean_inner_class_var;
+	double *class_mean,*class_var,*class_count;
+	double threshold;   
 
-   class_mean=new double[class_num+1];
-   class_var=new double[class_num+1];
-   class_count=new double[class_num+1];
-   
-// Make a featuregroup map and iterator
-	std::map<std::string, featuregroup_stats_t> featuregroups;
-	std::map<std::string, featuregroup_stats_t>::iterator fg_it;
-// An object instance to collect the stats for each feature + group
+	class_mean=new double[class_num+1];
+	class_var=new double[class_num+1];
+	class_count=new double[class_num+1];
+
+	// Make a featuregroup map and iterator
+	MAP<std::string, featuregroup_stats_t> featuregroups;
+	MAP<std::string, featuregroup_stats_t>::iterator fg_it;
+	// An object instance to collect the stats for each feature + group
 	featuregroup_stats_t featuregroup_stats;
 	feature_stats_t feature_stats;
-// And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
-	FeatureNames::FeatureInfo const *featureinfo;
+	// And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
+	FeatureInfo const *featureinfo;
+	
+	// Get "the phonebook", i.e., the singleton in charge of keeping track of feature names
+	FeatureNames* FN_instance = FeatureNames::getInstance();
 
-	if (split) {
+	if (split)
+	{
 		split->feature_stats.clear();
 		split->featuregroups_stats.clear();
 	}
-   /* use Fisher scores (for classes) or correlation scores (for correlations) */
-   for (sig_index=0;sig_index<signature_count;sig_index++)
-   {
-      if (class_num>0)  /* Fisher Scores */
-      {  /* initialize */
-         for (class_index=0;class_index<=class_num;class_index++)
-         {  class_mean[class_index]=0.0;
-            class_var[class_index]=0.0;
-            class_count[class_index]=0.0;
-         }
-         mean=var=0.0;
-         /* find the means */
-         for (sample_index=0;sample_index<count;sample_index++)
-         {  class_mean[samples[sample_index]->sample_class]+=samples[sample_index]->data[sig_index].value;
-            class_count[samples[sample_index]->sample_class]+=1;
-         }
+	// use Fisher scores (for classes) or correlation scores (for correlations)
+	for( sig_index = 0; sig_index < signature_count; sig_index++ )
+	{
+		if( class_num > 0 )
+		{ 
+			// initialize
+			for( class_index = 0; class_index <= class_num; class_index++ )
+			{
+				class_mean[ class_index ] = 0.0;
+				class_var[ class_index ] = 0.0;
+				class_count[ class_index ] = 0.0;
+			}
+			mean = var = 0.0;
+			// find the class means
+			for( sample_index = 0; sample_index < count; sample_index++ )
+			{
+				class_mean[ samples[ sample_index ]->sample_class ] += samples[ sample_index ]->data[ sig_index ].value;
+				class_count[ samples[ sample_index ]->sample_class ] += 1;
+			}
 
-         for (class_index=1;class_index<=class_num;class_index++)
-           if (class_count[class_index])
-             class_mean[class_index]/=class_count[class_index];
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				if( class_count[ class_index ] )
+					class_mean[ class_index ] /= class_count[ class_index ];
 
-         /* find the variance */
-         for (sample_index=0;sample_index<count;sample_index++)
-           class_var[samples[sample_index]->sample_class]+=pow(samples[sample_index]->data[sig_index].value-class_mean[samples[sample_index]->sample_class],2);
+			// find the variance
+			for( sample_index = 0; sample_index < count; sample_index++ )
+				class_var[ samples[ sample_index ]->sample_class ] += pow( samples[ sample_index ]->data[ sig_index ].value - class_mean[ samples[ sample_index ]->sample_class ], 2 );
 
-         for (class_index=1;class_index<=class_num;class_index++)
-           if (class_count[class_index])
-             class_var[class_index]/=class_count[class_index];
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				if( class_count[ class_index ] )
+					class_var[ class_index ] /= class_count[ class_index ];
 
-         /* compute fisher score */
+			// compute fisher score
 
-         /* find the mean of all means */
-         for (class_index=1;class_index<=class_num;class_index++)
-           mean+=class_mean[class_index];
-         mean/=class_num;
-         /* find the variance of all means */
-         class_dev_from_mean=0;
-         for (class_index=1;class_index<=class_num;class_index++)
-           class_dev_from_mean+=pow(class_mean[class_index]-mean,2);
-         if (class_num>1) class_dev_from_mean/=(class_num-1);
-	     else class_dev_from_mean=0;
+			// find the mean of all means
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				mean += class_mean[ class_index ];
+			mean /= class_num;
 
-         mean_inner_class_var=0;
-         for (class_index=1;class_index<=class_num;class_index++)
-           mean_inner_class_var+=class_var[class_index];
-         mean_inner_class_var/=class_num;
-         if (mean_inner_class_var==0) mean_inner_class_var+=0.000001;   /* avoid division by zero - and avoid INF values */
+			// find the variance of all means
+			class_dev_from_mean = 0;
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				class_dev_from_mean += pow( class_mean[ class_index ] - mean, 2 );
 
-         SignatureWeights[sig_index]=class_dev_from_mean/mean_inner_class_var;
-///*
-//char *p1,*p2;
-//p1=strrchr(SignatureNames[sig_index],'#');
-//p2=strrchr(SignatureNames[sig_index],'_');
-//if (!p1) SignatureWeights[sig_index]=0;
-//if (p1) if (((long)p2-(long)p1)>3) SignatureWeights[sig_index]=0;
-//*/		 
+			if( class_num > 1 )
+				class_dev_from_mean /= ( class_num - 1 );
+			else
+				class_dev_from_mean = 0;
 
-//if (strchr(SignatureNames[sig_index],'(') && (strstr(SignatureNames[sig_index],"()")==NULL)) SignatureWeights[sig_index]=0;
-//if ( (1)
-//&& (strstr(SignatureNames[sig_index],"lick")==NULL)
-//&& (strstr(SignatureNames[sig_index],"oment")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"dge")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"ernike")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"eature")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"amura")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"abor")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"istogram")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"hebyshev")==NULL) 
-//&& (strstr(SignatureNames[sig_index],"adon")==NULL) 
-//) SignatureWeights[sig_index]=0;
-//if (SignatureWeights[sig_index]>0) printf("%s\n",SignatureNames[sig_index]);
+			mean_inner_class_var = 0;
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				mean_inner_class_var += class_var[ class_index ];
 
-      }  /* end of method 0 (Fisher Scores) */
+			mean_inner_class_var /= class_num;
+			if( mean_inner_class_var == 0 )
+				mean_inner_class_var += 0.000001;   // avoid division by zero - and avoid INF values
 
-      /* Pearson Correlation scores */
-      if (is_continuous)
-      {  double mean_ground=0,stddev_ground=0,mean=0,stddev=0,z_score_sum=0;
-         for (sample_index=0;sample_index<count;sample_index++)  /* compute the mean of the continouos values */
-           mean_ground+=(samples[sample_index]->sample_value/((double)count));
-         for (sample_index=0;sample_index<count;sample_index++)  /* compute the stddev of the continouos values */
-           stddev_ground+=pow(samples[sample_index]->sample_value-mean_ground,2);	  
-         stddev_ground=sqrt(stddev_ground/count);
-         for (sample_index=0;sample_index<count;sample_index++)
-           mean+=(samples[sample_index]->data[sig_index].value/((double)count));
-         for (sample_index=0;sample_index<count;sample_index++)  /* compute the stddev of the continouos values */
-           stddev+=pow(samples[sample_index]->data[sig_index].value-mean,2);	  
-         stddev=sqrt(stddev/count);	
-         for (sample_index=0;sample_index<count;sample_index++)
-           if (stddev>0 && stddev_ground>0) z_score_sum+=((samples[sample_index]->sample_value-mean_ground)/stddev_ground)*((samples[sample_index]->data[sig_index].value-mean)/stddev);
-         SignatureWeights[sig_index]=pow(fabs(z_score_sum/count),1);
-//printf("%d Fisher Score: %f\n",class_num,SignatureWeights[sig_index]);		 
-	  } /* end of method 1 (Pearson Correlation) */
-	  
-	// add the sums of the scores of each group of features */
-	// Get feature information from the name and store the feature and group name in our maps
-		featureinfo = FeatureNames::getFeatureInfoByName ( SignatureNames[ sig_index ] );
-	// find it in our map by name
-		fg_it = featuregroups.find(featureinfo->group->name);
-	// if its a new feature group, initialize a stats structure, and add it to our map
-		if (fg_it == featuregroups.end()) {
+			SignatureWeights[ sig_index ] = class_dev_from_mean / mean_inner_class_var;
+
+			///*
+			//char *p1,*p2;
+			//p1=strrchr(SignatureNames[sig_index],'#');
+			//p2=strrchr(SignatureNames[sig_index],'_');
+			//if (!p1) SignatureWeights[sig_index]=0;
+			//if (p1) if (((long)p2-(long)p1)>3) SignatureWeights[sig_index]=0;
+			//*/		 
+
+			//if (strchr(SignatureNames[sig_index],'(') && (strstr(SignatureNames[sig_index],"()")==NULL)) SignatureWeights[sig_index]=0;
+			//if ( (1)
+			//&& (strstr(SignatureNames[sig_index],"lick")==NULL)
+			//&& (strstr(SignatureNames[sig_index],"oment")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"dge")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"ernike")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"eature")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"amura")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"abor")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"istogram")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"hebyshev")==NULL) 
+			//&& (strstr(SignatureNames[sig_index],"adon")==NULL) 
+			//) SignatureWeights[sig_index]=0;
+			//if (SignatureWeights[sig_index]>0) printf("%s\n",SignatureNames[sig_index]);
+
+		}  /* end of method 0 (Fisher Scores) */
+
+		// Pearson Correlation scores
+		if( is_continuous )
+		{  
+			double mean_ground=0,stddev_ground=0,mean=0,stddev=0,z_score_sum=0;
+			
+			// compute the mean of the continuous values 
+			for( sample_index = 0; sample_index < count; sample_index++ ) 
+				mean_ground += ( samples[ sample_index ]->sample_value / ( (double) count ) );
+
+			// compute the stddev of the continuous values 
+			for( sample_index = 0; sample_index < count; sample_index++ )
+				stddev_ground += pow( samples[ sample_index ]->sample_value - mean_ground, 2 );	  
+			stddev_ground = sqrt( stddev_ground / count );
+
+			for( sample_index = 0; sample_index < count; sample_index++ )
+				mean += ( samples[ sample_index ]->data[ sig_index ].value / ( (double) count ) );
+
+			// compute the stddev of the continuous values
+			for( sample_index = 0; sample_index < count; sample_index++ )  
+				stddev += pow( samples[ sample_index ]->data[ sig_index ].value - mean, 2 );
+			stddev = sqrt( stddev / count );
+
+			for( sample_index = 0; sample_index < count; sample_index++ )
+				if( stddev > 0 && stddev_ground > 0 )
+					z_score_sum += ( ( samples[ sample_index ]->sample_value - mean_ground ) / stddev_ground ) * ( ( samples[ sample_index ]->data[ sig_index ].value - mean ) / stddev );
+
+			SignatureWeights[ sig_index ] = pow( fabs( z_score_sum / count ), 1 );
+			//printf("%d Fisher Score: %f\n",class_num,SignatureWeights[sig_index]);		 
+		}
+
+		std::cout << sig_index << "  " << SignatureNames[sig_index] << std::endl;
+
+		// add the sums of the scores of each group of features
+		// Get feature information from the name and store the feature and group name in our maps
+		featureinfo = FN_instance->getFeatureInfoByName ( SignatureNames[ sig_index ] );
+
+		// find it in our map by name
+		fg_it = featuregroups.find( featureinfo->group->name );
+		// if its a new feature group, initialize a stats structure, and add it to our map
+		if (fg_it == featuregroups.end())
+		{
 			featuregroup_stats.name = featureinfo->group->name;
 			featuregroup_stats.featuregroup_info = featureinfo->group;
 			featuregroup_stats.sum_weight = SignatureWeights[ sig_index ];
@@ -2083,7 +2114,9 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 			featuregroup_stats.stddev = 0;
 			featuregroup_stats.n_features = 1;
 			featuregroups[featureinfo->group->name] = featuregroup_stats; // does a copy
-		} else {
+		}
+		else
+		{
 			if (SignatureWeights[ sig_index ] < fg_it->second.min)
 				fg_it->second.min = SignatureWeights[ sig_index ];
 			if (SignatureWeights[ sig_index ] > fg_it->second.max)
@@ -2092,47 +2125,47 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 			fg_it->second.sum_weight2 += (SignatureWeights[ sig_index ] * SignatureWeights[ sig_index ]);
 			fg_it->second.n_features++;
 		}
-		
-		
-	// Initialize a feature stats structure, and add it to our vector
+
+		// Initialize a feature stats structure, and add it to our vector
 		feature_stats.name = SignatureNames[ sig_index ];
 		feature_stats.feature_info = featureinfo;
 		feature_stats.weight = SignatureWeights[ sig_index ];
 		split->feature_stats.push_back (feature_stats); // makes a copy
-	}
+	} // END iterating over all signatures
 
-   // Feature group sorting code:
-// Copy the map to the vector while updating summary stats
+	// Feature group sorting code:
+	// Copy the map to the vector while updating summary stats
 	split->featuregroups_stats.clear();
-	for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it ) {
+	for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it )
+	{
 		fg_it->second.mean = fg_it->second.sum_weight / (double)(fg_it->second.n_features);
 		fg_it->second.stddev = sqrt (
-			(fg_it->second.sum_weight2 - (fg_it->second.sum_weight * fg_it->second.mean)) / (double)(fg_it->second.n_features - 1)
-		); // sqrt (variance) for stddev
+				(fg_it->second.sum_weight2 - (fg_it->second.sum_weight * fg_it->second.mean)) / (double)(fg_it->second.n_features - 1)
+				); // sqrt (variance) for stddev
 		split->featuregroups_stats.push_back (fg_it->second);
 	}
-// Sort the featuregroup vector by mean weight
+	// Sort the featuregroup vector by mean weight
 	sort_by_mean_weight_t sort_by_mean_weight_func;
 	sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
 
-// Sort the features in our split by weight, and use the sorted list to get the threshold value
+	// Sort the features in our split by weight, and use the sorted list to get the threshold value
 	sort_by_weight_t sort_by_weight_func;
 	sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
 	int last_index = (int)floor( (used_signatures * (double)signature_count) + 0.5 );
 	threshold=split->feature_stats[last_index].weight;
-// Lop off the vector after the threshold
+	// Lop off the vector after the threshold
 	split->feature_stats.erase (split->feature_stats.begin() + last_index,split->feature_stats.end());
 
 
-// now set to 0 all signatures that are below the threshold
+	// now set to 0 all signatures that are below the threshold
 	for (sig_index=0;sig_index<signature_count;sig_index++)
 		if (SignatureWeights[sig_index]<threshold) SignatureWeights[sig_index]=0.0;
 
 	if (used_mrmr>0) SetmRMRScores(used_signatures,used_mrmr);  /* filter the most informative features using mrmr */
 
-   delete class_mean;
-   delete class_var;
-   delete class_count;
+	delete class_mean;
+	delete class_var;
+	delete class_count;
 }
 
 
