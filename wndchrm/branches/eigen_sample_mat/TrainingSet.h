@@ -193,8 +193,7 @@ public:
 	std::vector<Eigen::MatrixXd> projected_features;  // feature matrixes in reduced feature space, i.e. "weighted feature space", "LDA", etc
 	std::vector<signatures *> samples;                // samples - in read order - these pointers "own" the samples - this vector is empty in train/test split TrainingSets.
 	std::vector< std::vector<signatures *> > class_samples; // samples for training sorted by class (correspond to raw_features order)
-	std::vector<signatures *> test_samples; // test samples (unsorted)
-	std::vector<Eigen::VectorXd> SampleValueVecs;
+	std::vector<signatures *> test_samples; // test samples (unsorted) 
 	Eigen::MatrixXd raw_test_features;
 	Eigen::MatrixXd projected_test_features;
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
@@ -241,7 +240,6 @@ DimensionalityReductionBase *DR;
 	void normalize(TrainingSet *ts);                               /* normalize the values of the provided TrainingSet to [0,100] based on stored normalization params */
    void SetmRMRScores(double used_signatures,double used_mrmr);                     /* set mRMR scores to the features           */
 	void SetDimensionalityReduction(DimensionalityReductionBase *DR, double feature_fraction, data_split *split);
-	const std::vector <Eigen::VectorXd> &GetSampleValueVecs();
    void SetFisherScores(double used_signatures, double used_mrmr, data_split *split);/* compute the fisher scores for the signatures  */
    int IgnoreFeatureGroup(long index,char *group_name);            /* set the Fisher Score of a group of image features to zero */
    double distance(signatures *sample1, signatures *sample2,double power);  /* Find the weighted Euclidean distance between two samples  */

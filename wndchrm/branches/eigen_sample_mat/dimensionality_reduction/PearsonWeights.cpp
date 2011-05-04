@@ -4,7 +4,7 @@
 
 // The "training" call
 PearsonWeights::PearsonWeights (const std::vector <Eigen::MatrixXd> &raw_features, const std::vector <Eigen::VectorXd> &sample_values, double fraction) {
-	int class_index;
+	int class_index, feature_index;
 
 	class_num = raw_features.size() - 1;
 
@@ -13,44 +13,30 @@ PearsonWeights::PearsonWeights (const std::vector <Eigen::MatrixXd> &raw_feature
 
 	feature_count = raw_features[1].rows();
 
-	Eigen::VectorXd feature_means (feature_count);
-	feature_means.setConstant(0);
-	double sample_mean = 0, N = 0;
+	Eigen::VectorXd f_sum (feature_count), f_sum2 (feature_count), cross (feature_count);
+	f_sum.setConstant(0);
+	f_sum2.setConstant(0);
+	cross.setConstant(0);
+	double val_sum = 0, val_sum2 = 0, N = 0;
 	
 	for (class_index = 0; class_index <= class_num; class_index++) {
 		const Eigen::MatrixXd &raw_features_ref = raw_features[class_index];
-		const Eigen::RowVectorXd &class_sample_values = sample_values[class_index];
-
+		const Eigen::VectorXd &class_sample_values = sample_values[class_index];
 		int n_features = raw_features_ref.rows();
-		if (! n_features) continue;
-		feature_means += raw_features_ref.rowwise().sum();
-		sample_mean += class_sample_values.sum();
+		for (feature_index = 0; feature_index < n_features; feature_index++) {
+			f_sum[feature_index]  += raw_features_ref.row(feature_index).sum();
+			f_sum2[feature_index] += raw_features_ref.row(feature_index).array().square().sum();
+			cross[feature_index]  += (raw_features_ref.row(feature_index).array() * class_sample_values.array()).sum();
+		}
+		val_sum += class_sample_values.sum();
+		val_sum2 += class_sample_values.array().square().sum();
 		N += raw_features_ref.cols();
 	}
-	sample_mean /= N;
-	feature_means /= N;
+	cross -= ( (f_sum.array() * val_sum) / N ).matrix();
+	double val_diff = (val_sum2 - pow(val_sum,2)) / N;
+	Eigen::VectorXd denom = ( (f_sum2.array() - f_sum.array().square()) / N) * val_diff;
 	
-	Eigen::VectorXd f_delta_sum2 (feature_count), delta_cross (feature_count);
-	f_delta_sum2.setConstant(0);
-	delta_cross.setConstant(0);
-	double s_delta_sum2=0;
-	for (class_index = 0; class_index <= class_num; class_index++) {
-		const Eigen::MatrixXd &raw_features_ref = raw_features[class_index];
-		const Eigen::RowVectorXd &class_sample_values = sample_values[class_index];
-		int n_features = raw_features_ref.rows();
-		if (! n_features) continue;
-		for (int sample_index=0; sample_index < raw_features_ref.cols(); sample_index++) {
-			double class_sample_delta = class_sample_values[sample_index] - sample_mean;
-			Eigen::VectorXd f_deltas = (raw_features_ref.col(sample_index) - feature_means);
-			delta_cross  += (f_deltas.array() * class_sample_delta).matrix();
-			f_delta_sum2 += f_deltas.array().square().matrix();
-			s_delta_sum2 += (class_sample_delta * class_sample_delta);
-		}
-	}
-
-	Eigen::VectorXd denom = f_delta_sum2.array().sqrt() * sqrt(s_delta_sum2);
-	FeatureWeights = (denom.array() < DBL_EPSILON).select (0, delta_cross.array().abs() / denom.array() );
-
+	FeatureWeights = (denom.array() < DBL_EPSILON).select (0, cross.array() / denom.array());
 	InitReducedFeatureVecs (fraction);
 
 }

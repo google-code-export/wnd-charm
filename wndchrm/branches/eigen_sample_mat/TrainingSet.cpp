@@ -2082,22 +2082,7 @@ void TrainingSet::SetDimensionalityReduction(DimensionalityReductionBase *DR_ini
 		DR->ProjectFeatures (projected_features[class_index],raw_features[class_index]);
 	}
 
-}
 
-const std::vector <Eigen::VectorXd> &TrainingSet::GetSampleValueVecs() {
-	int class_index, sample_index, n_samples;
-	if (SampleValueVecs.size()) return SampleValueVecs;
-	SampleValueVecs.resize(class_num);
-	for (class_index = 0; class_index <= class_num; class_index++) {
-		n_samples = class_samples[class_index].size();
-		if (! n_samples) continue;
-		Eigen::VectorXd &SampleValues = SampleValueVecs[class_index];
-		SampleValues.resize(n_samples);
-		for (sample_index = 0; sample_index < n_samples; sample_index++) {	
-			SampleValues[sample_index] = class_samples[class_index][sample_index]->sample_value;
-		}
-	}
-	return SampleValueVecs;
 }
 
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split) {
