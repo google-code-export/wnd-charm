@@ -1133,14 +1133,13 @@ void signatures::normalize(void *TrainSet, Eigen::VectorXd &sample) {
 		orig_index = FeatureIndexes[sig_index];
 		sample_feature = (*sample_mat)( orig_index, sample_col );
 		if ( sample_feature > -DBL_MAX && sample_feature < DBL_MAX && ranges[orig_index] > DBL_EPSILON ) {
-			sample[sig_index] = 100*((sample_feature - mins[orig_index])/ranges[orig_index]) * ts->ReducedFeatureWeights[sig_index];
+			sample[sig_index] = 100*((sample_feature - mins[orig_index])/ranges[orig_index]);
 // 			if (sample[sig_index] > 100) sample[sig_index] = 100;
 // 			if (sample[sig_index] < 0) sample[sig_index] = 0;
 		} else {
 			sample[sig_index] = 0;
 		}
 	}
-//	sample.array() *= ts->ReducedFeatureWeights.array();
 }
 
 

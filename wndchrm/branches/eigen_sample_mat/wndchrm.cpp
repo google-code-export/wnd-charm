@@ -30,7 +30,6 @@
 
 #include "TrainingSet.h"
 #include "wndchrm_error.h"
-#include "dimensionality_reduction/FischerWeights.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -207,7 +206,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 	
 	if (max_test_images > 0) { // -jN specified
 		if (testset) {
-			catError("WARNING: The -j%d parameter is ignored when a test set is specified (%s).\n",max_test_images,testset->source_path.c_str());
+			catError("WARNING: The -j%d parameter is ignored when a test set is specified (%s).\n",max_test_images,testset->source_path);
 		} else if ( max_test_images > (max_balanced_i - max_training_images) ) { // -jN always balanced unless test .fit
 			if (max_balanced_i - max_training_images > 0) {
 				catError("WARNING: Insufficient images for balanced training (%d) and specified testing (%d).  %d images used for testing.\n",
@@ -227,8 +226,8 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 }
 
 
-int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int method, featureset_t *featureset, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
-	int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int distance_method, int phylip_algorithm,int export_tsv,
+int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **argv, int class_num, int method, featureset_t *featureset, double split_ratio, int balanced_splits, double max_features, double used_mrmr, long split_num,
+	int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int distance_method, int phylip_algorithm,int export_tsv,
 	long first_n, char *weight_file_buffer, char weight_vector_action, int N, TrainingSet *testset, int ignore_group, int tile_areas, int max_tile, int image_similarities, int random_splits) {
 	TrainingSet *train,*test,**TilesTrainingSets=NULL;
 	data_split splits[MAX_SPLITS];
@@ -288,7 +287,7 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 // Check that the train and test sets have the same number of features
 	if (testset && testset->signature_count != ts->signature_count) {
 		catError ("The number of features in the train set '%s' (%d) is inconsistent with test set '%s' (%d).\n",
-			ts->source_path.c_str(),ts->signature_count,testset->source_path.c_str(),testset->signature_count);
+			ts->source_path,ts->signature_count,testset->source_path,testset->signature_count);
 		return(showError(1, NULL));
 	}
 
@@ -306,7 +305,6 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 		if (train_frac > 0) printf ("samples per image=%d, UNBALANCED training fraction=%f\n",samples_per_image,train_frac);
 		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
 	}
-
 	for (split_index=0;split_index<split_num;split_index++)
 	{
 		double accuracy;
@@ -342,17 +340,13 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 			for (tile_index=0;tile_index<samples_per_image;tile_index++)
 			{
 				TilesTrainingSets[tile_index]->normalize();
-				FischerWeights *dim_reduce = new FischerWeights(TilesTrainingSets[tile_index]->raw_features, max_features);
-				TilesTrainingSets[tile_index]->SetDimensionalityReduction(dim_reduce, max_features, NULL);
-//				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
+				TilesTrainingSets[tile_index]->SetFisherScores(max_features,used_mrmr,NULL);
 			}
 		}
 		else
 		{
 			train->normalize(); // normalize the feature values of the training set
-			FischerWeights *dim_reduce = new FischerWeights(train->raw_features, max_features);
-			train->SetDimensionalityReduction (dim_reduce, max_features, &(splits[split_index]));  // compute the Fisher Scores for the image features
-//			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
+			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
 		}
 		//train->class_num=temp;
 		if (weight_vector_action=='w')
@@ -364,6 +358,8 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 			if (tile_areas) for (tile_index=0;tile_index<samples_per_image;tile_index++) feature_weight_distance=TilesTrainingSets[tile_index]->LoadWeightVector(weight_file_buffer,(weight_vector_action=='+')-(weight_vector_action=='-'));	   
 			if (feature_weight_distance<0) showError(1,"Could not load weight vector from '%s'\n",weight_file_buffer);
 		}
+		if (report) splits[split_index].individual_images=new char[(int)((test->count/(samples_per_image))*(class_num*15))];
+		else splits[split_index].individual_images=NULL;
 		if (ignore_group)   /* assign to zero all features of the group */
 		{
 			if (!(ts->IgnoreFeatureGroup(ignore_group,group_name))) {
@@ -374,6 +370,7 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 				delete splits[split_index].testing_images;
 				delete splits[split_index].class_accuracies;
 				delete splits[split_index].similarity_matrix;
+				delete splits[split_index].individual_images;
 				showError(1,"Errors while trying to ignore group %d '%s'\n",ignore_group,group_name);
 				return(0);
 			}
@@ -404,7 +401,7 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 		splits[split_index].method=method;
 		splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
-		if (!ts->do_report && !ignore_group && verbosity != 1 )   // print the accuracy and confusion and similarity matrices
+		if (!report && !ignore_group && verbosity != 1 )   // print the accuracy and confusion and similarity matrices
 		{ 
 			printf( "\n" );
 			ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
@@ -424,7 +421,7 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 	} // End for (split_index=0;split_index<split_num;split_index++)
 
 	// if( verbosity >= 2 ) printf("\n\n");
-	if (!ts->do_report & verbosity != 1 )    // print the average accuracy
+	if (!report & verbosity != 1 )    // print the average accuracy
 	{
 		printf( "\n----------\n" );
 		int split_index;
@@ -437,28 +434,28 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 		printf("\n----------\n");
 	}
 
-	if (ts->do_report)
+	if (report)
 	{
-		if (ts->report_path.size()){
-			ts->report_path.replace (ts->report_path.find_last_of('.'), std::string::npos, ".html");
-			output_file=fopen(ts->report_path.c_str(),"w");
-			if (!output_file) showError(1, "Could not open file for writing '%s'\n",ts->report_path.c_str());
+		if (report_file_name){
+			if (!strchr(report_file_name,'.')) strcat(report_file_name,".html");
+			output_file=fopen(report_file_name,"w");
+			if (!output_file) showError(1, "Could not open file for writing '%s'\n",report_file_name);
 		}
 		else output_file=stdout;     
-		ts->report(output_file,argc,argv,splits,split_num,featureset,n_train,
+		ts->report(output_file,argc,argv,report_file_name,splits,split_num,featureset,n_train,
 				phylib_path, distance_method, phylip_algorithm,export_tsv,
 				testset,image_similarities);   
 		if (output_file!=stdout) fclose(output_file);
 		// copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files
 		if (export_tsv || phylib_path) {
 			char command_line[512],ps_file_path[512];
-			strcpy(ps_file_path,ts->report_path.c_str());
+			strcpy(ps_file_path,report_file_name);
 			if ( strrchr(ps_file_path,'/') ) {
 				(strrchr(ps_file_path,'/'))[1]='\0';
 				if (phylib_path) {
-					sprintf(command_line,"mv ./%s*.ps %s",ts->name.c_str(),ps_file_path);
+					sprintf(command_line,"mv ./%s*.ps %s",ts->name,ps_file_path);
 					system(command_line);
-					sprintf(command_line,"mv ./%s*.jpg %s",ts->name.c_str(),ps_file_path);
+					sprintf(command_line,"mv ./%s*.jpg %s",ts->name,ps_file_path);
 					system(command_line);
 				}
 
@@ -478,6 +475,7 @@ int split_and_test(TrainingSet *ts, int argc, char **argv, int class_num, int me
 		delete splits[split_index].testing_images;	
 		delete splits[split_index].class_accuracies;	
 		delete splits[split_index].similarity_matrix;
+		if (splits[split_index].individual_images) delete splits[split_index].individual_images;
 		if (splits[split_index].tile_area_accuracy) delete splits[split_index].tile_area_accuracy;
 		if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
 	}
@@ -910,12 +908,8 @@ int main(int argc, char *argv[])
 // 				}
 			}
 
-		// set report options
-			if (report_file && *report_file)
-				dataset->report_path = report_file;
-			dataset->do_report = report;
 			for (ignore_group=0;ignore_group<=assess_features;ignore_group++) {
-				split_and_test(dataset, argc, argv, MAX_CLASS_NUM, method, &featureset, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,max_training_images,
+				split_and_test(dataset, report_file, argc, argv, MAX_CLASS_NUM, method, &featureset, split_ratio, balanced_splits, max_features, used_mrmr,splits_num,report,max_training_images,
 					exact_training_images,max_test_images,phylib_path,distance_method,phylip_algorithm,export_tsv,first_n,weight_file_buffer,weight_vector_action,N,
 					testset,ignore_group,tile_areas,max_tile,image_similarities, random_splits);
 			}
