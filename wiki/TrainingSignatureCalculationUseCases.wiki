@@ -41,5 +41,6 @@ The following is an attempt to handle the various signature procurement scenario
 
   * It also doesn't look like there's a built in way to compare two std::sets together to see if their equal. There should be some utility call that compares two vectors of features, like int `compare_feature_vectors(std::set<FeatureNames*> A, std::set<FeatureNames*> B)`, returning -1 if A is a subset of B, 0 if A == B and 1 if A is a superset of B, with optional arguments to get the intersection or difference.
 
+= To-do =
 
-
+  * Each instance of a FeatureName object should be unique. Their creation should be restricted (in c++ terms their constructor should be protected or private.)
