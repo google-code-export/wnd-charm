@@ -17,7 +17,7 @@ The following is an attempt to handle the various signature procurement scenario
   * S is a subset of L
   * Let A = all the features known to wndcharm at runtime
   * S and L are subsets of A
-  * Let O = some set of features that defined by the user or defined programmatically, and all the features in set N are known to wndcharm, therefore,
+  * Let O = some set of features that defined by the user or defined programmatically, and all the features in set O are known to wndcharm, therefore,
   * O is a subset of A
   * Let Q = some set of features defined by the user or otherwise that includes features that may or may not be known to wndcharm at runtime, and therefore,
   * Q is not a subset of A
@@ -26,7 +26,7 @@ The following is an attempt to handle the various signature procurement scenario
 
 = Scenarios =
 
-  * The "phonebook" shall contain an ORDERED MAP of all features in the known universe, including the features it knows how to calculate, AND ALSO those it doesn't not know how to calculate, but it has observed through reading in signature information generated externally. The keys will be a string, and the value will be a FeatureNames pointer to the FeatureNames object containing references to the algorithm used, the index of the feature within the algorithm, and the ordered list of transforms used to create it. Technically, the keys here will always be unique, but the values may not.
+  * The "phonebook" FeatureNames singleton shall contain an ORDERED MAP of all features in the known universe, including the features it knows how to calculate, AND ALSO those it doesn't not know how to calculate, but it has observed through reading in signature information generated externally. The keys will be a string, and the value will be a FeatureNames pointer to the FeatureNames object containing references to the algorithm used, the index of the feature within the algorithm, and the ordered list of transforms used to create it. Technically, the keys here will always be unique, but the values may not.
 
   * User requests that a certain set of signatures be calculated for a specified set of features (S, L, A, O, Q) for some image set I. Let the requested set of features = R. Some of those features may have been pre-calculated and saved in a .sig file, or within a database (S, L, A, O, Q, N). Let the pre-calculated set of features = P.
 
@@ -40,8 +40,6 @@ The following is an attempt to handle the various signature procurement scenario
   * It doesn't look like there's a built-in way to ask a std::map for a std::set of just its keys, so it's a design decision whether to simultaneously populate a separate std::set of just FeatureNames pointers while loading the map of `FeatureName*` and feature vals, or to extend the std::map class to implement a `keys()` function.
 
   * It also doesn't look like there's a built in way to compare two std::sets together to see if their equal. There should be some utility call that compares two vectors of features, like int `compare_feature_vectors(std::set<FeatureNames*> A, std::set<FeatureNames*> B)`, returning -1 if A is a subset of B, 0 if A == B and 1 if A is a superset of B, with optional arguments to get the intersection or difference.
-
-
 
 
 
