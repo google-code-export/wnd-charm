@@ -176,6 +176,7 @@ public:
    long class_num;                                                 /* number of known/defined classes (may be 0 if all samples are unknown, may be 1 when is_continuous, or for 1 known discrete class */
    char **class_labels;                                            /* labels of the classes                     */
    long *class_nsamples;                                           /* sample counts in each class               */
+   int *train_class;                                               /* class indexes into training set           */
    int  is_continuous;                                             /* A numeric/continuous dataset.  sample_class = 0 or 1 for all samples. class_nsamples is valid, but class_labels is not. */
    int  is_numeric;                                                /* All class labels can be interpreted as numeric values (is_continuous can be false when is_numeric is true) */
    int  is_pure_numeric;                                           /* All class labels are numerical (no characters other than those than can be part of a valid double - INF, NAN, etc are technically valid, but not in our case)  */
@@ -218,6 +219,7 @@ public:
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
    long report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
+   void Summarize(featureset_t *featureset);  /* class summary to stdout */
 };
 
 int check_numeric (char *s, double *samp_val);

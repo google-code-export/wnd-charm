@@ -245,44 +245,37 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	// Remove classes from the end if N is specified
 	if (N>0) while (ts->class_num>N) ts->RemoveClass(ts->class_num);
 
-	// If a testset was specified, make sure its classes are consistent with ts.
-	if (testset) {
-		for (class_index = 1; class_index <= ts->class_num; class_index++) {
-//printf("comparing train class '%s' with test '%s'\n",ts->class_labels[class_index],testset->class_labels[class_index]);
-			while ( testset->class_num && strcmp(ts->class_labels[class_index],testset->class_labels[class_index]) ) {
-//printf("dropping test class %d '%s'\n",class_index,testset->class_labels[class_index]);
-				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index]);
-				testset->MarkUnknown (class_index);
-//printf("test class %d now '%s'\n",class_index,testset->class_labels[class_index]);
-			}
-		}
-		// mark any extra classes as unknown
-		for (class_index = ts->class_num+1; class_index <= testset->class_num;class_index++) {
-//printf("dropping extra test class '%s'\n",testset->class_labels[class_index]);
-			catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index]);
-			testset->MarkUnknown (class_index);
-		}
-
-		// Now that they're consistent, remove classes based on N.
-		if (N>0) while (testset->class_num > N) testset->RemoveClass(testset->class_num); /* cut the number of classes also in the test file */
-		n_test = testset->count / samples_per_image;
-//for (class_index = 0; class_index <= ts->class_num; class_index++) printf("ts class '%s' is test class '%s'\n",ts->class_labels[class_index],testset->class_labels[class_index]);
-//for (class_index = 0; class_index < testset->count; class_index++) printf("sample %d '%s' class '%s' \n",class_index,testset->samples[class_index]->full_path, testset->class_labels[testset->samples[class_index]->sample_class]);
-
-	}
-
-
 // Remove classes with less than max_training_images if exact_training_images is true
 	if (exact_training_images) {
 		class_index=ts->class_num;
 		while( class_index > 0 ) {
 			if( ts->class_nsamples[ class_index ] * samples_per_image <  max_training_images ) {
 				ts->RemoveClass( class_index );
-				if (testset) testset->RemoveClass( class_index );
 			}
 			class_index--;
 		}
 	}
+
+	// If a testset was specified, make sure its classes are consistent with ts.
+	if (testset) {
+		testset->train_class = new int[testset->class_num+1];
+		int ts_class_index;
+		for (class_index = 1; class_index <= testset->class_num; class_index++) {
+			testset->train_class[class_index] = 0;
+			for (ts_class_index = 1; ts_class_index <= ts->class_num; ts_class_index++) {
+				if ( ! strcmp(ts->class_labels[ts_class_index],testset->class_labels[class_index]) ) {
+					testset->train_class[class_index] = ts_class_index;
+					break;
+				}
+			}
+			if (!testset->train_class[class_index]) {
+				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked with '*'.\n",testset->class_labels[class_index]);
+			}
+		}
+
+	}
+
+
 
 // Check that the train and test sets have the same number of features
 	if (testset && testset->signature_count != ts->signature_count) {
