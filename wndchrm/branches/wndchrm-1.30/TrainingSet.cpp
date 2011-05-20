@@ -133,7 +133,7 @@ TrainingSet::TrainingSet(long samples_num, long class_num)
       class_nsamples[sample_index] = 0;
    }
    
-   
+   train_class = NULL;
    
 //   for (sample_index=0;sample_index<MAX_CLASS_NUM;sample_index++)
 //     strcpy(class_labels[sample_index],"");
@@ -152,6 +152,7 @@ TrainingSet::~TrainingSet()
    delete class_labels;
    delete samples;
    delete class_nsamples;
+   if (train_class) delete train_class;
 }
 
 
@@ -439,6 +440,7 @@ long index;
 
 	if (class_index > class_num || class_index == 0) return;
 	/* move the class labels at and above class_index */
+	class_nsamples[0] += class_nsamples[class_index];
 	for (index=class_index;index < class_num;index++) {
 		strcpy(class_labels[index],class_labels[index+1]);
 		class_nsamples[index] = class_nsamples[index+1];
@@ -1039,34 +1041,7 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 	strcpy(name,char_p);
 	if (strrchr(name,'.')) *strrchr(name,'.')='\0';
 
-
-// Print out a summary
-	if (verbosity>=2) {
-		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",path,count, featureset->sampling_opts.rotations*featureset->sampling_opts.tiles_x*featureset->sampling_opts.tiles_y);
-		if (class_num == 1) { // one known class or a continuous class
-			if (is_continuous) printf ("%ld samples with numerical values. Interpolation will be done instead of classification\n",class_nsamples[1]);
-			else printf ("Single class '%s' with %ld samples. Suitable as a test/classification set only.\n",class_labels[1],class_nsamples[1]);
-			if (class_nsamples[0]) printf ("%ld unknown samples.\n",class_nsamples[0]);
-		} else if (class_num == 0) {
-			printf ("%ld unknown samples. Suitable as a test/classification set only.\n",class_nsamples[0]);
-		} else {
-			if (is_numeric) {
-				printf ("'Class label' (interpreted value) number of samples.\n");
-				for (class_index=1;class_index<=class_num;class_index++) {
-					printf ("'%s'\t(%.3g)\t%ld\n",class_labels[class_index],atof(class_labels[class_index]),class_nsamples[class_index]);
-				}
-				if (class_nsamples[0]) printf ("UNKNOWN\t(N/A)\t%ld\n",class_nsamples[0]);
-				if (is_pure_numeric) printf ("Class labels are purely numeric\n");
-			} else {
-				printf ("'Class label' number of samples.\n");
-				for (class_index=1;class_index<=class_num;class_index++) {
-					printf ("'%s'\t%ld\n",class_labels[class_index],class_nsamples[class_index]);
-				}
-				if (class_nsamples[0]) printf ("UNKNOWN\t(N/A)\t%ld\n",class_nsamples[0]);
-			}
-		}
-		printf ("----------\n");
-	}
+	Summarize(featureset);
 	return (1);
 }
 
@@ -1449,8 +1424,17 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 	interpolate=is_numeric;
 	if (tiles<=0) tiles=1;   /* make sure the number of tiles is valid */
 	strcpy(last_path,TestSet->samples[test_sample_index]->full_path);
-	sample_class=TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
-	for (class_index=1;class_index<=class_num;class_index++) probabilities_sum[class_index]=0.0;  /* initialize the array */
+	
+	if (TestSet->train_class) {
+		sample_class = TestSet->train_class [ TestSet->samples[test_sample_index]->sample_class ];
+	} else {
+		sample_class = TestSet->samples[test_sample_index]->sample_class;   /* the ground truth class of the test sample */
+	}
+	
+	for (class_index=1;class_index<=class_num;class_index++) {
+		probabilities_sum[class_index]=0.0;  /* initialize the array */
+	}
+
 	for (tile_index=test_sample_index;tile_index<test_sample_index+tiles;tile_index++) {
 		if (verbosity>=2 && tiles>1)
 			printf("%s (%d/%d)\t",TestSet->samples[tile_index]->full_path,1+tile_index-test_sample_index,tiles);
@@ -1485,7 +1469,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				if( sample_class )
 					printf( "%s\t%s", class_labels[ sample_class ], class_labels[ predicted_class ] );
 				else
-					printf( "UNKNOWN\t%s", class_labels[ predicted_class ] );
+					printf( "%s*\t%s", TestSet->class_labels[TestSet->samples[ test_sample_index ]->sample_class], class_labels[ predicted_class ] );
 
 				if (interpolate) {
 					TestSet->samples[ test_sample_index ]->interpolated_value = 0;
@@ -1605,7 +1589,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				if (predicted_class==sample_class) sprintf(color,"<font color=\"#00FF00\">Correct</font>");
 				else sprintf(color,"<font color=\"#FF0000\">Incorrect</font>");
 			} else {
-				sprintf(color,"<font color=\"#FFFF00\">Predicted</font>");
+				sprintf(color,"<font color=\"#0000FF\">Predicted</font>");
 			}
 		}
 	}
@@ -1671,11 +1655,11 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s",class_labels[sample_class],class_labels[predicted_class],color,interpolated_value);
 		} else {
 			if (verbosity>=1) {
-				printf("UNKNOWN\t%s",class_labels[predicted_class]);
+				printf( "%s*\t%s", TestSet->class_labels[TestSet->samples[ test_sample_index ]->sample_class], class_labels[ predicted_class ] );
 				if (interpolate) printf ("\t%.3f",TestSet->samples[ test_sample_index ]->interpolated_value);
 				printf("\n");
 			}
-			if (do_html) sprintf(buffer,"<td></td><td>%s</td><td>%s</td><td>%s</td>%s","UNKNOWN",class_labels[predicted_class],color,interpolated_value);
+			if (do_html) sprintf(buffer,"<td></td><td>%s*</td><td>%s</td><td>%s</td>%s",TestSet->class_labels[TestSet->samples[ test_sample_index ]->sample_class],class_labels[predicted_class],color,interpolated_value);
 		}
 	}
 	if (do_html) {
@@ -1816,7 +1800,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
    }
 
    if (is_continuous) return(0);   /* no classification accuracy if continouos values are used */
-   return((double)accurate_prediction/known_images);
+   return(split->accuracy);
 }
 
 
@@ -3473,6 +3457,37 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 
    fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
    return (1);
+}
+
+void TrainingSet::Summarize(featureset_t *featureset) {
+	int class_index;
+// Print out a summary
+	if (verbosity>=2) {
+		printf ("----------\nSummary of '%s' (%ld samples total, %d samples per image):\n",source_path,count, featureset->sampling_opts.rotations*featureset->sampling_opts.tiles_x*featureset->sampling_opts.tiles_y);
+		if (class_num == 1) { // one known class or a continuous class
+			if (is_continuous) printf ("%ld samples with numerical values. Interpolation will be done instead of classification\n",class_nsamples[1]);
+			else printf ("Single class '%s' with %ld samples. Suitable as a test/classification set only.\n",class_labels[1],class_nsamples[1]);
+			if (class_nsamples[0]) printf ("%ld unknown samples.\n",class_nsamples[0]);
+		} else if (class_num == 0) {
+			printf ("%ld unknown samples. Suitable as a test/classification set only.\n",class_nsamples[0]);
+		} else {
+			if (is_numeric) {
+				printf ("'Class label' (interpreted value) number of samples.\n");
+				for (class_index=1;class_index<=class_num;class_index++) {
+					printf ("'%s'\t(%.3g)\t%ld\n",class_labels[class_index],atof(class_labels[class_index]),class_nsamples[class_index]);
+				}
+				if (class_nsamples[0]) printf ("UNKNOWN\t(N/A)\t%ld\n",class_nsamples[0]);
+				if (is_pure_numeric) printf ("Class labels are purely numeric\n");
+			} else {
+				printf ("'Class label' number of samples.\n");
+				for (class_index=1;class_index<=class_num;class_index++) {
+					printf ("'%s'\t%ld\n",class_labels[class_index],class_nsamples[class_index]);
+				}
+				if (class_nsamples[0]) printf ("UNKNOWN\t(N/A)\t%ld\n",class_nsamples[0]);
+			}
+		}
+		printf ("----------\n");
+	}
 }
 
 
