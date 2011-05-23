@@ -3435,19 +3435,19 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       {  char closest_image[256],interpolated_value[256];
          
          /* add the most similar image if WNN and no tiling */
-         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
+         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<th>Most similar image</th>");
          else strcpy(closest_image,"");
 		 
          fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
-         fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><td><b>Image No.</b></td>",split_index);
-		 if (!is_continuous) fprintf(output_file,"<td><b>Normalization<br>Factor</b></td>");
+         fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><th>Image No.</th>",split_index);
+		 if (!is_continuous) fprintf(output_file,"<th width='100'>Normalization Factor</th>");
          for (class_index=1;class_index<=class_num;class_index++)
-			fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index]);
-   	     if (is_numeric) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
+			fprintf(output_file,"<th>%s</th>",class_labels[class_index]);
+   	     if (is_numeric) strcpy(interpolated_value,"<th width='100'>Interpolated Value</th>");
          else strcpy(interpolated_value,"");
-         if (is_continuous) fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
-         else fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
-         fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
+         if (is_continuous) fprintf(output_file,"<th>&nbsp;</th><th width='100'>Actual Value</th><th width='100'>Predicted Value</th>");
+         else fprintf(output_file,"<th>&nbsp;</th><th width='100'>Actual Class</th><th width='100'>Predicted Class</th><th width='100'>Classification Correctness</th>%s",interpolated_value);
+         fprintf(output_file,"<th>Image</th>%s</tr>\n",closest_image);		 
          fprintf(output_file,"%s",split->individual_images);
          fprintf(output_file,"</table><br><br>\n");
       }

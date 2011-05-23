@@ -119,8 +119,28 @@ if( !defined $input_file )
       $split_number = -1;
     }
 
+
     # Parse the first "Caption" row
-    @row = $rows[0]->look_down("_tag", "td");
+    @row = $rows[0]->look_down("_tag", "th");
+		if( $#row == -1 ) {
+    	print "Old style <td><b>..</b></td> column headers detected\n\n" if( $DEBUG1 );
+    	@row = $rows[0]->look_down("_tag", "td");
+		}
+# Make sure there are interpolated values to read out of html report
+
+		my $interp_val_col_exists = 0;
+		foreach (@rows){
+			if( $_->as_text =~ /interpolated/i ) {
+				$interp_val_col_exists = 1;
+				last;
+			}
+		}
+		if( !$interp_val_col_exists ) {
+			die "*****************\nERROR: The HTML report file $output_file doesn't appear to have a column of interpolated values in the
+individual image predictions table! Please rerun wndchrm, changing the names of the classes such that
+they can be interpreted as numbers and an interpolated value can be calculated.\n\n";
+		}
+
     my $caption_text = $row[$#row]->as_text;
     if( $caption_text =~ /Most similar image/ ) {
       $image_column = $#row - 1;
@@ -140,8 +160,8 @@ if( !defined $input_file )
     print "Image column is $image_column\n\n" if( $DEBUG1 );
 
 
-# The first row is the heading row, so skip it by starting at 1 instead of 0
-    for( my $i = 1; $i <= $#rows; $i++) {
+# Skip the first row which contains column headers
+		for( my $i = 1; $i <= $#rows; $i++) {
       $val = 0;
       @row = ();
       $img_link_element = undef;
