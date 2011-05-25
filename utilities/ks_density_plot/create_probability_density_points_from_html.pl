@@ -206,43 +206,75 @@ else
 # marginal probabilities directly, in the form of some tab separated file
 {
   open INPUT, $input_file;
-  my $num_images_per_class = 180;
+  #my $num_images_per_class = 180;
   # my $num_classes = 7;
   my $current_class;
-  my $fake_filename;
+  my $img_name;
   my @normalized_distances_ary;
-  my @coeff_ary = (3.19, 5.53, 11.42, 13.01, 19.22, 21.40, 25.12);
+  #my @coeff_ary = (3.19, 5.53, 11.42, 13.01, 19.22, 21.40, 25.12);
+  my @coeff_ary = (0,2,4,6,8,10,12);
+	$num_classes = 1+ $#coeff_ary;
+  my %data; 
 
+  my $old_chomp = $/;
+	$/ = "\r\n";
   my $count = 0;
   while (<INPUT>)
   {
+		chomp;
+
+		next if 1 == ++$count;
+
     @normalized_distances_ary = ();
+
     $interpolated_value = 0;
-    $current_class = "class" . int( $count / $num_images_per_class );
-    $fake_filename = "image" . $count;
-    @normalized_distances_ary = split /\s+/, $_;
-    die "num classes ($num_classes) does not equal num distances ($#normalized_distances_ary)\n"
-      if( $#normalized_distances_ary != $num_classes -1 );
-    
+		@normalized_distances_ary = split "\t", $_;
+	
+		$img_name = shift @normalized_distances_ary;
+		$current_class = shift @normalized_distances_ary;
+		
+		#@{ $data{ $ground_truth_class }->{$img_name} } = @line;
+#    $interpolated_value = 0;
+#    $current_class = "class" . int( $count / $num_images_per_class );
+#    $img_name = "image" . $count;
+#    @normalized_distances_ary = split /\s+/, $_;
+#    die "num classes ($num_classes) does not equal num distances ($#normalized_distances_ary)\n"
+#      if( $#normalized_distances_ary != $num_classes -1 );
+#    
     for( my $j = 0; $j <= $#normalized_distances_ary; $j++) {
       print "\t\tinterp val $interpolated_value +=  $normalized_distances_ary[$j] * $coeff_ary[$j]\n";
       $interpolated_value += $normalized_distances_ary[$j] * $coeff_ary[$j];
     }
 
-    print "$current_class $fake_filename interp val $interpolated_value\n";
+    print "$current_class $img_name interp val $interpolated_value\n";
     if( $min == -1 ) {
       $min = $interpolated_value;
     }
-    $min = $interpolated_value if( $interpolated_value < $min );
+		else {
+    	$min = $interpolated_value if( $interpolated_value < $min );
+		}
+
     if( $max == -1 ) {
       $max = $interpolated_value;
     }
-    $max = $interpolated_value if( $interpolated_value > $max );
-
-    push @{ $results_hash{ $current_class }->{ $fake_filename} }, {
-       "split_num" => 1, "dists" => $_, "val" => $interpolated_value, "predicted_class" => -1 };
+		else {
+    	$max = $interpolated_value if( $interpolated_value > $max );
+		}
+   push @{ $results_hash{ $current_class }->{ $img_name} }, {
+       "split_num" => 1, "dists" => ( join " ", @normalized_distances_ary ), "val" => $interpolated_value, "class" => -1 };
     $count++;
   }
+
+#	foreach $ground_truth_class ( keys %data ) {
+#		foreach $img_name ( keys %{ $data{ $ground_truth_class} } ) {
+#			print "GT " . $ground_truth_class . " name " . $img_name . " ";
+#			foreach (	@{ $data{ $ground_truth_class }->{$img_name} } ) {
+#				print $_ . " ";
+#			}
+#			print "\n";
+#		}
+#	}
+	$/ = $old_chomp;
   close INPUT;
 }
 
@@ -332,7 +364,7 @@ foreach my $class ( sort keys %results_hash ) {
     print "\n" if( $verbose );
   } # end iterating over each image
   $class_stat->sort_data;
-  $report .= sprintf "Class $class: count= %3d, min=%.4f, max=%.4f, mean=%.4f, std dev=%.4f\n", 
+  $report .= sprintf "Class $class: count= %3d, min=%.4f, max=%.4f, mean=%.4f, std dev=%.4f, ", 
                $class_stat->count, $class_stat->min, $class_stat->max, $class_stat->mean, $class_stat->standard_deviation;
 
   # Here is the old code which simply constructs a histogram
@@ -354,6 +386,7 @@ foreach my $class ( sort keys %results_hash ) {
     # always output default bandwidth, even if it's specified on command line
     $bw = $ks_class_stat->default_bandwidth();
     print "\tDefault bandwidth is $bw\n";
+		$report .= "bandwidth=$bw\n";
     if( defined $bandwidth && $bandwidth eq "optimal" ) {
       $obw = $ks_class_stat->optimal_bandwidth();
       print "\tOptimal bandwidth is $obw\n";
