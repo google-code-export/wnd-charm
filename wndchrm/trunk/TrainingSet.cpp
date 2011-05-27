@@ -704,7 +704,7 @@ int TrainingSet::AddAllSignatures() {
 	int samp_index;
 	int sample_class;
 	double sample_value;
-	char buffer[512];
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 	int res;
 
 	for (samp_index=0;samp_index<count;samp_index++) {
@@ -1339,7 +1339,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	// last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
 	// a set of sigs that matches a small subset of re-computed sigs.
-		char old_sig_filename[128], *char_p;
+		char old_sig_filename[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1], *char_p;
 		strcpy (old_sig_filename,ImageSignatures->full_path);
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
@@ -3449,7 +3449,6 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
          else fprintf(output_file,"<th>&nbsp;</th><th width='100'>Actual Class</th><th width='100'>Predicted Class</th><th width='100'>Classification Correctness</th>%s",interpolated_value);
          fprintf(output_file,"<th>Image</th>%s</tr>\n",closest_image);		 
          fprintf(output_file,"%s",split->individual_images);
-         fprintf(output_file,"</table><br><br>\n");
          fprintf(output_file,"</table><br><br>\n");
       }
    }
