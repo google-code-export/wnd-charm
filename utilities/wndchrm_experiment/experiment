@@ -430,36 +430,47 @@ sub RunExperiment {
     return;
   }
   if( !$dryrun ) { mkdir "$target_dir" or die $! };
+  my $fof_path = "$target_dir/${experiment_name}.fof";
+  open FOF, '>', $fof_path  or die "Can't open ${experiment_name}.fof for writing the file of files\n";
   ITERATE_OVER_CLASSES: foreach $class_name ( sort keys %class_config_info ) {
-    if( $DEBUG2 or $verbose or $dryrun ){
+    if( $DEBUG2 or $verbose or $dryrun )
+    {
       print "\tClass $class_name:\n";
     }
-    if( $pairwise_flag ) {
+    if( $pairwise_flag )
+    {
       # Check the %group_info hash to see if this class $class_name belongs to 
       # one of the groups we're checking
       my $in_this_group = 0;
       my @classes_in_current_groups = ( @{ $group_info{ $args->{group_1} } }, @{ $group_info{ $args->{group_2} } } );
-      CHECK_IF_CLASS_IN_GROUP: foreach (@classes_in_current_groups) {
-        if( $class_name eq $_ ) {
+      CHECK_IF_CLASS_IN_GROUP: foreach (@classes_in_current_groups)
+      {
+        if( $class_name eq $_ )
+        {
           $in_this_group = 1;
           last CHECK_IF_CLASS_IN_GROUP;
         }
       }
-      if( !$in_this_group ) {
-        if( $DEBUG2 or $verbose or $dryrun ){
+      if( !$in_this_group )
+      {
+        if( $DEBUG2 or $verbose or $dryrun )
+        {
           print "\t\tSkipping over $class_name because it doesn't belong to groups $args->{group_1} and $args->{group_2}.\n";
         }
         next ITERATE_OVER_CLASSES;
       }
     } # END if $pairwise_flag 
-    if( $DEBUG2 or $verbose or $dryrun ) {
-      print "\t\tMaking directory $target_dir/$class_name\n";
-    }
-    if( !$dryrun ) { mkdir "$target_dir/$class_name" or print $! };
-    foreach my $slide ( @{ $class_config_info{$class_name} } ) {
+#    if( $DEBUG2 or $verbose or $dryrun )
+#    {
+#      print "\t\tMaking directory $target_dir/$class_name\n";
+#    }
+#    if( !$dryrun ) { mkdir "$target_dir/$class_name" or print $! };
+    foreach my $slide ( @{ $class_config_info{$class_name} } )
+    {
       $dir_name = $$slide{dir_name};
       $num_imgs = $$slide{img_quant};
-      if( $DEBUG2 or $verbose or $dryrun ){
+      if( $DEBUG2 or $verbose or $dryrun )
+      {
         print "\t\t Slide \"$dir_name\", Images allocated to class $class_name: $num_imgs\n";
       }
       print "\t\t\tOpening $source_dir/$dir_name:\n" if( $DEBUG2 or $verbose or $dryrun );
@@ -468,75 +479,79 @@ sub RunExperiment {
       # This will even include the "." and ".." paths.
       opendir( DIR, "$source_dir/$dir_name" ) or die "Error opening dir $dir_name"; 
       @full_file_list = readdir(DIR);
-      for($i = 0; $i <= $#full_file_list; $i++ ) {
+      for($i = 0; $i <= $#full_file_list; $i++ )
+      {
         push @tiff_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.tif$/ ) ;
-        push @sig_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.sig$/ ) ;
+        if( $full_file_list[$i] =~ /(.*)\.sig$/ )
+        {
+          my $base = $1;
+          $base =~ s/-l//g;
+          #$base =~ s/-S500//g;
+          #$base =~ s/-t4//g;
+          #$base =~ s/_\d_\d//g;
+          $base .= ".tif";
+          push @sig_file_list, $base;
+        }
       }
-      if( $#tiff_file_list == -1 and $#sig_file_list == -1 ) {
+      if( $#tiff_file_list == -1 and $#sig_file_list == -1 )
+      {
         die "*******************************************\nFatal Error: No .tif or .sig files in directory $source_dir/$dir_name.\n";
       }
 
+      my @working_file_list;
       # if we found any tiffs
       if( $#tiff_file_list != -1 )
       {
-        # if there are more tiffs than are called for in the experiment, we randomize the order
-        if( $#tiff_file_list > ( $num_images - 1) )
-        {
-          # randomize the file list
-          for ($i = @tiff_file_list; --$i; )
-          {
-            $j = int rand ($i+1);
-            # print "i: $i j: $j \n";
-            next if $i == $j;
-            @tiff_file_list[$i,$j] = @tiff_file_list[$j,$i];
-          }
-        }
-        else
-        # if there are less tiffs than are called for, give a warning
-        {
-          warn "************************\nWarning: Only $#tiff_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n";
-        }
-        my @list_of_sigs;
-        # Note that the loop will bail out without error if the number of images
-        # asked for exceeds 
-        for( $i = 0; $i < $num_imgs && $i <= $#tiff_file_list; $i++ ) {
-        # Unshift the first $num_imgs off the newly randomized list
-          $file = $tiff_file_list[$i];
-          if( $DEBUG2 or $verbose or $dryrun ) {
-            print "\t\t\t\tImage $i will be $file\n";
-          }
-          if( $file =~ /^(.*)\.tif$/ ) {
-            $file_stem = $1;
-            # copy the file and the sigs associated with the file
-            # need to be done in two operations, because image42* will copy
-            # not only image42.tif and image42_1.sig, but also unexpectedly
-            # image420, image421, etc.
-            if( $DEBUG2 or $verbose or $dryrun ) {
-              print "\t\t\t\tCreating link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file\n";
-            }
-            if( !$dryrun ) {
-              link( "$source_dir/$dir_name/$file", "$target_dir/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file: $!\n";
-            }
-
-            if( $DEBUG2 or $verbose or $dryrun ) {
-              print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/$class_name\n";
-            }
-            if( !$dryrun ) {
-              @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name \"${file_stem}\"*.sig` );
-              foreach (@list_of_sigs) {
-                /^.*\/(.+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
-                  link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
-              }
-            }
-          } # END if $file =~ /.tif/
-        } # END for i = 0 to nim_imgs etc
-      } # END if $#tiff_file_list != -1
+        @working_file_list = @tiff_file_list;
+        print "\t\t\tFound tiffs in $source_dir/$dir_name\n" if( $DEBUG2 or $verbose or $dryrun );
+      }
       else
-      # we didn't find any tiffs, but we did find sigs
-      # this means we have to use the file of file functionality of wndcharm
       {
-        
-        
+        @working_file_list = @sig_file_list;
+      }
+      # if there are more tiffs than are called for in the experiment, we randomize the order
+      if( $#working_file_list > ( $num_imgs - 1) )
+      {
+        # randomize the file list
+        for ($i = @working_file_list; --$i; )
+        {
+          $j = int rand ($i+1);
+          # print "i: $i j: $j \n";
+          next if $i == $j;
+          @working_file_list[$i,$j] = @working_file_list[$j,$i];
+        }
+      }
+      else  # if there are less tiffs than are called for, give a warning
+      {
+        warn "************************\nWarning: Only $#working_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n";
+      }
+      my @list_of_sigs;
+      # Note that the loop will bail out without error if the number of images
+      # asked for exceeds 
+      for( $i = 0; $i < $num_imgs && $i <= $#working_file_list; $i++ ) {
+        # Unshift the first $num_imgs off the newly randomized list
+        $file = $working_file_list[$i];
+        if( $DEBUG2 or $verbose or $dryrun ) {
+          print "\t\t\t\tImage $i will be $file\n";
+        }
+        print FOF "$source_dir/$dir_name/$file\t$class_name\n";
+
+#            if( !$dryrun ) {
+#             link( "$source_dir/$dir_name/$file", "$target_dir/$class_name/$file" ) or die "Can't create hard link from $source_dir/$dir_name/$file to $target_dir/$class_name/$file: $!\n";
+#            }
+#
+#            if( $DEBUG2 or $verbose or $dryrun ) {
+#              print "\t\t\t\tCreating links for $source_dir/$dir_name/${file_stem}*.sig to $target_dir/$class_name\n";
+#            }
+#            if( !$dryrun ) {
+#              @list_of_sigs = split( "\n", `find $source_dir/$dir_name -name \"${file_stem}\"*.sig` );
+#              foreach (@list_of_sigs) {
+#                /^.*\/(.+)/; # This is idiomatic perl - it means perform that regular expression operation on the default variable $_, produced by foreach (@list_of_args) loop.
+#                  link( "$source_dir/$dir_name/$1", "$target_dir/$class_name/$1" ) or die "Can't create hard link from $source_dir/$dir_name/$1 to $target_dir/$class_name/$1: $!\n";
+#              }
+#            }
+#          } # END if $file =~ /.tif/
+      } # END for i = 0 to nim_imgs etc
 
       @full_file_list = ();
       @tiff_file_list = ();
@@ -544,6 +559,7 @@ sub RunExperiment {
       closedir DIR;
     } # end copying images out of slides
   } # end creating the classes
+  close FOF;
 	
 	if( defined $write_fisher_weights && $write_fisher_weights ne "" ) {
 	  $write_fisher_weights = "-vw$target_dir/$experiment_name.fisher_weights";
@@ -552,7 +568,7 @@ sub RunExperiment {
 	}
 
 	my $cmd;
-	$cmd = "$path_to_wndchrm train -m $test_args $tile_scheme $large_feature_set $target_dir $target_dir/$experiment_name.fit $silence_wndchrm";
+	$cmd = "$path_to_wndchrm train -m $test_args $tile_scheme $large_feature_set $fof_path $target_dir/$experiment_name.fit $silence_wndchrm";
 	if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm) {
 	  print "\nWndchrm train command: \n$cmd\n";
 	}
