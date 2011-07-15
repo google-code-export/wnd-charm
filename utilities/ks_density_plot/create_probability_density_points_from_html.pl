@@ -20,6 +20,8 @@ my $tolerance = 0.1; # Used for marginal probability analysis.
                      # image was classified as random, i.e.,
                      # 1/n +/- $tolerance marginal probabilities across all classes
 
+my $stats_only = undef; # Skip the ks density graphs
+
 GetOptions( "bins=i"  => \$num_bins,
            # "window_size=f" => \$bin_width,
             "normalize=s" => \$normalize,
@@ -29,11 +31,14 @@ GetOptions( "bins=i"  => \$num_bins,
             "input_file=s" => \$input_file,
             "dump_interp_vals=s" => \$interp_val_dump_file,
             "verbose=i" => \$verbose,
+            "stats_only=i" => \$stats_only, 
             "tolerance=f" => \$tolerance );
 
 print "Histogram will be created with number of bins: $num_bins\n" if( defined $num_bins );
 #print "Window size : $bin_width\n" if( defined $bin_width );
 print "Age scores will be normalized\n" if( defined $normalize );
+
+$verbose = $stats_only if $stats_only ;
 
 my %results_hash;
 my $min = -1;
@@ -128,17 +133,19 @@ if( !defined $input_file )
 		}
 # Make sure there are interpolated values to read out of html report
 
-		my $interp_val_col_exists = 0;
-		foreach (@rows){
-			if( $_->as_text =~ /interpolated/i ) {
-				$interp_val_col_exists = 1;
-				last;
+		if( !$stats_only ) {
+			my $interp_val_col_exists = 0;
+			foreach (@rows){
+				if( $_->as_text =~ /interpolated/i ) {
+					$interp_val_col_exists = 1;
+					last;
+				}
 			}
-		}
-		if( !$interp_val_col_exists ) {
-			die "*****************\nERROR: The HTML report file $output_file doesn't appear to have a column of interpolated values in the
-individual image predictions table! Please rerun wndchrm, changing the names of the classes such that
-they can be interpreted as numbers and an interpolated value can be calculated.\n\n";
+			if( !$interp_val_col_exists ) {
+				die "*****************\nERROR: The HTML report file $output_file doesn't appear to have a column of interpolated values in the
+	individual image predictions table! Please rerun wndchrm, changing the names of the classes such that
+	they can be interpreted as numbers and an interpolated value can be calculated.\n\n";
+			}
 		}
 
     my $caption_text = $row[$#row]->as_text;
@@ -185,15 +192,17 @@ they can be interpreted as numbers and an interpolated value can be calculated.\
         }
         $actual_class = $row[ $image_column - 4 ]->as_text;
         $predicted_class = $row[ $image_column - 3 ]->as_text;
-        $interpolated_value = $row[ $image_column - 1 ]->as_text;
-        if( $min == -1 ) {
-          $min = $interpolated_value;
-        }
-        $min = $interpolated_value if( $interpolated_value < $min );
-        if( $max == -1 ) {
-          $max = $interpolated_value;
-        }
-        $max = $interpolated_value if( $interpolated_value > $max );
+				if( !$stats_only ) {
+					$interpolated_value = $row[ $image_column - 1 ]->as_text;
+					if( $min == -1 ) {
+						$min = $interpolated_value;
+					}
+					$min = $interpolated_value if( $interpolated_value < $min );
+					if( $max == -1 ) {
+						$max = $interpolated_value;
+					}
+					$max = $interpolated_value if( $interpolated_value > $max );
+				}
         print "\t\tactual: $actual_class, predicted: $predicted_class, interp val: $interpolated_value\n" if( $DEBUG1 );
         push @{ $results_hash{ $actual_class }->{ $filename } }, { "split_num" => $split_number, "val" => $interpolated_value, "class" => $predicted_class, "dists" => $normalized_distances };
       }
@@ -334,13 +343,24 @@ foreach my $class ( sort keys %results_hash ) {
       else
       {
         # Report it AND count it.
-        $stat->add_data( $interpolated_value );
-        $norm_stat->add_data( ( $interpolated_value - $min ) / $range );
-        printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Norm dists: ( $normalized_distances) Interp val: $interpolated_value\n", $split_number) if( $verbose );
+				if( !$stats_only ) {
+					$stat->add_data( $interpolated_value );
+					$norm_stat->add_data( ( $interpolated_value - $min ) / $range );
+				}
+				else {
+					$stat->add_data( -1 );
+					$norm_stat->add_data( -1 );
+				}
+        if( $stats_only ) {
+					printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Norm dists: ( $normalized_distances)\n", $split_number);
+				}
+				elsif ($verbose) {
+        	printf( "\t\t\tsplit %2.d - predicted: $predicted_class, actual: $class. Norm dists: ( $normalized_distances) Interp val: $interpolated_value\n", $split_number);
+				}
       }
     } # end iterating over each image's split result
 
-    if( not $stat->count > 0 )
+    if( not $stat->count > 0  )
     {
       print "\t\t\t********SKIPPING THIS IMAGE DUE TO AMBIGUOUS CLASSIFICATION**************\n" if( $verbose );
     }
@@ -377,41 +397,44 @@ foreach my $class ( sort keys %results_hash ) {
     # End generation of histogram for this class
   }
   else {
-    # Begin new code generating PDF using kernal smoothing for this class
-    print "\nClass $class\n";
-    $PDF .= "\nClass $class\n";
+		if( !$stats_only ) {
+			# Begin new code generating PDF using kernal smoothing for this class
+			print "\nClass $class\n";
+			$PDF .= "\nClass $class\n";
 
-    my $bw;
-    my $obw;
-    # always output default bandwidth, even if it's specified on command line
-    $bw = $ks_class_stat->default_bandwidth();
-    print "\tDefault bandwidth is $bw\n";
-		$report .= "bandwidth=$bw\n";
-    if( defined $bandwidth && $bandwidth eq "optimal" ) {
-      $obw = $ks_class_stat->optimal_bandwidth();
-      print "\tOptimal bandwidth is $obw\n";
-    }
+			my $bw;
+			my $obw;
+			# always output default bandwidth, even if it's specified on command line
+			$bw = $ks_class_stat->default_bandwidth();
+			print "\tDefault bandwidth is $bw\n";
+			$report .= "bandwidth=$bw\n";
+			if( defined $bandwidth && $bandwidth eq "optimal" ) {
+				$obw = $ks_class_stat->optimal_bandwidth();
+				print "\tOptimal bandwidth is $obw\n";
+			}
 
-    my ( $class_min, $class_max ) = $ks_class_stat->extended_range();
-    print "\tClass min: $class_min, Class max: $class_max\n";
-    for( my $x=$class_min; $x<=$class_max; $x+=($class_max-$class_min)/100 ) {
-      if( !defined $bandwidth ) {
-        # use default
-        $PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $bw ) . "\n";
-      } elsif( defined $bandwidth && $bandwidth eq "optimal" ) {
-        $PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $obw ) . "\n";
-      } else {
-        $PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $bandwidth ) . "\n";
-      }
-    }
-    # end generation of PDF using kernal smoothing for this class
-  }
+			my ( $class_min, $class_max ) = $ks_class_stat->extended_range();
+			print "\tClass min: $class_min, Class max: $class_max\n";
+			for( my $x=$class_min; $x<=$class_max; $x+=($class_max-$class_min)/100 ) {
+				if( !defined $bandwidth ) {
+					# use default
+					$PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $bw ) . "\n";
+				} elsif( defined $bandwidth && $bandwidth eq "optimal" ) {
+					$PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $obw ) . "\n";
+				} else {
+					$PDF .= $x . "\t" . $ks_class_stat->pdf( $x, $bandwidth ) . "\n";
+				}
+			}
+			# end generation of PDF using kernal smoothing for this class
+		}
+	}
   # reset statistical vehicles for the next class's data
   $class_stat->clear;
   $distribution_hash = undef;
   my $ks_class_stat_ref = ref($ks_class_stat);
   undef $ks_class_stat;
   $ks_class_stat = new $ks_class_stat_ref;
+	$report .= "\n" if $stats_only;
 
 } #end iterating over all classes
 close INTERP_VAL_DUMP_FILE if( defined $interp_val_dump_file );
