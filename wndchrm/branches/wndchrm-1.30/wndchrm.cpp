@@ -44,7 +44,7 @@
 #include <ctype.h>
 
 
-#define MAX_SPLITS 100
+#define MAX_SPLITS 200
 #define MAX_SAMPLES 190000
 
 /* global variable */
