@@ -601,27 +601,37 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 	long class_counts[MAX_CLASS_NUM];
 	class_samples = new long[count];
 	bool make_test_set = true;
+	long rand_index;
 
-	SetAttrib( TrainSet );      // copy the same attributes to the training and test set
-	if( !TestSet-> count > 0 )
-		SetAttrib(TestSet); // don't change the test set if it pre-exists
-	if( tiles < 1 )
-		tiles = 1;    // make sure the number of tiles is valid 
+	// copy the same attributes to the training and test set
+	SetAttrib( TrainSet );
+
+	// don't change the test set if it pre-exists
+	if( ! TestSet->count > 0 ) SetAttrib(TestSet);
+
+	 // make sure the number of tiles is valid
+	if( tiles < 1 )	tiles = 1;
+
 	TrainSet->class_num = TestSet->class_num = class_num;
-	if( TestSet->count > 0 )
-		make_test_set = false; // test already has samples from a file
+
+	 // if test already has samples from a file
+	if( TestSet->count > 0 )	make_test_set = false;
+
+	// iterate over each class
 	for( class_index = 1; class_index <= class_num; class_index++ )
 	{
-		int sample_index,sample_count=0;
-		int class_samples_count=0;
+		int sample_index, sample_count = 0;
+		int class_samples_count = 0;
+
 		for( sample_index = 0 ; sample_index < count; sample_index++ )
 			if( samples[ sample_index ]->sample_class == class_index || is_continuous )
-				class_samples[ class_samples_count++ ] = sample_index;	  
+				class_samples[ class_samples_count++ ] = sample_index;
+
 		class_samples_count /= tiles;
 		class_counts[ class_index ] = class_samples_count;
 
 		// Determine number of training samples.
-		if( ratio > 0.0 && ratio <= 1.0 ) {// unbalanced training
+		if( ratio > 0.0 && ratio <= 1.0 ) { // unbalanced training
 			number_of_train_samples = (int)floor( (ratio * (float)class_samples_count) + 0.5 );
 			if (!test_samples && make_test_set) number_of_test_samples = class_samples_count - number_of_train_samples;
 			else if (make_test_set) number_of_test_samples = test_samples;
@@ -637,10 +647,10 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 					class_labels[class_index], number_of_train_samples, number_of_test_samples, class_samples_count);
 			exit (-1);
 		}
+
 		//printf ("getting %d training images from class %s\n", number_of_train_samples, class_labels[class_index]);
 		for( sample_index = 0; sample_index < number_of_train_samples; sample_index++ )
 		{ 
-			long rand_index;
 			if( randomize )
 				rand_index = rand() % class_samples_count; // find a random sample
 			else rand_index=0;
@@ -652,21 +662,43 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 			class_samples_count--;
 		}
 
-	// Record the number of training and testing samples in the split.
+		// Record the number of training and testing samples in the split.
 		split->training_images[ class_index ] = number_of_train_samples;
 		if (number_of_test_samples) split->testing_images[ class_index ] = number_of_test_samples;
 		else split->testing_images[ class_index ] = TestSet->class_nsamples [ class_index ] / tiles;
 
-		// now add the remaining samples to the Test Set up to the maximum
-		// Here we're adding samples, so we multiply the counter by samples per image
-		sample_count = number_of_test_samples * tiles;
-		//printf ("getting %d testing samples from class %s\n", sample_count, class_labels[class_index]);
-		for( sample_index = 0; sample_count > 0; sample_index++ )
-		{
-			if( ( res = TestSet->AddSample( samples[ class_samples[ sample_index ] ]->duplicate() ) ) < 0 ) return (res);
-			sample_count--;
+		// Now build the test set.
+		// There may be more images than required left in the remaining pool
+		// due to a balanced classifier restriction.
+		// If the number_of_test_samples == number of images remaining in the class
+		// just do a straight copy into the test set.
+		// Otherwise, choose the test images randomly from the pool.
+
+		if( class_samples_count == number_of_test_samples) {
+			sample_count = number_of_test_samples * tiles;
+			//printf ("getting %d testing samples from class %s\n", sample_count, class_labels[class_index]);
+			for( sample_index = 0; sample_count > 0; sample_index++ )
+			{
+				if( ( res = TestSet->AddSample( samples[ class_samples[ sample_index ] ]->duplicate() ) ) < 0 ) return (res);
+				sample_count--;
+			}
 		}
-	}
+		else
+		{
+			for( sample_index = 0; sample_index < number_of_test_samples; sample_index++ )
+			{ 
+				if( randomize )
+					rand_index = rand() % class_samples_count; // find a random sample
+				else rand_index=0;
+
+				for( tile_index=0; tile_index < tiles; tile_index++ )    // add all the tiles of that image 
+					if( ( res = TestSet->AddSample( samples[ class_samples[ rand_index * tiles + tile_index ] ]->duplicate() ) ) < 0) return (res);   // add the random sample		   
+				// remove the index
+				memmove( &( class_samples[ rand_index * tiles ] ), &( class_samples[ rand_index * tiles + tiles ] ), sizeof( long )*( tiles*( class_samples_count - rand_index ) ) );
+				class_samples_count--;
+			}
+		}
+	} // end iterating over each image class
 
 	delete class_samples;
 	return (1);

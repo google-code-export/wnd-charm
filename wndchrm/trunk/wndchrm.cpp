@@ -44,7 +44,7 @@
 #include <ctype.h>
 
 
-#define MAX_SPLITS 100
+#define MAX_SPLITS 200
 #define MAX_SAMPLES 190000
 
 /* global variable */
@@ -530,8 +530,8 @@ void ShowHelp()
 	printf("jN - Set a maximal number of test images (for each class). \n");
 	printf("nN - Number of repeated random splits. The default is 1.\n");
 	printf("Nx - set the maximum number of classes (use only the first x classes).\n");
-	printf("C - *highly experimental* perform interpolation on a continuous scale rather than discrete classes\n");
-	printf("    All class labels must be interpretable as numbers.\n");
+	//printf("C - *highly experimental* perform interpolation on a continuous scale rather than discrete classes\n");
+	//printf("    All class labels must be interpretable as numbers.\n");
 	
 	printf("\nOutput options:\n===============\n");
 	printf("s - silent mode.\n");
