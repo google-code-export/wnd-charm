@@ -2110,7 +2110,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 		}
 		
 		
-	// Initialize a feature stats structure, and add it to our vector
+		// Initialize a feature stats structure, and add it to our vector
 		feature_stats.name = SignatureNames[ sig_index ];
 		feature_stats.feature_info = featureinfo;
 		feature_stats.weight = SignatureWeights[ sig_index ];
@@ -2835,83 +2835,63 @@ confusion_matrix -unsigned short *- the confusion matrixvalues to print
                  NULL - don't print confusion matrix
 similarity_matrix -double *- the similarity matrix values to print
                  NULL - don't print similarity matrix
-dend_file -unsigned short- create a dendogram input file
-method -unsigned short- the method of transforming the similarity values into a single distance (0 - min, 1 - average. 2 - top triangle, 3 - bottom triangle).
 
 returned values -long- 1 if successful, 0 if failed
 */
-long TrainingSet::PrintConfusion(FILE *output_file,unsigned short *confusion_matrix, double *similarity_matrix)//,unsigned short dend_file, unsigned short method)
-{  int class_index1,class_index2;
-//   if (dend_file) fprintf(output_file,"%d\n",class_num);
-//   else
-   {  fprintf(output_file,"%18s"," ");
-      for (class_index1=1;class_index1<=class_num;class_index1++)
-        fprintf(output_file,"%16s",class_labels[class_index1]);
-      fprintf(output_file,"\n");
-   }
-   for (class_index1=1;class_index1<=class_num;class_index1++)
-   {
-//      if (dend_file)
-//      {   char label[128];
-//          strcpy(label,class_labels[class_index1]);
-//          if (strlen(label)>8) strcpy(label,&(label[strlen(label)-8]));  /* make sure the labels are shorter or equal to 8 characters in length */
-//          if (!isalnum(label[strlen(label)-1])) label[strlen(label)-1]='\0';
-//          fprintf(output_file,"%s                 ",label);
-//      }
-//      else 
-      fprintf(output_file,"%16s",class_labels[class_index1]);
-      for (class_index2=1;class_index2<=class_num;class_index2++)
-      {  if (confusion_matrix) // && !dend_file)
-           fprintf(output_file,"%16d",confusion_matrix[class_index1*class_num+class_index2]);
-//         if (dend_file && similarity_matrix)
-//         {  double dist=0;
-//            if (method==0) dist=max(1-similarity_matrix[class_index1*class_num+class_index2],1-similarity_matrix[class_index2*class_num+class_index1]);
-//            if (method==1) dist=((1-similarity_matrix[class_index1*class_num+class_index2])+(1-similarity_matrix[class_index2*class_num+class_index1]))/2;
-//            if (method==2) dist=(1-similarity_matrix[class_index1*class_num+class_index2])*(class_index2>=class_index1)+(1-similarity_matrix[class_index2*class_num+class_index1])*(class_index2<class_index1);  /* top triangle    */
-//            if (method==3) dist=(1-similarity_matrix[class_index1*class_num+class_index2])*(class_index2<=class_index1)+(1-similarity_matrix[class_index2*class_num+class_index1])*(class_index2>class_index1);  /* bottom triangle */
-//#ifndef WIN32
-//            if (dist==NAN) dist=0;
-//#endif
-//            if (dend_file) fprintf(output_file,"%1.4f%7s",fabs(dist*(dist>=0))," ");
-            else
-            fprintf(output_file,"%9s%1.5f"," ",similarity_matrix[class_index1*class_num+class_index2]);
-//         }
-      }
-      fprintf(output_file,"\n");
- 
- 
- }
+long TrainingSet::PrintConfusion(FILE *output_file,unsigned short *confusion_matrix, double *similarity_matrix)
+{
+	int class_index1,class_index2;
+	
+	fprintf(output_file,"%18s"," ");
+	for( class_index1 = 1; class_index1 <= class_num; class_index1++ )
+		fprintf( output_file, "%18s", class_labels[class_index1] );
+	if( confusion_matrix ) fprintf( output_file, "%18s%20s", "Total Tested", "Per-Class Accuracy" );
+	fprintf(output_file,"\n");
+	
+	for( class_index1 = 1; class_index1 <= class_num; class_index1++ )
+	{
+		int val;
+		int num_class_correct = 0;
+		int num_class_total = 0;
 
-// Write out the result of classifying unknown samples.
+		fprintf( output_file, "%18s", class_labels[ class_index1 ] );
+		for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
+		{
+			if( confusion_matrix ) {
+				val = confusion_matrix[class_index1*class_num+class_index2];
+				fprintf( output_file, "%18d", val);
+				if( class_index1 == class_index2 )
+					num_class_correct = val;
+				num_class_total += val;
+			}
+			else
+				fprintf(output_file,"%11s%1.5f"," ",similarity_matrix[class_index1*class_num+class_index2]);
+		}
+		if( confusion_matrix ) fprintf( output_file, "%18d%13s%1.5f", num_class_total, " ", double(num_class_correct)/double(num_class_total) );
+
+		fprintf(output_file,"\n");
+	}
+
+	// Write out the result of classifying unknown samples.
 	for (class_index2=1;class_index2<=class_num;class_index2++) {
 		if (confusion_matrix && confusion_matrix[0+class_index2] > 0) break;
 		else if (similarity_matrix && similarity_matrix[0+class_index2] > 0) break;
 	}
 	if (class_index2 <= class_num)
-   {
-      fprintf(output_file,"%16s","UNKNOWN");
-      class_index1=0;
-      for (class_index2=1;class_index2<=class_num;class_index2++)
-      {  if (confusion_matrix) // && !dend_file)
-           fprintf(output_file,"%16d",confusion_matrix[class_index1*class_num+class_index2]);
-//         if (dend_file && similarity_matrix)
-//         {  double dist=0;
-//            if (method==0) dist=max(1-similarity_matrix[class_index1*class_num+class_index2],1-similarity_matrix[class_index2*class_num+class_index1]);
-//            if (method==1) dist=((1-similarity_matrix[class_index1*class_num+class_index2])+(1-similarity_matrix[class_index2*class_num+class_index1]))/2;
-//            if (method==2) dist=(1-similarity_matrix[class_index1*class_num+class_index2])*(class_index2>=class_index1)+(1-similarity_matrix[class_index2*class_num+class_index1])*(class_index2<class_index1);  /* top triangle    */
-//            if (method==3) dist=(1-similarity_matrix[class_index1*class_num+class_index2])*(class_index2<=class_index1)+(1-similarity_matrix[class_index2*class_num+class_index1])*(class_index2>class_index1);  /* bottom triangle */
-//#ifndef WIN32
-//            if (dist==NAN) dist=0;
-//#endif
-//            if (dend_file) fprintf(output_file,"%1.4f%7s",fabs(dist*(dist>=0))," ");
-            else
-            fprintf(output_file,"%9s%1.5f"," ",similarity_matrix[class_index1*class_num+class_index2]);
-//         }
-      }
-      fprintf(output_file,"\n");
-   }
-   fprintf(output_file,"\n");
-   return(1);
+	{
+		fprintf(output_file,"%18s","UNKNOWN");
+		class_index1=0;
+		for (class_index2=1;class_index2<=class_num;class_index2++)
+		{
+			if (confusion_matrix)
+				fprintf(output_file,"%18d",confusion_matrix[class_index1*class_num+class_index2]);
+			else
+				fprintf(output_file,"%11s%1.5f"," ",similarity_matrix[class_index1*class_num+class_index2]);
+		}
+		fprintf(output_file,"\n");
+	}
+	fprintf(output_file,"\n");
+	return(1);
 }
 
 /*
@@ -2980,21 +2960,23 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	FILE *tsvfile;
 	char buffer[512];
 	char bgcolor[64];
-   
-   /* create a directory for the files */
+
+	int skip_split_reporting = 0;
+
+	/* create a directory for the files */
 #ifndef WIN32
-   if (export_tsv) mkdir("tsv",0755);
+	if (export_tsv) mkdir("tsv",0755);
 #else
-   if (export_tsv) mkdir("tsv");
+	if (export_tsv) mkdir("tsv");
 #endif
 
 	time_t timeval = time(NULL);
-	
+
 	strftime (buffer, 512, "%Y-%m-%d %H:%M:%S %Z", localtime (&timeval));
-   /* print the header */
+	/* print the header */
 	fprintf(output_file,"<HTML>\n<HEAD>\n<TITLE> %s </TITLE>\n </HEAD> \n <BODY> \n <br> WNDCHRM "PACKAGE_VERSION".&nbsp;&nbsp;&nbsp;%s\n <br><br> <h1>%s</h1>\n ",
-		output_file_name,buffer,this->name);
-// print the training set summary
+			output_file_name,buffer,this->name);
+	// print the training set summary
 	fprintf(output_file,"<table id=\"trainset_summary\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" > \n");
 	fprintf(output_file,"<caption>%ld Images.",(long)(count/featureset->n_samples));
 	if (featureset->n_samples > 1) fprintf(output_file," Samples per image: %d, total samples: %ld.",featureset->n_samples, count);
@@ -3011,7 +2993,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		if (featureset->n_samples > 1) fprintf(output_file," (%ld)", class_nsamples[class_index]);
 		fprintf(output_file,"</td></tr>");
 	}
-// print the unknown class
+	// print the unknown class
 	if (class_nsamples[0]) {
 		fprintf(output_file,"<tr><th>UNKNOWN</th>");
 		if (is_numeric) fprintf(output_file,"<td></td>");
@@ -3021,7 +3003,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	}
 	fprintf(output_file,"</table>\n");
 
-// print the test set summary
+	// print the test set summary
 	if (testset) {
 		fprintf(output_file,"<br><br><br>\n");
 		fprintf(output_file,"<h3>Testing with data file:<br>%s</h3>",testset->source_path);
@@ -3041,7 +3023,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 			if (featureset->n_samples > 1) fprintf(output_file," (%ld)", testset->class_nsamples[class_index]);
 			fprintf(output_file,"</td></tr>");
 		}
-	// print the unknown class
+		// print the unknown class
 		if (testset->class_nsamples[0]) {
 			fprintf(output_file,"<tr><th>UNKNOWN</th>");
 			if (testset->is_numeric) fprintf(output_file,"<td></td>");
@@ -3051,8 +3033,8 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		}
 		fprintf(output_file,"</table>\n");
 	}
-	
-// print the command line
+
+	// print the command line
 	if (argc && argv && *argv) {
 		int i;
 		fprintf(output_file,"<br><br>Command line: <pre>");
@@ -3060,8 +3042,8 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 			fprintf(output_file," %s",argv[i]);
 		fprintf(output_file,"</pre><br>");
 	}
-	
-// print the warnings
+
+	// print the warnings
 	std::string html_errors = getErrorString();
 
 	if (html_errors.size()) {
@@ -3070,11 +3052,9 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"</font></pre><br>");
 	}
 
-
-
 	fprintf(output_file,"<hr/><CENTER>\n");
-   
-   /* print the number of samples table */		
+
+	/* print the number of samples table */		
 	fprintf(output_file,"<table id=\"classifier_split_params\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\"> \n <caption>Images for training and testing");
 	if (split_num > 1) fprintf(output_file," (per-split)");
 	fprintf(output_file,"</caption> \n <tr>");
@@ -3101,15 +3081,22 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		train_set_size += splits[0].training_images[class_index];
 	}
 
-   fprintf(output_file,"<td>%d</td>\n",train_set_size); /* add the total number of training samples */
-   fprintf(output_file,"</tr> \n </table><br>\n");          /* close the number of samples table */
-   
-   /* print the splits */
-   splits_accuracy=0.0;
-   splits_class_accuracy=0.0;
-   unsigned long total_tested=0, total_correct=0;
-   fprintf(output_file,"<h2>Results</h2> \n <table id=\"test_results\" border=\"1\" align=\"center\"><caption></caption> \n");
-   for (split_index=0;split_index<split_num;split_index++) {
+	fprintf(output_file,"<td>%d</td>\n",train_set_size); /* add the total number of training samples */
+	fprintf(output_file,"</tr> \n </table><br>\n");          /* close the number of samples table */
+
+	/* print the splits */
+	splits_accuracy=0.0;
+	splits_class_accuracy=0.0;
+	unsigned long total_tested=0, total_correct=0;
+	fprintf(output_file,"<h2>Results</h2>\n");
+	
+	if( split_num > 100 ) {
+		skip_split_reporting = 1;
+		fprintf(output_file,"<br>(Skipping individual split reporting since # Splits > 100)<br>\n");
+	}
+	
+	fprintf(output_file,"<table id=\"test_results\" border=\"1\" align=\"center\"><caption></caption> \n");
+	for (split_index=0;split_index<split_num;split_index++) {
 		unsigned short *confusion_matrix;
 		double *similarity_matrix,*class_probability_matrix;
 
@@ -3121,29 +3108,35 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		total_tested += split->known_images;
 		total_correct += split->accurate_predictions;
 
-		fprintf(output_file,"<tr> <td>Split %d</td> \n <td align=\"center\" valign=\"top\"> \n",split_index+1);
-		if (class_num>0) {
-			fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g) </b><br> \n",split->accuracy,split->classification_p_value);	  
-			fprintf(output_file,"<b>%.2f &plusmn; %.2f Avg per Class Correct of total</b><br> \n",split->avg_class_accuracies,split->plus_minus);
-		}
-
 		if (split->pearson_coefficient!=0) {
-			fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%.3g) <br>\n",split->pearson_coefficient,split->pearson_p_value);
-			fprintf(output_file,"Mean absolute difference: %.4f <br>\n",split->avg_abs_dif);
 			avg_pearson+=split->pearson_coefficient;
 			avg_abs_dif+=split->avg_abs_dif; 
 			avg_p+=split->pearson_p_value;
 		}
+		
+		if( !skip_split_reporting ) 
+		{
+			fprintf(output_file,"<tr> <td>Split %d</td> \n <td align=\"center\" valign=\"top\"> \n",split_index+1);
+			if (class_num>0) {
+				fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g) </b><br> \n",split->accuracy,split->classification_p_value);	  
+				fprintf(output_file,"<b>%.2f &plusmn; %.2f Avg per Class Correct of total</b><br> \n",split->avg_class_accuracies,split->plus_minus);
+			}
 
-      if (split->feature_weight_distance>=0)
-	    fprintf(output_file,"Feature weight distance: %.2f<br>\n",split->feature_weight_distance);	  	  
-      fprintf(output_file,"<a href=\"#split%d\">Full details</a><br> \n",split_index);
-//      fprintf(output_file,"<a href=\"#features%d\">Features used</a><br> </td> </tr> \n",split_index);
-      splits_accuracy+=split->accuracy;
-	  splits_class_accuracy+=split->avg_class_accuracies;
-   }
-   
-/* average of all splits */
+			if (split->pearson_coefficient!=0) {
+				fprintf(output_file,"Pearson correlation coefficient: %.2f (P=%.3g) <br>\n",split->pearson_coefficient,split->pearson_p_value);
+				fprintf(output_file,"Mean absolute difference: %.4f <br>\n",split->avg_abs_dif);
+			}
+
+			if (split->feature_weight_distance>=0)
+				fprintf(output_file,"Feature weight distance: %.2f<br>\n",split->feature_weight_distance);	  	  
+			fprintf(output_file,"<a href=\"#split%d\">Full details</a><br> </td></tr>\n",split_index);
+			// fprintf(output_file,"<a href=\"#features%d\">Features used</a><br> </td> </tr> \n",split_index);
+		}
+		splits_accuracy+=split->accuracy;
+		splits_class_accuracy+=split->avg_class_accuracies;
+	}
+
+	// average of all splits
 	fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
 	if (class_num>0) {
 		double avg_p2=0.0;
@@ -3152,7 +3145,10 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
 			if ( gsl_sf_choose (total_tested,correct,&choose) == GSL_SUCCESS )
 				avg_p2 += pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,total_tested-correct)*choose;		
-//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
+//printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);
+		if( skip_split_reporting ) {
+			fprintf( output_file, "Number of splits: %i<br>", split_num );
+		}
 		fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
 		fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
 	}
@@ -3165,59 +3161,75 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 
    fprintf(output_file,"<br><br><br><br> \n\n\n\n\n\n\n\n");
 
-   /* average (sum) confusion matrix */
-   sprintf(buffer,"tsv/avg_confusion.tsv");                /* determine the tsv file name           */
-   tsvfile=NULL;                                                 /* keep it null if the file doesn't open */
-   if (export_tsv) tsvfile=fopen(buffer,"w");              /* open the file for tsv                 */
+   // average (sum) confusion matrix
+   sprintf(buffer,"tsv/avg_confusion.tsv");
+   tsvfile=NULL;
+   if (export_tsv) tsvfile=fopen(buffer,"w");
    if (class_num>0) fprintf(output_file,"<table id=\"master_confusion_matrix\" border=\"1\" align=\"center\"><caption>Confusion Matrix (sum of all splits)</caption> \n <tr><td></td> ");
-   if (tsvfile) fprintf(tsvfile,"\t");         /* space (in the tsv file) */
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);   /* print to the html file  */
-      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
+   if (tsvfile) fprintf(tsvfile,"\t");         // space (in the tsv file)
+   for( class_index = 1; class_index <= class_num; class_index++ )
+   {  
+		 fprintf( output_file,"<th>%s</th> ", class_labels[ class_index ] );   // print to the html file
+      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]); // print into the tsv file
    }
-   fprintf(output_file,"</tr>\n");         /* end of the classes names */
-   if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
-   for (class_index=1;class_index<=class_num;class_index++)
-   {  fprintf(output_file,"<tr><th>%s</th> ",class_labels[class_index]);  /* print the class name                   */
-      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);            /* print the class name into the tsv file */   
-      for (class_index2=1;class_index2<=class_num;class_index2++)
-      {  double sum=0.0;
-         for (split_index=0;split_index<split_num;split_index++)
-           sum+=splits[split_index].confusion_matrix[class_index*class_num+class_index2];
-		 if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
-		 else strcpy(bgcolor,"");  
-         if ((double)((long)(sum/split_num))==sum/split_num) fprintf(output_file,"<td%s>%ld</td>\n",bgcolor,(long)(sum/*/split_num*/));
-         else fprintf(output_file,"<td%s>%.0f</td> ",bgcolor,sum/*/split_num*/);
-         if (tsvfile) fprintf(tsvfile,"%.0f\t",sum/*/split_num*/);     /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 
-      }
-      fprintf(output_file,"</tr>\n");         /* end of the line in the html report */
-      if (tsvfile) fprintf(tsvfile,"\n");     /* end of the line in the tsv file    */	  
-   }
-   fprintf(output_file,"</table> \n <br><br> \n");  /* end of average confusion matrix */
-   if (tsvfile) fclose(tsvfile);
+   fprintf( output_file, "<th></th><th>Total Tested</th><th>Per-Class Accuracy</th></tr>\n" );
+	 if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
 
-   /* average similarity matrix */
-	sprintf(buffer,"tsv/avg_similarity.tsv");                 /* determine the tsv file name               */
-	tsvfile=NULL;                                                   /* keep it null if the file doesn't open     */
-	if (export_tsv) tsvfile=fopen(buffer,"w");                /* open the file for tsv                     */   
-	avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];  /* this is used for creating the dendrograms */
+   for( class_index = 1; class_index <= class_num; class_index++ )
+   { 
+		 // print the class names as the column headers
+		 fprintf( output_file,"<tr><th>%s</th> ",class_labels[class_index]);
+		 if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);
+
+		 int num_class_correct = 0;
+		 int num_class_total = 0;
+		 for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
+		 {
+			 double sum=0.0;
+			 for( split_index = 0; split_index < split_num; split_index++ )
+				 sum += splits[ split_index ].confusion_matrix[ class_index * class_num + class_index2 ];
+			 num_class_total += int(sum);
+			 if( class_index == class_index2 ) {
+				 strcpy( bgcolor," bgcolor=#D5D5D5" );
+				 num_class_correct = int(sum);
+			 }
+			 else strcpy(bgcolor,"");  
+			 if ((double)((long)(sum/split_num))==sum/split_num) fprintf(output_file,"<td%s>%ld</td>\n",bgcolor,(long)(sum/*/split_num*/));
+			 else fprintf(output_file,"<td%s>%.0f</td> ",bgcolor,sum/*/split_num*/);
+			 if (tsvfile) fprintf(tsvfile,"%.0f\t",sum/*/split_num*/);     /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 
+		 }
+		 fprintf(output_file,"<td></td><td>%i</td><td>%0.3f</td></tr>\n", num_class_total, double(num_class_correct) / double(num_class_total) );
+		 if (tsvfile) fprintf(tsvfile,"\n");
+	 }
+	 fprintf(output_file,"</table> \n <br><br> \n");  /* end of average confusion matrix */
+	 if (tsvfile) fclose(tsvfile);
+
+  // average similarity matrix - also used for creating the dendrograms 
+	sprintf(buffer,"tsv/avg_similarity.tsv");
+	tsvfile = NULL;
+	if (export_tsv) tsvfile=fopen(buffer,"w");
+
+	avg_similarity_matrix=new double[(class_num+1)*(class_num+1)];
 	if (class_num>0) fprintf(output_file,"<table id=\"average_similarity_matrix\" border=\"1\" align=\"center\"><caption>Average Similarity Matrix</caption>\n <tr><td></td> ");
-	if (tsvfile) fprintf(tsvfile,"\t");         /* space */   
+	if (tsvfile) fprintf(tsvfile,"\t");
+	
 	for (class_index=1;class_index<=class_num;class_index++) {
-		fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);   /* print to the html file  */
-		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print into the tsv file */
+		fprintf(output_file,"<th>%s</th> ",class_labels[class_index]);
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);
 	}
-	fprintf(output_file,"</tr>\n");         /* end of the classes names */
-	if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
 
-	for (class_index=1;class_index<=class_num;class_index++) {
-		fprintf(output_file,"<tr><th>%s</th> ",class_labels[class_index]);
-		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);         /* print the class name into the tsv file */
-		for (class_index2=1;class_index2<=class_num;class_index2++) {
+	fprintf(output_file,"</tr>\n");
+	if (tsvfile) fprintf(tsvfile,"\n");
+
+	for( class_index = 1; class_index <= class_num; class_index++ )
+	{
+		fprintf( output_file, "<tr><th>%s</th> ", class_labels[class_index] );
+		if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);
+		for( class_index2 = 1; class_index2 <= class_num; class_index2++ ) {
 			double sum=0.0;
-			for (split_index=0;split_index<split_num;split_index++)
-				sum+=splits[split_index].similarity_matrix[class_index*class_num+class_index2];
-			avg_similarity_matrix[class_index*class_num+class_index2]=sum/split_num;    /* remember this value for the dendrogram file */
+			for( split_index = 0; split_index < split_num; split_index++ )
+				sum += splits[ split_index ].similarity_matrix[ class_index * class_num + class_index2 ];
+			avg_similarity_matrix[ class_index * class_num + class_index2 ] = sum / split_num;
 			if (class_index==class_index2) strcpy(bgcolor," bgcolor=#D5D5D5");
 		 	else strcpy(bgcolor,"");  
 			fprintf(output_file,"<td%s>%.2f</td> ",bgcolor,sum/split_num);
@@ -3343,7 +3355,12 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       fprintf(output_file,"</table><br>\n");
    }
    
-   /* *** print the confusion/similarity matrices, feature names and individual images for the splits *** */
+	if( skip_split_reporting ) {
+		fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
+		return (1);
+	}
+
+	// print the confusion/similarity matrices, feature names and individual images for the splits
 	for (split_index=0;split_index<split_num;split_index++) {
 		unsigned short *confusion_matrix;
 		double *similarity_matrix, *class_probability_matrix;

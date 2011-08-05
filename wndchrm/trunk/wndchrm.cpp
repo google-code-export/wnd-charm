@@ -44,14 +44,15 @@
 #include <ctype.h>
 
 
-#define MAX_SPLITS 200
+#define MAX_SPLITS 5000
 #define MAX_SAMPLES 190000
 
 /* global variable */
 // Verbosity levels:
 // 		0-Classification accuracy and similarity and confusion matrices only
 // 		1-Individual
-// 		2-Everything
+// 		2-Everything except the confusion and similarity matrices when printing to std out only
+// 		>2-Everything
 
 int verbosity=2;
 
@@ -272,10 +273,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked with '*'.\n",testset->class_labels[class_index]);
 			}
 		}
-
 	}
-
-
 
 // Check that the train and test sets have the same number of features
 	if (testset && testset->signature_count != ts->signature_count) {
@@ -396,7 +394,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		splits[split_index].method=method;
 		splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
-		if (!report && !ignore_group && verbosity != 1 )   // print the accuracy and confusion and similarity matrices
+		if (!report && !ignore_group && verbosity > 2 )   // print the accuracy and confusion and similarity matrices
 		{ 
 			printf( "\n" );
 			ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
@@ -416,16 +414,56 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	} // End for (split_index=0;split_index<split_num;split_index++)
 
 	// if( verbosity >= 2 ) printf("\n\n");
-	if (!report & verbosity != 1 )    // print the average accuracy
-	{
+	if (!report & verbosity != 1 )	{
 		printf( "\n----------\n" );
-		int split_index;
+
+		// print the average accuracy
 		double avg_accuracy=0,avg_pearson=0;
-		for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
-		for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
+		int split_index;
+		for( split_index = 0; split_index < split_num; split_index++ )
+		{
+			avg_accuracy+=splits[split_index].accuracy;
+			avg_pearson+=splits[split_index].pearson_coefficient;
+		}
 		if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
 		if (ts->is_continuous) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
 		else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
+		
+		// print out averages across all splits
+		int length = (1+ts->class_num) * (1+ts->class_num);
+		short unsigned int *confusion_matrix = new short unsigned int[ length ];
+		double *avg_similarity_matrix = new double[ length ];
+		double *avg_class_probability_matrix = new double[ length ];
+		for( int i = 0; i < length; ++i ) {
+			confusion_matrix[ i ] = 0;
+			avg_similarity_matrix[ i ] = 0;
+			avg_class_probability_matrix[ i ] = 0;
+		}
+
+		for( int row = 1; row <= ts->class_num; ++row )
+		{
+			for( int col = 1; col <= ts->class_num; ++col )
+			{
+				int confus_sum = 0;
+				double avg_siml = 0.0;
+				double avg_class_prob_sum = 0.0;
+				for( split_index = 0; split_index < split_num; ++split_index )
+				{
+					confus_sum += splits[split_index].confusion_matrix[ row * ts->class_num + col ];
+					avg_siml += splits[split_index].similarity_matrix[ row * ts->class_num + col ];
+					avg_class_prob_sum += splits[split_index].class_probability_matrix[ row * ts->class_num + col ];
+				}
+				confusion_matrix[ row * ts->class_num + col ] = confus_sum;
+				avg_similarity_matrix[ row * ts->class_num + col ] = avg_siml / split_num;
+				avg_class_probability_matrix[ row * ts->class_num + col ] = avg_class_prob_sum / split_num;
+			}
+		}
+		printf("\nConfusion Matrix (sum of all splits)\n");
+		ts->PrintConfusion(stdout, confusion_matrix, NULL);
+		printf("\nAverage Similarity Matrix\n");
+		ts->PrintConfusion(stdout,NULL, avg_similarity_matrix);
+		printf("\nAverage Class Probability Matrix\n");
+		ts->PrintConfusion(stdout,NULL, avg_class_probability_matrix);
 		printf("\n----------\n");
 	}
 
