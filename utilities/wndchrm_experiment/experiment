@@ -510,7 +510,7 @@ sub RunExperiment {
         @working_file_list = @sig_file_list;
       }
       # if there are more tiffs than are called for in the experiment, we randomize the order
-      if( $#working_file_list > ( $num_imgs - 1) )
+      if( ($#working_file_list +1 ) > ( $num_imgs - 1) )
       {
         # randomize the file list
         for ($i = @working_file_list; --$i; )
@@ -523,7 +523,7 @@ sub RunExperiment {
       }
       else  # if there are less tiffs than are called for, give a warning
       {
-        warn "************************\nWarning: Only $#working_file_list tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n";
+        warn "************************\nWarning: Only " . ($#working_file_list + 1) . " tiffs found in $dir_name, and is less than $num_imgs specified in configuration file.\n";
       }
       my @list_of_sigs;
       # Note that the loop will bail out without error if the number of images
