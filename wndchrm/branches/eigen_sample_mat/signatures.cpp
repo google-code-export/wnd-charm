@@ -32,7 +32,6 @@
 #pragma hdrstop
 #endif
 #include "TrainingSet.h"
-//#include "BaseAlgorithm.h"
 #include <map> // only a standard map will take a vector<Transform*> as a key
 #include <string>
 #include <stdio.h>
@@ -53,7 +52,7 @@
 #include "cmatrix.h"
 #include "colors/FuzzyCalc.h"
 #include "MAP.h"
-#include "BaseAlgorithm.h"
+#include "FeatureAlgorithm.h"
 #include "transforms.h"
 
 #ifndef WIN32
