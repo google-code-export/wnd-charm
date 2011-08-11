@@ -53,6 +53,10 @@ libimfit_a_SOURCES = \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
 	TrainingSet.h \
+	transforms.cpp \
+	transforms.h \
+	FeatureAlgorithm.cpp \
+	FeatureAlgorithm.h \
 	transforms/ChebishevFourier.cpp \
 	transforms/ChebishevFourier.h \
 	transforms/chevishev.cpp \

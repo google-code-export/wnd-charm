@@ -41,13 +41,14 @@
 #include "FeatureNames.hpp"
 #include "wndchrm_error.h"
 
-// #include <iostream> // Debug
+#include <iostream> // Debug
 //#include <limits>
 
 
 #include "TrainingSet.h"
 
 #include "gsl/specfunc.h"
+#include "MAP.h"
 //#include "cmatrix.h"
 
 #ifndef WIN32
@@ -1421,8 +1422,14 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	// all hope is lost - compute sigs.
 		if (!res) {
-			if (feature_opts->large_set) ImageSignatures->ComputeGroups(tile_matrix,feature_opts->compute_colors);
-			else ImageSignatures->compute(tile_matrix,feature_opts->compute_colors);
+			// CEC_const vector<const FeatureGroup*> work_order;
+			vector<FeatureGroup*> work_order;
+			ImageSignatures->GenerateStandardFeatureGroupList( feature_opts->large_set, feature_opts->compute_colors, work_order );
+			ImageSignatures->ComputeFromGroupList( tile_matrix, work_order );
+
+			//if (feature_opts->large_set) ImageSignatures->ComputeEverything(tile_matrix,feature_opts->compute_colors);
+			//if (feature_opts->large_set) ImageSignatures->ComputeGroups(tile_matrix,feature_opts->compute_colors);
+			//else ImageSignatures->compute(tile_matrix,feature_opts->compute_colors);
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
@@ -1833,7 +1840,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 		for (int correct = split->accurate_predictions; correct <= split->known_images; correct++)  /* find the P */
 		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
 			if ( gsl_sf_choose (split->known_images,correct,&choose) == GSL_SUCCESS )
-				P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,split->known_images-correct)*choose;
+				P += pow( ( 1/(double)class_num ), correct ) * pow( 1-1/(double)class_num, int( split->known_images ) - correct ) * choose; // compiler complained about long int - CEC 6/7/11
 		split->classification_p_value = P;
 	}
 
@@ -1898,14 +1905,6 @@ void TrainingSet::normalize() {
 	}
 }
 
-
-/* SetFisherScores
-   Compute the fisher score of each signature
-   used_signatures -double- what fraction of the signatures should be used (a value between 0 and 1).
-   sorted_feature_names -char *- a text of the names and scores of the features (NULL to ignore)
-   int method - 0 for Fisher Scores. 1 for Pearson Correlation scores (with the ground truth).
-*/
-
 void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
 {  FILE *mrmr_file;
    char buffer[512],*p_buffer; 
@@ -1956,20 +1955,32 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
    }   
 }
 
+/* SetFisherScores
+   Compute the fisher score of each signature
+   used_signatures -double- what fraction of the signatures should be used (a value between 0 and 1).
+   sorted_feature_names -char *- a text of the names and scores of the features (NULL to ignore)
+   int method - 0 for Fisher Scores. 1 for Pearson Correlation scores (with the ground truth).
+*/
+
+
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split) {
 	int sample_index,sig_index,class_index;
-//	double mean,var,class_dev_from_mean,mean_inner_class_var;
+	//	double mean,var,class_dev_from_mean,mean_inner_class_var;
 	double threshold;   
-// Make a featuregroup map and iterator
-	std::map<std::string, featuregroup_stats_t> featuregroups;
-	std::map<std::string, featuregroup_stats_t>::iterator fg_it;
-// An object instance to collect the stats for each feature + group
+
+	// Make a featuregroup map and iterator
+	UNORDERED_MAP<std::string, featuregroup_stats_t> featuregroups;
+	UNORDERED_MAP<std::string, featuregroup_stats_t>::iterator fg_it;
+
+	// An object instance to collect the stats for each feature + group
 	featuregroup_stats_t featuregroup_stats;
 	feature_stats_t feature_stats;
-// And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
-	FeatureNames::FeatureInfo const *featureinfo;
+  
+	// And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
+	FeatureInfo const *featureinfo;
 
-	if (split) {
+	if (split)
+	{
 		split->feature_stats.clear();
 		split->featuregroups_stats.clear();
 	}
@@ -2093,10 +2104,15 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
          SignatureWeights[sig_index]=pow(fabs(z_score_sum/count),1);
 //printf("%d Fisher Score: %f\n",class_num,SignatureWeights[sig_index]);		 
 	  } /* end of method 1 (Pearson Correlation) */
-	  
-	// add the sums of the scores of each group of features */
-	// Get feature information from the name and store the feature and group name in our maps
-		featureinfo = FeatureNames::getFeatureInfoByName ( SignatureNames[ sig_index ] );
+
+
+		//std::cout << sig_index << "  " << SignatureNames[sig_index];// << std::endl;
+		// add the sums of the scores of each group of features
+		// Get feature information from the name and store the feature and group name in our maps
+		FeatureNames* FN_instance = FeatureNames::get_instance();
+		featureinfo = FN_instance->getFeatureInfoByName ( SignatureNames[ sig_index ] );
+		featureinfo->print_info();
+		//cout << endl;
 	// find it in our map by name
 		fg_it = featuregroups.find(featureinfo->group->name);
 	// if its a new feature group, initialize a stats structure, and add it to our map
@@ -2111,7 +2127,9 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 			featuregroup_stats.stddev = 0;
 			featuregroup_stats.n_features = 1;
 			featuregroups[featureinfo->group->name] = featuregroup_stats; // does a copy
-		} else {
+		}
+		else
+		{
 			if (SignatureWeights[ sig_index ] < fg_it->second.min)
 				fg_it->second.min = SignatureWeights[ sig_index ];
 			if (SignatureWeights[ sig_index ] > fg_it->second.max)
@@ -2122,46 +2140,47 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 		}
 		
 		
-	// Initialize a feature stats structure, and add it to our vector
+		// Initialize a feature stats structure, and add it to our vector
 		feature_stats.name = SignatureNames[ sig_index ];
 		feature_stats.feature_info = featureinfo;
 		feature_stats.weight = SignatureWeights[ sig_index ];
 		feature_stats.index = sig_index;
 		split->feature_stats.push_back (feature_stats); // makes a copy
-	}
+	} // END iterating over all signatures
 
-   // Feature group sorting code:
-// Copy the map to the vector while updating summary stats
+	// Feature group sorting code:
+	// Copy the map to the vector while updating summary stats
 	split->featuregroups_stats.clear();
-	for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it ) {
+	for(fg_it = featuregroups.begin(); fg_it != featuregroups.end(); ++fg_it )
+	{
 		fg_it->second.mean = fg_it->second.sum_weight / (double)(fg_it->second.n_features);
 		fg_it->second.stddev = sqrt (
 			(fg_it->second.sum_weight2 - (fg_it->second.sum_weight * fg_it->second.mean)) / (double)(fg_it->second.n_features - 1)
 			); // sqrt (variance) for stddev
 		split->featuregroups_stats.push_back (fg_it->second);
 	}
-// Sort the featuregroup vector by mean weight
+	// Sort the featuregroup vector by mean weight
 	sort_by_mean_weight_t sort_by_mean_weight_func;
 	sort (split->featuregroups_stats.begin(), split->featuregroups_stats.end(), sort_by_mean_weight_func);
 
-// Sort the features in our split by weight, and use the sorted list to get the threshold value
+	// Sort the features in our split by weight, and use the sorted list to get the threshold value
 	sort_by_weight_t sort_by_weight_func;
 	sort (split->feature_stats.begin(), split->feature_stats.end(), sort_by_weight_func);
 	int last_index = (int)floor( (used_signatures * (double)signature_count) + 0.5 );
 	threshold=split->feature_stats[last_index].weight;
-// Set the SignatureWeights to 0 wherever its less than threshold
+	// Set the SignatureWeights to 0 wherever its less than threshold
 	for (sig_index = last_index+1; sig_index < signature_count; sig_index++)
 		SignatureWeights[ split->feature_stats[sig_index].index ] = 0.0;
-// Lop off the vector after the threshold
+	// Lop off the vector after the threshold
 	split->feature_stats.erase (split->feature_stats.begin() + last_index + 1,split->feature_stats.end());
 
-// now set up the projected_features based on the feature_stats vector
+	// now set up the projected_features based on the feature_stats vector
 	int n_kept_sigs=split->feature_stats.size();
 	ReducedFeatureIndexes.resize (n_kept_sigs);
 	ReducedFeatureWeights2.resize (n_kept_sigs);
 	
 	for (sig_index = 0; sig_index < n_kept_sigs; sig_index++) {
-		ReducedFeatureIndexes[sig_index] = split->feature_stats[sig_index].index;
+	ReducedFeatureIndexes[sig_index] = split->feature_stats[sig_index].index;
 		ReducedFeatureWeights2[sig_index] = pow (split->feature_stats[sig_index].weight,2);
 	}
 
@@ -3152,7 +3171,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		for (unsigned long correct = total_correct; correct <= total_tested; correct++)
 		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
 			if ( gsl_sf_choose (total_tested,correct,&choose) == GSL_SUCCESS )
-				avg_p2 += pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,total_tested-correct)*choose;		
+				avg_p2 += pow((1/(double)class_num), double(correct) ) * pow( 1-1/(double)class_num, double( total_tested - correct ) ) * choose;		// compiler complained about long int -CEC 6/7/11
 //printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);		
 		fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
 		fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
@@ -3464,19 +3483,19 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       {  char closest_image[256],interpolated_value[256];
          
          /* add the most similar image if WNN and no tiling */
-         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<td><b>Most similar image</b></td>");
+         if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<th>Most similar image</th>");
          else strcpy(closest_image,"");
 		 
          fprintf(output_file,"<a href=\"#\" onClick=\"sigs_used=document.getElementById('IndividualImages_split%d'); if (sigs_used.style.display=='none'){ sigs_used.style.display='inline'; } else { sigs_used.style.display='none'; } return false; \">Individual image predictions</a><br>\n",split_index);
-         fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><td><b>Image No.</b></td>",split_index);
-		 if (!is_continuous) fprintf(output_file,"<td><b>Normalization<br>Factor</b></td>");
+         fprintf(output_file,"<TABLE ID=\"IndividualImages_split%d\" border=\"1\" style=\"display: none;\">\n       <tr><th>Image No.</th>",split_index);
+		 if (!is_continuous) fprintf(output_file,"<th width='100'>Normalization Factor</th>");
          for (class_index=1;class_index<=class_num;class_index++)
-			fprintf(output_file,"<td><b>%s</b></td>",class_labels[class_index].c_str());
-   	     if (is_numeric) strcpy(interpolated_value,"<td><b>Interpolated<br>Value</b></td>");
+			fprintf(output_file,"<th>%s</th>",class_labels[class_index]);
+   	     if (is_numeric) strcpy(interpolated_value,"<th width='100'>Interpolated Value</th>");
          else strcpy(interpolated_value,"");
-         if (is_continuous) fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Value</b></td><td><b>Predicted<br>Value</b></td>");
-         else fprintf(output_file,"<td>&nbsp;</td><td><b>Actual<br>Class</b></td><td><b>Predicted<br>Class</b></td><td><b>Classification<br>Correctness</b></td>%s",interpolated_value);
-         fprintf(output_file,"<td><b>Image</b></td>%s</tr>\n",closest_image);		 
+         if (is_continuous) fprintf(output_file,"<th>&nbsp;</th><th width='100'>Actual Value</th><th width='100'>Predicted Value</th>");
+         else fprintf(output_file,"<th>&nbsp;</th><th width='100'>Actual Class</th><th width='100'>Predicted Class</th><th width='100'>Classification Correctness</th>%s",interpolated_value);
+         fprintf(output_file,"<th>Image</th>%s</tr>\n",closest_image);		 
          fprintf(output_file,"%s",split->individual_images);
          fprintf(output_file,"</table><br><br>\n");
       }

@@ -33,12 +33,13 @@
 #define cmatrixH
 //---------------------------------------------------------------------------
 
+#include <vector>
 #ifdef WIN32
   #include <vcl.h>
 #else  
   #include "colors/FuzzyCalc.h"
-  #define min(a,b) (((a) < (b)) ? (a) : (b))
-  #define max(a,b) (((a) < (b)) ? (b) : (a))
+  //#define min(a,b) (((a) < (b)) ? (a) : (b))
+  //#define max(a,b) (((a) < (b)) ? (b) : (a))
 #endif
 
 #define cmRGB 1
@@ -46,6 +47,8 @@
 
 #define INF 10E200
 
+using namespace std;
+class FeatureGroup;
 
 typedef unsigned char byte;
 

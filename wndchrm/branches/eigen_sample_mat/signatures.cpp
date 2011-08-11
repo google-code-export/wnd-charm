@@ -32,7 +32,9 @@
 #pragma hdrstop
 #endif
 #include "TrainingSet.h"
-
+//#include "BaseAlgorithm.h"
+#include <map> // only a standard map will take a vector<Transform*> as a key
+#include <string>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -40,14 +42,19 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h> // apparently, for close() only?
+#include <stdlib.h> // for exit(), used for debug, comment out if release build
 #include <math.h>
 #include <cfloat> // Has definition of DBL_EPSILON, FLT_EPSILON
+#include <fstream>
 #define OUR_EPSILON FLT_EPSILON*6
 #define FLOAT_EQ(x,v) (((v - FLT_EPSILON) < x) && (x <( v + FLT_EPSILON)))
 #define OUR_EQ(x,v) (((v - OUR_EPSILON) < x) && (x <( v + OUR_EPSILON)))
 #include "signatures.h"
 #include "cmatrix.h"
 #include "colors/FuzzyCalc.h"
+#include "MAP.h"
+#include "BaseAlgorithm.h"
+#include "transforms.h"
 
 #ifndef WIN32
 #include <stdlib.h>
@@ -145,6 +152,53 @@ void signatures::Finalize(Eigen::MatrixXd &the_mat, int the_col) {
 void signatures::Clear()
 {  count=0;
 	if (data) delete data;
+}
+//============================================================
+// added June 2011 
+// This function essentially generates a work order for wndcharm to
+// iterate over and calculate.
+// input:
+//   int large_set = true or false
+//   int compute_colors = true or false
+// output:
+//   double<FeatureGroup> & group_list = a vector of FeatureGroup objects.
+//int signatures::GenerateStandardFeatureGroupList( int long_chain, int compute_colors, vector<const FeatureGroup*> &group_list )
+int signatures::GenerateStandardFeatureGroupList( int long_chain, int compute_colors, vector<FeatureGroup*> &group_list )
+{
+	// First, add feature groups that are common to all sets:
+	group_list.clear();
+	FeatureNames* phonebook = FeatureNames::get_instance();
+	if( NULL == phonebook ) return -1;
+	string temp_str;
+	
+	ifstream small_feature ( "small.txt" );
+	if( small_feature.fail() ) {
+		cout << "Failed to open small.txt" << endl;
+		exit(1);
+	}
+	while( small_feature.good() ) {
+		temp_str.clear();
+		getline( small_feature, temp_str );
+		if( !temp_str.empty() ) 
+			group_list.push_back( phonebook->getGroupByName( temp_str ) );
+	}
+	small_feature.close();
+
+	if( long_chain ) {
+		ifstream large_feature( "large.txt" ); //, ifstream::in );
+		if( large_feature.fail() ) {
+			cout << "Failed to open large.txt" << endl;
+			exit(1);
+		}
+		while( large_feature.good() ) {
+		temp_str.clear();
+		getline( large_feature, temp_str );
+		if( !temp_str.empty() ) 
+			group_list.push_back( phonebook->getGroupByName( temp_str ) );
+		}
+		large_feature.close();
+	}
+	return 0;
 }
 
 int signatures::IsNeeded(long start_index, long group_length)
@@ -870,6 +924,8 @@ void signatures::CompGroupD(ImageMatrix *matrix, const char *transform_label)
 */
 void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
 {
+	cout << "compute groups" << endl;
+
   ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*FourierWaveletSelector;
   ImageMatrix *FourierChebyshev,*WaveletFourier,*ChebyshevWavelet, *EdgeTransform, *EdgeFourier, *EdgeWavelet;
 
@@ -1112,6 +1168,161 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   delete EdgeWavelet;
   delete FourierChebyshev;
 //printf("7\n");  
+}
+
+
+
+//int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<const FeatureGroup*> &feature_groups)
+int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*> &feature_groups)
+{
+	// So that the pre-main transform and algorithm registration operations
+	// don't get optimized out.
+	FourierTransform * no_op = new FourierTransform; delete no_op;
+	MultiscaleHistograms * noop = new  MultiscaleHistograms; delete noop;
+
+	MatrixMap saved_pixel_planes; // MatrixMap declared in FeatureNames.hpp
+	// MatrixMap = map< vector<Transform const *>, ImageMatrix*>
+	// I know, it looks kinda weird to have a vector as the key in a map
+	// but I think it's pretty elegant, actually.
+
+	// Load the untransformed pixel field into the transform map
+	// Key: a vector of Transforms, length 0. Value, the corresponding ImageMatrix
+  // CEC_const saved_pixel_planes[ vector<Transform const *>() ] = matrix;
+  saved_pixel_planes[ vector<Transform *>() ] = matrix;
+
+	int retval;
+	ImageMatrix* pixel_plane = NULL; 
+	FeatureAlgorithm* alg = NULL;
+	FeatureInfo* feature_info = NULL;
+	vector<double> coeffs;
+	int i;
+	string feature_name;
+	vector<FeatureInfo*> feature_list;
+
+	// CEC_const vector<const FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
+	vector<FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
+	for( ; grp_it != feature_groups.end(); grp_it++ ) {
+		if( NULL == (*grp_it)->algorithm )
+			continue;
+		// obtain_transform is a recursive function that simply returns the
+		// desired transform if it exists in the array "saved_pixel_planes", or it
+		// calculates it, using "saved_pixel_planes" as a place to save intermediates,
+		// (and time).
+		pixel_plane =	(*grp_it)->obtain_transform(saved_pixel_planes, (*grp_it)->transforms);
+		if( NULL == pixel_plane )
+			continue;
+		if( (retval = (*grp_it)->algorithm->calculate( pixel_plane, coeffs ) ) < 0 )
+			//continue;
+
+		for( i = 0; i < coeffs.size(); i++ ) {
+			if( NULL == (feature_info = new FeatureInfo( (*grp_it), i )) ) return -1;
+			if( !( feature_info->get_name( feature_name ) ) ) return -1;
+			Add( feature_name.c_str(), coeffs[i] );
+			feature_list.push_back( feature_info );
+		}
+	}
+
+	int count = 0;
+	for( vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
+			fi_it != feature_list.end(); ++fi_it )
+	{
+		string temp_str;
+		(*fi_it)->get_name( temp_str );
+		cout << ++count << ". " << temp_str << endl;
+	}
+
+	exit(1);
+}
+
+void signatures::ComputeLongChain( ImageMatrix *matrix, int compute_colors)
+{
+  count=0;      // start counting signatures from 0
+  
+	typedef UNORDERED_MAP<std::string, ImageMatrix*> TransformMap;
+		
+	TransformMap transforms;
+
+	transforms["Fourier"] = matrix->duplicate();
+  transforms["Fourier"]->fft2();
+  
+  transforms["Chebyshev"] = matrix->duplicate();
+  transforms["Chebyshev"]->ChebyshevTransform(0);
+
+  transforms["Chebyshev Fourier"] = transforms["Fourier"]->duplicate();
+  transforms["Chebyshev Fourier"]->ChebyshevTransform(0);
+  transforms["Wavelet"] = matrix->duplicate();
+  transforms["Wavelet"]->Symlet5Transform();
+
+  transforms["Wavelet Fourier"] = transforms["Fourier"]->duplicate();
+  transforms["Wavelet Fourier"]->Symlet5Transform();
+
+  transforms["Fourier Chebyshev"] = transforms["Chebyshev"]->duplicate();
+  transforms["Fourier Chebyshev"]->fft2();
+
+  transforms["Fourier Wavelet"] = transforms["Wavelet"]->duplicate();
+  transforms["Fourier Wavelet"]->fft2();
+
+  transforms["Chebyshev Wavelet"] = transforms["Wavelet"]->duplicate();
+  transforms["Chebyshev Wavelet"]->ChebyshevTransform(0);
+
+  transforms["Edge Transform"] = matrix->duplicate();
+  transforms["Edge Transform"]->EdgeTransform();
+
+	// Historically named in the wrong order
+	transforms["Edge Fourier Transform"] = transforms["Edge Transform"]->duplicate();
+	transforms["Edge Fourier Transform"]->fft2();
+	
+	// Historically named in the wrong order
+	transforms["Edge Wavelet Transform"] = transforms["Edge Transform"]->duplicate();
+	transforms["Edge Wavelet Transform"]->Symlet5Transform();
+
+	TransformMap::iterator it = transforms.begin();
+
+  CompGroupA(matrix,"");
+  CompGroupB(matrix,"");
+  CompGroupC(matrix,"");
+  if (compute_colors) CompGroupD(matrix,"");
+
+ // CompGroupB(FourierTransform,"Fourier");
+ // CompGroupC(FourierTransform,"Fourier");
+
+ // CompGroupB(WaveletSelector,"Wavelet");
+ // CompGroupC(WaveletSelector,"Wavelet");
+
+ // CompGroupB(ChebyshevTransform,"Chebyshev");
+ // CompGroupC(ChebyshevTransform,"Chebyshev");
+// Fourier, then Chebyshev
+ // CompGroupC(ChebyshevFourierTransform,"Chebyshev Fourier");
+// Fourier, then Wavelet
+ // CompGroupC(FourierWaveletSelector,"Wavelet Fourier");
+/**/
+// Wavelet, then Fourier
+  //CompGroupB(WaveletFourier,"Fourier Wavelet");
+  //CompGroupC(WaveletFourier,"Fourier Wavelet");
+
+// Chebyshev, then Fourier
+  //CompGroupC(FourierChebyshev,"Fourier Chebyshev");
+// Wavelet, then Chebyshev
+  //CompGroupC(ChebyshevWavelet,"Chebyshev Wavelet");
+
+  //CompGroupB(EdgeTransform,"Edge Transform");
+  //CompGroupC(EdgeTransform,"Edge Transform");
+// Edge, then fourier - named in wrong order!
+ // CompGroupB(EdgeFourier,"Edge Fourier Transform");
+ // CompGroupC(EdgeFourier,"Edge Fourier Transform");
+
+// Edge, then wavelet - named in wrong order!
+  //CompGroupB(EdgeWavelet,"Edge Wavelet Transform");
+//printf("5.5\n");  
+  //CompGroupC(EdgeWavelet,"Edge Wavelet Transform");
+//printf("6\n");
+
+	for( it = transforms.begin(); it != transforms.end(); it++ ) {
+		CompGroupB( it->second, it->first.c_str() );
+		CompGroupC( it->second, it->first.c_str() );
+		delete it->second;
+		it->second = NULL;
+	}
 }
 
 

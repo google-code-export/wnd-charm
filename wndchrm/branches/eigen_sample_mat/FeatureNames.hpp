@@ -3,9 +3,17 @@
 
 #include <string>
 #include <vector>
-#include <map>
 #include <set>
-
+#include "config.h"
+#include <map> //needed for datatype MatrixMap
+#include "MAP.h"  // Defines the macro MAP which decides whether to #include
+                  // <unordered_map>, <tr1/unordered_map>, or just plain ol <map>
+//#include "transforms.h"
+#include "cmatrix.h"
+class Transform;
+class FeatureAlgorithm;
+class ImageMatrix;
+//#include "FeatureAlgorithm.h"
 /*
 map and unordered_map comparison:
 std::tr1::unordered_map:
@@ -16,129 +24,155 @@ std::map:
        -parse    502400 lookups    502400 misses       2.4 secs,    205706 lookups/sec
 */
 
-#include "config.h"
-#ifdef HAVE_UNORDERED_MAP
-# include <unordered_map>
-# define FEATURENAMES_MAP std::unordered_map
-#elif defined ( HAVE_TR1_UNORDERED_MAP )
-# include <tr1/unordered_map>
-# define FEATURENAMES_MAP std::tr1::unordered_map
-#else
-# define FEATURENAMES_MAP std::map
-#endif
+using namespace std;
+//=====================================================================
+/*! Channels
+ *
+ */
+class Channel {
+	public:
+		std::string name;
+		Channel (string &s) { name = s;}
+		Channel (const char *s) { name = s;}
+		void print_info() const;
+		
+	};
 
+//=====================================================================
+/*!
+ * Feature Groups
+ */
+
+// CEC_const typedef vector<Transform const *> TransformList;
+typedef vector<Transform *> TransformList;
+typedef map< TransformList, ImageMatrix* > MatrixMap;
+
+class FeatureGroup {
+	public:
+		std::string name;
+		//const FeatureAlgorithm* algorithm;
+		FeatureAlgorithm* algorithm;
+		//const Channel* channel;
+		Channel* channel;
+		//std::vector<Transform const *> transforms; // these are in order of application
+		std::vector<Transform *> transforms; // these are in order of application
+		FeatureGroup () : algorithm(NULL), channel(NULL) {};
+		//FeatureGroup (string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<Transform const *> t) {
+		FeatureGroup (string &s, FeatureAlgorithm *f, Channel *c, std::vector<Transform *> t) {
+			name = s; algorithm = f; channel = c; transforms = t;
+		}
+		int get_name( string& out_str );
+		void print_info() const;
+		/* ImageMatrix * obtain_transform( 
+				MatrixMap &saved_pixel_planes,
+				vector<Transform const *> sequence ) const; */
+		ImageMatrix * obtain_transform( 
+				MatrixMap &saved_pixel_planes,
+				vector<Transform *> sequence );
+	};
+
+//=====================================================================
+/*!
+ * Features
+ */
+class FeatureInfo {
+	public:
+
+		std::string name;
+		//const FeatureGroup *group;
+		FeatureGroup *group;
+		int index; // within group
+ 
+		FeatureInfo () : group(NULL), index(-1) {};
+		// FeatureInfo (std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
+		FeatureInfo (std::string &s, FeatureGroup *g, int i) { name = s; group = g; index = i;}
+		// FeatureInfo (const FeatureGroup* g, int i) { group = g; index = i; }
+		FeatureInfo (FeatureGroup* g, int i) { group = g; index = i; }
+		int get_name ( string& out_str );
+		void print_info() const;
+};
 
 class FeatureNames {
 public:
-/////////////////////////////////
-//         Channels
-/////////////////////////////////
-// Instead of a string, this should be a channel object
-	struct Channel {
-		std::string name;
+	~FeatureNames() {instanceFlag = false; delete pInstance;};
+ 
+	static FeatureNames* get_instance();
 
-		Channel (std::string &s) { name = s;}
-		Channel (const char *s) { name = s;}
-	};
-// This just returns the string, should return a channel object by string lookup
-	static const Channel *getChannelByName (std::string &name);
+	//! This just returns the string, should return a channel object by string lookup
+	// CEC_const const Channel *getChannelByName (std::string &name);
+	Channel *getChannelByName (std::string &name);
 
+	//! This just returns the string, should return a transform object by string lookup
+	// CEC_const const Transform *getTransformByName (std::string &name);
+	Transform *getTransformByName (std::string &name);
 
-/////////////////////////////////
-//         Transforms
-/////////////////////////////////
-// Instead of a string, this should be a transform object with an execute() method
-	struct Transform {
-		std::string name;
+	//! This returns an iterator to the algorithm map by string lookup
+	// CEC_const const FeatureAlgorithm *getFeatureAlgorithmByName (std::string &name);
+	FeatureAlgorithm *getFeatureAlgorithmByName (std::string &name);
 
-		Transform (std::string &s) { name = s;}
-		Transform (const char *s) { name = s;}
-	};
-// This just returns the string, should return a transform object by string lookup
-	static const Transform *getTransformByName (std::string &name);
+	//! This will store a new group if the name doesn't exist.
+	//! The returned pointer is to an iterator into the static group map
+	// CEC_const const FeatureGroup *getGroupByName (const char* name);
+	FeatureGroup *getGroupByName (const char* name);
+	// CEC_const const FeatureGroup *getGroupByName (std::string &name);
+	FeatureGroup *getGroupByName (std::string &name);
 
+	// CEC_const const FeatureInfo *getFeatureInfoByName (const char *featurename_in);
+	FeatureInfo *getFeatureInfoByName (const char *featurename_in);
 
-/////////////////////////////////
-//      Feature Algorithms
-/////////////////////////////////
-// This should be a feature algorithm object with an execute() method
-	struct FeatureAlgorithm {
-		std::string name;
-		int n_features;
+	//! Old-style feature name lookup
+	const std::string *oldFeatureNameLookup (const char *oldFeatureName);
 
-		FeatureAlgorithm () : name(""), n_features(1) { }
-		FeatureAlgorithm (std::string &s,int i) { name = s; n_features = i;}
-		FeatureAlgorithm (const char *s,int i) { name = s; n_features = i;}
-	};
-// This returns an iterator to the algorithm map by string lookup
-	static const FeatureAlgorithm *getFeatureAlgorithmByName (std::string &name);
+  // These have to be public and static in order to be called pre-main without an object.
+  // This is done in FeatureNames.cpp in the global scope - outside of any functions/methods.
+	const bool initFeatureAlgorithms();
+	const bool initOldFeatureNameLookup();
 
+	//! List of FeatureGroups that comprise the Long chain
+	//vector<FeatureGroup> 
 
-/////////////////////////////////
-//        Feature Groups
-/////////////////////////////////
-	struct FeatureGroup {
-		std::string name;
-		const FeatureAlgorithm *algorithm;
-		const Channel *channel;
-		std::vector<Transform const *> transforms; // these are in order of application
+	//REGISTRATION METHODS
+	int register_transform( string &transform_name, Transform * BT_itf );
+	int register_algorithm( string &alg_name, FeatureAlgorithm * BA_itf );
 
-		FeatureGroup () : algorithm(NULL), channel(NULL) {};
-		FeatureGroup (std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<Transform const *> t) {
-			name = s; algorithm = f; channel = c; transforms = t;
-		}
-	};
-// This will store a new group if the name doesn't exist.
-// The returned pointer is to an iterator into the static group map
-	static const FeatureGroup *getGroupByName (std::string &name);
+		//new registration maps
+	typedef UNORDERED_MAP<string,Transform*> TransformMap;
+	TransformMap RegisteredTransforms;
 
+	//typedef UNORDERED_MAP<string,FeatureAlgorithm*> AlgorithmMap;
+	//AlgorithmMap RegisteredAlgorithms;
 
-/////////////////////////////////
-//          Features
-/////////////////////////////////
-	struct FeatureInfo {
-		std::string name;
-		const FeatureGroup *group;
-		int index; // within group
+	//void dump_phonebook();
 
-		FeatureInfo () : group(NULL), index(-1) {};
-		FeatureInfo (std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
-	};
-	static const FeatureInfo *getFeatureInfoByName (const char *featurename_in);
-
-/////////////////////////////////
-// Old-style feature name lookup
-/////////////////////////////////
-	static const std::string *oldFeatureNameLookup (const char *oldFeatureName);
-
-// These have to be public and static in order to be called pre-main without an object.
-// This is done in FeatureNames.cpp in the global scope - outside of any functions/methods.
-	static const bool initFeatureAlgorithms();
-	static const bool initOldFeatureNameLookup();
+protected:
+	FeatureNames();
 
 private:
+	static FeatureNames* pInstance;
+	static bool instanceFlag;
+
 ////////////////////////////////////////
 // Private static object caches
 ////////////////////////////////////////
-	typedef FEATURENAMES_MAP<std::string, Channel *> cnm_t;
-	static cnm_t  channels_;
+	typedef UNORDERED_MAP<std::string, Channel *> cnm_t;
+	cnm_t  channels_;
 
-	typedef FEATURENAMES_MAP<std::string, Transform *> tnm_t;
-	static tnm_t  transforms_;
+	typedef UNORDERED_MAP<std::string, Transform *> tnm_t;
+	tnm_t  transforms_;
 
-	typedef FEATURENAMES_MAP<std::string, FeatureAlgorithm *> fam_t;
-	static fam_t  feature_algorithms_;
+	typedef UNORDERED_MAP<std::string, FeatureAlgorithm *> fam_t;
+	fam_t  feature_algorithms_;
 
-	typedef FEATURENAMES_MAP<std::string, FeatureGroup *> fgnm_t;
-	static fgnm_t feature_groups_;
+	typedef UNORDERED_MAP<std::string, FeatureGroup *> fgnm_t;
+	fgnm_t feature_groups_;
 
-	typedef FEATURENAMES_MAP<std::string, FeatureInfo *> fnm_t;
-	static fnm_t  features_;
+	typedef UNORDERED_MAP<std::string, FeatureInfo *> fnm_t;
+	fnm_t  features_;
 
-	typedef FEATURENAMES_MAP<std::string,std::string> ofnm_t;
-	static ofnm_t old_features_;
+	typedef UNORDERED_MAP<std::string,std::string> ofnm_t;
+	ofnm_t old_features_;
 
-	
+
 };
 
 #endif // __FEATURE_NAMES_HPP__

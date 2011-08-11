@@ -3,12 +3,17 @@
 #include <time.h>
 
 #include "FeatureNames.hpp"
+#include "FeatureAlgorithm.h"
+#include "transforms.h"
+#include <iostream> 
 #include <string>
 #include <vector>
-#include <map>
+//#include <map> 
 #include <set>
 #include <algorithm>
+#include <sstream>
 
+/*
 // Storage for class statics
 FeatureNames::cnm_t  FeatureNames::channels_;
 FeatureNames::tnm_t  FeatureNames::transforms_;
@@ -19,7 +24,7 @@ FeatureNames::ofnm_t FeatureNames::old_features_;
 // initialization pre-main
 const bool initOldFeatureNameLookup_ = FeatureNames::initOldFeatureNameLookup ();
 const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
-
+*/ 
 
 
 
@@ -120,6 +125,61 @@ const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
 // 	printf ("       -parse %9d lookups %9d misses %9.2g secs, %9.0f lookups/sec\n",found+missed,missed,cpu_secs,(double)(found+missed)/cpu_secs);
 // 
 // }
+bool FeatureNames::instanceFlag = false;
+FeatureNames* FeatureNames::pInstance = NULL;
+
+static FeatureNames* __FeatureNames_instance = FeatureNames::get_instance();
+
+FeatureNames::FeatureNames() {
+	initFeatureAlgorithms();
+	initOldFeatureNameLookup();
+}
+
+FeatureNames* FeatureNames::get_instance()
+{
+	if( !instanceFlag ) {
+		std::cout << "Instantiating new FeatureNames singleton" << std::endl;
+		pInstance = new FeatureNames();
+		instanceFlag = true;
+		return pInstance;
+	}
+	else {
+		return pInstance;
+	}
+}
+void FeatureInfo::print_info() const {
+	std::cout  << name << std::endl;
+	//std::cout << ", name:\t" << name; //<< std::endl;
+	if( group )
+		group->print_info();
+}
+void FeatureGroup::print_info() const {
+	//std::cout << ", group name:\t" << name;// << std::endl;
+	if( algorithm )
+		algorithm->print_info();
+	if( channel )
+		channel->print_info();
+	unsigned int i;
+	for( i = 0; i < transforms.size(); ++i ) {
+		std::cout << "\t";
+		transforms[i]->print_info();
+	}
+}
+
+/*
+int FeatureGroup::get_required_transforms(string& req_transforms) const {
+	req_transforms.clear();
+	vector<Transform const*>::iterator it = transforms.begin();
+
+	for( ; it != transforms.end(); it++ )
+		req_transforms += *it;
+	*/
+
+
+void Channel::print_info() const {
+	std::cout << "Channel name:\t" << name << std::endl;
+}
+
 
 /*
 New-style feature names follow this style:
@@ -137,7 +197,8 @@ In the example above, Edge transform first, then Wavelet, then Zernike coefficie
 The feature and group names reported in .name fields are normalized for whitespace as in the example above.
 */
 
-const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
+// CEC_const const FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
+FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
 	if (! (featurename_in && *featurename_in) ) return (NULL);
 	fnm_t::const_iterator fnm_it = features_.find(featurename_in);
 	if (fnm_it != features_.end()) return (fnm_it->second);
@@ -166,7 +227,8 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char 
 	if (found != std::string::npos)
 		groupname.erase(found+1);
 
-	const FeatureGroup *featuregroup = getGroupByName (groupname);
+	// CEC_const const FeatureGroup *featuregroup = getGroupByName (groupname);
+	FeatureGroup *featuregroup = getGroupByName (groupname);
 	if (!featuregroup) return (NULL); // This should only fail for memory allocation failure
 
 	// For now, if we got an invalid (unknown) index, assume that its 0.
@@ -195,24 +257,69 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char 
 	return (featureinfo);
 }
 
+int FeatureGroup::get_name( string& out_str ) {
+	if( !name.empty() ) {
+		out_str = name;
+		return 1;
+	}
+	std::ostringstream oss;
+	string temp;
+	if( (temp = algorithm->name).empty() )
+		temp = "Unnamed Algorithm";
+ 
+	oss << temp << " (";
+	//for( vector<Transform const *>::iterator t_it = transforms.begin(); 
+	for( vector<Transform *>::iterator t_it = transforms.begin(); 
+			 t_it != transforms.end(); ++t_it ) {
+		if( (temp = (*t_it)->name).empty() )
+			temp = "Unnamed Transform";
+		oss << " " << temp << " (";
+	}
+	for( int i = 0; i < transforms.size(); ++i )
+		oss << ") ";
+
+	oss << ")";
+
+	out_str = oss.str();
+	return 1;
+}
+
+int FeatureInfo::get_name( string& out_str ) {
+	if( !name.empty() ) {
+		out_str = name;
+		return 1;
+	}
+	ostringstream oss;
+	string group_str;
+	int retval;
+	if( !( retval = group->get_name( group_str ) ) ) return retval;
+	oss << group_str << " [" << index << "]";
+	out_str = oss.str();
+	return 1;
+}
+
+
 // This returns an iterator to the algorithm map by string lookup
-const FeatureNames::FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
+// CEC_const const FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
+FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
 	fam_t::const_iterator fam_it = feature_algorithms_.find(name);
-	FeatureAlgorithm *algorithm = NULL;
+	FeatureAlgorithm *base_alg_itf = NULL;
 	
 	if (fam_it == feature_algorithms_.end()) {
-		algorithm = new FeatureAlgorithm (name,1);
-		feature_algorithms_[name] = algorithm;
+		EmptyFeatureAlgorithm* algorithm = new EmptyFeatureAlgorithm( name, 1 );
+		base_alg_itf = dynamic_cast<FeatureAlgorithm*>( algorithm );
+		register_algorithm( name, base_alg_itf );
 	} else {
-		algorithm = fam_it->second;
+		base_alg_itf = fam_it->second;
 	}
 	
-	return (algorithm);
+	return( base_alg_itf );
 }
 
 
 // This should return a channel object by string lookup
-const FeatureNames::Channel *FeatureNames::getChannelByName (std::string &name) {
+// CEC_const const Channel *FeatureNames::getChannelByName (std::string &name) {
+Channel *FeatureNames::getChannelByName (std::string &name) {
 	cnm_t::const_iterator cnm_it = channels_.find(name);
 	Channel *channel = NULL;
 
@@ -227,12 +334,14 @@ const FeatureNames::Channel *FeatureNames::getChannelByName (std::string &name) 
 }
 
 // This should return a transform object by string lookup
-const FeatureNames::Transform *FeatureNames::getTransformByName (std::string &name) {
+// CEC_const const Transform *FeatureNames::getTransformByName (std::string &name) {
+Transform *FeatureNames::getTransformByName (std::string &name) {
 	tnm_t::const_iterator tnm_it = transforms_.find(name);
 	Transform *transform = NULL;
 
 	if (tnm_it == transforms_.end()) {
-		transform = new Transform (name);
+		EmptyTransform * new_transform = new EmptyTransform (name);
+		transform = dynamic_cast<Transform*>(new_transform);
 		transforms_[name] = transform;
 	} else {
 		transform = tnm_it->second;
@@ -241,8 +350,14 @@ const FeatureNames::Transform *FeatureNames::getTransformByName (std::string &na
 	return (transform);
 }
 
+// CEC_const const FeatureGroup* FeatureNames::getGroupByName( const char* name ) {
+FeatureGroup* FeatureNames::getGroupByName( const char* name ) {
+	std::string temp(name);
+	return getGroupByName( temp );
+}
 
-const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
+// CEC_const const FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
+FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
 	fgnm_t::const_iterator fgnm_it = feature_groups_.find(name);
 	if (fgnm_it != feature_groups_.end()) return (fgnm_it->second);
 
@@ -269,8 +384,10 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &nam
 	size_t found_trans_s;
 	size_t found_trans_e;
 	std::string transform_name;
-	std::vector<Transform const *> transforms;
-	const Transform *transform;
+	//std::vector<Transform const *> transforms;
+	std::vector<Transform *> transforms;
+	//const Transform *transform;
+	Transform *transform;
 
 	found_trans_s = name.find_first_not_of(" ()",found_parens+1);
 	if (found_trans_s != std::string::npos) found_trans_e = name.find_first_of('(',found_trans_s+1);
@@ -350,10 +467,86 @@ const std::string *FeatureNames::oldFeatureNameLookup (const char *oldFeatureNam
 	else return (&(ofnm_it->second));
 }
 
+int FeatureNames::register_transform( string &transform_name, Transform * BT_itf ) {
+	cout << "Transform " << transform_name << " registered." << endl;
+	TransformMap::iterator it = RegisteredTransforms.find( transform_name );
 
+	if( it == RegisteredTransforms.end() ) {
+		RegisteredTransforms[ transform_name ] = BT_itf;
+		return 1;
+	}
+	return -1;
+}
+
+int FeatureNames::register_algorithm( string &alg_name, FeatureAlgorithm * BA_itf ) {
+	cout << "Algorithm " << alg_name << " registered." << endl;
+	fam_t::iterator it = feature_algorithms_.find( alg_name );
+
+	if( it == feature_algorithms_.end() ) {
+		feature_algorithms_[ alg_name ] = BA_itf;
+		return 1;
+	}
+	return -1;
+}
+//==========================================================================
+/*ImageMatrix * FeatureGroup::obtain_transform(
+		MatrixMap &saved_pixel_planes,
+		vector<Transform const *> sequence ) const */
+ImageMatrix * FeatureGroup::obtain_transform(
+		MatrixMap &saved_pixel_planes,
+		vector<Transform *> sequence )
+{
+	MatrixMap::iterator t_it = saved_pixel_planes.find(sequence);
+	if( t_it != saved_pixel_planes.end() )
+		return ( t_it->second );
+
+	ImageMatrix* output_pixel_plane = NULL;
+	ImageMatrix* intermediate_pixel_plane = NULL;
+
+	Transform* last_transform_in_sequence = sequence.back();
+	sequence.pop_back();
+	t_it = saved_pixel_planes.find(sequence);
+	if( t_it != saved_pixel_planes.end() )
+		intermediate_pixel_plane = t_it->second;
+	else {
+		// recursion call here:
+		intermediate_pixel_plane = obtain_transform(saved_pixel_planes, sequence);
+		// save the intermediate
+		saved_pixel_planes[sequence] = intermediate_pixel_plane;
+	}
+
+	int retval = 
+		last_transform_in_sequence->transform( intermediate_pixel_plane, output_pixel_plane );
+
+	return output_pixel_plane;
+}
+
+//==========================================================================
+/*
+const void FeatureNames::dump_phonebook() {
+	
+	cnm_t::iterator chan_it = cnm_t.begin();
+	for( ; chan_it != cnm_t.end(); chan_it++ )
+		( chan_it* )->print_info();
+
+	tnm_t::iterator chan_it = cnm_t.begin();
+	for( ; chan_it != cnm_t.end(); chan_it++ )
+		( chan_it* )->print_info();
+
+	cnm_t::iterator chan_it = cnm_t.begin();
+	for( ; chan_it != cnm_t.end(); chan_it++ )
+		( chan_it* )->print_info();
+
+	cnm_t::iterator chan_it = cnm_t.begin();
+	for( ; chan_it != cnm_t.end(); chan_it++ )
+		( chan_it* )->print_info();
+
+}
+*/
+//==========================================================================
 
 const bool FeatureNames::initFeatureAlgorithms() {
-
+/*
 	if (!feature_algorithms_.empty()) return (true);
 	feature_algorithms_["Chebyshev Coefficients"]         = new FeatureAlgorithm ("Chebyshev Coefficients",         31);
 	feature_algorithms_["Chebyshev-Fourier Coefficients"] = new FeatureAlgorithm ("Chebyshev-Fourier Coefficients", 31);
@@ -369,6 +562,7 @@ const bool FeatureNames::initFeatureAlgorithms() {
 	feature_algorithms_["Radon Coefficients"]             = new FeatureAlgorithm ("Radon Coefficients",             11);
 	feature_algorithms_["Tamura Textures"]                = new FeatureAlgorithm ("Tamura Textures",                 5);
 	feature_algorithms_["Zernike Coefficients"]           = new FeatureAlgorithm ("Zernike Coefficients",           71);
+	*/
 	return (true);
 }
 

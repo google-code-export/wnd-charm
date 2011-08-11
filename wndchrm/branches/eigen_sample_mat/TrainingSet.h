@@ -113,7 +113,7 @@ typedef struct {
 // Set up our struct for keeping track of per-feature-group statistics.
 typedef struct {
 	std::string name;
-	const FeatureNames::FeatureGroup *featuregroup_info;
+	const FeatureGroup *featuregroup_info;
 	double min;
 	double max;
 	double sum_weight;
@@ -122,21 +122,25 @@ typedef struct {
 	double stddev;
 	int n_features;
 } featuregroup_stats_t;
+
 typedef struct sort_by_mean_weight_t {
 	bool operator() (featuregroup_stats_t i,featuregroup_stats_t j) { return (j.mean < i.mean);}
 } sort_by_mean_weight_func;
+
 typedef std::vector<featuregroup_stats_t> featuregroups_t;
 
 // Set up our struct for keeping track of per-feature stuff.
 typedef struct {
 	std::string name; // N.B.: name as read from file
-	const FeatureNames::FeatureInfo *feature_info;
+	const FeatureInfo *feature_info;
 	int index;        // index into raw_features
 	double weight;
 } feature_stats_t;
+
 typedef struct sort_by_weight_t {
 	bool operator() (feature_stats_t i,feature_stats_t j) { return (j.weight < i.weight);}
 } sort_by_weight_func;
+
 typedef std::vector<feature_stats_t> features_t;
 
 

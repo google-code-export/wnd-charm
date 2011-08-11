@@ -31,6 +31,7 @@
 
 #pragma hdrstop
 
+#include <vector>
 #include <math.h>
 #include <stdio.h>
 #include "cmatrix.h"
@@ -197,7 +198,7 @@ int ImageMatrix::LoadTIFF(char *filename)
    double max_val;
    pix_data pix;
    TIFFSetWarningHandler(NULL);
-   if (tif = TIFFOpen(filename, "r"))
+   if( (tif = TIFFOpen(filename, "r")) )
    {
      TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
      width = w;
@@ -238,7 +239,8 @@ int ImageMatrix::LoadTIFF(char *filename)
                  {  if (sample_index==0) pix.clr.RGB.red=(unsigned char)(255*(val/max_val));
                     if (sample_index==1) pix.clr.RGB.green=(unsigned char)(255*(val/max_val));
                     if (sample_index==2) pix.clr.RGB.blue=(unsigned char)(255*(val/max_val));
-                    if (ColorMode=cmHSV) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
+                    if( (ColorMode = cmHSV ) )
+											pix.clr.HSV = RGB2HSV( pix.clr.RGB );
                  }
               }
               if (spp==3) pix.intensity=COLOR2GRAY(RGB2COLOR(pix.clr.RGB));
@@ -308,7 +310,7 @@ int ImageMatrix::SaveTiff(char *filename)
 
 int ImageMatrix::LoadPPM(char *filename, int ColorMode)
 {  FILE *fi;
-   char ty[256],line[256],*p;
+   char ty[256],line[256];
    byte *buffer;
    int x, y, w, h, m=-1;
    pix_data pix;
@@ -877,7 +879,7 @@ for (int k=-depth2;k<=depth2;++k) {
 */
 
 void ImageMatrix::GetColorStatistics(double *hue_avg, double *hue_std, double *sat_avg, double *sat_std, double *val_avg, double *val_std, double *max_color, double *colors)
-{  long x,y,a,color_index;
+{  long a,color_index;
    color hsv;
    double max,pixel_num;
    float certainties[COLORS_NUM+1];
@@ -941,39 +943,47 @@ void ImageMatrix::GetColorStatistics(double *hue_avg, double *hue_std, double *s
    grey level represents a different color
 */
 void ImageMatrix::ColorTransform(double *color_hist, int use_hue)
-{  long x,y,z,base_color;
-   double cb_intensity;
-   double max_value;
-   pix_data hsv_pixel;
-   int color_index=0;   
-   RGBcolor rgb;
-   float certainties[COLORS_NUM+1];
-   max_value=pow(2,bits)-1;
-   /* initialize the color histogram */
-   if (color_hist) 
-     for (color_index=0;color_index<=COLORS_NUM;color_index++)
-       color_hist[color_index]=0;
-   /* find the colors */	   
-   for (z=0;z<depth;z++)
-     for (y=0;y<height;y++)
-       for (x=0;x<width;x++)
-       {  hsv_pixel=pixel(x,y,z);
-          if (use_hue==0) 
-		  {  color_index=FindColor(hsv_pixel.clr.HSV.hue,hsv_pixel.clr.HSV.saturation,hsv_pixel.clr.HSV.value,certainties);
-             if (color_hist)
-               color_hist[color_index]+=1;
-             cb_intensity=int((max_value*color_index)/COLORS_NUM);  /* convert the color index to a greyscale value */
-          } 
-          else cb_intensity=hsv_pixel.clr.HSV.hue;
-          rgb.red=rgb.green=rgb.blue=(byte)(255*(cb_intensity/max_value));
-          hsv_pixel.clr.HSV=RGB2HSV(rgb);
-          hsv_pixel.intensity=cb_intensity;
-          set(x,y,z,hsv_pixel);
-       }
-   /* normalize the color histogram */
-   if (color_hist) 
-     for (color_index=0;color_index<=COLORS_NUM;color_index++)
-       color_hist[color_index]/=(width*height);	 
+{  
+	long x,y,z; //,base_color;
+	double cb_intensity;
+	double max_value;
+	pix_data hsv_pixel;
+	int color_index=0;   
+	RGBcolor rgb;
+	float certainties[COLORS_NUM+1];
+	max_value=pow(2,bits)-1;
+	// initialize the color histogram
+	if( color_hist ) 
+		for( color_index = 0; color_index <= COLORS_NUM; color_index++ )
+			color_hist[color_index]=0;
+	// find the colors
+	for( z = 0; z < depth; z++ )
+		for( y = 0; y < height; y++ )
+			for( x = 0; x < width; x++ )
+			{ 
+				hsv_pixel = pixel( x, y, z );
+				if( use_hue == 0 ) // not using hue
+				{  
+					color_index = FindColor( hsv_pixel.clr.HSV.hue,
+					                         hsv_pixel.clr.HSV.saturation,
+					                         hsv_pixel.clr.HSV.value,
+					                         certainties );
+					if( color_hist )
+						color_hist[ color_index ] += 1;
+					// convert the color index to a greyscale value
+					cb_intensity = int( ( max_value * color_index ) / COLORS_NUM );
+				} 
+				else // using hue
+					cb_intensity = hsv_pixel.clr.HSV.hue;
+				rgb.red = rgb.green = rgb.blue = (byte)( 255 * ( cb_intensity / max_value ) );
+				hsv_pixel.clr.HSV = RGB2HSV( rgb );
+				hsv_pixel.intensity = cb_intensity;
+				set( x, y, z, hsv_pixel );
+			}
+	/* normalize the color histogram */
+	if (color_hist) 
+		for (color_index=0;color_index<=COLORS_NUM;color_index++)
+			color_hist[color_index]/=(width*height);	 
 }
 
 /* get image histogram */
@@ -1076,13 +1086,14 @@ void ImageMatrix::ChebyshevTransform(int N)
 {  double *out;
    int x,y,old_width;
 
-   if (N<2) N=min(width,height);
+   if (N<2)
+		 N = MIN( width, height );
    out=new double[height*N];
    Chebyshev2D(this, out,N);
 
    old_width=width;  /* keep the old width to free the memory */
    width=N;
-   height=min(height,N);   /* prevent error */
+   height = MIN( height, N );   /* prevent error */
 
    for(y=0;y<height;y++)
      for(x=0;x<width;x++)
@@ -1096,7 +1107,8 @@ void ImageMatrix::ChebyshevTransform(int N)
 void ImageMatrix::ChebyshevFourierTransform2D(double *coeff)
 {  ImageMatrix *matrix;
    matrix=duplicate();
-   if (width*height>300*300) matrix->Downsample(min(300.0/(double)width,300.0/(double)height),min(300.0/(double)width,300.0/(double)height));  /* downsample for avoiding memory problems */
+   if( (width * height) > (300 * 300) )
+		 matrix->Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
    ChebyshevFourier2D(matrix, 0, coeff,32);
    delete matrix;
 }
@@ -1148,7 +1160,8 @@ void ImageMatrix::Symlet5Transform()
 void ImageMatrix::ChebyshevStatistics2D(double *coeff, int N, int bins_num)
 {
    if (N<2) N=20;
-   if (N>min(width,height)) N=min(width,height);   
+   if( N > MIN( width, height ) )
+		 N = MIN( width, height );   
    ChebyshevTransform(N);
    histogram(coeff,bins_num,0);
 }
@@ -1179,10 +1192,10 @@ void ImageMatrix::EdgeTransform()
      for (x=0;x<TempMatrix->width;x++)
        for (z=0;z<TempMatrix->depth;z++)	 
        {  double max_x=0,max_y=0,max_z=0;
-          if (y>0 && y<height-1) max_y=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y-1,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y+1,z).intensity));
-          if (x>0 && x<width-1) max_x=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x-1,y,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x+1,y,z).intensity));
-          if (z>0 && z<depth-1) max_z=max(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z-1).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z+1).intensity));
-          SetInt(x,y,z,max(max(max_x,max_z),max_y));
+          if (y>0 && y<height-1) max_y=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y-1,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y+1,z).intensity));
+          if (x>0 && x<width-1) max_x=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x-1,y,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x+1,y,z).intensity));
+          if (z>0 && z<depth-1) max_z=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z-1).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z+1).intensity));
+          SetInt(x,y,z,MAX(MAX(max_x,max_z),max_y));
        }
 
    /* use otsu global threshold to set edges to 0 or 1 */
@@ -1201,7 +1214,7 @@ void ImageMatrix::EdgeTransform()
 /* transform by gradient magnitude */
 void ImageMatrix::GradientMagnitude(int span)
 {  long x,y,z;
-   double sum;
+   //double sum;
    if (span==0) span=2;  /* make sure 0 is not a default */
    for (x=0;x<width-span;x++)
      for (y=0;y<height-span;y++)
@@ -1352,7 +1365,7 @@ void ImageMatrix::RadonTransform2D(double *vec)
     double *pixels,*ptr,bins[3];
     int angle,num_angles=4;
     double theta[4]={0,45,90,135};
-    double min,max;
+    //double min,max;
     int rLast,rFirst;
     rLast = (int) ceil(sqrt(pow(width-1-(width-1)/2,2)+pow(height-1-(height-1)/2,2))) + 1;
     rFirst = -rLast;
@@ -1400,7 +1413,7 @@ void ImageMatrix::RadonTransform2D(double *vec)
    Find otsu threshold
 */
 double ImageMatrix::Otsu()
-{  long a,x,y;
+{  long a; //,x,y;
    double hist[256],omega[256],mu[256],sigma_b2[256],maxval=-INF,sum,count;
    double max=pow(2,bits)-1;
    histogram(hist,256,1);
@@ -1643,7 +1656,7 @@ void ImageMatrix::zernike2D(double *zvalues, long *output_size)
    
 void ImageMatrix::fractal2D(int bins,double *output)
 {  int x,y,k,bin=0;
-   int K=min(width,height)/5;
+   int K=MIN(width,height)/5;
    int step=(long)floor(K/bins);
    if (step<1) step=1;   /* avoid an infinite loop if the image is small */
    for (k=1;k<K;k=k+step)

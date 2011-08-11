@@ -62,6 +62,7 @@ am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
 	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
 	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
 	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
+	transforms.$(OBJEXT) FeatureAlgorithm.$(OBJEXT) \
 	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
 	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
@@ -253,6 +254,10 @@ libimfit_a_SOURCES = \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
 	TrainingSet.h \
+	transforms.cpp \
+	transforms.h \
+	FeatureAlgorithm.cpp \
+	FeatureAlgorithm.h \
 	transforms/ChebishevFourier.cpp \
 	transforms/ChebishevFourier.h \
 	transforms/chevishev.cpp \
@@ -407,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataGrid2D.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataGrid3D.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureAlgorithm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureStatistics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FilterSet.Po@am__quote@
@@ -432,6 +438,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signatures.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/specfunc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tamura.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transforms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm_error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wt.Po@am__quote@
