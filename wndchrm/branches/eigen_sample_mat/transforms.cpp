@@ -11,8 +11,14 @@ void Transform::print_info() {
 
 }
 
+EmptyTransform::EmptyTransform () {
+	 Transform::name = "Empty";
+};
+
+
 int EmptyTransform::transform( ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT )
 {
+	std::cout << "Performing transform " << name << std::endl;
 	return -1;
 }
 
@@ -120,6 +126,7 @@ int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OU
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->fft2();
 	return 1;
@@ -139,6 +146,7 @@ int ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ChebyshevTransform(0);
 	return 1;
@@ -158,6 +166,7 @@ int WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OU
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->Symlet5Transform();
 	return 1;
@@ -177,6 +186,7 @@ int EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->EdgeTransform();
 	return 1;
@@ -196,6 +206,7 @@ int ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
 	double temp_vec [COLORS_NUM+1];
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(temp_vec, 0);
@@ -217,6 +228,7 @@ int HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
 	if( !matrix_IN )
 		return (-1);
 	
+	std::cout << "Performing transform " << name << std::endl;
   matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(NULL,1);
 	return 1;

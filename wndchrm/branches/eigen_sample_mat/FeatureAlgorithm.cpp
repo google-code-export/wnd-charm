@@ -22,6 +22,7 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() {
 
 int ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
@@ -44,6 +45,7 @@ ChebyshevCoefficients::ChebyshevCoefficients() {
 
 int ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
@@ -70,6 +72,7 @@ ZernikeCoefficients::ZernikeCoefficients() {
 
 int ZernikeCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [72];
@@ -95,6 +98,7 @@ HaralickTextures::HaralickTextures() {
 
 int HaralickTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [28];
@@ -118,6 +122,7 @@ MultiscaleHistograms::MultiscaleHistograms() {
 
 int MultiscaleHistograms::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [24];
@@ -141,6 +146,7 @@ TamuraTextures::TamuraTextures() {
 
 int TamuraTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [6];
@@ -164,6 +170,7 @@ CombFirstFourMoments::CombFirstFourMoments() {
 
 int CombFirstFourMoments::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [48];
@@ -187,6 +194,7 @@ RadonCoefficients::RadonCoefficients() {
 
 int RadonCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [12];
@@ -210,6 +218,7 @@ FractalFeatures::FractalFeatures() {
 
 int FractalFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [20];
@@ -233,6 +242,7 @@ PixelIntensityStatistics::PixelIntensityStatistics() {
 
 int PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -252,6 +262,7 @@ EdgeFeatures::EdgeFeatures() {
 
 int EdgeFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -298,6 +309,7 @@ ObjectFeatures::ObjectFeatures() {
 
 int ObjectFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
+	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	
@@ -353,7 +365,8 @@ GaborTextures::GaborTextures() {
 
 int GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 {
-  coeffs.clear();
+	std::cout << "calculating " << name << std::endl;
+	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	double temp_vec [7];

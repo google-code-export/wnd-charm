@@ -24,6 +24,7 @@ class EmptyTransform : public Transform {
 	public:
 		EmptyTransform (std::string &s) { name = s;}
 		EmptyTransform (const char *s) { name = s;}
+		EmptyTransform ();
 		virtual int    transform( ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT );
 };
 

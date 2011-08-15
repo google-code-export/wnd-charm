@@ -26,7 +26,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
+#define DEBUG 1
 
 #ifdef WIN32
 #pragma hdrstop
@@ -1197,21 +1197,41 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 	int i;
 	string feature_name;
 	vector<FeatureInfo*> feature_list;
+#if DEBUG
+	int group_count = 0;
+	std::string group_name;
+#endif
 
 	// CEC_const vector<const FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
 	vector<FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
 	for( ; grp_it != feature_groups.end(); grp_it++ ) {
+#if DEBUG
+		std::cout << "==========================" << std::endl << group_count++ << ". ";
+		(*grp_it)->get_name(group_name);
+		std::cout << group_name << std::endl;
+#endif
 		if( NULL == (*grp_it)->algorithm )
 			continue;
+#if DEBUG
+		std::cout << "\tsig::cfgl: Algorithm is " << (*grp_it)->algorithm->name << std::endl;
+#endif
 		// obtain_transform is a recursive function that simply returns the
 		// desired transform if it exists in the array "saved_pixel_planes", or it
 		// calculates it, using "saved_pixel_planes" as a place to save intermediates,
 		// (and time).
 		pixel_plane =	(*grp_it)->obtain_transform(saved_pixel_planes, (*grp_it)->transforms);
-		if( NULL == pixel_plane )
+		if( NULL == pixel_plane ) {
+#if DEBUG
+			std::cout << "sig::cfgl: Call to obtain_transform returned a null pixel plane." << std::endl;
+#endif
 			continue;
-		if( (retval = (*grp_it)->algorithm->calculate( pixel_plane, coeffs ) ) < 0 )
-			//continue;
+		}
+		if( (retval = (*grp_it)->algorithm->calculate( pixel_plane, coeffs ) ) < 0 ) {
+#if DEBUG
+			std::cout << "sig::cfgl: call to algorithm->calculate returned value " << retval << std::endl;
+#endif
+			continue;
+		}
 
 		for( i = 0; i < coeffs.size(); i++ ) {
 			if( NULL == (feature_info = new FeatureInfo( (*grp_it), i )) ) return -1;
@@ -1219,7 +1239,7 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 			Add( feature_name.c_str(), coeffs[i] );
 			feature_list.push_back( feature_info );
 		}
-	}
+	} // end iterating over feature groups
 
 	int count = 0;
 	for( vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
