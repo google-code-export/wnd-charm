@@ -3136,25 +3136,44 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		splits_class_accuracy+=split->avg_class_accuracies;
 	}
 
+	double accuracy;
+	double std_error_of_mean;
+	// Using normal approximation of binomial distribution to calculate standard error of the mean
+	// FIXME: This std dev relationship is appropriate for large n only, need to code in refinement for when n is small.
+	// For more info, see http://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
+	double confidence_interval;
+	// The confidence interval is S.E.M. * quantile for your chosen accuracy
+	// The quantile for 95% accuracy is ~ 1.96.
+
 	// average of all splits
 	fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
 	if (class_num>0) {
 		double avg_p2=0.0;
 		double choose;
-		for (unsigned long correct = total_correct; correct <= total_tested; correct++)
-		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
-			if ( gsl_sf_choose (total_tested,correct,&choose) == GSL_SUCCESS )
-				avg_p2 += pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,total_tested-correct)*choose;		
+		for( unsigned long correct = total_correct; correct <= total_tested; correct++ ) {
+			// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
+			if( gsl_sf_choose( total_tested, correct, &choose ) == GSL_SUCCESS ) {
+				avg_p2 += pow( (1/(double) class_num), correct) * pow( 1 - 1/(double)class_num, total_tested - correct ) * choose;
+			}
+		}
 //printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);
 		if( skip_split_reporting ) {
 			fprintf( output_file, "Number of splits: %i<br>", split_num );
 		}
-		fprintf(output_file,"<b>%.2f Avg per Class Correct of total</b><br> \n",splits_class_accuracy/split_num);
-		fprintf(output_file,"Accuracy: <b>%.2f of total (P=%.3g)</b><br> \n",splits_accuracy/split_num,avg_p2);
+		fprintf(output_file,"Total tested: %ld<br> \n", total_tested);
+		fprintf(output_file,"Total correct: %ld<br> \n", total_correct);
+
+		accuracy = double(total_correct) / double(total_tested);
+		std_error_of_mean = sqrt( accuracy * (1-accuracy) / total_tested );
+		confidence_interval = 1.95996 * std_error_of_mean;
+
+		fprintf(output_file,"Classification accuracy: %.4f +/- %.4f (95%% confidence)<br> \n", accuracy, confidence_interval );
+		//fprintf(output_file,"%.3f Avg per Class Correct of total<br> \n", splits_class_accuracy / split_num);
+		fprintf(output_file,"Accuracy: <b>%.3f of total (P=%.3g)</b><br> \n", splits_accuracy / split_num,avg_p2);
 	}
 	if (avg_pearson!=0) {
-		fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n",avg_pearson/split_num,avg_p/split_num);
-		fprintf(output_file,"Mean absolute difference: %.4f <br>\n",avg_abs_dif/split_num);
+		fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n", avg_pearson / split_num, avg_p / split_num);
+		fprintf(output_file,"Mean absolute difference: %.4f <br>\n", avg_abs_dif / split_num);
 	}   
 
    fprintf(output_file,"</table>\n");   /* close the splits table */
@@ -3169,27 +3188,34 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
    if (tsvfile) fprintf(tsvfile,"\t");         // space (in the tsv file)
    for( class_index = 1; class_index <= class_num; class_index++ )
    {  
-		 fprintf( output_file,"<th>%s</th> ", class_labels[ class_index ] );   // print to the html file
-      if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]); // print into the tsv file
+			fprintf( output_file,"<th>%s</th> ", class_labels[ class_index ] ); // print to the html file
+			if (tsvfile) fprintf( tsvfile, "%s\t", class_labels[ class_index ] ); // print into the tsv file
    }
    fprintf( output_file, "<th></th><th>Total Tested</th><th>Per-Class Accuracy</th></tr>\n" );
-	 if (tsvfile) fprintf(tsvfile,"\n");     /* end of the classes names in the tsv file */
+	 if (tsvfile) fprintf(tsvfile,"\n");     // end of the classes names in the tsv file
 
-   for( class_index = 1; class_index <= class_num; class_index++ )
-   { 
+	 double observation;
+//	 std::vector< std::vector<double> > observations ( class_num * class_num );
+
+	 for( int row = 1; row <= class_num; row++ )
+	 { 
 		 // print the class names as the column headers
-		 fprintf( output_file,"<tr><th>%s</th> ",class_labels[class_index]);
-		 if (tsvfile) fprintf(tsvfile,"%s\t",class_labels[class_index]);
+		 fprintf( output_file,"<tr><th>%s</th> ", class_labels[ row ] );
+		 if (tsvfile) fprintf( tsvfile, "%s\t", class_labels[ row ] );
 
 		 int num_class_correct = 0;
 		 int num_class_total = 0;
-		 for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
+		 for( int col = 1; col <= class_num; col++ )
 		 {
-			 double sum=0.0;
+			 double sum = 0.0;
 			 for( split_index = 0; split_index < split_num; split_index++ )
-				 sum += splits[ split_index ].confusion_matrix[ class_index * class_num + class_index2 ];
+			 {
+				 observation = splits[ split_index ].confusion_matrix[ row * class_num + col ];
+				 sum += observation;
+//				 observations[ (row-1) * class_num + (col-1) ].push_back(observation);
+			 }
 			 num_class_total += int(sum);
-			 if( class_index == class_index2 ) {
+			 if( row == col ) {
 				 strcpy( bgcolor," bgcolor=#D5D5D5" );
 				 num_class_correct = int(sum);
 			 }
@@ -3198,11 +3224,48 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 			 else fprintf(output_file,"<td%s>%.0f</td> ",bgcolor,sum/*/split_num*/);
 			 if (tsvfile) fprintf(tsvfile,"%.0f\t",sum/*/split_num*/);     /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 
 		 }
-		 fprintf(output_file,"<td></td><td>%i</td><td>%0.3f</td></tr>\n", num_class_total, double(num_class_correct) / double(num_class_total) );
+		 accuracy = double(num_class_correct) / double(num_class_total);
+		 std_error_of_mean = sqrt( accuracy * (1-accuracy) / num_class_total );
+		 confidence_interval = 1.95996 * std_error_of_mean;
+		 fprintf(output_file,"<td></td><td>%i</td><td>%0.3f +/- %0.3f</td></tr>\n", num_class_total, accuracy, confidence_interval );
 		 if (tsvfile) fprintf(tsvfile,"\n");
 	 }
-	 fprintf(output_file,"</table> \n <br><br> \n");  /* end of average confusion matrix */
+	 fprintf(output_file,"</table>\nIntervals based on 95%% confidence.<br><br> \n");  // end of average confusion matrix
 	 if (tsvfile) fclose(tsvfile);
+
+#if 0
+	 std::ofstream confusion_outcomes ( "confusion.csv", std::ios::trunc );
+
+	 for( int ii = 0 ; ii < split_num; ii++ ) {
+		 for( int jj = 0; jj < class_num*class_num; jj++) {
+			 confusion_outcomes << observations[jj][ii] << ",";
+		 }
+		 confusion_outcomes << std::endl;
+	 }
+
+	confusion_outcomes.close();
+
+	std::ofstream variance_study ( "variances.csv", std::ios::trunc );
+
+	std::vector<double>::iterator var_it;
+
+	double subtotal;
+	int count;
+	for( int kk = 1; kk <= 100; kk++ ) {
+		count = 1;
+		subtotal = 0;
+		for( var_it = observations[0].begin(); var_it != observations[0].end(); ++var_it ) {
+			subtotal += *var_it;
+			if( (count++ % kk) == 0 ) {
+				variance_study << subtotal/kk << ",";
+				subtotal = 0;
+			}
+		}
+		variance_study << std::endl;
+	}
+
+	variance_study.close();
+#endif
 
   // average similarity matrix - also used for creating the dendrograms 
 	sprintf(buffer,"tsv/avg_similarity.tsv");
