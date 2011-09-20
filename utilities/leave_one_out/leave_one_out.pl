@@ -175,7 +175,7 @@ foreach $class ( sort &uniq( values %class_list ) ) {
 			if( $table =~ /<tr><th>$class<\/th>(.*?)<\/tr>/s ) {
 				$row = $1;
 				my $index = 0;
-				print "confusion matrix \n";
+				print "\t\t\tconfusion matrix:\n\t\t\t";
 				while( $row =~ /<td.*?>(\d+)<\/td>/p ) {
 					last if( $1 == $sum ); # we reached the sum total column, just bail here
 					print "$1 ";
@@ -219,7 +219,7 @@ foreach $class ( sort &uniq( values %class_list ) ) {
 #	}
 #	print OUT "<\/tr><\/table>\n";
 #
-#	@{ $confusion_matrix{$class} } = @class_confusion_matrix;
+	@{ $confusion_matrix{$class} } = @class_confusion_matrix;
 #
 #	print OUT "<table border=\"1\" align=\"center\"><caption>Average of average marginal probabilities over population in class $class<\/caption>\n<tr>";
 #	for( my $i = 0; $i <= $#class_marg_probs; ++$i ) {
