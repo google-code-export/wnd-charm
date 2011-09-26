@@ -239,6 +239,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	int n_train,n_test;
 	int class_index;
 	int res;
+	int i;
 	
 	// set samples per image
 	int samples_per_image = featureset->n_samples;
@@ -287,6 +288,10 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		class_num, samples_per_image, balanced_splits, max_training_images, max_test_images, exact_training_images))
 			return(showError(1, NULL));
 
+	// Instantiate a featuregroup_t for the top level ts
+	// to keep track of feature statistics across splits.
+	if( split_num > 1 ) 
+		ts->aggregated_feature_stats = new featuregroups_t;
 
 /*
 	In ts-split(),
@@ -340,6 +345,34 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		{
 			train->normalize(); // normalize the feature values of the training set
 			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
+			if( ts->aggregated_feature_stats ) {
+				if( ts->aggregated_feature_stats->empty() ) {
+					featuregroup_stats_t temp;
+					for( i = 0; i < ts->signature_count; i++ ) {
+						temp.name = train->SignatureNames[i];
+						temp.min = train->SignatureWeights[i];
+						temp.max = train->SignatureWeights[i];
+						temp.sum_weight = train->SignatureWeights[i];
+						temp.sum_weight2 = train->SignatureWeights[i] * train->SignatureWeights[i];
+						temp.mean = 0;
+						temp.stddev = 0;
+						temp.n_features = 1;	
+						ts->aggregated_feature_stats->push_back( temp ); // makes a copy
+					}
+				}
+				else
+				{
+					for( i = 0; i < ts->signature_count; i++ ) {
+						if( train->SignatureWeights[i] < (*(ts->aggregated_feature_stats))[i].min )
+							 (*(ts->aggregated_feature_stats))[i].min = train->SignatureWeights[i];
+						if( train->SignatureWeights[i] > (*(ts->aggregated_feature_stats))[i].max )
+							 (*(ts->aggregated_feature_stats))[i].max = train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].sum_weight += train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].sum_weight2 += train->SignatureWeights[i] * train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].n_features++;
+					}
+				}
+			}
 		}
 		//train->class_num=temp;
 		if (weight_vector_action=='w')
@@ -406,12 +439,28 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		if (TilesTrainingSets)    // delete the training sets allocated for the different areas
 		{
 			for (tile_index=0;tile_index<samples_per_image;tile_index++)
-				delete TilesTrainingSets[tile_index];
+			delete TilesTrainingSets[tile_index];
 			delete TilesTrainingSets;
 		}
 		delete train;
 		if (!testset) delete test;
 	} // End for (split_index=0;split_index<split_num;split_index++)
+
+	if( ts->aggregated_feature_stats ) {
+		// Finish up computing the averages for the feature weights
+		for(featuregroups_t::iterator avgs_it = ts->aggregated_feature_stats->begin(); avgs_it != ts->aggregated_feature_stats->end(); ++avgs_it )
+		{
+			avgs_it->mean = avgs_it->sum_weight / (double)(avgs_it->n_features);
+			avgs_it->stddev = sqrt (
+				(avgs_it->sum_weight2 - (avgs_it->sum_weight * avgs_it->mean)) / (double)(avgs_it->n_features - 1));
+		}
+		// Sort the aggregated feature statistics vector by mean weight
+		sort_by_mean_weight_t sort_by_mean_weight_func;
+		sort( ts->aggregated_feature_stats->begin(), ts->aggregated_feature_stats->end(), sort_by_mean_weight_func);
+		// Lop off the vector after a threshold
+		// Right now, we only care about the top 50 features
+		ts->aggregated_feature_stats->erase (ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end());
+	}
 
 	// if( verbosity >= 2 ) printf("\n\n");
 	if (!report & verbosity != 1 )	{
@@ -434,7 +483,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		short unsigned int *confusion_matrix = new short unsigned int[ length ];
 		double *avg_similarity_matrix = new double[ length ];
 		double *avg_class_probability_matrix = new double[ length ];
-		for( int i = 0; i < length; ++i ) {
+		for( i = 0; i < length; ++i ) {
 			confusion_matrix[ i ] = 0;
 			avg_similarity_matrix[ i ] = 0;
 			avg_class_probability_matrix[ i ] = 0;
@@ -513,6 +562,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
 	}
 
+	if( ts->aggregated_feature_stats ) delete ts->aggregated_feature_stats;
 	return(1);
 }
 

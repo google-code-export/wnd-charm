@@ -119,9 +119,11 @@ typedef struct {
 	double stddev;
 	int n_features;
 } featuregroup_stats_t;
+
 typedef struct sort_by_mean_weight_t {
 	bool operator() (featuregroup_stats_t i,featuregroup_stats_t j) { return (j.mean < i.mean);}
 } sort_by_mean_weight_func;
+
 typedef std::vector<featuregroup_stats_t> featuregroups_t;
 
 // Set up our struct for keeping track of per-feature stuff.
@@ -130,9 +132,11 @@ typedef struct {
 	const FeatureNames::FeatureInfo *feature_info;
 	double weight;
 } feature_stats_t;
+
 typedef struct sort_by_weight_t {
 	bool operator() (feature_stats_t i,feature_stats_t j) { return (j.weight < i.weight);}
 } sort_by_weight_func;
+
 typedef std::vector<feature_stats_t> features_t;
 
 
@@ -173,6 +177,7 @@ public:
    double SignatureWeights[MAX_SIGNATURE_NUM];                     /* weights of the samples                    */
    double SignatureMins[MAX_SIGNATURE_NUM];                        /* minimum value of each signature           */
    double SignatureMaxes[MAX_SIGNATURE_NUM];                       /* maximum value of each signature           */
+	  featuregroups_t *aggregated_feature_stats;                    // only the top level TrainingSet has this allocated by wndcharm.cpp::split_and_test
    long class_num;                                                 /* number of known/defined classes (may be 0 if all samples are unknown, may be 1 when is_continuous, or for 1 known discrete class */
    char **class_labels;                                            /* labels of the classes                     */
    long *class_nsamples;                                           /* sample counts in each class               */

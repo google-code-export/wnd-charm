@@ -138,6 +138,11 @@ TrainingSet::TrainingSet(long samples_num, long class_num)
 //   for (sample_index=0;sample_index<MAX_CLASS_NUM;sample_index++)
 //     strcpy(class_labels[sample_index],"");
    count=0;
+
+	 // Memory allocated for the aggregated_feature_stats
+	 // if this* is the top Level TrainingSet from which all
+	 // splits are derived
+		aggregated_feature_stats = NULL;
 }
 
 /* destructor of a training set object
@@ -1738,7 +1743,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 
    // perform the actual test
  
-	 if( DEBUG_CREATE_INDIV_DISTANCE_FILES && method == WND) {
+#if DEBUG_CREATE_INDIV_DISTANCE_FILES
+	 if( method == WND ) {
 		 // These are files that contain distances and similarities for individual distances
 		 // They are printed into by classify2()
 		 // Initialize them by truncating them.
@@ -1751,6 +1757,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 		 std::ofstream class_report ( "class_dists_and_simls.txt", std::ios::trunc );
 		 class_report.close();
 	 }
+#endif
 
 	 for( test_sample_index = 0; test_sample_index < TestSet->count; test_sample_index += tiles )
 	 {
@@ -2115,7 +2122,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 		feature_stats.feature_info = featureinfo;
 		feature_stats.weight = SignatureWeights[ sig_index ];
 		split->feature_stats.push_back (feature_stats); // makes a copy
-	}
+	} // end iterating over all signatures
 
    // Feature group sorting code:
 // Copy the map to the vector while updating summary stats
@@ -2138,7 +2145,6 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 	threshold=split->feature_stats[last_index].weight;
 // Lop off the vector after the threshold
 	split->feature_stats.erase (split->feature_stats.begin() + last_index,split->feature_stats.end());
-
 
 // now set to 0 all signatures that are below the threshold
 	for (sig_index=0;sig_index<signature_count;sig_index++)
@@ -2358,7 +2364,7 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
 			*normalization_factor = sum_dists;
   }
 
-	if( DEBUG_CREATE_INDIV_DISTANCE_FILES ) {
+#if DEBUG_CREATE_INDIV_DISTANCE_FILES
 		// Looking at how similarities and distances behave
 
 		ofstream indiv_dists_file ( "individual_distances.csv", ios::app );
@@ -2402,7 +2408,7 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
 			class_report << *iit << "\t";
 		class_report << endl << endl;
 		class_report.close();
-  }
+#endif
 
 
   return(most_probable_class);
@@ -3144,6 +3150,11 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	double confidence_interval;
 	// The confidence interval is S.E.M. * quantile for your chosen accuracy
 	// The quantile for 95% accuracy is ~ 1.96.
+	double z_score = 1.95996;
+	double wilson_score_error_bar;
+	double wilson_interval_center;
+	double n;
+	bool use_wilson = false;
 
 	// average of all splits
 	fprintf(output_file,"<tr> <td>Total</td> \n <td id=\"overall_test_results\" align=\"center\" valign=\"top\"> \n");
@@ -3163,13 +3174,25 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		fprintf(output_file,"Total tested: %ld<br> \n", total_tested);
 		fprintf(output_file,"Total correct: %ld<br> \n", total_correct);
 
-		accuracy = double(total_correct) / double(total_tested);
-		std_error_of_mean = sqrt( accuracy * (1-accuracy) / total_tested );
-		confidence_interval = 1.95996 * std_error_of_mean;
-
-		fprintf(output_file,"Classification accuracy: %.4f +/- %.4f (95%% confidence)<br> \n", accuracy, confidence_interval );
 		//fprintf(output_file,"%.3f Avg per Class Correct of total<br> \n", splits_class_accuracy / split_num);
-		fprintf(output_file,"Accuracy: <b>%.3f of total (P=%.3g)</b><br> \n", splits_accuracy / split_num,avg_p2);
+		fprintf(output_file,"Accuracy: <b>%0.1f%% of total (P=%.3g)</b><br> \n", splits_accuracy / split_num * 100, avg_p2);
+
+		n = total_tested;
+		accuracy = double(total_correct) / n;
+
+		if( (n * accuracy) > 5 && (n * (1- accuracy)) > 5 ) {
+			//use normal approximation ofbinomial distribution
+			std_error_of_mean = sqrt( accuracy * (1-accuracy) / n );
+			confidence_interval = z_score * std_error_of_mean;
+			fprintf(output_file,"Classification accuracy: %0.1f +/- %0.1f%% (95%% confidence, normal approx confidence interval)<br> \n", accuracy*100, confidence_interval*100 );
+		}
+		else
+		{
+			use_wilson = true;
+			wilson_score_error_bar = z_score * sqrt( accuracy * (1-accuracy) / n + z_score * z_score / (4 * n * n) ) / ( 1 + z_score * z_score / n );
+			wilson_interval_center = (accuracy + z_score * z_score / (2 * n) ) / ( 1 + z_score * z_score / n );
+			fprintf(output_file,"Classification accuracy: %0.1f +/- %0.1f%% (95%% confidence, wilson score confidence interval)<br> \n", wilson_interval_center*100, wilson_score_error_bar*100 );
+		}
 	}
 	if (avg_pearson!=0) {
 		fprintf(output_file,"Pearson correlation coefficient: %.2f (avg P=%.3g) <br>\n", avg_pearson / split_num, avg_p / split_num);
@@ -3224,13 +3247,23 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 			 else fprintf(output_file,"<td%s>%.0f</td> ",bgcolor,sum/*/split_num*/);
 			 if (tsvfile) fprintf(tsvfile,"%.0f\t",sum/*/split_num*/);     /* print the values to the tsv file (for the tsv machine readable file a %.2f for all values should be ok) */		 
 		 }
-		 accuracy = double(num_class_correct) / double(num_class_total);
-		 std_error_of_mean = sqrt( accuracy * (1-accuracy) / num_class_total );
-		 confidence_interval = 1.95996 * std_error_of_mean;
-		 fprintf(output_file,"<td></td><td>%i</td><td>%0.3f +/- %0.3f</td></tr>\n", num_class_total, accuracy, confidence_interval );
+		 n = num_class_total;
+		 accuracy = double(num_class_correct) / n;
+		 if( !use_wilson )
+		 {
+			 std_error_of_mean = sqrt( accuracy * (1-accuracy) / n );
+			 confidence_interval = z_score * std_error_of_mean;
+			 fprintf(output_file,"<td></td><td>%i</td><td>%0.1f +/- %0.1f%%</td></tr>\n", num_class_total, accuracy*100, confidence_interval*100 );
+		 }
+		 else
+		 {
+			 wilson_score_error_bar = z_score * sqrt( accuracy * (1-accuracy) / n + z_score * z_score / (4 * n * n) ) / ( 1 + z_score * z_score / n );
+			 wilson_interval_center = (accuracy + z_score * z_score / (2 * n) ) / ( 1 + z_score * z_score / n );
+			 fprintf(output_file,"<td></td><td>%i</td><td>%0.1f +/- %0.1f%%</td></tr>\n", num_class_total, wilson_interval_center*100, wilson_score_error_bar*100 );
+		 }
 		 if (tsvfile) fprintf(tsvfile,"\n");
 	 }
-	 fprintf(output_file,"</table>\nIntervals based on 95%% confidence.<br><br> \n");  // end of average confusion matrix
+	 fprintf(output_file,"</table>\nIntervals based on 95%% confidence using %s method.<br><br> \n", use_wilson ? "Wilson Score" : "Normal Approximation");  // end of average confusion matrix
 	 if (tsvfile) fclose(tsvfile);
 
 #if 0
@@ -3337,6 +3370,21 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 	fprintf(output_file,"</table>");   /* end of average class probability matrix */
 	if (tsvfile) fclose(tsvfile);
 
+	// report statistics on features across splits
+	if( aggregated_feature_stats ) {
+		int features_num = aggregated_feature_stats->size();
+		fprintf(output_file,"<br>Top 50 image features across splits:<br> ");
+		fprintf(output_file,"<TABLE ID=\"aggregated_feature_stats\" border=\"1\" >\n");
+		fprintf(output_file,"<tr><th>Rank</th><th>Name</th><th>Min</th><th>Max</th><th>Mean</th><th>Std. dev.</th></tr>\n");
+		featuregroup_stats_t *featuregroups_stats;
+		for( int tr = 0; tr < features_num; tr++ ) {
+			featuregroups_stats = &( (*aggregated_feature_stats)[tr] );
+			fprintf(output_file,"<tr><td>%d</td><td>%s</td><td>%.4g</td><td>%.4g</td><td>%.4g</td><td>%.4g</td></tr>\n",
+				tr+1, featuregroups_stats->name.c_str(), featuregroups_stats->min, featuregroups_stats->max,
+				featuregroups_stats->mean, featuregroups_stats->stddev);
+		}
+		fprintf(output_file,"</table><br>\n");
+	}
 
 	/* *** generate a dendrogram *** */
 	if (phylib_path && class_num>0 ) {  /* generate a dendrogram only if phlyb path was specified */
@@ -3494,7 +3542,6 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 				fprintf(output_file,"</tr>\n");
 			}
 			fprintf(output_file,"</table>\n");
-
 		}
 
       /* add a dendrogram of the image similarities */
@@ -3545,7 +3592,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       /* individual image predictions */
       if (split->individual_images)
       {  char closest_image[256],interpolated_value[256];
-         
+ 
          /* add the most similar image if WNN and no tiling */
          if ((split->method==WNN || is_continuous) && featureset->n_samples==1) strcpy(closest_image,"<th>Most similar image</th>");
          else strcpy(closest_image,"");
