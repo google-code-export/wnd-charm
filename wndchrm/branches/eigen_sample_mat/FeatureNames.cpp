@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <sstream>
 
-#define DEBUG 1
 
 /*
 // Storage for class statics
@@ -155,32 +154,7 @@ void FeatureInfo::print_info() const {
 	if( group )
 		group->print_info();
 }
-void FeatureGroup::print_info() const {
-	//std::cout << ", group name:\t" << name;// << std::endl;
-	if( algorithm )
-		algorithm->print_info();
-	if( channel )
-		channel->print_info();
-	unsigned int i;
-	for( i = 0; i < transforms.size(); ++i ) {
-		std::cout << "\t";
-		transforms[i]->print_info();
-	}
-}
 
-/*
-int FeatureGroup::get_required_transforms(string& req_transforms) const {
-	req_transforms.clear();
-	vector<Transform const*>::iterator it = transforms.begin();
-
-	for( ; it != transforms.end(); it++ )
-		req_transforms += *it;
-	*/
-
-
-void Channel::print_info() const {
-	std::cout << "Channel name:\t" << name << std::endl;
-}
 
 
 /*
@@ -259,41 +233,14 @@ FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
 	return (featureinfo);
 }
 
-int FeatureGroup::get_name( string& out_str ) {
+
+int FeatureInfo::get_name( std::string& out_str ) {
 	if( !name.empty() ) {
 		out_str = name;
 		return 1;
 	}
 	std::ostringstream oss;
-	string temp;
-	if( (temp = algorithm->name).empty() )
-		temp = "Unnamed Algorithm";
- 
-	oss << temp << " (";
-	//for( vector<Transform const *>::iterator t_it = transforms.begin(); 
-	for( vector<Transform *>::iterator t_it = transforms.begin(); 
-			 t_it != transforms.end(); ++t_it ) {
-		if( (temp = (*t_it)->name).empty() )
-			temp = "Unnamed Transform";
-		oss << " " << temp << " (";
-	}
-	for( int i = 0; i < transforms.size(); ++i )
-		oss << ") ";
-
-	oss << ")";
-
-	name = oss.str();
-	out_str = name;
-	return 1;
-}
-
-int FeatureInfo::get_name( string& out_str ) {
-	if( !name.empty() ) {
-		out_str = name;
-		return 1;
-	}
-	ostringstream oss;
-	string group_str;
+	std::string group_str;
 	int retval;
 	if( !( retval = group->get_name( group_str ) ) ) return retval;
 	oss << group_str << " [" << index << "]";
@@ -344,13 +291,14 @@ Transform *FeatureNames::getTransformByName (std::string &name) {
 	Transform *transform = NULL;
 
 	if (tnm_it == transforms_.end()) {
-		EmptyTransform * new_transform = new EmptyTransform (name);
-		transform = dynamic_cast<Transform*>(new_transform);
-		transforms_[name] = transform;
+		std::cout << "FeatureNames::getTransformByName() couldn't find a registered transform to match " << name << ". " << std::endl;
+		//EmptyTransform * new_transform = new EmptyTransform (name);
+		//FourierTransform * new_transform = new FourierTransform(name);
+		//transform = dynamic_cast<Transform*>(new_transform);
+		//transforms_[name] = transform;
 	} else {
 		transform = tnm_it->second;
 	}
-
 	return (transform);
 }
 
@@ -472,11 +420,10 @@ const std::string *FeatureNames::oldFeatureNameLookup (const char *oldFeatureNam
 }
 
 int FeatureNames::register_transform( string &transform_name, Transform * BT_itf ) {
-	cout << "Transform " << transform_name << " registered." << endl;
-	TransformMap::iterator it = RegisteredTransforms.find( transform_name );
+	tnm_t::iterator it = transforms_.find( transform_name );
 
-	if( it == RegisteredTransforms.end() ) {
-		RegisteredTransforms[ transform_name ] = BT_itf;
+	if( it == transforms_.end() ) {
+		transforms_[ transform_name ] = BT_itf;
 		return 1;
 	}
 	return -1;
@@ -492,86 +439,6 @@ int FeatureNames::register_algorithm( string &alg_name, FeatureAlgorithm * BA_it
 	}
 	return -1;
 }
-//==========================================================================
-/*ImageMatrix * FeatureGroup::obtain_transform(
-		MatrixMap &saved_pixel_planes,
-		vector<Transform const *> sequence ) const */
-ImageMatrix * FeatureGroup::obtain_transform(
-		MatrixMap &saved_pixel_planes,
-		vector<Transform *> sequence )
-{
-	int retval = 0;
-#if DEBUG
-	std::cout << "\tFeatureGroup::obtain_transform:" << std::endl;
-	std::cout << "\t\tMatrixMap size =" << saved_pixel_planes.size() << std::endl;
-	std::cout << "\t\tsequence size =" << sequence.size() << std::endl;
-	std::cout << "\t\tsequence to be obtained: ";
-	for( vector<Transform*>::iterator seq_it = sequence.begin(); seq_it != sequence.end(); ++seq_it )
-	{
-		std::cout << (*seq_it)->name << " ";
-	}
-	std::cout << std::endl;
-#endif
-	MatrixMap::iterator t_it = saved_pixel_planes.find(sequence);
-	if( t_it != saved_pixel_planes.end() ) {
-#if DEBUG
-		std::cout << "\t\tFound transform ";
-		std::pair< std::vector< Transform* > , ImageMatrix* > temp_pair = *t_it;
-		std::vector<Transform*> seq_in_matrixmap = temp_pair.first;
-		for( vector<Transform*>::iterator seq2_it = seq_in_matrixmap.begin(); seq2_it != seq_in_matrixmap.end(); ++seq2_it )
-	{
-		std::cout << (*seq2_it)->name << " ";
-	}
-	std::cout << std::endl;
-#endif
-		return ( t_it->second );
-	}
-
-#if DEBUG
-	std::cout << "\t\tsequence not found" << std::endl;
-#endif
-	ImageMatrix* output_pixel_plane = NULL;
-	ImageMatrix* intermediate_pixel_plane = NULL;
-
-	Transform* last_transform_in_sequence = sequence.back();
-#if DEBUG
-	std::cout << "\t\tlast tform in sequence is " << last_transform_in_sequence->name << std::endl;
-#endif
-	sequence.pop_back();
-	t_it = saved_pixel_planes.find(sequence);
-	if( t_it != saved_pixel_planes.end() )
-	{
-#if DEBUG
-		std::cout << "FG::ot: found the shortened sequence in the MatrixMap" << std::endl;
-#endif
-		intermediate_pixel_plane = t_it->second;
-	}
-	else {
-#if DEBUG
-		std::cout << "FG::ot: couldn't find shortened sequence in the MatrixMap" << std::endl;
-#endif
-		// recursion call here:
-		intermediate_pixel_plane = obtain_transform(saved_pixel_planes, sequence);
-		if( NULL == intermediate_pixel_plane ) {
-			std::cout << "FG::ot: Call to obtain transform for shortened sequence returned null pixel plane"
-				<< std::endl;
-		}
-		// save the intermediate
-		saved_pixel_planes[sequence] = intermediate_pixel_plane;
-	}
-
-	if( NULL == intermediate_pixel_plane ) {
-		std::cout << "FG::ot: skipping transform since intermediate pixel plane is null." << std::endl;
-		return NULL;
-	}
-	retval = 
-		last_transform_in_sequence->transform( intermediate_pixel_plane, output_pixel_plane );
-#if DEBUG
-	std::cout << "FG::ot: Return value from transform is " << retval << std::endl;
-#endif
-	return output_pixel_plane;
-}
-
 //==========================================================================
 /*
 const void FeatureNames::dump_phonebook() {

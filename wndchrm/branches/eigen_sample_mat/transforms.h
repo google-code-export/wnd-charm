@@ -19,7 +19,7 @@ class Transform {
 	protected:
 		Transform() {};
 };
-
+/*
 class EmptyTransform : public Transform {
 	public:
 		EmptyTransform (std::string &s) { name = s;}
@@ -27,7 +27,7 @@ class EmptyTransform : public Transform {
 		EmptyTransform ();
 		virtual int    transform( ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT );
 };
-
+*/
 
 class FourierTransform : public Transform {
 	public:
@@ -74,7 +74,8 @@ struct tform_name##TransformRegistrar \
   { \
     FeatureNames *phonebook = FeatureNames::get_instance(); \
 		tform_name *tform_instance = new tform_name; \
-    phonebook->register_transform( tform_instance->name, dynamic_cast<Transform*>( tform_instance ) ); \
+		int retval = phonebook->register_transform( tform_instance->name, dynamic_cast<Transform*>( tform_instance ) ); \
+		std::cout << "call to register_transform " << #tform_name << " returned " << retval << std::endl; \ 
   } \
 }; \
 static tform_name##TransformRegistrar tform_name##TransformRegistrar_instance;

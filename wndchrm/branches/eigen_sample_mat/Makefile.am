@@ -57,6 +57,10 @@ libimfit_a_SOURCES = \
 	transforms.h \
 	FeatureAlgorithm.cpp \
 	FeatureAlgorithm.h \
+	Channel.cpp \
+	Channel.h \
+	FeatureGroup.h \
+	FeatureGroup.cpp \
 	transforms/ChebishevFourier.cpp \
 	transforms/ChebishevFourier.h \
 	transforms/chevishev.cpp \

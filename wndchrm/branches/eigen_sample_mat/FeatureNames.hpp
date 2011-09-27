@@ -5,15 +5,14 @@
 #include <vector>
 #include <set>
 #include "config.h"
-#include <map> //needed for datatype MatrixMap
 #include "MAP.h"  // Defines the macro MAP which decides whether to #include
                   // <unordered_map>, <tr1/unordered_map>, or just plain ol <map>
 //#include "transforms.h"
+#include "Channel.h"
+#include "FeatureGroup.h"
 #include "cmatrix.h"
-class Transform;
-class FeatureAlgorithm;
-class ImageMatrix;
-//#include "FeatureAlgorithm.h"
+
+
 /*
 map and unordered_map comparison:
 std::tr1::unordered_map:
@@ -24,52 +23,9 @@ std::map:
        -parse    502400 lookups    502400 misses       2.4 secs,    205706 lookups/sec
 */
 
-using namespace std;
-//=====================================================================
-/*! Channels
- *
- */
-class Channel {
-	public:
-		std::string name;
-		Channel (string &s) { name = s;}
-		Channel (const char *s) { name = s;}
-		void print_info() const;
-		
-	};
-
-//=====================================================================
-/*!
- * Feature Groups
- */
-
-// CEC_const typedef vector<Transform const *> TransformList;
-typedef vector<Transform *> TransformList;
-typedef map< TransformList, ImageMatrix* > MatrixMap;
-
-class FeatureGroup {
-	public:
-		std::string name;
-		//const FeatureAlgorithm* algorithm;
-		FeatureAlgorithm* algorithm;
-		//const Channel* channel;
-		Channel* channel;
-		//std::vector<Transform const *> transforms; // these are in order of application
-		std::vector<Transform *> transforms; // these are in order of application
-		FeatureGroup () : algorithm(NULL), channel(NULL) {};
-		//FeatureGroup (string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<Transform const *> t) {
-		FeatureGroup (string &s, FeatureAlgorithm *f, Channel *c, std::vector<Transform *> t) {
-			name = s; algorithm = f; channel = c; transforms = t;
-		}
-		int get_name( string& out_str );
-		void print_info() const;
-		/* ImageMatrix * obtain_transform( 
-				MatrixMap &saved_pixel_planes,
-				vector<Transform const *> sequence ) const; */
-		ImageMatrix * obtain_transform( 
-				MatrixMap &saved_pixel_planes,
-				vector<Transform *> sequence );
-	};
+class Transform;
+class FeatureAlgorithm;
+class ImageMatrix;
 
 //=====================================================================
 /*!
@@ -136,8 +92,8 @@ public:
 	int register_algorithm( string &alg_name, FeatureAlgorithm * BA_itf );
 
 		//new registration maps
-	typedef UNORDERED_MAP<string,Transform*> TransformMap;
-	TransformMap RegisteredTransforms;
+	//typedef UNORDERED_MAP<string,Transform*> TransformMap;
+	//TransformMap RegisteredTransforms;
 
 	//typedef UNORDERED_MAP<string,FeatureAlgorithm*> AlgorithmMap;
 	//AlgorithmMap RegisteredAlgorithms;
