@@ -10,39 +10,40 @@
 void Transform::print_info() {
 
 }
-/*
+
 EmptyTransform::EmptyTransform () {
 	 Transform::name = "Empty";
 };
 
 
-int EmptyTransform::transform( ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT )
+int EmptyTransform::transform( ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p )
 {
 	std::cout << "Empty transform." << std::endl;
 	return -1;
 }
 
-*/
+//===========================================================================
 
-//FourierTransform::FourierTransform () {
-//	 Transform::name = "Fourier";
-//};
-//
-//WNDCHARM_REGISTER_TRANSFORM(FourierTransform)
-//
-//
+FourierTransform::FourierTransform () {
+	 Transform::name = "Fourier";
+};
+
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
 //TODO: The ImageMatrix::duplicate() function should really be const
-int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
-	 fftw_complex *out;
+	
+	std::cout << "Performing transform " << name << std::endl;
+	ImageMatrix* matrix_OUT = NULL;
+
+	fftw_complex *out;
    double *in;
    fftw_plan p;
    long x,y,z;
-	 matrix_OUT = matrix_IN->duplicate();
+	 *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
 	 int width = matrix_OUT->width;
 	 int height = matrix_OUT->height;
 	 int depth = matrix_OUT->depth;
@@ -115,20 +116,16 @@ int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OU
    return(1);
 }
 
-//===========================================================================
 
-FourierTransform::FourierTransform () {
-	 Transform::name = "Fourier";
-};
-
-
-//int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+//int FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 //{
 //	if( !matrix_IN ) {
 //		return (-1);
+//
+//	ImageMatrix* matrix_OUT = NULL;
 //	
 //	std::cout << "Performing transform " << name << std::endl;
-//  matrix_OUT = matrix_IN->duplicate();
+//  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
 //  matrix_OUT->fft2();
 //	return 1;
 //}
@@ -155,13 +152,14 @@ ChebyshevTransform::ChebyshevTransform () {
 };
 
 
-int ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
+	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  matrix_OUT = matrix_IN->duplicate();
+  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ChebyshevTransform(0);
 	return 1;
 }
@@ -175,13 +173,14 @@ WaveletTransform::WaveletTransform () {
 };
 
 
-int WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
+	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  matrix_OUT = matrix_IN->duplicate();
+  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->Symlet5Transform();
 	return 1;
 }
@@ -195,13 +194,14 @@ EdgeTransform::EdgeTransform () {
 };
 
 
-int EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
+	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  matrix_OUT = matrix_IN->duplicate();
+  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->EdgeTransform();
 	return 1;
 }
@@ -215,14 +215,15 @@ ColorTransform::ColorTransform () {
 };
 
 
-int ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
+	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
 	double temp_vec [COLORS_NUM+1];
-  matrix_OUT = matrix_IN->duplicate();
+  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(temp_vec, 0);
 	histogram_vals.assign(temp_vec, temp_vec+COLORS_NUM+1);
 	return 1;
@@ -237,13 +238,14 @@ HueTransform::HueTransform () {
 };
 
 
-int HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT)
+int HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
 {
 	if( !matrix_IN )
 		return (-1);
+	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  matrix_OUT = matrix_IN->duplicate();
+  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(NULL,1);
 	return 1;
 }

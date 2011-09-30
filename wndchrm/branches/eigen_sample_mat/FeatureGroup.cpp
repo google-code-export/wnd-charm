@@ -89,10 +89,10 @@ ImageMatrix * FeatureGroup::obtain_transform(
 		std::pair< std::vector< Transform* > , ImageMatrix* > temp_pair = *t_it;
 		std::vector<Transform*> seq_in_matrixmap = temp_pair.first;
 		for( vector<Transform*>::iterator seq2_it = seq_in_matrixmap.begin(); seq2_it != seq_in_matrixmap.end(); ++seq2_it )
-	{
-		std::cout << (*seq2_it)->name << " ";
-	}
-	std::cout << std::endl;
+		{
+			std::cout << (*seq2_it)->name << " ";
+		}
+		std::cout << std::endl;
 #endif
 		return ( t_it->second );
 	}
@@ -112,18 +112,18 @@ ImageMatrix * FeatureGroup::obtain_transform(
 	if( t_it != saved_pixel_planes.end() )
 	{
 #if DEBUG
-		std::cout << "FG::ot: found the shortened sequence in the MatrixMap" << std::endl;
+		std::cout << "FeatureGroup::obtain_transform: found the shortened sequence in the MatrixMap" << std::endl;
 #endif
 		intermediate_pixel_plane = t_it->second;
 	}
 	else {
 #if DEBUG
-		std::cout << "FG::ot: couldn't find shortened sequence in the MatrixMap" << std::endl;
+		std::cout << "FeatureGroup::obtain_transform: couldn't find shortened sequence in the MatrixMap" << std::endl;
 #endif
 		// recursion call here:
 		intermediate_pixel_plane = obtain_transform(saved_pixel_planes, sequence);
 		if( NULL == intermediate_pixel_plane ) {
-			std::cout << "FG::ot: Call to obtain transform for shortened sequence returned null pixel plane"
+			std::cout << "FeatureGroup::obtain_transform: Call to obtain transform for shortened sequence returned null pixel plane"
 				<< std::endl;
 		}
 		// save the intermediate
@@ -131,13 +131,13 @@ ImageMatrix * FeatureGroup::obtain_transform(
 	}
 
 	if( NULL == intermediate_pixel_plane ) {
-		std::cout << "FG::ot: skipping transform since intermediate pixel plane is null." << std::endl;
+		std::cout << "FeatureGroup::obtain_transform: skipping transform since intermediate pixel plane is null." << std::endl;
 		return NULL;
 	}
 	retval = 
-		last_transform_in_sequence->transform( intermediate_pixel_plane, output_pixel_plane );
+		last_transform_in_sequence->transform( intermediate_pixel_plane, &output_pixel_plane );
 #if DEBUG
-	std::cout << "FG::ot: Return value from transform is " << retval << std::endl;
+	std::cout << "FeatureGroup::obtain_transform: Return value from transform is " << retval << std::endl;
 #endif
 	return output_pixel_plane;
 }

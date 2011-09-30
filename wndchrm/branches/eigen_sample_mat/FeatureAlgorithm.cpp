@@ -269,31 +269,37 @@ int EdgeFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 	long EdgeArea = 0;
 	double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
 
-	vector<double>::iterator it = coeffs.begin();
-
 	IN_matrix->EdgeStatistics(&EdgeArea, &MagMean, &MagMedian, &MagVar, MagHist, &DirecMean, &DirecMedian, &DirecVar, DirecHist, &DirecHomogeneity, DiffDirecHist, 8);
 
 	int j;
 	
-	*it++ = EdgeArea;
+	double temp_vec[28];
+	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
+
+	double * here = &temp_vec[0];
+	*here = double( EdgeArea ); here++;
 	
-	for( j=0; j<4; j++ )
-		*it++ = DiffDirecHist[j];
-	for( j=0; j<8; j++ )
-		*it++ = DirecHist[j];
+	for( j=0; j<4; j++ ){
+		*here = DiffDirecHist[j]; here++;
+	}
+	for( j=0; j<8; j++ ){
+		*here = DirecHist[j]; here++;
+	}
 
-	*it++ = DirecHomogeneity;
-	*it++ = DirecMean;
-	*it++ = DirecMedian;
-	*it++ = DirecVar;
+	*here = DirecHomogeneity; here++;
+	*here = DirecMean; here++;
+	*here = DirecMedian; here++;
+	*here = DirecVar; here++;
 
-	for( j=0; j<8; j++ )
-		*it++ = MagHist[j];
+	for( j=0; j<8; j++ ){
+		*here = MagHist[j]; here++;
+	}
 
-	*it++ = MagMean;
-	*it++ = MagMedian;
-	*it++ = MagVar;
+	*here = MagMean; here++;
+	*here = MagMedian; here++;
+	*here = MagVar; here++;
 
+	coeffs.assign( temp_vec, temp_vec + n_features);
 	return 1;
 }
 
@@ -325,31 +331,38 @@ int ObjectFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 	                             &AreaVar, area_histogram, &DistMin, &DistMax,
 	                             &DistMean, &DistMedian, &DistVar, dist_histogram, 10);
 
-	vector<double>::iterator it = coeffs.begin();
+	double temp_vec[34];
 	int j = 0;
 
-	for( j = 0; j < 10; j++ )
-		*it++ = area_histogram[j];
+	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
-	*it++ = AreaMax;
-	*it++ = AreaMean;
-	*it++ = AreaMedian;
-	*it++ = AreaMin;
-	*it++ = AreaVar;
-	*it++ = centroid_x;
-	*it++ = centroid_y;
-	*it++ = feature_count;
+	double * here = &temp_vec[0];
 
-	for( j = 0; j < 10; j++ )
-		*it++ = dist_histogram[j];
+	for( j = 0; j < 10; j++ ){
+		*here = area_histogram[j]; here++;
+	}
 
-	*it++ = DistMax;
-	*it++ = DistMean;
-	*it++ = DistMedian;
-	*it++ = DistMin;
-	*it++ = DistVar;
-	*it++ = Euler;
+	*here = AreaMax; here++;
+	*here = AreaMean; here++;
+	*here = AreaMedian; here++;
+	*here = AreaMin; here++;
+	*here = AreaVar; here++;
+	*here = centroid_x; here++;
+	*here = centroid_y; here++;
+	*here = feature_count; here++;
 
+	for( j = 0; j < 10; j++ ) {
+		*here = dist_histogram[j]; here++;
+	}
+
+	*here = DistMax; here++;
+	*here = DistMean; here++;
+	*here = DistMedian; here++;
+	*here = DistMin; here++;
+	*here = DistVar; here++;
+	*here = Euler; here++;
+
+	coeffs.assign( temp_vec, temp_vec + n_features);
 	return 1;
 }
 
