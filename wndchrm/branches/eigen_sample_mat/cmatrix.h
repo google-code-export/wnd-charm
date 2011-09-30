@@ -76,11 +76,14 @@ typedef struct
 }
 rect;
 
+int compare_doubles (const void *a, const void *b);
+
 class ImageMatrix
 {
   private:
    pix_data *data;                                 /* data of the colors                   */  
   public:
+	 friend class GiniCoefficient;
    int ColorMode;                                  /* can be cmRGB or cmHSV                */
    unsigned short bits;                            /* the number of intensity bits (8,16, etc) */
    int width,height,depth;                         /* width and height of the picture      */
@@ -139,6 +142,7 @@ class ImageMatrix
    void TamuraTexture2D(double *vec);
    void zernike2D(double *zvalues, long *output_size);
    void fractal2D(int bins,double *output);
+	 double gini();
 };
 
 

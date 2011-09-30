@@ -1671,6 +1671,9 @@ void ImageMatrix::fractal2D(int bins,double *output)
    }
 }
 
+
+
+
 #pragma package(smart_init)
 
 

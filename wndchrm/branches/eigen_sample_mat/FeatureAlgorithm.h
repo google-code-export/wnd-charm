@@ -127,6 +127,12 @@ class GaborTextures : public FeatureAlgorithm {
 		virtual int calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
 };
 
+class GiniCoefficient : public FeatureAlgorithm {
+	public:
+		GiniCoefficient();
+		virtual int calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+};
+
 #define WNDCHARM_REGISTER_ALGORITHM(alg_name) \
 struct alg_name##AlgorithmRegistrar \
 { \

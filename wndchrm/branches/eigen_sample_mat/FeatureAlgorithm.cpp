@@ -4,6 +4,7 @@
 #include "cmatrix.h"
 #include "FeatureNames.hpp"
 #include <iostream>
+#include <cstdlib>
 //start #including the functions directly once you start pulling them out of cmatrix
 //#include "transforms/ChebishevFourier.h" //ChebyshevFourierStatistics
 
@@ -246,7 +247,13 @@ int PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vector<double>
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 
-	IN_matrix->BasicStatistics(&coeffs[0], &coeffs[1], &coeffs[2], &coeffs[3], &coeffs[4], NULL, 10);
+	double temp_vec[5];
+	int j;
+	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
+
+	IN_matrix->BasicStatistics(&temp_vec[0], &temp_vec[1], &temp_vec[2], &temp_vec[3], &temp_vec[4], NULL, 10);
+
+	coeffs.assign( temp_vec, temp_vec + n_features);
 	return 1;
 }
 
@@ -393,4 +400,60 @@ int GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 
 WNDCHARM_REGISTER_ALGORITHM(GaborTextures)
 
+//===========================================================================
+
+/* gini
+   compute the gini coefficient
+   
+   paper reference: Roberto G. Abraham, Sidney van den Bergh, Preethi Nair, A NEW APPROACH TO GALAXY MORPHOLOGY. I. ANALYSIS OF THE SLOAN DIGITAL SKY
+SURVEY EARLY DATA RELEASE, The Astrophysical Journal, vol. 588, p. 218-229, 2003.
+*/
+GiniCoefficient::GiniCoefficient() {
+	name = "Gini Coefficient";
+	n_features = 1;
+	//cout << "Instantiating new " << name << " object." << endl;
+}
+
+int GiniCoefficient::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+{
+	std::cout << "calculating " << name << std::endl;
+	coeffs.clear();
+	coeffs.reserve(n_features-1);
+
+	double temp_vec [1];
+	int j;
+	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
+
+	long pixel_index, num_pixels;
+	double *pixels, mean = 0.0, g = 0.0;
+	long i, count = 0;
+
+	num_pixels = IN_matrix->height * IN_matrix->width * IN_matrix->depth;
+	pixels = new double[ num_pixels ];
+
+	for( pixel_index = 0; pixel_index < num_pixels; pixel_index++ )
+		if( IN_matrix->data[ pixel_index ].intensity > 0 )
+		{
+			pixels[ count ] = IN_matrix->data[ pixel_index ].intensity;
+			mean += IN_matrix->data[ pixel_index ].intensity;
+			count++;
+		}
+	if( count > 0 )
+		mean = mean / count;
+	qsort( pixels, count, sizeof(double), compare_doubles );
+
+	for( i = 1; i <= count; i++)
+		g += (2. * i - count - 1.) * pixels[i-1];
+	delete pixels;
+
+	if( count <= 1 || mean <= 0.0 )
+		temp_vec[0] = 0.0;   // avoid division by zero
+	else
+		temp_vec[0] = g / ( mean * count * ( count-1 ) );
+
+	coeffs.assign( temp_vec, temp_vec + n_features);
+	return 1;
+}
+
+WNDCHARM_REGISTER_ALGORITHM(GiniCoefficient)
 
