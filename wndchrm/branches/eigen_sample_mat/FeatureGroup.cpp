@@ -97,9 +97,23 @@ ImageMatrix * FeatureGroup::obtain_transform(
 		return ( t_it->second );
 	}
 
+
+	// If we've gotten here, the requested sequence of transforms does not exist
+	// in the intermediate storage map "saved_pixel_planes"
+	// We now will start to parse the work order contained in the vector "sequence"
+	// Step 1: Strip off the last transform in the sequence and call it "last_transform_in_sequence"
+	// Step 2a: Check to see if "saved_pixel_planes" contains the ImageMatrix 
+	//         corresponding to the shortened sequence, called the "intermediate_pixel_plane"
+	// Step 2b: If no, recursively call this function, obtain_transform, using
+	//         the shortened sequence to get the intermediate_pixel_plane
+	// Step 3. transform the "intermediate_pixel_plane" using the "last_transform_in_sequence"
+	// Step 4: Save the resulting transformed pixel plane from Step 3 in "saved_pixel_planes"
+	// Step 5: Return.
+
 #if DEBUG
 	std::cout << "\t\tsequence not found" << std::endl;
 #endif
+	// Step 1.
 	ImageMatrix* output_pixel_plane = NULL;
 	ImageMatrix* intermediate_pixel_plane = NULL;
 
@@ -107,7 +121,10 @@ ImageMatrix * FeatureGroup::obtain_transform(
 #if DEBUG
 	std::cout << "\t\tlast tform in sequence is " << last_transform_in_sequence->name << std::endl;
 #endif
+	vector<Transform *> original_sequence = sequence;
 	sequence.pop_back();
+
+	// Step 2a.
 	t_it = saved_pixel_planes.find(sequence);
 	if( t_it != saved_pixel_planes.end() )
 	{
@@ -117,6 +134,7 @@ ImageMatrix * FeatureGroup::obtain_transform(
 		intermediate_pixel_plane = t_it->second;
 	}
 	else {
+		// Step 2b.
 #if DEBUG
 		std::cout << "FeatureGroup::obtain_transform: couldn't find shortened sequence in the MatrixMap" << std::endl;
 #endif
@@ -126,10 +144,11 @@ ImageMatrix * FeatureGroup::obtain_transform(
 			std::cout << "FeatureGroup::obtain_transform: Call to obtain transform for shortened sequence returned null pixel plane"
 				<< std::endl;
 		}
-		// save the intermediate
-		saved_pixel_planes[sequence] = intermediate_pixel_plane;
+		// no need to save the intermediate --
+		// If it generates a transform, obtain_transform will save the pixel plane it returns as the last step
 	}
 
+	// Step 3.
 	if( NULL == intermediate_pixel_plane ) {
 		std::cout << "FeatureGroup::obtain_transform: skipping transform since intermediate pixel plane is null." << std::endl;
 		return NULL;
@@ -139,6 +158,11 @@ ImageMatrix * FeatureGroup::obtain_transform(
 #if DEBUG
 	std::cout << "FeatureGroup::obtain_transform: Return value from transform is " << retval << std::endl;
 #endif
+
+	// Step 4.
+	if( !( retval < 0 ) && (NULL != output_pixel_plane) )
+		saved_pixel_planes[original_sequence] = output_pixel_plane;
+
 	return output_pixel_plane;
 }
 

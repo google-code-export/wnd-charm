@@ -1246,6 +1246,7 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		++group_count;
 	} // end iterating over feature groups
 
+#if DEBUG
 	int count = 0;
 	for( vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
 			fi_it != feature_list.end(); ++fi_it )
@@ -1254,8 +1255,12 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		(*fi_it)->get_name( temp_str );
 		cout << ++count << ". " << temp_str << endl;
 	}
-
-	exit(1);
+#endif
+	for( MatrixMap::iterator it = saved_pixel_planes.begin(); it != saved_pixel_planes.end(); it++ ) {
+		delete it->second;
+		it->second = NULL;
+	}
+	return 1;
 }
 
 void signatures::ComputeLongChain( ImageMatrix *matrix, int compute_colors)
