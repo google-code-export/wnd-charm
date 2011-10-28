@@ -51,9 +51,9 @@ DataGrid2D::DataGrid2D(int xval, int yval, int zval)  {
 
 DataGrid2D::~DataGrid2D() {
 	for (int k =0; k < x; k++) {
-		delete data[k].col;
+		delete [] data[k].col;
 	}
-	delete data;
+	delete [] data;
 }
 
 void DataGrid2D::setData(int xval, int yval, int zval, double value) {
@@ -125,8 +125,8 @@ void DataGrid2D::resize(int newx, int newy, int newz, bool copy) {
 
         /* delete the old data */
 	for (int k =0; k < x; k++)
-          delete data[k].col;
-	delete data;
+          delete [] data[k].col;
+	delete [] data;
 
 	data = newdata;
 	x = newx;

@@ -160,8 +160,8 @@ double *Gabor(double f0, double sig2lam, double gamma, double theta, double fi, 
      for (x=0;x<n*2;x+=1)
        Gex[y*n*2+x]=Gex[y*n*2+x]/sum;
 
-  delete tx;
-  delete ty;
+  delete [] tx;
+  delete [] ty;
 
   return(Gex);
 }
@@ -193,9 +193,9 @@ double *GaborEnergy(ImageMatrix *Im, double f0, double sig2lam, double gamma, do
       b++;
    }
 
-   delete image;
-   delete Gexp;
-   delete c;
+   delete [] image;
+   delete [] Gexp;
+   delete [] c;
    return(out);
 }
 
@@ -224,7 +224,7 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios)
      if (e2LP[x]>max) max=e2LP[x];
    for (x=0;x<Im->width*Im->height;x++)
      if (e2LP[x]>=0.4*max) originalScore++;
-   delete e2LP;
+   delete [] e2LP;
 
    for (ii=0;ii<7;ii++)
    {  double *e2;

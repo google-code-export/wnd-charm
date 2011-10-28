@@ -309,13 +309,13 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
 
    /* free the memory used by the function */
    for (a=0;a<n;a++)
-   {  delete I[a];
-      delete J[a];
-      delete J1[a];
+   {  delete [] I[a];
+      delete [] J[a];
+      delete [] J1[a];
    }
-   delete I;
-   delete J;
-   delete tmp;
+   delete [] I;
+   delete [] J;
+   delete [] tmp;
 
    return(vec_count);
 }

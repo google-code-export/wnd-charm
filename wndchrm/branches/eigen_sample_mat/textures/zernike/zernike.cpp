@@ -67,7 +67,7 @@ double mb_imgmoments(ImageMatrix *image, int x, int y)
         sum+=xcoords[row*image->width+col]*image->pixel(col,row,0).intensity;
      }
 
-   delete xcoords;
+   delete [] xcoords;
    return(sum);
 }
 
@@ -177,9 +177,9 @@ void mb_zernike2D(ImageMatrix *I, double D, double R, double *zvalues, long *out
        }
    *output_size=size3;
 
-   delete Y;
-   delete X;
-   delete P;
+   delete [] Y;
+   delete [] X;
+   delete [] P;
 
 }
 

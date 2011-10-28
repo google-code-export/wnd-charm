@@ -192,7 +192,7 @@ void Wavelet::transform2D(DataGrid * data) {
 			bzero(detail,outsizey);
 
 		}
-                delete input;
+                delete [] input;
 
 
 /* added here **********************************************************************/
@@ -310,8 +310,8 @@ return;
 			}
 
 		}
-                delete input1;
-                delete input2;
+                delete [] input1;
+                delete [] input2;
 
 		xsize = outsizex;
 		ysize = outsizey;
@@ -337,12 +337,12 @@ return;
 
                 delete iGrid1;
                 delete iGrid2;
-                delete approx;
-                delete detail;
-                delete approx1;
-                delete detail1;
-                delete approx2;
-                delete detail2;
+                delete [] approx;
+                delete [] detail;
+                delete [] approx1;
+                delete [] detail1;
+                delete [] approx2;
+                delete [] detail2;
 
 	}
 
@@ -427,8 +427,8 @@ return;
 
         for (int a=0;a<3*this->nsteps+1;a++)
           delete arrays[a];
-        delete arrays;
-        delete steps;
+        delete [] arrays;
+        delete [] steps;
 }
 
 

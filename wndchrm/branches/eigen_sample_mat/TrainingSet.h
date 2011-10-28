@@ -197,6 +197,7 @@ public:
    long count;                                                     /* the number of samples in the training set */
    long signature_count;                                           /* the number of signatures (< MAX_SIGNATURE_NUM) */
    long color_features;                                            /* color signatures are used                 */
+	vector<FeatureGroup*> work_order; // The official list of which features to calculate.
 /* methods */
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */

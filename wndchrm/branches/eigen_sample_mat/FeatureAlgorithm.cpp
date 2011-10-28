@@ -444,7 +444,7 @@ int GiniCoefficient::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs 
 
 	for( i = 1; i <= count; i++)
 		g += (2. * i - count - 1.) * pixels[i-1];
-	delete pixels;
+	delete [] pixels;
 
 	if( count <= 1 || mean <= 0.0 )
 		temp_vec[0] = 0.0;   // avoid division by zero

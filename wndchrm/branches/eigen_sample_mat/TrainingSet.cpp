@@ -1423,8 +1423,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// all hope is lost - compute sigs.
 		if (!res) {
 			// CEC_const vector<const FeatureGroup*> work_order;
-			vector<FeatureGroup*> work_order;
-			ImageSignatures->GenerateStandardFeatureGroupList( feature_opts->large_set, feature_opts->compute_colors, work_order );
+			if( work_order.size() <= 0 )
+				ImageSignatures->GenerateStandardFeatureGroupList( feature_opts->large_set, feature_opts->compute_colors, work_order );
 			ImageSignatures->ComputeFromGroupList( tile_matrix, work_order );
 
 			//if (feature_opts->large_set) ImageSignatures->ComputeEverything(tile_matrix,feature_opts->compute_colors);

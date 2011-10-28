@@ -27,7 +27,7 @@ double contrast(ImageMatrix *image)
       std+=(image->pixel(x,y,0).intensity-avg)*(image->pixel(x,y,0).intensity-avg);
   std=sqrt(std/(image->width*image->height));
   k=kurtosis(vec, avg, std, image->width*image->height);
-  delete vec;
+  delete [] vec;
   if (std<0.0000000001) return(0);
   else return(std/  pow(k/pow(std,4),0.25)  );
 }

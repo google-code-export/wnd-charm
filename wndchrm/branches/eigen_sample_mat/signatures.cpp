@@ -88,7 +88,7 @@ signatures::signatures()
 /*  ~signatures (destructor)
 */
 signatures::~signatures() {
-	if (data) delete data;
+	if (data) delete [] data;
 }
 //---------------------------------------------------------------------------
 
@@ -149,8 +149,16 @@ void signatures::Finalize(Eigen::MatrixXd &the_mat, int the_col) {
    clear all signature values
 */
 void signatures::Clear()
-{  count=0;
-	if (data) delete data;
+{
+	count=0;
+	if (data) {
+		delete [] data;
+		data = new signature[MAX_SIGNATURE_NUM];
+		for (int sig_index=0;sig_index<MAX_SIGNATURE_NUM;sig_index++)
+		{  //data[sig_index].name[0]='\0';
+			data[sig_index].value=0;
+		}
+	}
 }
 //============================================================
 // added June 2011 

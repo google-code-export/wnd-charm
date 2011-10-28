@@ -371,7 +371,7 @@ int ImageMatrix::LoadPPM(char *filename, int ColorMode)
 		   set(x,y,0,pix);		   
         }
    }
-   delete buffer;
+   delete [] buffer;
    fclose(fi);
    return(1);
 }
@@ -472,7 +472,7 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2, int
 
 /* free the memory allocated in "ImageMatrix::LoadImage" */
 ImageMatrix::~ImageMatrix()
-{  if (data) delete data;
+{  if (data) delete [] data;
    data=NULL;
 }
 
@@ -792,7 +792,7 @@ void ImageMatrix::BasicStatistics(double *mean, double *median, double *std, dou
    {  qsort(pixels,num_pixels,sizeof(double),compare_doubles);
       *median=pixels[num_pixels/2];
    }
-   delete pixels;	     
+   delete [] pixels;	     
 }
 
 /* normalize the pixel values into a given range 
@@ -1098,7 +1098,7 @@ void ImageMatrix::ChebyshevTransform(int N)
    for(y=0;y<height;y++)
      for(x=0;x<width;x++)
        SetInt(x,y,0,out[y*width+x]);
-   delete out;
+   delete [] out;
 }
 
 /* chebyshev transform
@@ -1135,7 +1135,7 @@ void ImageMatrix::Symlet5Transform()
    if (depth==1) Sym5->transform2D(grid);
    else Sym5->transform3D(grid);
 
-   delete data; /* free the old memory of the matrix */
+   delete [] data; /* free the old memory of the matrix */
 
    /* allocate new memory (new dimensions) and copy the values */
    width=grid->getX();

@@ -75,8 +75,8 @@ void TNx(double *x, double *out, int N, int height)
    for (iy=0;iy<height;iy++)
        out[iy*N+0]=1;
 
-   delete temp1;
-   delete temp;
+   delete [] temp1;
+   delete [] temp;
 }
 
 void getChCoeff1D(double *f,double *out,double *x,int N,int width)
@@ -105,8 +105,8 @@ void getChCoeff1D(double *f,double *out,double *x,int N,int width)
        for (a=0;a<width;a++)
          out[jj]+=f[a]*tj[a]/2;
    }
-   delete tj;
-   delete Tj;
+   delete [] tj;
+   delete [] Tj;
 }
 
 void getChCoeff(double *Im, double *out, double *x,int N,int width, int height)
@@ -124,8 +124,8 @@ void getChCoeff(double *Im, double *out, double *x,int N,int width, int height)
        out[iy*N+ix]=y_out[ix];
    }
 
-   delete y;
-   delete y_out;
+   delete [] y;
+   delete [] y_out;
 }
 
 /* inputs:
@@ -163,9 +163,9 @@ void Chebyshev2D(ImageMatrix *Im, double *out, int N)
 
    getChCoeff(in,out,y,N,Im->height,N);
 
-   delete in;
-   delete x;
-   delete y;
+   delete [] in;
+   delete [] x;
+   delete [] y;
 }
 
 #pragma package(smart_init)

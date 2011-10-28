@@ -102,8 +102,8 @@ void haarlick2D(ImageMatrix *Im, double distance, double *out)
    }
 
    for (y=0;y<Im->height;y++)
-     delete p_gray[y];
-   delete p_gray;
+     delete [] p_gray[y];
+   delete [] p_gray;
 
    /* copy the values to the output vector in the right output order */
    double temp[28];
