@@ -920,6 +920,12 @@ int main(int argc, char *argv[])
  
  
        
+			// Technically a memory leak if we don't delete dataset,
+			// even though the program is about to exit.
+			if( dataset) {
+				delete dataset;
+				dataset = NULL;
+			}
      } // no params left for dataset / test set.
      else ShowHelp();
 

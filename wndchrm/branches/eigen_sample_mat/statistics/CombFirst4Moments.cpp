@@ -315,7 +315,8 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
    }
    delete [] I;
    delete [] J;
-   delete [] tmp;
+   delete [] J1;
+	 delete [] tmp;
 
    return(vec_count);
 }

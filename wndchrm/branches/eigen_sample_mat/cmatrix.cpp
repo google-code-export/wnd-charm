@@ -1404,8 +1404,8 @@ void ImageMatrix::RadonTransform2D(double *vec)
          vec[vec_index++]=bins[bin_index];
     }
     vd_RadonTextures(vec);
-    delete pixels;
-    delete ptr;
+    delete [] pixels;
+    delete [] ptr;
 }
 
 //-----------------------------------------------------------------------------------
@@ -1587,8 +1587,8 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    else *DistVar=sum_dist;
 
    delete BWImage;
-   delete object_areas;
-   delete centroid_dists;
+   delete [] object_areas;
+   delete [] centroid_dists;
 }
 
 /* GaborFilters */

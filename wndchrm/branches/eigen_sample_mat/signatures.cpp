@@ -1254,10 +1254,10 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		++group_count;
 	} // end iterating over feature groups
 
+	vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
 #if DEBUG
 	int count = 0;
-	for( vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
-			fi_it != feature_list.end(); ++fi_it )
+	for( ; fi_it != feature_list.end(); ++fi_it )
 	{
 		string temp_str;
 		(*fi_it)->get_name( temp_str );
@@ -1268,6 +1268,15 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		delete it->second;
 		it->second = NULL;
 	}
+
+	// For right now, don't save the feature_infos, cause it's a lot of memory
+	// (~5MB for 12 images)
+	
+	for( fi_it = feature_list.begin(); fi_it != feature_list.end(); ++fi_it )
+	{
+		delete (*fi_it);
+	}
+
 	return 1;
 }
 
