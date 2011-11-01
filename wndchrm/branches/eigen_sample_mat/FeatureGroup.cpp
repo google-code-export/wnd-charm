@@ -8,7 +8,7 @@
 #include "Channel.h"
 #include "transforms.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 void FeatureGroup::print_info() const {
 	//std::cout << ", group name:\t" << name;// << std::endl;

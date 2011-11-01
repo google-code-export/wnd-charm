@@ -253,7 +253,7 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios)
         }
       ratios[ii]=(double)afterGaborScore/(double)originalScore;
       delete bw;
-      delete e2;
+      delete [] e2;
    }
 }
 

@@ -170,7 +170,7 @@ int bwlabel(ImageMatrix *Im, int level)
          if (Im->pixel(x,y,z).intensity!=0)
            Im->SetInt(x,y,z,Im->pixel(x,y,z).intensity-1);
 
-   delete stack;
+   delete [] stack;
    return(group_counter-1);
 }
 
