@@ -44,20 +44,22 @@
 #include <ctype.h>
 
 
-#define MAX_SPLITS 100
+#define MAX_SPLITS 10000
 #define MAX_SAMPLES 190000
 
 /* global variable */
 // Verbosity levels:
 // 		0-Classification accuracy and similarity and confusion matrices only
 // 		1-Individual
-// 		2-Everything
+// 		2-Everything except the confusion and similarity matrices when printing to std out only
+// 		>2-Everything
 
 int verbosity=2;
 
 void randomize()
 {
-  srand((unsigned) time(NULL));
+  time_t t;
+  srand((unsigned) time(&t));
 }
 
 void setup_featureset (featureset_t *featureset) {
@@ -140,14 +142,13 @@ void setup_featureset (featureset_t *featureset) {
 check_split_params - checks parameters for consistency with regards to training/testing a given dataset.
 Returns 1 on success, 0 upon failure.
 */
-int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, double split_ratio, int balanced_splits, int max_training_images, int max_test_images, int exact_training_images) {
+int check_split_params (int *n_train_p, int *n_test_p, double *split_ratio, TrainingSet *dataset, TrainingSet *testset, int class_num, int samples_per_image, int balanced_splits, int max_training_images, int max_test_images, int exact_training_images) {
 	int class_index, smallest_class=0;
 	int max_balanced_samples,max_balanced_i;
 
 	// Initialize what we will be returning
 	*n_train_p = 0;
 	*n_test_p = 0;
-	*train_frac_p = 0.0;
 
 	/*
 	  Bounds checking on samples.
@@ -187,11 +188,11 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 			delete dataset;
 			return (0);
 		}
-		split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
+		*split_ratio = 0.0; // Don't base splits on a ratio - use max_training_images/max_test_images
 	} else { // -i unspecified or used for exact_training_images, use split_ratio (default or specified - already set in main)
-		max_training_images = (int)floor( (split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
+		max_training_images = (int)floor( (*split_ratio * (float)max_balanced_i) + 0.5 ); // rounding
 		if (max_training_images >= max_balanced_i && testset == NULL) { // rounding error left no test images
-			catError("ERROR: No images left for testing using specified -r=%f.\n",split_ratio);
+			catError("ERROR: No images left for testing using specified -r=%f.\n",*split_ratio);
 			catError("  Use -rN with N < %f\n", ((float)max_balanced_i - 1.0) / (float)max_balanced_i);
 			catError("  Or, use -iN with N < %d.\n",max_balanced_i);
 			catError("Exiting - no testing performed\n");
@@ -200,7 +201,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 		// If an exact split ratio was specified, then use it.
 		// Otherwise, the same number of training images is used in each class, specified by max_training_images
-		if (balanced_splits) split_ratio = 0.0;
+		if (balanced_splits) *split_ratio = 0.0;
 	}
 	// Note that checks above leave max_training_images < max_balanced_i
 	
@@ -216,6 +217,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *train_frac_p, Tra
 		}
 	} else { // -jN not specified
 		max_test_images = max_balanced_i - max_training_images;
+		if (!balanced_splits) max_test_images = 0;
 	}
 
 	// Set the return values
@@ -235,9 +237,9 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	FILE *output_file;
 	int split_index,tile_index;
 	int n_train,n_test;
-	double train_frac;
 	int class_index;
 	int res;
+	int i;
 	
 	// set samples per image
 	int samples_per_image = featureset->n_samples;
@@ -245,42 +247,32 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	// Remove classes from the end if N is specified
 	if (N>0) while (ts->class_num>N) ts->RemoveClass(ts->class_num);
 
-	// If a testset was specified, make sure its classes are consistent with ts.
-	if (testset) {
-		for (class_index = 1; class_index <= ts->class_num; class_index++) {
-//printf("comparing train class '%s' with test '%s'\n",ts->class_labels[class_index],testset->class_labels[class_index]);
-			while ( testset->class_num && ts->class_labels[class_index].compare (testset->class_labels[class_index]) ) {
-//printf("dropping test class %d '%s'\n",class_index,testset->class_labels[class_index]);
-				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index].c_str());
-				testset->MarkUnknown (class_index);
-//printf("test class %d now '%s'\n",class_index,testset->class_labels[class_index]);
-			}
-		}
-		// mark any extra classes as unknown
-		for (class_index = ts->class_num+1; class_index <= testset->class_num;class_index++) {
-//printf("dropping extra test class '%s'\n",testset->class_labels[class_index]);
-			catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked UNKNOWN.\n",testset->class_labels[class_index].c_str());
-			testset->MarkUnknown (class_index);
-		}
-
-		// Now that they're consistent, remove classes based on N.
-		if (N>0) while (testset->class_num > N) testset->RemoveClass(testset->class_num); /* cut the number of classes also in the test file */
-		n_test = testset->count / samples_per_image;
-//for (class_index = 0; class_index <= ts->class_num; class_index++) printf("ts class '%s' is test class '%s'\n",ts->class_labels[class_index],testset->class_labels[class_index]);
-//for (class_index = 0; class_index < testset->count; class_index++) printf("sample %d '%s' class '%s' \n",class_index,testset->samples[class_index]->full_path, testset->class_labels[testset->samples[class_index]->sample_class]);
-
-	}
-
-
 // Remove classes with less than max_training_images if exact_training_images is true
 	if (exact_training_images) {
 		class_index=ts->class_num;
 		while( class_index > 0 ) {
 			if( ts->class_nsamples[ class_index ] * samples_per_image <  max_training_images ) {
 				ts->RemoveClass( class_index );
-				if (testset) testset->RemoveClass( class_index );
 			}
 			class_index--;
+		}
+	}
+
+	// If a testset was specified, make sure its classes are consistent with ts.
+	if (testset) {
+		testset->train_class = new int[testset->class_num+1];
+		int ts_class_index;
+		for (class_index = 1; class_index <= testset->class_num; class_index++) {
+			testset->train_class[class_index] = 0;
+			for (ts_class_index = 1; ts_class_index <= ts->class_num; ts_class_index++) {
+				if ( ! strcmp(ts->class_labels[ts_class_index].c_str(),testset->class_labels[class_index].c_str()) ) {
+					testset->train_class[class_index] = ts_class_index;
+					break;
+				}
+			}
+			if (!testset->train_class[class_index]) {
+				catError ("WARNING: Test set class label '%s' does not match any training set class.  Marked with '*'.\n",testset->class_labels[class_index].c_str());
+			}
 		}
 	}
 
@@ -292,9 +284,15 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	}
 
 // Check the parameters and set train/test image numbers
-	if (!check_split_params (&n_train, &n_test, &train_frac, ts, testset,
-		class_num, samples_per_image, split_ratio, balanced_splits, max_training_images, max_test_images, exact_training_images))
+	if (!check_split_params (&n_train, &n_test, &split_ratio, ts, testset,
+		class_num, samples_per_image, balanced_splits, max_training_images, max_test_images, exact_training_images))
 			return(showError(1, NULL));
+
+	// Instantiate a featuregroup_t for the top level ts
+	// to keep track of feature statistics across splits.
+	if( split_num > 1 ) 
+		ts->aggregated_feature_stats = new featuregroups_t;
+
 /*
 	In ts-split(),
       if (test->count > 0) number_of_test_samples = 0; // test already has samples from a file
@@ -302,7 +300,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
       // if ratio is > 0 and <= 1, use ratio (unbalanced training)      
 */
 	if (verbosity>=2) {
-		if (train_frac > 0) printf ("samples per image=%d, UNBALANCED training fraction=%f\n",samples_per_image,train_frac);
+		if (split_ratio > 0) printf ("samples per image=%d, UNBALANCED training fraction=%g\n",samples_per_image,split_ratio);
 		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
 	}
 	for (split_index=0;split_index<split_num;split_index++)
@@ -325,7 +323,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		}
 		else splits[split_index].tile_area_accuracy=NULL;
 
-		res=ts->split(random_splits,train_frac,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
+		res=ts->split(random_splits,split_ratio,train,test,samples_per_image,n_train,n_test,&(splits[split_index]));
 		if ( res < 0) return (res);
 		if (image_similarities) splits[split_index].image_similarities=new double[(1+test->count/(samples_per_image))*(1+test->count/(samples_per_image))];
 		else splits[split_index].image_similarities=NULL;
@@ -347,7 +345,38 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		{
 			train->normalize(); // normalize the feature values of the training set
 			train->SetFisherScores(max_features,used_mrmr,&(splits[split_index]));  // compute the Fisher Scores for the image features
+
+			// CEC - added this code to keep track of feature statistics across splits
+			if( ts->aggregated_feature_stats ) {
+				if( ts->aggregated_feature_stats->empty() ) {
+					featuregroup_stats_t temp;
+					for( i = 0; i < ts->signature_count; i++ ) {
+						temp.name = train->SignatureNames[i];
+						temp.min = train->SignatureWeights[i];
+						temp.max = train->SignatureWeights[i];
+						temp.sum_weight = train->SignatureWeights[i];
+						temp.sum_weight2 = train->SignatureWeights[i] * train->SignatureWeights[i];
+						temp.mean = 0;
+						temp.stddev = 0;
+						temp.n_features = 1;	
+						ts->aggregated_feature_stats->push_back( temp ); // makes a copy
+					}
+				}
+				else
+				{
+					for( i = 0; i < ts->signature_count; i++ ) {
+						if( train->SignatureWeights[i] < (*(ts->aggregated_feature_stats))[i].min )
+							 (*(ts->aggregated_feature_stats))[i].min = train->SignatureWeights[i];
+						if( train->SignatureWeights[i] > (*(ts->aggregated_feature_stats))[i].max )
+							 (*(ts->aggregated_feature_stats))[i].max = train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].sum_weight += train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].sum_weight2 += train->SignatureWeights[i] * train->SignatureWeights[i];
+						(*(ts->aggregated_feature_stats))[i].n_features++;
+					}
+				}
+			}
 		}
+		// end CEC aggregated feature stats code
 		//train->class_num=temp;
 		if (weight_vector_action=='w')
 			if(!train->SaveWeightVector(weight_file_buffer))
@@ -387,7 +416,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 			} else {
 				printf ("norm. fact.\t");
 				for (class_index=1;class_index<=ts->class_num;class_index++) {
-					printf("p(%s)\t",ts->class_labels[class_index].c_str());
+					printf("p(%s)\t",ts->class_labels[class_index]);
 				}
 				printf("act. class\tpred. class");
 				if (ts->is_numeric) printf ("\tpred. val.");
@@ -401,7 +430,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		splits[split_index].method=method;
 		splits[split_index].pearson_coefficient=test->pearson(samples_per_image,&(splits[split_index].avg_abs_dif),&(splits[split_index].pearson_p_value));
 
-		if (!report && !ignore_group && verbosity != 1 )   // print the accuracy and confusion and similarity matrices
+		if (!report && !ignore_group && verbosity > 2 )   // print the accuracy and confusion and similarity matrices
 		{ 
 			printf( "\n" );
 			ts->PrintConfusion(stdout,splits[split_index].confusion_matrix,NULL);//,0,0);
@@ -413,24 +442,80 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		if (TilesTrainingSets)    // delete the training sets allocated for the different areas
 		{
 			for (tile_index=0;tile_index<samples_per_image;tile_index++)
-				delete TilesTrainingSets[tile_index];
+			delete TilesTrainingSets[tile_index];
 			delete TilesTrainingSets;
 		}
 		delete train;
 		if (!testset) delete test;
 	} // End for (split_index=0;split_index<split_num;split_index++)
 
+	if( ts->aggregated_feature_stats ) {
+		// Finish up computing the averages for the feature weights
+		for(featuregroups_t::iterator avgs_it = ts->aggregated_feature_stats->begin(); avgs_it != ts->aggregated_feature_stats->end(); ++avgs_it )
+		{
+			avgs_it->mean = avgs_it->sum_weight / (double)(avgs_it->n_features);
+			avgs_it->stddev = sqrt (
+				(avgs_it->sum_weight2 - (avgs_it->sum_weight * avgs_it->mean)) / (double)(avgs_it->n_features - 1));
+		}
+		// Sort the aggregated feature statistics vector by mean weight
+		sort_by_mean_weight_t sort_by_mean_weight_func;
+		sort( ts->aggregated_feature_stats->begin(), ts->aggregated_feature_stats->end(), sort_by_mean_weight_func);
+		// Lop off the vector after a threshold
+		// Right now, we only care about the top 50 features
+		ts->aggregated_feature_stats->erase (ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end());
+	}
+
 	// if( verbosity >= 2 ) printf("\n\n");
-	if (!report & verbosity != 1 )    // print the average accuracy
-	{
+	if (!report & verbosity != 1 )	{
 		printf( "\n----------\n" );
-		int split_index;
+
+		// print the average accuracy
 		double avg_accuracy=0,avg_pearson=0;
-		for (split_index=0;split_index<split_num;split_index++) avg_accuracy+=splits[split_index].accuracy;
-		for (split_index=0;split_index<split_num;split_index++) avg_pearson+=splits[split_index].pearson_coefficient;       
+		int split_index;
+		for( split_index = 0; split_index < split_num; split_index++ )
+		{
+			avg_accuracy+=splits[split_index].accuracy;
+			avg_pearson+=splits[split_index].pearson_coefficient;
+		}
 		if (ignore_group) printf("Accuracy assessment without using feature group '%s' - ",group_name); 
 		if (ts->is_continuous) printf("Average Pearson Correlation (%ld splits): %f\n",split_num,avg_pearson/(double)split_num);
 		else printf("Average accuracy (%ld splits): %f\n",split_num,avg_accuracy/(double)split_num);
+		
+		// print out averages across all splits
+		int length = (1+ts->class_num) * (1+ts->class_num);
+		short unsigned int *confusion_matrix = new short unsigned int[ length ];
+		double *avg_similarity_matrix = new double[ length ];
+		double *avg_class_probability_matrix = new double[ length ];
+		for( i = 0; i < length; ++i ) {
+			confusion_matrix[ i ] = 0;
+			avg_similarity_matrix[ i ] = 0;
+			avg_class_probability_matrix[ i ] = 0;
+		}
+
+		for( int row = 1; row <= ts->class_num; ++row )
+		{
+			for( int col = 1; col <= ts->class_num; ++col )
+			{
+				int confus_sum = 0;
+				double avg_siml = 0.0;
+				double avg_class_prob_sum = 0.0;
+				for( split_index = 0; split_index < split_num; ++split_index )
+				{
+					confus_sum += splits[split_index].confusion_matrix[ row * ts->class_num + col ];
+					avg_siml += splits[split_index].similarity_matrix[ row * ts->class_num + col ];
+					avg_class_prob_sum += splits[split_index].class_probability_matrix[ row * ts->class_num + col ];
+				}
+				confusion_matrix[ row * ts->class_num + col ] = confus_sum;
+				avg_similarity_matrix[ row * ts->class_num + col ] = avg_siml / split_num;
+				avg_class_probability_matrix[ row * ts->class_num + col ] = avg_class_prob_sum / split_num;
+			}
+		}
+		printf("\nConfusion Matrix (sum of all splits)\n");
+		ts->PrintConfusion(stdout, confusion_matrix, NULL);
+		printf("\nAverage Similarity Matrix\n");
+		ts->PrintConfusion(stdout,NULL, avg_similarity_matrix);
+		printf("\nAverage Class Probability Matrix\n");
+		ts->PrintConfusion(stdout,NULL, avg_class_probability_matrix);
 		printf("\n----------\n");
 	}
 
@@ -480,105 +565,116 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		if (splits[split_index].image_similarities) delete splits[split_index].image_similarities;	   
 	}
 
+	if( ts->aggregated_feature_stats ) delete ts->aggregated_feature_stats;
 	return(1);
 }
 
 
 void ShowHelp()
 {
-   printf("\n"PACKAGE_STRING"\nLaboratory of Genetics/NIA/NIH \n");
-   printf("usage: \n======\nwndchrm [ train | test | classify ] [-mtslcdowfrijnpqvNSBACDTh] [<dataset>|<train set>] [<test set>|<feature file>] [<report_file>]\n");
-   printf("  <dataset> is a <root directory>, <feature file>, <file of filenames>, <image directory> or <image filename>\n");
-   printf("  <root directory> is a directory of sub-directories containing class images with one class per sub-directory.\n");
-   printf("      The sub-directory names will be used as the class labels. Currently supported file formats: TIFF, PPM. \n");
-   printf("  <feature file> is the file generated by the train command containing all computed image features (should end in .fit).\n");
-   printf("       This filename is a required parameter for storing the output of 'train'\n");       
-   printf("  <file of filenames> is a text file listing <image filename>s and corresponding class labels\n");
-   printf("      separated by a <TAB> character (a tab delimited file, or .tsv). Lines beginning with '#' are ignored\n");       
-   printf("  <image directory> is a directory of image files. The class cannot be specified so these can only be used as a <test set>.\n");    
-   printf("  <image filename> is the full path to an image file. The classes cannot be specified so these can only be used as a <test set>.\n");    
-   printf("  <train set> is anything that qualifies as a <dataset>, but must contain at least two (2) defined classes.\n");
-   printf("      An <image filename> or <image directory> cannot define classes.\n");
-   printf("  <test set> is anything that qualifies as a <dataset>.  The <train set> will be used to classify the <test set>.\n");
-   printf("      This parameter is required for 'classify' and is optional for 'test' (when doing internal tests of the <train set>\n");
-   printf("  <report_file> is a report of the test/classify results in html format (must end in .htm or .html).\n");
-   printf("\noptions:\n========\n");
-   printf("m - Allow running multiple instances of this program concurrently, save (and re-use) pre-calculated .sig files.\n");
-   printf("    This will save and re-use .sig files, making this option useful for single instances/processors as well\n");
-   printf("R - Add rotations to training images (0,90,180,270 degrees).\n");
-   printf("t[#][^]N - split the image into NxN tiles. The default is 1. If the '#' is specified, each tile location is used as\n");
-   printf("           a seperate dataset (for testing only). If '^' is specified only the closest tile is used. \n");
-   printf("l - Use a large image feature set.\n");
-   printf("c - Compute color features.\n");
-   printf("dN - Downsample the images (N percents, where N is 1 to 100)\n");
-   printf("s - silent mode.\n");
-   printf("o - force overwriting pre-computed .sig files.\n");   
-   printf("O - if there are pre-computed .sig files accompanying images that have the old-style naming pattern,\n" );
-	 printf("    skip the check to see that they were calculated with the same wndchrm parameters as the current experiment.\n");   
-   printf("w - Classify with wnn instead of wnd. \n");
-   printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
-   printf("r[#]N - Fraction of images/samples to be used for training (0,1). The default is 0.75 of\n");
-   printf("        the smallest class. if '#' is specified, force unbalanced training\n");
-   printf("i[#]N - Set a maximal number of training images (for each class). If the '#' is specified then\n");
-   printf("        the class is ignored if it doesn't have at least N samples.\n");
-   printf("jN - Set a maximal number of test images (for each class). \n");
-   printf("nN - Number of repeated random splits. The default is 1.\n");
-   printf("p[+][k][#][path] - Report options.\n");
-   printf("   'path' is an optional path to a PHYLIP installation root directory for generating dendrograms.\n");
-   printf("   The optinal '+' creates a 'tsv' directory and exports report data into tsv files.\n");
-   printf("   'k' is an optional digit (1..3) of the specific phylip algorithm to be used.\n");
-   printf("   '#' generates a similarity map of the test images\n");
-   printf("P[N] - pair-wise distance algorithms for comparing classes\n");
-   printf("   The class probability matrix is the average of marginal probabilities for the images in each class \n");
-   printf("   The similarity matrix is the class probability matrix, where each row is normalized to make the class identity column equal to 1.0\n");
-   printf("   The dis-similarity (i.e. 1.0 - similarity) between two classes can be interpreted as a \"morphological distance\".\n");
-   printf("   There are two entries in the similarity matrix for each comparison: Class 1 classified as Class 2, and Class 2 classified as Class 1.\n");
-   printf("   N = 1: Use the maximum of the two dis-similarities.\n");
-   printf("   N = 2: Use the average of the two dis-similarities.\n");
-   printf("   N = 3: Use the top triangle only (i.e. Class 1 classified as Class 2)\n");
-   printf("   N = 4: Use the bottom triangle only (i.e. Class 2 classified as Class 1)\n");
-   printf("   N = 5: Use the class probability matrix as a set of coordinates for each class centroid in a \"Marginal Probability Space\". Use Euclidean distance.\n");
-   printf("   The default method is 5. Method 2 was described in ref [1], and method 5 was described in ref [2].\n");
-   printf("qN - the number of first closest classes among which the presence of the right class is considered a match.\n");
-   printf("v[r|w|+|-][path] - read/write/add/subtract the feature weights from a file.\n");   
-   printf("Nx - set the maximum number of classes (use only the first x classes).\n");
-   printf("Sx[:y] - normalize the images such that the mean is set to x and (optinally) the stddev is set to y.\n");   
-   printf("Bx,y,w,h - compute features only from the (x,y,w,h) block of the image.\n");      
-   printf("A - assess the contribution of each group of image features independently.\n");
-   printf("C - *highly experimental* perform interpolation on a continuous scale rather than discrete classes\n");
-   printf("    All class labels must be interpretable as numbers.\n");
-   printf("D[path] - feature file name (.fit file) to save the <dataset> or <train set>.\n");
-   printf("T[path] - feature file name (.fit file) to save the <test set>.\n");
-   printf("h - show this note.\n\n");
-   printf("examples:\n=========\n");
-   printf("train:\n");
-   printf("  wndchrm train /path/to/dataset/ dataset.fit\n");
-   printf("  wndchrm train -mcl /path/to/dataset/ testset.fit\n");
-   printf("test:\n");
-   printf("  wndchrm test -f0.1 dataset.fit\n");
-   printf("  wndchrm test -f0.1 -r0.9 -n5 dataset.fit testset.fit\n");
-   printf("  wndchrm test -f0.2 -i50 -j20 -n5 -p/path/to/phylip3.65 dataset.fit testset.fit report.html\n");
-   printf("  N.B.: By default, the -r or -i parameters will be used to make a balanced training set (equal number of images per class).\n");
-   printf("       -r#N can be used to override this default, so that the N fraction of each class will be used for training.\n");
-   printf("       If a <test set> is specified, it will be used as the test set for each 'split', but training images will\n");
-   printf("       still be randomly chosen from <train set>)\n");
-   printf("classify:\n");
-   printf("   wndchrm classify dataset.fit /path/to/image.tiff\n");
-   printf("   wndchrm classify -f0.2 -cl /path/to/root/dir /path/to/image/directory/\n");
-   printf("   wndchrm classify -f0.2 -cl -Ttestset.fit dataset.fit /path/to/image/file_of_filenames.tsv\n");
-   printf("   N.B.: classify will use -r or -i to train with fewer than all of the images in <dataset>\n");
-   printf("       Unlike 'test', 'classify' will chose the training images in order rather than randomly.\n");
-   printf("       classify will ignore the -n parameter because the result will be the same for each run or split.\n");
-   printf("       The default -r for 'classify' is 1.0 rather than the 0.75 used in 'test'.\n");
-   printf("\nAdditional help:\n================\n");
-   printf("A detailed description can be found in: Shamir, L., Orlov, N., Eckley, D.M., Macura, T., Johnston, J., Goldberg, I.\n");
-   printf("  [1] \"Wndchrm - an open source utility for biological image analysis\", BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
-   printf("An application of pattern recognition for a quantitative biological assay based on morphology can be found in:\n");
-   printf("  [2] Johnston, J., Iser W. B., Chow, D. K., Goldberg, I. G., Wolkow, C. A. \"Quantitative Image Analysis Reveals\n");
-   printf("  Distinct Structural Transitions during Aging in Caenorhabditis elegans Tissues\", PLoS ONE, 3:7:e2821, 2008.\n");
-   
-   printf("\nIf you have more questions about this software, please email me (Ilya Goldberg) at <igg [at] nih [dot] gov> \n\n");
-   return;
+	printf("\n"PACKAGE_STRING".  Laboratory of Genetics/NIA/NIH \n");
+	printf("usage: \n======\nwndchrm [ train | test | classify ] [-mtslcdowfrijnpqvNSBACDTh] [<dataset>|<train set>] [<test set>|<feature file>] [<report_file>]\n");
+	printf("  <dataset> is a <root directory>, <feature file>, <file of filenames>, <image directory> or <image filename>\n");
+	printf("  <root directory> is a directory of sub-directories containing class images with one class per sub-directory.\n");
+	printf("      The sub-directory names will be used as the class labels. Currently supported file formats: TIFF, PPM. \n");
+	printf("  <feature file> is the file generated by the train command containing all computed image features (should end in .fit).\n");
+	printf("       This filename is a required parameter for storing the output of 'train'\n");       
+	printf("  <file of filenames> is a text file listing <image filename>s and corresponding class labels\n");
+	printf("      separated by a <TAB> character (a tab delimited file, or .tsv). Lines beginning with '#' are ignored\n");       
+	printf("  <image directory> is a directory of image files. The class cannot be specified so these can only be used as a <test set>.\n");    
+	printf("  <image filename> is the full path to an image file. The classes cannot be specified so these can only be used as a <test set>.\n");    
+	printf("  <train set> is anything that qualifies as a <dataset>, but must contain at least two (2) defined classes.\n");
+	printf("      An <image filename> or <image directory> cannot define classes.\n");
+	printf("  <test set> is anything that qualifies as a <dataset>.  The <train set> will be used to classify the <test set>.\n");
+	printf("      This parameter is required for 'classify' and is optional for 'test' (when doing internal tests of the <train set>\n");
+	printf("  <report_file> is a report of the test/classify results in html format (must end in .htm or .html).\n");
+	
+	printf("\nImage sampling options (require re-computing features):\n========================================================\n");
+	printf("m - Allow running multiple instances of this program concurrently, save (and re-use) pre-calculated .sig files.\n");
+	printf("    This will save and re-use .sig files, making this option useful for single instances/processors as well\n");
+	printf("R - Add rotations to training images (0,90,180,270 degrees).\n");
+	printf("t[#][^]N - split the image into NxN tiles. The default is 1. If the '#' is specified, each tile location is used as\n");
+	printf("           a seperate dataset (for testing only). If '^' is specified only the closest tile is used. \n");
+	printf("dN - Downsample the images (N percents, where N is 1 to 100)\n");
+	printf("Sx[:y] - normalize the images such that the mean is set to x and (optinally) the stddev is set to y.\n");   
+	printf("Bx,y,w,h - compute features only from the (x,y,w,h) block of the image.\n");      
+	
+	printf("\nImage Feature options:\n======================\n");
+	printf("l - Use a large image feature set.\n");
+	printf("c - Compute color features.\n");
+	printf("o - force overwriting pre-computed .sig files.\n");   
+	printf("O - if there are pre-computed .sig files accompanying images that have the old-style naming pattern,\n" );
+	printf("    skip the check to see that they were calculated with the same wndchrm parameters as the current experiment.\n");   
+	
+	printf("\nFeature reduction options:\n==========================\n");
+	printf("fN[:M] - maximum number of features out of the dataset (0,1) . The default is 0.15. \n");
+	printf("v[r|w|+|-][path] - read/write/add/subtract the feature weights from a file.\n");   
+	printf("A - assess the contribution of each group of image features independently.\n");
+	
+	printf("\nClassifier options:\n===================\n");
+	printf("w - Classify with wnn instead of wnd. \n");
+	printf("qN - the number of first closest classes among which the presence of the right class is considered a match.\n");
+	printf("r[#]N - Fraction of images/samples to be used for training (0,1). The default is 0.75 of\n");
+	printf("        the smallest class. if '#' is specified, force unbalanced training\n");
+	printf("i[#]N - Set a maximal number of training images (for each class). If the '#' is specified then\n");
+	printf("        the class is ignored if it doesn't have at least N samples.\n");
+	printf("jN - Set a maximal number of test images (for each class). \n");
+	printf("nN - Number of repeated random splits. The default is 1.\n");
+	printf("Nx - set the maximum number of classes (use only the first x classes).\n");
+	//printf("C - *highly experimental* perform interpolation on a continuous scale rather than discrete classes\n");
+	//printf("    All class labels must be interpretable as numbers.\n");
+	
+	printf("\nOutput options:\n===============\n");
+	printf("s - silent mode.\n");
+	printf("p[+][k][#][path] - Report options.\n");
+	printf("   'path' is an optional path to a PHYLIP installation root directory for generating dendrograms.\n");
+	printf("   The optinal '+' creates a 'tsv' directory and exports report data into tsv files.\n");
+	printf("   'k' is an optional digit (1..3) of the specific phylip algorithm to be used.\n");
+	printf("   '#' generates a similarity map of the test images\n");
+	printf("P[N] - pair-wise distance algorithms for comparing classes\n");
+	printf("   The class probability matrix is the average of marginal probabilities for the images in each class \n");
+	printf("   The similarity matrix is the class probability matrix, where each row is normalized to make the class identity column equal to 1.0\n");
+	printf("   The dis-similarity (i.e. 1.0 - similarity) between two classes can be interpreted as a \"morphological distance\".\n");
+	printf("   There are two entries in the similarity matrix for each comparison: Class 1 classified as Class 2, and Class 2 classified as Class 1.\n");
+	printf("   N = 1: Use the maximum of the two dis-similarities.\n");
+	printf("   N = 2: Use the average of the two dis-similarities.\n");
+	printf("   N = 3: Use the top triangle only (i.e. Class 1 classified as Class 2)\n");
+	printf("   N = 4: Use the bottom triangle only (i.e. Class 2 classified as Class 1)\n");
+	printf("   N = 5: Use the class probability matrix as a set of coordinates for each class centroid in a \"Marginal Probability Space\". Use Euclidean distance.\n");
+	printf("   The default method is 5. Method 2 was described in ref [1], and method 5 was described in ref [2].\n");
+	printf("D[path] - feature file name (.fit file) to save the <dataset> or <train set>.\n");
+	printf("T[path] - feature file name (.fit file) to save the <test set>.\n");
+	printf("h - show this note.\n");
+	
+	printf("\nExamples:\n=========\n");
+	printf("train:\n");
+	printf("  wndchrm train /path/to/dataset/ dataset.fit\n");
+	printf("  wndchrm train -mcl /path/to/dataset/ testset.fit\n");
+	printf("test:\n");
+	printf("  wndchrm test -f0.1 dataset.fit\n");
+	printf("  wndchrm test -f0.1 -r0.9 -n5 dataset.fit testset.fit\n");
+	printf("  wndchrm test -f0.2 -i50 -j20 -n5 -p/path/to/phylip3.65 dataset.fit testset.fit report.html\n");
+	printf("  N.B.: By default, the -r or -i parameters will be used to make a balanced training set (equal number of images per class).\n");
+	printf("       -r#N can be used to override this default, so that the N fraction of each class will be used for training.\n");
+	printf("       If a <test set> is specified, it will be used as the test set for each 'split', but training images will\n");
+	printf("       still be randomly chosen from <train set>)\n");
+	printf("classify:\n");
+	printf("   wndchrm classify dataset.fit /path/to/image.tiff\n");
+	printf("   wndchrm classify -f0.2 -cl /path/to/root/dir /path/to/image/directory/\n");
+	printf("   wndchrm classify -f0.2 -cl -Ttestset.fit dataset.fit /path/to/image/file_of_filenames.tsv\n");
+	printf("   N.B.: classify will use -r or -i to train with fewer than all of the images in <dataset>\n");
+	printf("       Unlike 'test', 'classify' will chose the training images in order rather than randomly.\n");
+	printf("       classify will ignore the -n parameter because the result will be the same for each run or split.\n");
+	printf("       The default -r for 'classify' is 1.0 rather than the 0.75 used in 'test'.\n");
+	printf("\nAdditional help:\n================\n");
+	printf("A detailed description can be found in: Shamir, L., Orlov, N., Eckley, D.M., Macura, T., Johnston, J., Goldberg, I.\n");
+	printf("  [1] \"Wndchrm - an open source utility for biological image analysis\", BMC Source Code for Biology and Medicine, 3:13, 2008.\n");   
+	printf("An application of pattern recognition for a quantitative biological assay based on morphology can be found in:\n");
+	printf("  [2] Johnston, J., Iser W. B., Chow, D. K., Goldberg, I. G., Wolkow, C. A. \"Quantitative Image Analysis Reveals\n");
+	printf("  Distinct Structural Transitions during Aging in Caenorhabditis elegans Tissues\", PLoS ONE, 3:7:e2821, 2008.\n");
+	
+	printf("\nIf you have questions or problems with this software, please visit our Google code page <http://code.google.com/p/wnd-charm/> \n\n");
+	return;
 }
 
 
@@ -670,10 +766,11 @@ int main(int argc, char *argv[])
     	split_ratio = 1.0;
     	random_splits = 0; // use order in the input file
     }
-    if (!train && !test && !classify)
-    {  ShowHelp();
-       return(1);
-    }
+	if (!train && !test && !classify) {
+		ShowHelp();
+		showError(1,"Either 'train', 'test' or 'classify' must be specified.\n");
+		return(1);
+	}
     arg_index++;
 
 	/* read the switches */
@@ -700,6 +797,16 @@ int main(int argc, char *argv[])
 		   strcpy(weight_file_buffer,&(strchr(argv[arg_index],'v')[2]));
 		   arg_index++;
 		   continue;   /* so that the path will not trigger other switches */
+		}
+		if (argv[arg_index][1]=='D') {
+			dataset_save_fit = argv[arg_index]+1;
+	    	arg_index++;
+			continue;	/* so that the path will not trigger other switches */
+		}
+		if (argv[arg_index][1]=='T') {
+			testset_save_fit = argv[arg_index]+1;
+	    	arg_index++;
+			continue;	/* so that the path will not trigger other switches */
 		}
         /* a block for computing features */
         if ( (char_p = strchr(argv[arg_index],'B'))  && isdigit (*(char_p+1)) ) {
@@ -780,16 +887,7 @@ int main(int argc, char *argv[])
         {  ShowHelp();
            return(1);
         }
-		if (argv[arg_index][1]=='D') {
-			dataset_save_fit = argv[arg_index]+1;
-	    	arg_index++;
-			continue;	/* so that the path will not trigger other switches */
-		}
-		if (argv[arg_index][1]=='T') {
-			testset_save_fit = argv[arg_index]+1;
-	    	arg_index++;
-			continue;	/* so that the path will not trigger other switches */
-		}
+        if (strchr(argv[arg_index],'P')) distance_method=atoi(&(strchr(argv[arg_index],'P')[1]));
 
 
         arg_index++;
@@ -920,12 +1018,6 @@ int main(int argc, char *argv[])
  
  
        
-			// Technically a memory leak if we don't delete dataset,
-			// even though the program is about to exit.
-			if( dataset) {
-				delete dataset;
-				dataset = NULL;
-			}
      } // no params left for dataset / test set.
      else ShowHelp();
 

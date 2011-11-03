@@ -33,6 +33,7 @@
 #endif
 #include "TrainingSet.h"
 #include <map> // only a standard map will take a vector<Transform*> as a key
+#include <iostream>
 #include <string>
 #include <stdio.h>
 #include <string.h>
@@ -180,7 +181,7 @@ int signatures::GenerateStandardFeatureGroupList( int long_chain, int compute_co
 	
 	ifstream small_feature ( "small.txt" );
 	if( small_feature.fail() ) {
-		cout << "Failed to open small.txt" << endl;
+		std::cout << "Failed to open small.txt" << std::endl;
 		exit(1);
 	}
 	while( small_feature.good() ) {
@@ -194,7 +195,7 @@ int signatures::GenerateStandardFeatureGroupList( int long_chain, int compute_co
 	if( long_chain ) {
 		ifstream large_feature( "large.txt" ); //, ifstream::in );
 		if( large_feature.fail() ) {
-			cout << "Failed to open large.txt" << endl;
+			std::cout << "Failed to open large.txt" << endl;
 			exit(1);
 		}
 		while( large_feature.good() ) {

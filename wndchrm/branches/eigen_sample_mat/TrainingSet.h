@@ -41,6 +41,7 @@
 #include <Eigen/Dense>
 
 #include "config.h" // for version info
+
 #include "signatures.h"
 
 #define MAX_CLASS_NUM 1024
@@ -176,6 +177,7 @@ public:
 /* properties */
 	char name[256];                       /* Name of dataset - source_path from last '/' to last '.'    */
 	char source_path[256];                       /* Path we read this set from     */
+	 featuregroups_t *aggregated_feature_stats;                    // only the top level TrainingSet has this allocated by wndcharm.cpp::split_and_test
 	std::vector<Eigen::MatrixXd> raw_features;        // per-class vector of sample feature matrixes.  Corresponds to train_samples or test_samples
 	std::vector<Eigen::MatrixXd> projected_features;  // feature matrixes in reduced feature space, i.e. "weighted feature space", "LDA", etc
 	std::vector<signatures *> samples;                // samples - in read order - these pointers "own" the samples - this vector is empty in train/test split TrainingSets.
@@ -191,6 +193,7 @@ public:
    long class_num;                                                 /* number of known/defined classes (may be 0 if all samples are unknown, may be 1 when is_continuous, or for 1 known discrete class */
    std::vector<std::string> class_labels;                          /* labels of the classes                     */
    std::vector<long> class_nsamples;                               /* sample counts in each class               */
+	 int *train_class;                                               /* class indexes into training set           */
    int  is_continuous;                                             /* A numeric/continuous dataset.  sample_class = 0 or 1 for all samples. class_nsamples is valid, but class_labels is not. */
    int  is_numeric;                                                /* All class labels can be interpreted as numeric values (is_continuous can be false when is_numeric is true) */
    int  is_pure_numeric;                                           /* All class labels are numerical (no characters other than those than can be part of a valid double - INF, NAN, etc are technically valid, but not in our case)  */

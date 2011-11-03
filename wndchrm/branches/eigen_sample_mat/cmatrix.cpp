@@ -50,6 +50,13 @@
 #include "textures/haarlick/haarlick.h"
 #include "textures/zernike/zernike.h"
 
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <time.h>
+#include <sys/time.h>
+
 #ifndef WIN32
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +67,8 @@
 
 #define MIN(a,b) (a<b?a:b)
 #define MAX(a,b) (a>b?a:b)
+
+using namespace std;
 
 RGBcolor HSV2RGB(HSVcolor hsv)
 {   RGBcolor rgb;
@@ -526,7 +535,36 @@ ImageMatrix *ImageMatrix::duplicate()
    new_matrix->bits=bits;
    new_matrix->ColorMode=ColorMode;
    memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
-   return(new_matrix);
+
+  	time_t ltime;
+    struct tm *Tm;
+		struct timeval detail_time;
+ 
+    ltime=time(NULL);
+    Tm=localtime(&ltime);
+ 
+		std::ostringstream filename;
+		filename << (Tm->tm_year+1900) << '-' 
+			<< setw(2) << setfill('0') << (Tm->tm_mon+1) << '-' 
+			<< setw(2) << setfill('0') << Tm->tm_mday << "_" 
+			<< setw(2) << setfill('0') << Tm->tm_hour <<  '-'
+			<< setw(2) << setfill('0') << Tm->tm_min << '-'
+			<< setw(2) << setfill('0') << Tm->tm_sec << ".";
+		gettimeofday(&detail_time,NULL);
+		filename << setw(2) <<  detail_time.tv_usec / 1000;
+		filename << "pixel_dump.txt";
+		std::cout << filename.str() << std::endl;
+		ofstream pixel_dump_file ( filename.str().c_str(), ios::app );
+
+		int count = 0;
+		int numpix = width*height*depth;
+		while (count < numpix) {
+			pixel_dump_file << data[count].intensity << std::endl;
+			++count;
+		}
+		pixel_dump_file.close();
+
+	 return(new_matrix);
 }
 
 /* to8bits
@@ -1515,10 +1553,12 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    int *object_areas;
    double *centroid_dists,sum_dist;
 
-   BWInvert=duplicate();   /* check if the background is brighter or dimmer */
+	 /*
+   BWInvert=duplicate();   // check if the background is brighter or dimmer
    BWInvert->invert();
    BWInvert->OtsuBinaryMaskTransform();
    inv_count=BWInvert->BWlabel(8);
+	 
    
    BWImage=duplicate();
    BWImage->OtsuBinaryMaskTransform();
@@ -1533,8 +1573,9 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    }
    delete BWInvert;
    *Euler=EulerNumber(BWImage,*count)+1;
+	 */
 
-   /* calculate the areas */
+   // calculate the areas 
    sum_areas=0;
    sum_dists=0;
    object_areas=new int[*count];
@@ -1586,7 +1627,7 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    if (*count>1) *DistVar=sum_dist/((*count)-1);
    else *DistVar=sum_dist;
 
-   delete BWImage;
+   //delete BWImage;
    delete [] object_areas;
    delete [] centroid_dists;
 }
