@@ -34,7 +34,7 @@
 #include <math.h>
 
 #include "../cmatrix.h"
-#include "chevishev.h"
+#include "chebyshev.h"
 
 //---------------------------------------------------------------------------
 

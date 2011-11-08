@@ -61,10 +61,10 @@ libimfit_a_SOURCES = \
 	Channel.h \
 	FeatureGroup.h \
 	FeatureGroup.cpp \
-	transforms/ChebishevFourier.cpp \
-	transforms/ChebishevFourier.h \
-	transforms/chevishev.cpp \
-	transforms/chevishev.h \
+	transforms/ChebyshevFourier.cpp \
+	transforms/ChebyshevFourier.h \
+	transforms/chebyshev.cpp \
+	transforms/chebyshev.h \
 	transforms/fft/bcb_fftw3/fftw3.h \
 	transforms/fft/fftw3.h \
 	transforms/radon.cpp \
@@ -76,7 +76,7 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/DataGrid.h \
 	transforms/wavelet/DataGrid2D.cpp \
 	transforms/wavelet/DataGrid2D.h \
-    transforms/wavelet/DataGrid3D.cpp \
+  transforms/wavelet/DataGrid3D.cpp \
 	transforms/wavelet/DataGrid3D.h \
 	transforms/wavelet/Filter.cpp \
 	transforms/wavelet/Filter.h \

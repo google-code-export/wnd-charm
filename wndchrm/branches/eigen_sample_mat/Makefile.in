@@ -64,7 +64,7 @@ am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
 	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
 	transforms.$(OBJEXT) FeatureAlgorithm.$(OBJEXT) \
 	Channel.$(OBJEXT) FeatureGroup.$(OBJEXT) \
-	ChebishevFourier.$(OBJEXT) chevishev.$(OBJEXT) radon.$(OBJEXT) \
+	ChebyshevFourier.$(OBJEXT) chebyshev.$(OBJEXT) radon.$(OBJEXT) \
 	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
 	Symlet5.$(OBJEXT) Wavelet.$(OBJEXT) WaveletHigh.$(OBJEXT) \
@@ -263,10 +263,10 @@ libimfit_a_SOURCES = \
 	Channel.h \
 	FeatureGroup.h \
 	FeatureGroup.cpp \
-	transforms/ChebishevFourier.cpp \
-	transforms/ChebishevFourier.h \
-	transforms/chevishev.cpp \
-	transforms/chevishev.h \
+	transforms/ChebyshevFourier.cpp \
+	transforms/ChebyshevFourier.h \
+	transforms/chebyshev.cpp \
+	transforms/chebyshev.h \
 	transforms/fft/bcb_fftw3/fftw3.h \
 	transforms/fft/fftw3.h \
 	transforms/radon.cpp \
@@ -278,7 +278,7 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/DataGrid.h \
 	transforms/wavelet/DataGrid2D.cpp \
 	transforms/wavelet/DataGrid2D.h \
-    transforms/wavelet/DataGrid3D.cpp \
+  transforms/wavelet/DataGrid3D.cpp \
 	transforms/wavelet/DataGrid3D.h \
 	transforms/wavelet/Filter.cpp \
 	transforms/wavelet/Filter.h \
@@ -413,7 +413,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CVIPtexture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Channel.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ChebishevFourier.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ChebyshevFourier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CombFirst4Moments.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataGrid2D.Po@am__quote@
@@ -430,7 +430,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WaveletHigh.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WaveletLow.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WaveletMedium.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chevishev.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chebyshev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmatrix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_deconvolution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/complex.Po@am__quote@
@@ -689,33 +689,33 @@ zernike.obj: textures/zernike/zernike.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o zernike.obj `if test -f 'textures/zernike/zernike.cpp'; then $(CYGPATH_W) 'textures/zernike/zernike.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/zernike.cpp'; fi`
 
-ChebishevFourier.o: transforms/ChebishevFourier.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ChebishevFourier.o -MD -MP -MF $(DEPDIR)/ChebishevFourier.Tpo -c -o ChebishevFourier.o `test -f 'transforms/ChebishevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebishevFourier.cpp
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ChebishevFourier.Tpo $(DEPDIR)/ChebishevFourier.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/ChebishevFourier.cpp' object='ChebishevFourier.o' libtool=no @AMDEPBACKSLASH@
+ChebyshevFourier.o: transforms/ChebyshevFourier.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ChebyshevFourier.o -MD -MP -MF $(DEPDIR)/ChebyshevFourier.Tpo -c -o ChebyshevFourier.o `test -f 'transforms/ChebyshevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebyshevFourier.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ChebyshevFourier.Tpo $(DEPDIR)/ChebyshevFourier.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/ChebyshevFourier.cpp' object='ChebyshevFourier.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ChebishevFourier.o `test -f 'transforms/ChebishevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebishevFourier.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ChebyshevFourier.o `test -f 'transforms/ChebyshevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebyshevFourier.cpp
 
-ChebishevFourier.obj: transforms/ChebishevFourier.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ChebishevFourier.obj -MD -MP -MF $(DEPDIR)/ChebishevFourier.Tpo -c -o ChebishevFourier.obj `if test -f 'transforms/ChebishevFourier.cpp'; then $(CYGPATH_W) 'transforms/ChebishevFourier.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/ChebishevFourier.cpp'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ChebishevFourier.Tpo $(DEPDIR)/ChebishevFourier.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/ChebishevFourier.cpp' object='ChebishevFourier.obj' libtool=no @AMDEPBACKSLASH@
+ChebyshevFourier.obj: transforms/ChebyshevFourier.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ChebyshevFourier.obj -MD -MP -MF $(DEPDIR)/ChebyshevFourier.Tpo -c -o ChebyshevFourier.obj `if test -f 'transforms/ChebyshevFourier.cpp'; then $(CYGPATH_W) 'transforms/ChebyshevFourier.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/ChebyshevFourier.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ChebyshevFourier.Tpo $(DEPDIR)/ChebyshevFourier.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/ChebyshevFourier.cpp' object='ChebyshevFourier.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ChebishevFourier.obj `if test -f 'transforms/ChebishevFourier.cpp'; then $(CYGPATH_W) 'transforms/ChebishevFourier.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/ChebishevFourier.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ChebyshevFourier.obj `if test -f 'transforms/ChebyshevFourier.cpp'; then $(CYGPATH_W) 'transforms/ChebyshevFourier.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/ChebyshevFourier.cpp'; fi`
 
-chevishev.o: transforms/chevishev.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT chevishev.o -MD -MP -MF $(DEPDIR)/chevishev.Tpo -c -o chevishev.o `test -f 'transforms/chevishev.cpp' || echo '$(srcdir)/'`transforms/chevishev.cpp
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/chevishev.Tpo $(DEPDIR)/chevishev.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/chevishev.cpp' object='chevishev.o' libtool=no @AMDEPBACKSLASH@
+chebyshev.o: transforms/chebyshev.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT chebyshev.o -MD -MP -MF $(DEPDIR)/chebyshev.Tpo -c -o chebyshev.o `test -f 'transforms/chebyshev.cpp' || echo '$(srcdir)/'`transforms/chebyshev.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/chebyshev.Tpo $(DEPDIR)/chebyshev.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/chebyshev.cpp' object='chebyshev.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o chevishev.o `test -f 'transforms/chevishev.cpp' || echo '$(srcdir)/'`transforms/chevishev.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o chebyshev.o `test -f 'transforms/chebyshev.cpp' || echo '$(srcdir)/'`transforms/chebyshev.cpp
 
-chevishev.obj: transforms/chevishev.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT chevishev.obj -MD -MP -MF $(DEPDIR)/chevishev.Tpo -c -o chevishev.obj `if test -f 'transforms/chevishev.cpp'; then $(CYGPATH_W) 'transforms/chevishev.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/chevishev.cpp'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/chevishev.Tpo $(DEPDIR)/chevishev.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/chevishev.cpp' object='chevishev.obj' libtool=no @AMDEPBACKSLASH@
+chebyshev.obj: transforms/chebyshev.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT chebyshev.obj -MD -MP -MF $(DEPDIR)/chebyshev.Tpo -c -o chebyshev.obj `if test -f 'transforms/chebyshev.cpp'; then $(CYGPATH_W) 'transforms/chebyshev.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/chebyshev.cpp'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/chebyshev.Tpo $(DEPDIR)/chebyshev.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/chebyshev.cpp' object='chebyshev.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o chevishev.obj `if test -f 'transforms/chevishev.cpp'; then $(CYGPATH_W) 'transforms/chevishev.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/chevishev.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o chebyshev.obj `if test -f 'transforms/chebyshev.cpp'; then $(CYGPATH_W) 'transforms/chebyshev.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/chebyshev.cpp'; fi`
 
 radon.o: transforms/radon.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT radon.o -MD -MP -MF $(DEPDIR)/radon.Tpo -c -o radon.o `test -f 'transforms/radon.cpp' || echo '$(srcdir)/'`transforms/radon.cpp
