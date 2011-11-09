@@ -1,7 +1,7 @@
 #ifndef __FEATUREGROUPS_H__
 #define __FEATUREGROUPS_H__
 
-#include <map> //needed for datatype MatrixMap
+#include "MatrixMap.h"
 
 //=====================================================================
 /*!
@@ -11,10 +11,6 @@ class Transform;
 class FeatureAlgorithm;
 class ImageMatrix;
 class Channel;
-
-// CEC_const typedef vector<Transform const *> TransformList;
-typedef std::vector<Transform *> TransformList;
-typedef std::map< TransformList, ImageMatrix* > MatrixMap;
 
 class FeatureGroup {
 	public:
@@ -32,12 +28,6 @@ class FeatureGroup {
 		}
 		int get_name( std::string& out_str );
 		void print_info() const;
-		/* ImageMatrix * obtain_transform( 
-				MatrixMap &saved_pixel_planes,
-				vector<Transform const *> sequence ) const; */
-		ImageMatrix * obtain_transform( 
-				MatrixMap &saved_pixel_planes,
-				std::vector<Transform *> sequence );
-	};
+};
 
 #endif

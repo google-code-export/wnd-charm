@@ -3,6 +3,7 @@
 #include "FeatureAlgorithm.h"
 #include "cmatrix.h"
 #include "FeatureNames.hpp"
+#include "MatrixMap.h"
 #include <iostream>
 #include <cstdlib>
 //start #including the functions directly once you start pulling them out of cmatrix
@@ -21,13 +22,19 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
 	int i;
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->ChebyshevFourierTransform2D(temp_vec);
@@ -44,7 +51,7 @@ ChebyshevCoefficients::ChebyshevCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -52,6 +59,12 @@ int ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &c
 	double temp_vec [32];
 	int i;
   //ImageMatrix *TempMatrix = IN_matrix->duplicate();
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	//TempMatrix->ChebyshevStatistics2D(temp_vec,0,32);
@@ -71,7 +84,7 @@ ZernikeCoefficients::ZernikeCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int ZernikeCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int ZernikeCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -80,6 +93,12 @@ int ZernikeCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coe
 	int i;
   
 	long output_size;   // output size is normally 72
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->zernike2D(temp_vec, &output_size);
@@ -97,7 +116,7 @@ HaralickTextures::HaralickTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int HaralickTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int HaralickTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -105,6 +124,12 @@ int HaralickTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs
 	double temp_vec [28];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->HaarlickTexture2D(0,temp_vec); // Note the misspelling
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -121,7 +146,7 @@ MultiscaleHistograms::MultiscaleHistograms() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int MultiscaleHistograms::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int MultiscaleHistograms::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -129,6 +154,12 @@ int MultiscaleHistograms::calculate( ImageMatrix * IN_matrix, vector<double> &co
 	double temp_vec [24];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->MultiScaleHistogram(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -145,7 +176,7 @@ TamuraTextures::TamuraTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int TamuraTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int TamuraTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -153,6 +184,12 @@ int TamuraTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 	double temp_vec [6];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->TamuraTexture2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -169,7 +206,7 @@ CombFirstFourMoments::CombFirstFourMoments() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int CombFirstFourMoments::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int CombFirstFourMoments::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -177,6 +214,12 @@ int CombFirstFourMoments::calculate( ImageMatrix * IN_matrix, vector<double> &co
 	double temp_vec [48];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->CombFirstFourMoments2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -193,13 +236,19 @@ RadonCoefficients::RadonCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int RadonCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int RadonCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [12];
 	int i;
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->RadonTransform2D(temp_vec);
@@ -217,7 +266,7 @@ FractalFeatures::FractalFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int FractalFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int FractalFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -225,6 +274,12 @@ int FractalFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs 
 	double temp_vec [20];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->fractal2D(n_features,temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -241,7 +296,7 @@ PixelIntensityStatistics::PixelIntensityStatistics() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int PixelIntensityStatistics::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -249,6 +304,13 @@ int PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vector<double>
 
 	double temp_vec[5];
 	int j;
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
 	IN_matrix->BasicStatistics(&temp_vec[0], &temp_vec[1], &temp_vec[2], &temp_vec[3], &temp_vec[4], NULL, 10);
@@ -267,11 +329,17 @@ EdgeFeatures::EdgeFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int EdgeFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int EdgeFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	long EdgeArea = 0;
 	double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
@@ -320,12 +388,18 @@ ObjectFeatures::ObjectFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int ObjectFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int ObjectFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	int feature_count=0, Euler=0, AreaMin=0, AreaMax=0, AreaMedian=0,
 			area_histogram[10]={0,0,0,0,0,0,0,0,0,0},
 			dist_histogram[10]={0,0,0,0,0,0,0,0,0,0};
@@ -383,7 +457,7 @@ GaborTextures::GaborTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int GaborTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
 	coeffs.clear();
@@ -392,6 +466,12 @@ int GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
 	double temp_vec [7];
 	int i;
   
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
+
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->GaborFilters2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -414,11 +494,17 @@ GiniCoefficient::GiniCoefficient() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int GiniCoefficient::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+int GiniCoefficient::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
+
+	ImageMatrix* IN_matrix = NULL;
+	MatrixMapError retval = MM_UNINITIALIZED;
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( MM_NO_ERROR != retval )
+		return -1;
 
 	double temp_vec [1];
 	int j;

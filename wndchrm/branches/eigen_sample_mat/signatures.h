@@ -94,7 +94,7 @@ class signatures
     void ComputeGroups(ImageMatrix *matrix, int compute_colors);
     void ComputeLongChain(ImageMatrix *matrix, int compute_colors);
     //int ComputeFromGroupList( ImageMatrix *matrix, vector<const FeatureGroup*> &feature_groups);
-    int ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*> &feature_groups);
+    int ComputeFromGroupList( ImageMatrix *untransformed_matrix, vector<FeatureGroup*> &feature_groups);
     void normalize(void *TrainSet, Eigen::VectorXd &sample);                /* normalize the signatures based on the values of the training set */
     void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
     FILE *FileOpen(char *path, int overwrite);

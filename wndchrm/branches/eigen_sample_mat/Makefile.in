@@ -57,18 +57,19 @@ libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
 am_libimfit_a_OBJECTS = specfunc.$(OBJEXT) wndchrm_error.$(OBJEXT) \
-	cmatrix.$(OBJEXT) FuzzyCalc.$(OBJEXT) signatures.$(OBJEXT) \
-	CombFirst4Moments.$(OBJEXT) FeatureStatistics.$(OBJEXT) \
-	gabor.$(OBJEXT) CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) \
-	mapkit.$(OBJEXT) mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) \
-	complex.$(OBJEXT) zernike.$(OBJEXT) TrainingSet.$(OBJEXT) \
-	transforms.$(OBJEXT) FeatureAlgorithm.$(OBJEXT) \
-	Channel.$(OBJEXT) FeatureGroup.$(OBJEXT) \
-	ChebyshevFourier.$(OBJEXT) chebyshev.$(OBJEXT) radon.$(OBJEXT) \
-	Common.$(OBJEXT) convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
+	FuzzyCalc.$(OBJEXT) CombFirst4Moments.$(OBJEXT) \
+	FeatureStatistics.$(OBJEXT) gabor.$(OBJEXT) \
+	CVIPtexture.$(OBJEXT) haarlick.$(OBJEXT) mapkit.$(OBJEXT) \
+	mapkit_generic.$(OBJEXT) tamura.$(OBJEXT) complex.$(OBJEXT) \
+	zernike.$(OBJEXT) ChebyshevFourier.$(OBJEXT) \
+	chebyshev.$(OBJEXT) radon.$(OBJEXT) Common.$(OBJEXT) \
+	convolution.$(OBJEXT) DataGrid2D.$(OBJEXT) \
 	DataGrid3D.$(OBJEXT) Filter.$(OBJEXT) FilterSet.$(OBJEXT) \
 	Symlet5.$(OBJEXT) Wavelet.$(OBJEXT) WaveletHigh.$(OBJEXT) \
-	WaveletLow.$(OBJEXT) WaveletMedium.$(OBJEXT) wt.$(OBJEXT)
+	WaveletLow.$(OBJEXT) WaveletMedium.$(OBJEXT) wt.$(OBJEXT) \
+	transforms.$(OBJEXT) FeatureAlgorithm.$(OBJEXT) \
+	Channel.$(OBJEXT) FeatureGroup.$(OBJEXT) MatrixMap.$(OBJEXT) \
+	cmatrix.$(OBJEXT) signatures.$(OBJEXT) TrainingSet.$(OBJEXT)
 libimfit_a_OBJECTS = $(am_libimfit_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
@@ -227,12 +228,8 @@ libimfit_a_SOURCES = \
 	gsl/specfunc.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
-	cmatrix.cpp \
-	cmatrix.h \
 	colors/FuzzyCalc.cpp \
 	colors/FuzzyCalc.h \
-	signatures.cpp \
-	signatures.h \
 	statistics/CombFirst4Moments.cpp \
 	statistics/CombFirst4Moments.h \
 	statistics/FeatureStatistics.cpp \
@@ -253,16 +250,6 @@ libimfit_a_SOURCES = \
 	textures/zernike/complex.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
-	TrainingSet.cpp \
-	TrainingSet.h \
-	transforms.cpp \
-	transforms.h \
-	FeatureAlgorithm.cpp \
-	FeatureAlgorithm.h \
-	Channel.cpp \
-	Channel.h \
-	FeatureGroup.h \
-	FeatureGroup.cpp \
 	transforms/ChebyshevFourier.cpp \
 	transforms/ChebyshevFourier.h \
 	transforms/chebyshev.cpp \
@@ -295,7 +282,23 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.cpp \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
-	transforms/wavelet/wt.h
+	transforms/wavelet/wt.h \
+	transforms.cpp \
+	transforms.h \
+	FeatureAlgorithm.cpp \
+	FeatureAlgorithm.h \
+	Channel.cpp \
+	Channel.h \
+	FeatureGroup.h \
+	FeatureGroup.cpp \
+	MatrixMap.h \
+	MatrixMap.cpp \
+	cmatrix.cpp \
+	cmatrix.h \
+	signatures.cpp \
+	signatures.h \
+	TrainingSet.cpp \
+	TrainingSet.h
 
 AM_CPPFLAGS = -fPIC
 wndchrm_SOURCES = wndchrm.cpp
@@ -424,6 +427,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FilterSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FuzzyCalc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MatrixMap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Symlet5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TrainingSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Wavelet.Po@am__quote@

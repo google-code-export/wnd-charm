@@ -26,7 +26,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#define DEBUG 0
+#define DEBUG 1
 
 #ifdef WIN32
 #pragma hdrstop
@@ -53,6 +53,7 @@
 #include "cmatrix.h"
 #include "colors/FuzzyCalc.h"
 #include "MAP.h"
+#include "MatrixMap.h"
 #include "FeatureAlgorithm.h"
 #include "transforms.h"
 
@@ -1181,22 +1182,19 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
 
 
 //int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<const FeatureGroup*> &feature_groups)
-int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*> &feature_groups)
+int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, vector<FeatureGroup*> &feature_groups)
 {
 	// So that the pre-main transform and algorithm registration operations
 	// don't get optimized out.
 	FourierTransform * no_op = new FourierTransform; delete no_op;
 	MultiscaleHistograms * noop = new  MultiscaleHistograms; delete noop;
 
-	MatrixMap saved_pixel_planes; // MatrixMap declared in FeatureNames.hpp
-	// MatrixMap = map< vector<Transform const *>, ImageMatrix*>
+	MatrixMap saved_pixel_planes (untransformed_matrix);
+	// MatrixMap is essentially = map< vector<Transform const *>, ImageMatrix*>
 	// I know, it looks kinda weird to have a vector as the key in a map
 	// but I think it's pretty elegant, actually.
-
-	// Load the untransformed pixel field into the transform map
-	// Key: a vector of Transforms, length 0. Value, the corresponding ImageMatrix
-  // CEC_const saved_pixel_planes[ vector<Transform const *>() ] = matrix;
-  saved_pixel_planes[ vector<Transform *>() ] = matrix;
+	// The MatrixMap will delete any ImageMatrices that are stored in it
+	// as part of it's ~MatrixMap destructor
 
 	int retval;
 	ImageMatrix* pixel_plane = NULL; 
@@ -1232,14 +1230,17 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		// desired transform if it exists in the array "saved_pixel_planes", or it
 		// calculates it, using "saved_pixel_planes" as a place to save intermediates,
 		// (and time).
-		pixel_plane =	(*grp_it)->obtain_transform(saved_pixel_planes, (*grp_it)->transforms);
+		MatrixMapError mm_retval = 
+			saved_pixel_planes.obtain_transform((*grp_it)->transforms, &pixel_plane);
 		if( NULL == pixel_plane ) {
 #if DEBUG
-			std::cout << "Signatures::ComputeFromGroupList(): Call to obtain_transform returned a null pixel plane." << std::endl;
+			std::cout << "Signatures::ComputeFromGroupList(): Call to obtain_transform returned a null pixel plane."
+			          << std::endl << "MatrixMapError val: " << int( mm_retval ) << std::endl;
 #endif
 			continue;
 		}
-		if( (retval = (*grp_it)->algorithm->calculate( pixel_plane, coeffs ) ) < 0 ) {
+		if( (retval = (*grp_it)->algorithm->calculate( 
+						saved_pixel_planes, (*grp_it)->transforms, coeffs ) ) < 0 ) {
 #if DEBUG
 			std::cout << "Signatures::ComputeFromGroupList(): call to algorithm->calculate returned value " << retval << std::endl;
 #endif
@@ -1265,10 +1266,6 @@ int signatures::ComputeFromGroupList( ImageMatrix *matrix, vector<FeatureGroup*>
 		cout << ++count << ". " << temp_str << endl;
 	}
 #endif
-	for( MatrixMap::iterator it = saved_pixel_planes.begin(); it != saved_pixel_planes.end(); it++ ) {
-		delete it->second;
-		it->second = NULL;
-	}
 
 	// For right now, don't save the feature_infos, cause it's a lot of memory
 	// (~5MB for 12 images)

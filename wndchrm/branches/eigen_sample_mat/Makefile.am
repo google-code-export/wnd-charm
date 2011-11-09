@@ -25,12 +25,8 @@ libimfit_a_SOURCES = \
 	gsl/specfunc.h \
 	wndchrm_error.cpp \
 	wndchrm_error.h \
-	cmatrix.cpp \
-	cmatrix.h \
 	colors/FuzzyCalc.cpp \
 	colors/FuzzyCalc.h \
-	signatures.cpp \
-	signatures.h \
 	statistics/CombFirst4Moments.cpp \
 	statistics/CombFirst4Moments.h \
 	statistics/FeatureStatistics.cpp \
@@ -51,16 +47,6 @@ libimfit_a_SOURCES = \
 	textures/zernike/complex.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
-	TrainingSet.cpp \
-	TrainingSet.h \
-	transforms.cpp \
-	transforms.h \
-	FeatureAlgorithm.cpp \
-	FeatureAlgorithm.h \
-	Channel.cpp \
-	Channel.h \
-	FeatureGroup.h \
-	FeatureGroup.cpp \
 	transforms/ChebyshevFourier.cpp \
 	transforms/ChebyshevFourier.h \
 	transforms/chebyshev.cpp \
@@ -93,7 +79,23 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.cpp \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
-	transforms/wavelet/wt.h
+	transforms/wavelet/wt.h \
+	transforms.cpp \
+	transforms.h \
+	FeatureAlgorithm.cpp \
+	FeatureAlgorithm.h \
+	Channel.cpp \
+	Channel.h \
+	FeatureGroup.h \
+	FeatureGroup.cpp \
+	MatrixMap.h \
+	MatrixMap.cpp \
+	cmatrix.cpp \
+	cmatrix.h \
+	signatures.cpp \
+	signatures.h \
+	TrainingSet.cpp \
+	TrainingSet.h
 
 AM_CPPFLAGS = -fPIC
 

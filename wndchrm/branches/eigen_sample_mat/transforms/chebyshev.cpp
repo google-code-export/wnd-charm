@@ -139,7 +139,7 @@ void Chebyshev2D(ImageMatrix *Im, double *out, int N)
    double *in;
    int a,i,j;
 
-   // Make a default value for coeficient order if it was not given as an input
+// Make a default value for coeficient order if it was not given as an input
 //   if (N<=0)
 //     N=min(Im->width,Im->height);
 
