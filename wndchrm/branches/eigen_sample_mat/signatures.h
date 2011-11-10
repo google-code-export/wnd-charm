@@ -83,20 +83,11 @@ class signatures
     void Add(const char *name, double value);
     void Finalize(Eigen::MatrixXd &the_mat, int the_col); // inform the object where sample_indx is, and have it clear out temporary storage.
     void Clear();
-		// CEC_const int GenerateStandardFeatureGroupList( int long_chain, int compute_colors, vector<const FeatureGroup*> &group_list );
-		int GenerateStandardFeatureGroupList( int long_chain, int compute_colors, vector<FeatureGroup*> &group_list );
 
-    void compute(ImageMatrix *matrix, int compute_colors);
-    void CompGroupA(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupB(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupC(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupD(ImageMatrix *matrix, const char *transform_label);
-    void ComputeGroups(ImageMatrix *matrix, int compute_colors);
-    void ComputeLongChain(ImageMatrix *matrix, int compute_colors);
-    //int ComputeFromGroupList( ImageMatrix *matrix, vector<const FeatureGroup*> &feature_groups);
+		int GenerateStandardFeatureGroupList( int long_chain, int compute_colors, vector<FeatureGroup*> &group_list );
     int ComputeFromGroupList( ImageMatrix *untransformed_matrix, vector<FeatureGroup*> &feature_groups);
     void normalize(void *TrainSet, Eigen::VectorXd &sample);                /* normalize the signatures based on the values of the training set */
-    void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
+    //void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
     FILE *FileOpen(char *path, int overwrite);
     void FileClose(FILE *value_file);
     int SaveToFile(FILE *value_file,int save_feature_names);

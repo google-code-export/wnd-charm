@@ -6,8 +6,9 @@
 #include "MatrixMap.h"
 #include <iostream>
 #include <cstdlib>
+
 //start #including the functions directly once you start pulling them out of cmatrix
-//#include "transforms/ChebishevFourier.h" //ChebyshevFourierStatistics
+//#include "transforms/Chebyshev.h"
 
 using namespace std;
 
@@ -22,7 +23,8 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-int ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
+int ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_planes, 
+    std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
@@ -47,28 +49,47 @@ WNDCHARM_REGISTER_ALGORITHM(ChebyshevFourierCoefficients)
 //===========================================================================
 ChebyshevCoefficients::ChebyshevCoefficients() {
 	name = "Chebyshev Coefficients";
+  // nibs_num - (32 is normal)
 	n_features = 32;
 	//cout << "Instantiating new " << name << " object." << endl;
 }
-
-int ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
+/**
+ * Chebyshev Coefficients are calculated by performing a Chebyshev transform,
+ * and generating a histogram of pixel intensities.
+ *
+ */
+int ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
+    std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
 	std::cout << "calculating " << name << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
-	int i;
-  //ImageMatrix *TempMatrix = IN_matrix->duplicate();
 
 	ImageMatrix* IN_matrix = NULL;
 	MatrixMapError retval = MM_UNINITIALIZED;
-	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+
+	// Add a Chebyshev transform to the end of the transform sequence 
+
+	FeatureNames* phonebook = FeatureNames::get_instance();
+	if( NULL == phonebook ) {
+		std::cerr << "Error: could not retrieve registry of transforms" << std::endl;
+		return -1;
+	}
+	std::string cheb_name_str = "Chebyshev";
+
+	Transform* Cheb_tform = phonebook->getTransformByName( cheb_name_str );
+	if( NULL == Cheb_tform) {
+		std::cerr << "Error: could not retrieve Chebyshev Transform" << std::endl;
+		return -1;
+	}
+	std::vector<Transform*> compound_transform_list = run_algorithm_on_this_sequence;
+	compound_transform_list.push_back( Cheb_tform ); 
+	retval = saved_pixel_planes.obtain_transform( compound_transform_list, &IN_matrix );
 	if( MM_NO_ERROR != retval )
 		return -1;
-
-	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
-	//TempMatrix->ChebyshevStatistics2D(temp_vec,0,32);
-	IN_matrix->ChebyshevStatistics2D(temp_vec,0,32);
+	
+  IN_matrix->histogram( temp_vec, 32, 0 );
 	coeffs.assign( temp_vec, temp_vec + n_features);
 
 	return 1;
