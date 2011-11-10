@@ -2,6 +2,7 @@
 #include "MatrixMap.h"
 #include "cmatrix.h"
 #include "transforms.h"
+#include "wndchrm_error.h"
 
 #define DEBUG 1
 
@@ -27,17 +28,17 @@ MatrixMap::~MatrixMap() {
 	}
 }
 //==========================================================================
-MatrixMapError MatrixMap::save_transform( std::vector<Transform *> &sequence, ImageMatrix * in_matr )
+WNDCHRM_ERROR MatrixMap::save_transform( std::vector<Transform *> &sequence, ImageMatrix * in_matr )
 {
 	m_map[sequence] = in_matr;
-	return MM_NO_ERROR;
+	return WC_NO_ERROR;
 }
 
 //==========================================================================
-MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageMatrix ** out_matr )
+WNDCHRM_ERROR MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageMatrix ** out_matr )
 {
 	if( m_map.size() < 1 )
-		return MM_EMPTY;
+		return WC_EMPTY;
 
 #if DEBUG
 	std::cout << "\tMatrixMap::obtain_transform:" << std::endl;
@@ -63,7 +64,7 @@ MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, Image
 		std::cout << std::endl;
 #endif
 		*out_matr = t_it->second;
-		return MM_NO_ERROR;
+		return WC_NO_ERROR;
 	}
 
 	// If we've gotten here, the requested sequence of transforms does not exist
@@ -93,7 +94,7 @@ MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, Image
 	vector<Transform *> original_sequence = sequence;
 	sequence.pop_back();
 
-	MatrixMapError retval = MM_UNINITIALIZED;
+	WNDCHRM_ERROR retval = WC_UNINITIALIZED;
 	// Step 2a.
 	t_it = m_map.find(sequence);
 	if( t_it != m_map.end() )
@@ -104,7 +105,7 @@ MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, Image
 		intermediate_pixel_plane = t_it->second;
 		if( NULL == intermediate_pixel_plane ) {
 			std::cout << "MatrixMap::obtain_transform: skipping transform since intermediate pixel plane is null." << std::endl;
-			return MM_FAIL_NULL_POINTER;
+			return WC_FAIL_NULL_POINTER;
 		}
 	}
 	else {
@@ -119,7 +120,7 @@ MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, Image
 		if( NULL == intermediate_pixel_plane ) {
 			std::cout << "MatrixMap::obtain_transform: Call to obtain transform for shortened sequence returned null pixel plane"
 				<< std::endl;
-			return MM_FAIL_RECURSIVE_CALL;
+			return WC_FAIL_RECURSIVE_CALL;
 		}
 		// no need to save the intermediate --
 		// If it generates a transform, obtain_transform will save the pixel plane it returns as the last step
@@ -139,12 +140,12 @@ MatrixMapError MatrixMap::obtain_transform( vector<Transform *> &sequence, Image
 		std::cout << "ERROR: Call to transform "
 		          << last_transform_in_sequence->name
 		          << " returned null pixel plane." << std::endl;
-		return MM_TRANSFORM_FAIL;
+		return WC_TRANSFORM_FAIL;
 	}
 
 	m_map[original_sequence] = output_pixel_plane;
 	*out_matr = output_pixel_plane;
-	return MM_NO_ERROR;
+	return WC_NO_ERROR;
 }
 
 

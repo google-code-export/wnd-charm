@@ -24,10 +24,10 @@ void FeatureGroup::print_info() const {
 }
 
 
-int FeatureGroup::get_name( string& out_str ) {
+WNDCHRM_ERROR FeatureGroup::get_name( string& out_str ) {
 	if( !name.empty() ) {
 		out_str = name;
-		return 1;
+		return WC_NO_ERROR;
 	}
 	std::ostringstream oss;
 	string temp;
@@ -49,6 +49,11 @@ int FeatureGroup::get_name( string& out_str ) {
 
 	name = oss.str();
 	out_str = name;
-	return 1;
+	return WC_NO_ERROR;
+}
+
+WNDCHRM_ERROR FeatureGroup::calculate_coefficients(MatrixMap& saved_pixel_planes, std::vector<double> &coeffs )
+{
+	return algorithm->calculate( saved_pixel_planes, transforms, coeffs );
 }
 

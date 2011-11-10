@@ -1674,34 +1674,6 @@ void ImageMatrix::zernike2D(double *zvalues, long *output_size)
 {  mb_zernike2D(this, 0, 0, zvalues, output_size);
 }
 
-/* fractal 
-   brownian fractal analysis 
-   bins - the maximal order of the fractal
-   output - array of the size k
-   the code is based on: CM Wu, YC Chen and KS Hsieh, Texture features for classification of ultrasonic liver images, IEEE Trans Med Imag 11 (1992) (2), pp. 141Ð152.
-   method of approaximation of CC Chen, JS Daponte and MD Fox, Fractal feature analysis and classification in medical imaging, IEEE Trans Med Imag 8 (1989) (2), pp. 133Ð142.
-*/
-   
-void ImageMatrix::fractal2D(int bins,double *output)
-{  int x,y,k,bin=0;
-   int K=MIN(width,height)/5;
-   int step=(long)floor(K/bins);
-   if (step<1) step=1;   /* avoid an infinite loop if the image is small */
-   for (k=1;k<K;k=k+step)
-   {  double sum=0.0;
-      for (x=0;x<width;x++)
-	    for (y=0;y<height-k;y++)
-		  sum+=fabs(pixel(x,y,0).intensity-pixel(x,y+k,0).intensity);
-      for (x=0;x<width-k;x++)
-	    for (y=0;y<height;y++)
-		  sum+=fabs(pixel(x,y,0).intensity-pixel(x+k,y,0).intensity);
-      if (bin<bins) output[bin++]=sum/(width*(width-k)+height*(height-k));	  
-   }
-}
-
-
-
-
 #pragma package(smart_init)
 
 

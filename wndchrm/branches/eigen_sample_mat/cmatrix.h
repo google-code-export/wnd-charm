@@ -140,7 +140,6 @@ class ImageMatrix
    void HaarlickTexture2D(double distance, double *out);
    void TamuraTexture2D(double *vec);
    void zernike2D(double *zvalues, long *output_size);
-   void fractal2D(int bins,double *output);
 	 double gini();
 };
 

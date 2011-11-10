@@ -33,7 +33,7 @@ class FeatureAlgorithm {
 	public:
 		string name;
 		int n_features;
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs ) = 0;
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs ) = 0;
 		void print_info() const;	
 	protected:
 		FeatureAlgorithm() {} ;
@@ -43,7 +43,7 @@ class FeatureAlgorithm {
 
 class EmptyFeatureAlgorithm : public FeatureAlgorithm {
 	public:
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs ) 	{ return -1; }
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs ) 	{ return WC_NOT_IMPLEMENTED; }
 		EmptyFeatureAlgorithm () { FeatureAlgorithm::name = ""; FeatureAlgorithm::n_features = 1; }
 		EmptyFeatureAlgorithm (std::string &s,int i) { FeatureAlgorithm::name = s; FeatureAlgorithm::n_features = i;}
 		EmptyFeatureAlgorithm (const char *s,int i) { FeatureAlgorithm::name = s; FeatureAlgorithm::n_features = i;}
@@ -52,85 +52,86 @@ class EmptyFeatureAlgorithm : public FeatureAlgorithm {
 class ChebyshevFourierCoefficients : public FeatureAlgorithm {
 	public:
 		ChebyshevFourierCoefficients();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class ChebyshevCoefficients : public FeatureAlgorithm {
 	public:
 		ChebyshevCoefficients();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class ZernikeCoefficients : public FeatureAlgorithm {
 	public:
 		ZernikeCoefficients();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class HaralickTextures : public FeatureAlgorithm {
 	public:
 		HaralickTextures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class MultiscaleHistograms : public FeatureAlgorithm {
 	public:
 		MultiscaleHistograms();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class TamuraTextures : public FeatureAlgorithm {
 	public:
 		TamuraTextures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class CombFirstFourMoments : public FeatureAlgorithm {
 	public:
 		CombFirstFourMoments();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class RadonCoefficients : public FeatureAlgorithm {
 	public:
 		RadonCoefficients();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class FractalFeatures : public FeatureAlgorithm {
 	public:
 		FractalFeatures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		WNDCHRM_ERROR calculate( ImageMatrix* IN_matrix, vector<double> &coeffs );
 };
 
 class PixelIntensityStatistics : public FeatureAlgorithm {
 	public:
 		PixelIntensityStatistics();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class EdgeFeatures : public FeatureAlgorithm {
 	public:
 		EdgeFeatures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class ObjectFeatures : public FeatureAlgorithm {
 	public:
 		ObjectFeatures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class GaborTextures : public FeatureAlgorithm {
 	public:
 		GaborTextures();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 class GiniCoefficient : public FeatureAlgorithm {
 	public:
 		GiniCoefficient();
-		virtual int calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs );
 };
 
 #define WNDCHARM_REGISTER_ALGORITHM(alg_name) \

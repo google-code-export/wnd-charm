@@ -40,6 +40,7 @@
 #include <sys/stat.h>
 #include <fcntl.h> // for locking stuff
 #include <errno.h>
+#include <assert.h>
 #include <time.h>
 #include <unistd.h> // apparently, for close() only?
 #include <stdlib.h> // for exit(), used for debug, comment out if release build
@@ -232,9 +233,7 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 	// The MatrixMap will delete any ImageMatrices that are stored in it
 	// as part of it's ~MatrixMap destructor
 
-	int retval;
-	ImageMatrix* pixel_plane = NULL; 
-	FeatureAlgorithm* alg = NULL;
+	WNDCHRM_ERROR retval;
 	FeatureInfo* feature_info = NULL;
 	vector<double> coeffs;
 	int i;
@@ -254,40 +253,15 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 		}
 
 		#if DEBUG
-		std::cout << "==========================" << std::endl << group_count << ". ";
-		(*grp_it)->get_name(group_name);
-		std::cout << group_name << std::endl;
+		(*grp_it)->print_info();
 		#endif
 
 		if( NULL == (*grp_it)->algorithm )
 			continue;
 
-		#if DEBUG
-		std::cout << "\tSignatures::ComputeFromGroupList(): Algorithm is " << (*grp_it)->algorithm->name << std::endl;
-		#endif
-
-		// obtain_transform is a recursive function that simply returns the
-		// desired transform if it exists in the array "saved_pixel_planes", or it
-		// calculates it, using "saved_pixel_planes" as a place to save intermediates,
-		// (and time).
-		MatrixMapError mm_retval = 
-			saved_pixel_planes.obtain_transform((*grp_it)->transforms, &pixel_plane);
-		if( NULL == pixel_plane ) {
-
-			#if DEBUG
-			std::cout << "Signatures::ComputeFromGroupList(): Call to obtain_transform returned a null pixel plane."
-			          << std::endl << "MatrixMapError val: " << int( mm_retval ) << std::endl;
-			#endif
-
-			continue;
-		}
-		if( (retval = (*grp_it)->algorithm->calculate( 
-						saved_pixel_planes, (*grp_it)->transforms, coeffs ) ) < 0 ) {
-
-			#if DEBUG
+		if( (retval = (*grp_it)->calculate_coefficients( saved_pixel_planes, coeffs )) != WC_NO_ERROR )
+		{
 			std::cout << "Signatures::ComputeFromGroupList(): call to algorithm->calculate returned value " << retval << std::endl;
-			#endif
-
 			continue;
 		}
 
@@ -596,21 +570,33 @@ int diffUlps(float A, float B)
 int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set) {
 	signatures file_sigs;
 	double vec[72];
+	std::vector<double> coeffs;
 	int i,file_index;
 
 	if (! file_sigs.LoadFromFile (filename) ) return (0);
 	if (verbosity>=2) printf ("compare %s to computed\n",filename);
+	
+	FeatureNames* phonebook = FeatureNames::get_instance();
+	if( NULL == phonebook )
+		assert(0);
 
 	// 20 features long: 323-342, standard: N/A
 	if (large_set) {
-		matrix->fractal2D(20,vec);
+		std::string fractal_name = "Fractal Features"; 
+		FeatureAlgorithm* base_itf = phonebook->getFeatureAlgorithmByName( fractal_name );
+		if( NULL == base_itf )
+			assert(0);
+		FractalFeatures* Fractal2D = dynamic_cast<FractalFeatures*>(base_itf);
+		if( NULL == Fractal2D )
+			assert(0);
+		Fractal2D->calculate( matrix, coeffs );
 		file_index = 323;
 // for (i = 0; i< 20; i++) printf ("fractal2D computed %15.10f\tfrom file: %15.10f\tdiff: %f\tulps: %d\n",vec[i],file_sigs.data[file_index+i].value,
 // (file_sigs.data[file_index+i].value - vec[i])/FLT_EPSILON
 // ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
 // );
-		for (i = 0; i< 20; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-			if (verbosity>=2) printf ("fractal2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+		for (i = 0; i< 20; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,coeffs[i])) {
+			if (verbosity>=2) printf ("fractal2D mismatch computed %15.10f\tfrom file: %15.10f\n",coeffs[i],file_sigs.data[file_index+i].value);
 			return (0);
 		}
 	}
