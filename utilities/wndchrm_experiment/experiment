@@ -648,12 +648,17 @@ sub RunExperiment {
 	  {
 	    system( $cmd );
 	    # clean up by compying dend files if any to experiment dir
-	    if( -e "$path_to_phylip/dend_file.txt" ) {
-	  	print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
-	  	move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
-	    } else {
-	  	print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
-	    }
+	    if( defined $path_to_phylip ) {
+				if( -e "$path_to_phylip/dend_file.txt" )
+				{
+					print "\tMoving  $path_to_phylip/dend_file.txt to $target_dir/${experiment_name}_dend_file.txt\n" if( $DEBUG2 or $verbose or $dryrun or $silence_wndchrm);
+					move( "$path_to_phylip/dend_file.txt", "$target_dir/${experiment_name}_dend_file.txt" ) if !$dryrun;
+				}
+				else
+				{
+					print "*************************\nError: $path_to_phylip/dend_file.txt wasn't created!\n";
+				}
+			} #END if defined path_to_phylip
 	  } # END if( !$dryrun )
 	} # END running standard WND-CHARM test experiment
 
