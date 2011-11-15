@@ -70,14 +70,14 @@ sub main {
 			}
 			else
 			{
-				print "****Feature \"$feature_name\"\n\tappears in file \"$file1\"\n\tbut not file \"$file2\"\n";
+				print "****Feature \"$feature_name\"\n\tappears in file \"$file2\"\n\tbut not file \"$file1\"\n";
 			}
 		}
 		else
 		{
 			# neither file had this particular feature
 			--$feature_count;
-			print "Neither file had feature $feature_name\n";
+			#print "Neither file had feature $feature_name\n";
 
 		}
 	}
@@ -126,7 +126,7 @@ sub ParseSigFile($$) {
 				$value = $1;
 				$feature = $2;
 				chomp $feature;
-				print "\tline $line_count feature \"$feature\"; value $value\n";
+				#print "\tline $line_count feature \"$feature\"; value $value\n";
 				if( defined $old_featurenames_mapped_to_new{ $feature } )
 				{
 					$feature = $old_featurenames_mapped_to_new{ $feature };
