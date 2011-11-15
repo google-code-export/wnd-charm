@@ -625,7 +625,7 @@ void signatures::CompGroupA(ImageMatrix *matrix, const char *transform_label)
       Add("Feature Count",feature_count);
       for (a=0;a<10;a++)
       {  sprintf(buffer,"Feature dist histogram bin %d",a);
-         Add("Feature DistHist",dist_histogram[a]);
+         Add(buffer,dist_histogram[a]);
       }
       Add("Feature DistMax",DistMax);
       Add("Feature DistMean",DistMean);
@@ -1052,7 +1052,7 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(ChebyshevFourierTransform,"Chebyshev Fourier");
 // Fourier, then Wavelet
   CompGroupC(FourierWaveletSelector,"Wavelet Fourier");
-/**/
+	
 // Wavelet, then Fourier
   CompGroupB(WaveletFourier,"Fourier Wavelet");
   CompGroupC(WaveletFourier,"Fourier Wavelet");
@@ -1061,7 +1061,6 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(FourierChebyshev,"Fourier Chebyshev");
 // Wavelet, then Chebyshev
   CompGroupC(ChebyshevWavelet,"Chebyshev Wavelet");
-
   CompGroupB(EdgeTransform,"Edge Transform");
   CompGroupC(EdgeTransform,"Edge Transform");
 // Edge, then fourier - named in wrong order!
