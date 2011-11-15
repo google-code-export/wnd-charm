@@ -4,15 +4,13 @@ use strict;
 
 # Function prototypes
 sub LoadOldToNewHash;
-sub ParseSigFile($$$);
+sub ParseSigFile($$);
 sub uniq;
 sub main;
 
 # Globals
 my %old_featurenames_mapped_to_new;
-my %new_featurenames_indexed;
 my %unrecognized_feature_names;
-my $unrecognized_feature_name_index = 0;
 
 &LoadOldToNewHash;
 
@@ -30,20 +28,20 @@ sub main {
 	print "Comparing file \"$file1\" and \"$file2\"\n";
 
 	my %file1_values;
-	my %file1_unrecognized_name_values;
-	&ParseSigFile( $file1, \%file1_values, \%file1_unrecognized_name_values );
+	&ParseSigFile( $file1, \%file1_values );
 
 	my %file2_values;
-	my %file2_unrecognized_name_values;
-	&ParseSigFile( $file2, \%file2_values, \%file2_unrecognized_name_values );
+	&ParseSigFile( $file2, \%file2_values );
 
 	my ($file1_val, $file2_val);
 	my $index;
 	my $feature_name;
-	my @sorted_feature_names = uniq sort values %old_featurenames_mapped_to_new;
-	my $matched =0;
-	my $unmatched =0;
-	my $missing =0;
+	my @new_feature_names =  values %old_featurenames_mapped_to_new;
+  push( @new_feature_names, keys %unrecognized_feature_names );
+	my @sorted_feature_names = uniq sort @new_feature_names;
+	my $matched = 0;
+	my $unmatched = 0;
+	my $missing = 0;
 	my $feature_count = 0;
 	foreach $feature_name ( @sorted_feature_names )
 	{
@@ -83,39 +81,6 @@ sub main {
 
 		}
 	}
-	print "\n===========================\nUnrecognized features:\n";
-	my @sorted_unrecognized_feature_names = sort keys %unrecognized_feature_names;
-	foreach $feature_name ( @sorted_unrecognized_feature_names )
-	{
-		++$feature_count;
-		$file1_val = $file1_values{ $feature_name };
-		$file2_val = $file2_values{ $feature_name };
-		if( $file1_val && $file2_val  )
-		{
-			++$matched;
-			if( $file1_val == $file2_val ) {
-				print "Feature \"$feature_name\" matches\n";
-			}
-			else
-			{
-				++$unmatched;
-				print "Feature \"$feature_name\" doesn't match:\n";
-				print "\tVal $file1_val in file $file1\n";
-				print "\tVal $file2_val in file $file2\n";
-			}
-		}
-		elsif( $file1_val xor $file2_val )
-		{
-			++$missing;
-			if( $file1_val ) {
-				print "Feature \"$feature_name\" appears in file \"$file1\" but not file \"$file2\"\n";
-			}
-			else
-			{
-				print "Feature \"$feature_name\" appears in file \"$file1\" but not file \"$file2\"\n";
-			}
-		}
-	}
 	print "\n\n********************************\nSUMMARY:\n";
 	print "Features examined: $feature_count\n";
 	print "Matching features: $matched\n";
@@ -140,10 +105,9 @@ sub uniq {
 
 
 #################################################################
-sub ParseSigFile($$$) {
+sub ParseSigFile($$) {
 	my $filename = shift;
 	my $values_ref = shift;
-	my $unrecognized_values_ref = shift;
 
 	print "Parsing file \"$filename\"\n";
 
@@ -163,34 +127,21 @@ sub ParseSigFile($$$) {
 				$feature = $2;
 				chomp $feature;
 				print "\tline $line_count feature \"$feature\"; value $value\n";
-				my $new_style_feature_name = undef;
 				if( defined $old_featurenames_mapped_to_new{ $feature } )
 				{
-					$new_style_feature_name = $old_featurenames_mapped_to_new{ $feature };
-				}
-				if( defined $new_style_feature_name )
-				{
-					if( defined $$values_ref{ $new_style_feature_name } )
-					{
-						die "The feature $feature has already been defined for file $filename.\n";
-					}
-					else
-					{
-						$$values_ref{ $new_style_feature_name } = $value;
-					}
+					$feature = $old_featurenames_mapped_to_new{ $feature };
 				}
 				else
 				{
-					if( defined $unrecognized_feature_names{ $feature } )
-					{
-						++$unrecognized_feature_names{ $feature };
-					}
-					else
-					{
-						$unrecognized_feature_names{ $feature } = 1
-					}
-					$$unrecognized_values_ref{ $feature } = $value;
-					print "; **unrecognized feature name \n";
+					$unrecognized_feature_names{$feature} = 1;
+				}
+				if( defined $$values_ref{ $feature } )
+				{
+					die "The feature $feature has already been defined for file $filename.\n";
+				}
+				else
+				{
+					$$values_ref{ $feature } = $value;
 				}
 			} # end if file 1 line correctly pattern matches
 			else
