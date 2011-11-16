@@ -26,7 +26,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#define DEBUG 1
+#define DEBUG 0
 
 #ifdef WIN32
 #pragma hdrstop
@@ -247,13 +247,16 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 
 	vector<FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
 	for( ; grp_it != feature_groups.end(); grp_it++ ) {
+		++group_count;
 		if( NULL == (*grp_it) ) {
-			std::cout << "Signatures::ComputeFromGroupList(): group " << group_count++ << " is corrupted." << std::endl;
+			std::cerr << "ERROR: Signatures::ComputeFromGroupList(): group " << group_count << " is corrupted." << std::endl;
 			continue;
 		}
 
 		#if DEBUG
 		(*grp_it)->print_info();
+		#else
+		std::cout << "Group " << group_count << ": " << (*grp_it)->name << std::endl;
 		#endif
 
 		if( NULL == (*grp_it)->algorithm )
@@ -271,7 +274,6 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 			Add( feature_name.c_str(), coeffs[i] );
 			feature_list.push_back( feature_info );
 		}
-		++group_count;
 	} // end iterating over feature groups
 
 	vector<FeatureInfo*>::iterator fi_it = feature_list.begin();

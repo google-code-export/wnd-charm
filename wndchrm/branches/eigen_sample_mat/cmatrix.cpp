@@ -536,6 +536,7 @@ ImageMatrix *ImageMatrix::duplicate()
    new_matrix->ColorMode=ColorMode;
    memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
 
+	 /*
   	time_t ltime;
     struct tm *Tm;
 		struct timeval detail_time;
@@ -563,7 +564,7 @@ ImageMatrix *ImageMatrix::duplicate()
 			++count;
 		}
 		pixel_dump_file.close();
-
+*/
 	 return(new_matrix);
 }
 

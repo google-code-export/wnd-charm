@@ -28,7 +28,7 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() {
 WNDCHRM_ERROR ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_planes, 
     std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
@@ -39,6 +39,7 @@ WNDCHRM_ERROR ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_pl
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->ChebyshevFourierTransform2D(temp_vec);
@@ -65,7 +66,7 @@ ChebyshevCoefficients::ChebyshevCoefficients() {
 WNDCHRM_ERROR ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
     std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
@@ -92,6 +93,7 @@ WNDCHRM_ERROR ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
 	retval = saved_pixel_planes.obtain_transform( compound_transform_list, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 	
   IN_matrix->histogram( temp_vec, 32, 0 );
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -111,7 +113,7 @@ ZernikeCoefficients::ZernikeCoefficients() {
 
 WNDCHRM_ERROR ZernikeCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [72];
@@ -124,6 +126,7 @@ WNDCHRM_ERROR ZernikeCoefficients::calculate( MatrixMap &saved_pixel_planes, std
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->zernike2D(temp_vec, &output_size);
@@ -143,7 +146,7 @@ HaralickTextures::HaralickTextures() {
 
 WNDCHRM_ERROR HaralickTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [28];
@@ -154,6 +157,7 @@ WNDCHRM_ERROR HaralickTextures::calculate( MatrixMap &saved_pixel_planes, std::v
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->HaarlickTexture2D(0,temp_vec); // Note the misspelling
@@ -173,7 +177,7 @@ MultiscaleHistograms::MultiscaleHistograms() {
 
 WNDCHRM_ERROR MultiscaleHistograms::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [24];
@@ -184,6 +188,7 @@ WNDCHRM_ERROR MultiscaleHistograms::calculate( MatrixMap &saved_pixel_planes, st
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->MultiScaleHistogram(temp_vec);
@@ -203,7 +208,7 @@ TamuraTextures::TamuraTextures() {
 
 WNDCHRM_ERROR TamuraTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [6];
@@ -214,6 +219,7 @@ WNDCHRM_ERROR TamuraTextures::calculate( MatrixMap &saved_pixel_planes, std::vec
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->TamuraTexture2D(temp_vec);
@@ -233,7 +239,7 @@ CombFirstFourMoments::CombFirstFourMoments() {
 
 WNDCHRM_ERROR CombFirstFourMoments::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [48];
@@ -244,6 +250,7 @@ WNDCHRM_ERROR CombFirstFourMoments::calculate( MatrixMap &saved_pixel_planes, st
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->CombFirstFourMoments2D(temp_vec);
@@ -263,7 +270,7 @@ RadonCoefficients::RadonCoefficients() {
 
 WNDCHRM_ERROR RadonCoefficients::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [12];
@@ -274,6 +281,7 @@ WNDCHRM_ERROR RadonCoefficients::calculate( MatrixMap &saved_pixel_planes, std::
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->RadonTransform2D(temp_vec);
@@ -299,7 +307,7 @@ FractalFeatures::FractalFeatures() {
 
 WNDCHRM_ERROR FractalFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
   
@@ -308,6 +316,7 @@ WNDCHRM_ERROR FractalFeatures::calculate( MatrixMap &saved_pixel_planes, std::ve
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	return calculate( IN_matrix, coeffs );
 }
@@ -360,7 +369,7 @@ PixelIntensityStatistics::PixelIntensityStatistics() {
 
 WNDCHRM_ERROR PixelIntensityStatistics::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -372,6 +381,7 @@ WNDCHRM_ERROR PixelIntensityStatistics::calculate( MatrixMap &saved_pixel_planes
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
@@ -393,7 +403,7 @@ EdgeFeatures::EdgeFeatures() {
 
 WNDCHRM_ERROR EdgeFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -402,6 +412,7 @@ WNDCHRM_ERROR EdgeFeatures::calculate( MatrixMap &saved_pixel_planes, std::vecto
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	long EdgeArea = 0;
 	double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
@@ -452,7 +463,7 @@ ObjectFeatures::ObjectFeatures() {
 
 WNDCHRM_ERROR ObjectFeatures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
   coeffs.clear();
 	coeffs.reserve(n_features-1);
 	
@@ -461,6 +472,7 @@ WNDCHRM_ERROR ObjectFeatures::calculate( MatrixMap &saved_pixel_planes, std::vec
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	int feature_count=0, Euler=0, AreaMin=0, AreaMax=0, AreaMedian=0,
 			area_histogram[10]={0,0,0,0,0,0,0,0,0,0},
@@ -521,7 +533,7 @@ GaborTextures::GaborTextures() {
 
 WNDCHRM_ERROR GaborTextures::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -533,6 +545,7 @@ WNDCHRM_ERROR GaborTextures::calculate( MatrixMap &saved_pixel_planes, std::vect
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..."<< std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->GaborFilters2D(temp_vec);
@@ -558,7 +571,7 @@ GiniCoefficient::GiniCoefficient() {
 
 WNDCHRM_ERROR GiniCoefficient::calculate( MatrixMap &saved_pixel_planes, std::vector<Transform*> &run_algorithm_on_this_sequence, vector<double> &coeffs )
 {
-	std::cout << "calculating " << name << std::endl;
+	std::cout << "\t" << name << ":" << std::endl;
 	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
@@ -567,6 +580,7 @@ WNDCHRM_ERROR GiniCoefficient::calculate( MatrixMap &saved_pixel_planes, std::ve
 	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
 	if( WC_NO_ERROR != retval )
 		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
 
 	double temp_vec [1];
 	int j;

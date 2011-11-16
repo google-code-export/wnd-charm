@@ -107,14 +107,33 @@ size_t found;
 	return(0);
 }
 
-/*
-int showError( WNDCHRM_ERROR return_val )
+
+const char* translateError( WNDCHRM_ERROR return_val )
 {
 	switch( return_val )
 	{
-		case
+		case WC_UNINITIALIZED:
+			return "return value is unused.";
+		case WC_NO_ERROR:
+			return "";
+		case WC_IPP_NULL:
+			return "intermediate pixel_plane saved in MatrixMap is null.";
+		case WC_MM_FAIL_RECURSIVE_CALL:
+			return "call to MatrixMap::obtain_transform() failed in recursion.";
+		case WC_TRANSFORM_FAIL:
+			return "transform algorithm failed to produce an output pixel plane";
+		case WC_EMPTY:
+			return "nothing in container.";
+		case WC_TRANSFORM_NOT_IN_PHONEBOOK:
+			return "transform requested was not registered at compile time.";
+		case WC_NOT_IMPLEMENTED:
+			return "requested functionality not implemented.";
+		case WC_INPUT_IMAGEMATRIX_NULL:
+			return "pixelplane passed to transform was corrupted.";
+	}
+}
 
-			*/
+
 
 const std::string getErrorString () {
 	return (error_messages.str());

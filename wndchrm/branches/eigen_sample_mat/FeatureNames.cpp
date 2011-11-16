@@ -139,7 +139,7 @@ FeatureNames::FeatureNames() {
 FeatureNames* FeatureNames::get_instance()
 {
 	if( !instanceFlag ) {
-		std::cout << "Instantiating new FeatureNames singleton" << std::endl;
+		//std::cout << "Instantiating new FeatureNames singleton" << std::endl;
 		pInstance = new FeatureNames();
 		instanceFlag = true;
 		return pInstance;
@@ -430,7 +430,7 @@ int FeatureNames::register_transform( string &transform_name, Transform * BT_itf
 }
 
 int FeatureNames::register_algorithm( string &alg_name, FeatureAlgorithm * BA_itf ) {
-	cout << "Algorithm " << alg_name << " registered." << endl;
+	//cout << "Algorithm " << alg_name << " registered." << endl;
 	fam_t::iterator it = feature_algorithms_.find( alg_name );
 
 	if( it == feature_algorithms_.end() ) {
