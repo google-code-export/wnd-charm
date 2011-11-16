@@ -76,6 +76,7 @@ WNDCHRM_ERROR ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
 
 	// Add a Chebyshev transform to the end of the transform sequence 
 
+	/*
 	FeatureNames* phonebook = FeatureNames::get_instance();
 	if( NULL == phonebook ) {
 		std::cerr << "Error: could not retrieve registry of transforms" << std::endl;
@@ -97,7 +98,18 @@ WNDCHRM_ERROR ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
 	
   IN_matrix->histogram( temp_vec, 32, 0 );
 	coeffs.assign( temp_vec, temp_vec + n_features);
+	*/
 
+	retval = saved_pixel_planes.obtain_transform( run_algorithm_on_this_sequence, &IN_matrix );
+	if( WC_NO_ERROR != retval )
+		return retval;
+	std::cout << "\t\tcalculating features..." << std::endl;
+
+	ImageMatrix * temp = IN_matrix->duplicate();
+	for( int i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	temp->ChebyshevStatistics2D(temp_vec, 0, 32);
+	delete temp;
+	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
 }
 

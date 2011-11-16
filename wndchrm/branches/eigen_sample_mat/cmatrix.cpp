@@ -1192,6 +1192,18 @@ void ImageMatrix::Symlet5Transform()
    if (grid3d) delete grid3d;   
 }
 
+/* chebyshev statistics
+   coeff -array of double- pre-allocated memory of 20 doubles
+   nibs_num - (32 is normal)
+*/
+void ImageMatrix::ChebyshevStatistics2D(double *coeff, int N, int bins_num)
+{
+   if (N<2) N=20;
+   if (N>MIN(width,height)) N=MIN(width,height);   
+   ChebyshevTransform(N);
+   histogram(coeff,bins_num,0);
+}
+
 /* CombFirstFourMoments
    vec should be pre-alocated array of 48 doubles
 */

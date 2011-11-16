@@ -127,6 +127,7 @@ class ImageMatrix
    void GradientDirection2D(int span);
    void PerwittMagnitude2D(ImageMatrix *output);
    void PerwittDirection2D(ImageMatrix *output);
+   void ChebyshevStatistics2D(double *coeff, int N, int bins_num);
    int CombFirstFourMoments2D(double *vec);
    void EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins);
    void RadonTransform2D(double *vec);
