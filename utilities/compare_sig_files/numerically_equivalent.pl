@@ -44,6 +44,8 @@ sub main {
 	my $unmatched = 0;
 	my $missing = 0;
 	my $feature_count = 0;
+	my %groups_that_have_unmatched;
+	my %groups_that_have_missing;
 	foreach $feature_name ( @sorted_feature_names )
 	{
 		++$feature_count;
@@ -61,6 +63,16 @@ sub main {
 				print "Feature \"$feature_name\" doesn't match:\n";
 				print "\tVal $file1_val in file $file1\n";
 				print "\tVal $file2_val in file $file2\n";
+				my $feature_group = $feature_name;
+				# strip off the bin number if it exists
+				$feature_group =~ s/ \[\d+\]//;
+				if( defined $groups_that_have_unmatched{ $feature_group } ) {
+					$groups_that_have_unmatched{ $feature_group }++;
+				}
+				else
+				{
+					$groups_that_have_unmatched{ $feature_group } = 1;
+				}
 			}
 		}
 		elsif( $file1_val xor $file2_val )
@@ -72,6 +84,16 @@ sub main {
 			else
 			{
 				print "****Feature \"$feature_name\"\n\tappears in file \"$file2\"\n\tbut not file \"$file1\"\n";
+			}
+			my $feature_group = $feature_name;
+			# strip off the bin number if it exists
+			$feature_group =~ s/ \[\d+\]//;
+			if( defined $groups_that_have_missing{ $feature_group } ) {
+				$groups_that_have_missing{ $feature_group }++;
+			}
+			else
+			{
+				$groups_that_have_missing{ $feature_group } = 1;
 			}
 		}
 		else
@@ -85,8 +107,20 @@ sub main {
 	print "\n\n********************************\nSUMMARY:\n";
 	print "Features examined: $feature_count\n";
 	print "Matching features: $matched\n";
-	print "Unmatching features: $unmatched\n";
+	print "Total unmatched features: $unmatched\n";
 	print "Features in one sig file but not the other: $missing\n";
+	my $group_count = 1;
+	print "Groups with unmatched features:\n";
+	foreach my $group_name (keys %groups_that_have_unmatched) {
+		print "\t$group_count.\t".$groups_that_have_unmatched{$group_name}."\t$group_name:\n";
+		$group_count++;
+	}
+	$group_count = 1;
+	print "Groups with missing features:\n";
+	foreach my $group_name (keys %groups_that_have_missing) {
+		print "\t$group_count.\t".$groups_that_have_missing{$group_name}."\t$group_name:\n";
+		$group_count++;
+	}
 	return 1;
 }
 
