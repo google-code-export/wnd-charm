@@ -6,6 +6,7 @@ use strict;
 sub LoadOldToNewHash;
 sub ParseSigFile($$);
 sub uniq;
+sub feature_sort;
 sub main;
 
 # Globals
@@ -38,7 +39,7 @@ sub main {
 	my $feature_name;
 	my @new_feature_names =  values %old_featurenames_mapped_to_new;
   push( @new_feature_names, keys %unrecognized_feature_names );
-	my @sorted_feature_names = uniq sort @new_feature_names;
+	my @sorted_feature_names = uniq sort feature_sort @new_feature_names;
 	my $matched = 0;
 	my $unmatched = 0;
 	my $missing = 0;
@@ -103,6 +104,29 @@ sub uniq {
     return @r;
 }
 
+#################################################################
+
+sub feature_sort {
+
+	my ($a_stem, $a_bin, $b_stem, $b_bin );
+
+	if( $a =~ /(.*) \[(\d+)\]/ ) {
+		$a_stem = $1;
+		$a_bin = $2;
+	}
+	if( $b =~ /(.*) \[(\d+)\]/ ) {
+		$b_stem = $1;
+		$b_bin = $2;
+	}
+
+	if ( $a_stem && $a_bin && $b_stem && $b_bin ) {
+		if ($a_stem ne $b_stem ) { return $a cmp $b } 
+		else { return $a_bin <=> $b_bin; } 
+	}
+	else {
+		return $a cmp $b;
+	}
+}
 
 #################################################################
 sub ParseSigFile($$) {
