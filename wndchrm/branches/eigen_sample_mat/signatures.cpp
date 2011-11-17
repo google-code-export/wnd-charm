@@ -46,7 +46,6 @@
 #include <stdlib.h> // for exit(), used for debug, comment out if release build
 #include <math.h>
 #include <cfloat> // Has definition of DBL_EPSILON, FLT_EPSILON
-#include <fstream>
 #define OUR_EPSILON FLT_EPSILON*6
 #define FLOAT_EQ(x,v) (((v - FLT_EPSILON) < x) && (x <( v + FLT_EPSILON)))
 #define OUR_EQ(x,v) (((v - OUR_EPSILON) < x) && (x <( v + OUR_EPSILON)))
@@ -179,34 +178,175 @@ int signatures::GenerateStandardFeatureGroupList( int long_chain, int compute_co
 	group_list.clear();
 	FeatureNames* phonebook = FeatureNames::get_instance();
 	if( NULL == phonebook ) return -1;
-	string temp_str;
-	
-	ifstream small_feature ( "small.txt" );
-	if( small_feature.fail() ) {
-		std::cout << "Failed to open small.txt" << std::endl;
-		exit(1);
-	}
-	while( small_feature.good() ) {
-		temp_str.clear();
-		getline( small_feature, temp_str );
-		if( !temp_str.empty() ) 
-			group_list.push_back( phonebook->getGroupByName( temp_str ) );
-	}
-	small_feature.close();
+
+	group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments (Chebyshev ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments (Chebyshev (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments (Wavelet ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Comb Moments (Wavelet (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Edge Features ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Gabor Textures ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Chebyshev ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Chebyshev (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Wavelet ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Wavelet (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Chebyshev ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Chebyshev (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Wavelet ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Wavelet (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Object Features ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Radon Coefficients ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Chebyshev ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Chebyshev (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Chebyshev ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Chebyshev (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Fourier ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Wavelet ())" ) );
+	group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Wavelet (Fourier ()))" ) );
+	group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients ()" ) );
+	group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Fourier ())" ) );
 
 	if( long_chain ) {
-		ifstream large_feature( "large.txt" ); //, ifstream::in );
-		if( large_feature.fail() ) {
-			std::cout << "Failed to open large.txt" << endl;
-			exit(1);
-		}
-		while( large_feature.good() ) {
-		temp_str.clear();
-		getline( large_feature, temp_str );
-		if( !temp_str.empty() ) 
-			group_list.push_back( phonebook->getGroupByName( temp_str ) );
-		}
-		large_feature.close();
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev Coefficients (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Chebyshev-Fourier Coefficients (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Comb Moments (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features ()" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Chebyshev (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Fourier ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Fractal Features (Wavelet (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient ()" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Chebyshev (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Fourier ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Gini Coefficient (Wavelet (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Haralick Textures (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Multiscale Histograms (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics ()" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Chebyshev (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Fourier ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Pixel Intensity Statistics (Wavelet (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Radon Coefficients (Wavelet (Fourier ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Chebyshev (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Fourier (Chebyshev ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Tamura Textures (Wavelet (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Chebyshev ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Edge ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Fourier (Edge ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Fourier (Wavelet ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Wavelet ())" ) );
+		group_list.push_back( phonebook->getGroupByName( "Zernike Coefficients (Wavelet (Edge ()))" ) );
+	}
+
+	if(compute_colors) {
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev Coefficients (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev Coefficients (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev Coefficients (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev-Fourier Coefficients (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev-Fourier Coefficients (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev-Fourier Coefficients (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Chebyshev-Fourier Coefficients (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Color Histogram ()" ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Comb Moments (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Comb Moments (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Comb Moments (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Comb Moments (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Fractal Features (Chebyshev (Hue ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Fractal Features (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Fractal Features (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Fractal Features (Hue ())" ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Haralick Textures (Chebyshev (Hue ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Haralick Textures (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Haralick Textures (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Haralick Textures (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Multiscale Histograms (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Multiscale Histograms (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Multiscale Histograms (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Multiscale Histograms (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Pixel Intensity Statistics (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Pixel Intensity Statistics (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Pixel Intensity Statistics (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Pixel Intensity Statistics (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Radon Coefficients (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Radon Coefficients (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Radon Coefficients (Fourier (Hue ()))" ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Radon Coefficients (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Tamura Textures (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Tamura Textures (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Tamura Textures (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Tamura Textures (Hue ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Zernike Coefficients (Chebyshev (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Zernike Coefficients (Color ()) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Zernike Coefficients (Fourier (Hue ())) " ) );
+		group_list.push_back( phonebook->getGroupByName( 	"Zernike Coefficients (Hue ())" ) );
 	}
 	return 0;
 }
@@ -264,7 +404,8 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 
 		if( (retval = (*grp_it)->calculate_coefficients( saved_pixel_planes, coeffs )) != WC_NO_ERROR )
 		{
-			std::cout << "Signatures::ComputeFromGroupList(): call to algorithm->calculate returned value " << retval << std::endl;
+			std::cout << "ERROR: Signatures::ComputeFromGroupList(): call to algorithm->calculate returned "
+				<< translateError( retval ) << std::endl;
 			continue;
 		}
 

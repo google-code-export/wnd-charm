@@ -500,34 +500,33 @@ WNDCHRM_ERROR ObjectFeatures::calculate( MatrixMap &saved_pixel_planes, std::vec
 
 	double temp_vec[34];
 	int j = 0;
+	int i = 0;
 
 	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
-	double * here = &temp_vec[0];
-
 	for( j = 0; j < 10; j++ ){
-		*here = area_histogram[j]; here++;
+		temp_vec[i] = area_histogram[j]; i++;
 	}
 
-	*here = AreaMax; here++;
-	*here = AreaMean; here++;
-	*here = AreaMedian; here++;
-	*here = AreaMin; here++;
-	*here = AreaVar; here++;
-	*here = centroid_x; here++;
-	*here = centroid_y; here++;
-	*here = feature_count; here++;
+	temp_vec[i] = AreaMax; i++;
+	temp_vec[i] = AreaMean; i++;
+	temp_vec[i] = AreaMedian; i++;
+	temp_vec[i] = AreaMin; i++;
+	temp_vec[i] = AreaVar; i++;
+	temp_vec[i] = centroid_x; i++;
+	temp_vec[i] = centroid_y; i++;
+	temp_vec[i] = feature_count; i++;
 
 	for( j = 0; j < 10; j++ ) {
-		*here = dist_histogram[j]; here++;
+		temp_vec[i] = dist_histogram[j]; i++;
 	}
 
-	*here = DistMax; here++;
-	*here = DistMean; here++;
-	*here = DistMedian; here++;
-	*here = DistMin; here++;
-	*here = DistVar; here++;
-	*here = Euler; here++;
+	temp_vec[i] = DistMax; i++;
+	temp_vec[i] = DistMean; i++;
+	temp_vec[i] = DistMedian; i++;
+	temp_vec[i] = DistMin; i++;
+	temp_vec[i] = DistVar; i++;
+	temp_vec[i] = Euler; i++;
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;

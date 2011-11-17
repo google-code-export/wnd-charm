@@ -1553,7 +1553,6 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    int *object_areas;
    double *centroid_dists,sum_dist;
 
-	 /*
    BWInvert=duplicate();   // check if the background is brighter or dimmer
    BWInvert->invert();
    BWInvert->OtsuBinaryMaskTransform();
@@ -1573,7 +1572,6 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    }
    delete BWInvert;
    *Euler=EulerNumber(BWImage,*count)+1;
-	 */
 
    // calculate the areas 
    sum_areas=0;
@@ -1627,7 +1625,7 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
    if (*count>1) *DistVar=sum_dist/((*count)-1);
    else *DistVar=sum_dist;
 
-   //delete BWImage;
+   delete BWImage;
    delete [] object_areas;
    delete [] centroid_dists;
 }
