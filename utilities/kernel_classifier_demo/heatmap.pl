@@ -3,7 +3,7 @@
 
 use strict;
 use warnings;
-use Image::Magick;
+#use Image::Magick;
 use Getopt::Long qw(:config auto_abbrev no_ignore_case);
 
 # Forward Declarations
