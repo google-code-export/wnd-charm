@@ -28,9 +28,6 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-#include "TrainingSet.h"
-#include "wndchrm_error.h"
-
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -42,6 +39,10 @@
 // system errors
 // isdigit
 #include <ctype.h>
+#include <algorithm>
+
+#include "TrainingSet.h"
+#include "wndchrm_error.h"
 
 
 #define MAX_SPLITS 10000
@@ -463,7 +464,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	}
 
 	// if( verbosity >= 2 ) printf("\n\n");
-	if (!report & verbosity != 1 )	{
+	if (!report && verbosity != 1 )	{
 		printf( "\n----------\n" );
 
 		// print the average accuracy
