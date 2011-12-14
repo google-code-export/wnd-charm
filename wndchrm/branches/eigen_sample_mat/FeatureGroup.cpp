@@ -11,16 +11,16 @@
 #define DEBUG 0
 
 void FeatureGroup::print_info() const {
-	//std::cout << ", group name:\t" << name;// << std::endl;
+	std::cout << "FeatureGroup: " << name << std::endl;
 	if( algorithm )
 		algorithm->print_info();
 	if( channel )
 		channel->print_info();
-	unsigned int i;
-	for( i = 0; i < transforms.size(); ++i ) {
-		std::cout << "\t";
-		transforms[i]->print_info();
-	}
+	if( transforms.size() > 0 )
+		for( int i = 0; i < transforms.size(); ++i )
+			transforms[i]->print_info();
+	else
+		std::cout << "Tranforms: none" << std::endl;
 }
 
 

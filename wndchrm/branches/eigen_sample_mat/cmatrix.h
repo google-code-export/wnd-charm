@@ -34,6 +34,7 @@
 //---------------------------------------------------------------------------
 
 #include <vector>
+#include <string> // for what_am_i definition
 #ifdef WIN32
   #include <vcl.h>
 #else  
@@ -84,7 +85,8 @@ class ImageMatrix
    pix_data *data;                                 /* data of the colors                   */  
   public:
 	 friend class GiniCoefficient;
-   int ColorMode;                                  /* can be cmRGB or cmHSV                */
+	 std::string what_am_i;                          // informative label
+	 int ColorMode;                                  /* can be cmRGB or cmHSV                */
    unsigned short bits;                            /* the number of intensity bits (8,16, etc) */
    int width,height,depth;                         /* width and height of the picture      */
 #ifdef WIN32   
@@ -100,6 +102,7 @@ class ImageMatrix
    ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2, int z1, int z2);  /* create a new matrix which is part of the original one */
    ~ImageMatrix();                                 /* destructor */
    ImageMatrix *duplicate();                       /* create a new identical matrix        */
+	 void dump();                                    // dump the pixel intensities to a file for inspection
    pix_data pixel(int x,int y,int z);              /* get a pixel value                    */
    void set(int x,int y,int z, pix_data val);      /* assign a pixel value                 */       
    void SetInt(int x,int y,int z, double val);     /* set only the intensity of the pixel  */   

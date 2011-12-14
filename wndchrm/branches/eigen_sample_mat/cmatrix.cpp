@@ -51,6 +51,7 @@
 #include "textures/zernike/zernike.h"
 
 #include <iostream>
+#include <string>
 #include <iomanip>
 #include <fstream>
 #include <sstream>
@@ -72,7 +73,7 @@ using namespace std;
 
 RGBcolor HSV2RGB(HSVcolor hsv)
 {   RGBcolor rgb;
-    float R, G, B;
+    float R=0, G=0, B=0;
     float H, S, V;
     float i, f, p, q, t;
 
@@ -121,6 +122,7 @@ HSVcolor RGB2HSV(RGBcolor rgb)
     hsv.saturation = 0;
   if (hsv.saturation == 0) hsv.hue = 0; //-1;
   else {
+  	h = 0;
     if (r == max)
       h = (g - b) / delta;
     else if (g == max)
@@ -128,6 +130,7 @@ HSVcolor RGB2HSV(RGBcolor rgb)
     else if (b == max)
       h = 4 + (r - g) / delta;
     h *= 60.0;
+    if (h >= 360) h -= 360.0;
     if (h < 0.0) h += 360.0;
     hsv.hue = (byte)(h *(240.0/360.0));
   }
@@ -237,7 +240,7 @@ int ImageMatrix::LoadTIFF(char *filename)
             while (x<width)
             { unsigned char byte_data;
               unsigned short short_data;
-              double val;
+              double val=0;
               int sample_index;
               for (sample_index=0;sample_index<spp;sample_index++)
               {  byte_data=buf8[col+sample_index];
@@ -248,8 +251,7 @@ int ImageMatrix::LoadTIFF(char *filename)
                  {  if (sample_index==0) pix.clr.RGB.red=(unsigned char)(255*(val/max_val));
                     if (sample_index==1) pix.clr.RGB.green=(unsigned char)(255*(val/max_val));
                     if (sample_index==2) pix.clr.RGB.blue=(unsigned char)(255*(val/max_val));
-                    if( (ColorMode = cmHSV ) )
-											pix.clr.HSV = RGB2HSV( pix.clr.RGB );
+                    if ( ColorMode==cmHSV ) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
                  }
               }
               if (spp==3) pix.intensity=COLOR2GRAY(RGB2COLOR(pix.clr.RGB));
@@ -387,46 +389,56 @@ int ImageMatrix::LoadPPM(char *filename, int ColorMode)
 
 
 int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding_rect, double mean, double stddev)
-{  int res=0;
-#ifdef WIN32
-   if (strstr(image_file_name,".bmp") || strstr(image_file_name,".BMP"))
-     res=LoadBMP(image_file_name,cmHSV);
-#endif
-   if (strstr(image_file_name,".tif") || strstr(image_file_name,".TIF"))
-   {  res=LoadTIFF(image_file_name);
-// if (res && matrix->bits==16) matrix->to8bits();
-   }
-//#endif
-   if (strstr(image_file_name,".ppm") || strstr(image_file_name,".PPM"))
-     res=LoadPPM(image_file_name,cmHSV);
-   if (strstr(image_file_name,".dcm") || strstr(image_file_name,".DCM"))
-   {  char buffer[512],temp_filename[64];
-      sprintf(temp_filename,"tempimage%d.tif",rand() % 30000);  /* the getpid is to allow several processes to run from the same folder */
-      sprintf(buffer,"convert %s %s",image_file_name,temp_filename);  
-      system(buffer);
-	  res=LoadTIFF(temp_filename);
-      if (res<=0) printf("Could not convert dcm to tiff\n");
-	  sprintf(buffer,"rm %s",temp_filename);
-      system(buffer);	  
-   }
-   if (res)  /* add the image only if it was loaded properly */
-   {  if (bounding_rect && bounding_rect->x>=0)    /* compute features only from an area of the image */
-      {  ImageMatrix *temp;
-         temp=new ImageMatrix(this,bounding_rect->x,bounding_rect->y,bounding_rect->x+bounding_rect->w-1,bounding_rect->y+bounding_rect->h-1,0,depth-1);
-         delete data;
-		 width=temp->width;height=temp->height;
-         if (!(data=new pix_data[width*height*depth])) return(0);  /* allocate new memory */
-         memcpy(data,temp->data,width*height*depth*sizeof(pix_data));		 
-//         for (int a=0;a<width*height*depth;a++)
-//		   data[a]=temp->data[a];
-		 delete temp;
-      }
-      if (downsample>0 && downsample<100)  /* downsample by a given factor */
-        Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
-      if (mean>0)  /* normalize to a given mean and standard deviation */
-        normalize(-1,-1,-1,mean,stddev);
-   }
-   return(res);
+{  
+	int res=0;
+	#ifdef WIN32
+	if (strstr(image_file_name,".bmp") || strstr(image_file_name,".BMP"))
+		res=LoadBMP(image_file_name,cmHSV);
+	#endif
+	if (strstr(image_file_name,".tif") || strstr(image_file_name,".TIF"))
+	{  
+		res=LoadTIFF(image_file_name);
+		// if (res && matrix->bits==16) matrix->to8bits();
+	}
+	if (strstr(image_file_name,".ppm") || strstr(image_file_name,".PPM"))
+		res=LoadPPM(image_file_name,cmHSV);
+	if (strstr(image_file_name,".dcm") || strstr(image_file_name,".DCM"))
+	{ 
+		char buffer[512],temp_filename[64];
+		sprintf(temp_filename,"tempimage%d.tif",rand() % 30000);  /* the getpid is to allow several processes to run from the same folder */
+		sprintf(buffer,"convert %s %s",image_file_name,temp_filename);  
+		system(buffer);
+		res=LoadTIFF(temp_filename);
+		if (res<=0) printf("Could not convert dcm to tiff\n");
+		sprintf(buffer,"rm %s",temp_filename);
+		system(buffer);	  
+	}
+	if (res)  /* add the image only if it was loaded properly */
+	{  
+		if (bounding_rect && bounding_rect->x>=0)    /* compute features only from an area of the image */
+		{ 
+			ImageMatrix *temp;
+			temp=new ImageMatrix(this,bounding_rect->x,bounding_rect->y,bounding_rect->x+bounding_rect->w-1,bounding_rect->y+bounding_rect->h-1,0,depth-1);
+			delete data;
+			width=temp->width;height=temp->height;
+			if (!(data=new pix_data[width*height*depth])) return(0);  /* allocate new memory */
+			memcpy(data,temp->data,width*height*depth*sizeof(pix_data));		 
+			//         for (int a=0;a<width*height*depth;a++)
+			//		   data[a]=temp->data[a];
+			delete temp;
+		}
+		if (downsample>0 && downsample<100)  /* downsample by a given factor */
+			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
+		if (mean>0)  /* normalize to a given mean and standard deviation */
+			normalize(-1,-1,-1,mean,stddev);
+
+		// keep track of what file this pixel plane came from
+		what_am_i = image_file_name;
+		size_t last_slash = what_am_i.find_last_of( '/' );
+		if( last_slash != std::string::npos ) 
+			what_am_i = what_am_i.substr( last_slash+1 );
+	}
+	return(res);
 }
 
 /* simple constructors */
@@ -477,6 +489,8 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2, int
      for (y=y1;y<y1+height;y++)
        for (x=x1;x<x1+width;x++)
 	     set(x-x1,y-y1,z-z1,matrix->pixel(x,y,z));
+
+	 what_am_i = matrix->what_am_i;
 }
 
 /* free the memory allocated in "ImageMatrix::LoadImage" */
@@ -509,7 +523,7 @@ void ImageMatrix::diff(ImageMatrix *matrix)
        {  pix_data pix1,pix2;
           pix1=pixel(x,y,z);
           pix2=matrix->pixel(x,y,z);
-          pix1.intensity==fabs(pix1.intensity-pix2.intensity);
+          pix1.intensity=fabs(pix1.intensity-pix2.intensity);
           pix1.clr.RGB.red=(byte)fabs(pix1.clr.RGB.red-pix2.clr.RGB.red);		  
           pix1.clr.RGB.green=(byte)fabs(pix1.clr.RGB.green-pix2.clr.RGB.green);		  
           pix1.clr.RGB.blue=(byte)fabs(pix1.clr.RGB.blue-pix2.clr.RGB.blue);
@@ -522,51 +536,57 @@ void ImageMatrix::diff(ImageMatrix *matrix)
    create another matrix the same as the first
 */
 ImageMatrix *ImageMatrix::duplicate()
-{  ImageMatrix *new_matrix;
-   new_matrix=new ImageMatrix;
-   new_matrix->data=new pix_data[width*height*depth];
+{ 
+	ImageMatrix *new_matrix;
+	new_matrix=new ImageMatrix;
+	new_matrix->data=new pix_data[width*height*depth];
 	if (!(new_matrix->data)) {
 		fprintf (stderr,"Could not allocate memory for duplicate image\n");
 		return(NULL); /* memory allocation failed */
 	}
-   new_matrix->width=width;
-   new_matrix->height=height;
-   new_matrix->depth=depth;
-   new_matrix->bits=bits;
-   new_matrix->ColorMode=ColorMode;
-   memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
+	new_matrix->width=width;
+	new_matrix->height=height;
+	new_matrix->depth=depth;
+	new_matrix->bits=bits;
+	new_matrix->ColorMode=ColorMode;
+	memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
 
-	 /*
-  	time_t ltime;
-    struct tm *Tm;
-		struct timeval detail_time;
- 
-    ltime=time(NULL);
-    Tm=localtime(&ltime);
- 
-		std::ostringstream filename;
-		filename << (Tm->tm_year+1900) << '-' 
-			<< setw(2) << setfill('0') << (Tm->tm_mon+1) << '-' 
-			<< setw(2) << setfill('0') << Tm->tm_mday << "_" 
-			<< setw(2) << setfill('0') << Tm->tm_hour <<  '-'
-			<< setw(2) << setfill('0') << Tm->tm_min << '-'
-			<< setw(2) << setfill('0') << Tm->tm_sec << ".";
-		gettimeofday(&detail_time,NULL);
-		filename << setw(2) <<  detail_time.tv_usec / 1000;
-		filename << "pixel_dump.txt";
-		std::cout << filename.str() << std::endl;
-		ofstream pixel_dump_file ( filename.str().c_str(), ios::app );
-
-		int count = 0;
-		int numpix = width*height*depth;
-		while (count < numpix) {
-			pixel_dump_file << data[count].intensity << std::endl;
-			++count;
-		}
-		pixel_dump_file.close();
-*/
-	 return(new_matrix);
+	new_matrix->what_am_i = what_am_i;
+	return(new_matrix);
 }
+
+void ImageMatrix::dump( )
+{
+	
+	time_t ltime;
+	struct tm *Tm;
+	struct timeval detail_time;
+
+	ltime=time(NULL);
+	Tm=localtime(&ltime);
+
+	std::ostringstream filename;
+	filename << what_am_i << "_" << (Tm->tm_year+1900) << '-' 
+		<< setw(2) << setfill('0') << (Tm->tm_mon+1) << '-' 
+		<< setw(2) << setfill('0') << Tm->tm_mday << "_" 
+		<< setw(2) << setfill('0') << Tm->tm_hour <<  '-'
+		<< setw(2) << setfill('0') << Tm->tm_min << '-'
+		<< setw(2) << setfill('0') << Tm->tm_sec << ".";
+	gettimeofday(&detail_time,NULL);
+	filename << setw(2) <<  detail_time.tv_usec / 1000;
+	filename << "pixel_dump.txt";
+	std::cout << filename.str() << std::endl;
+	ofstream pixel_dump_file ( filename.str().c_str(), ios::app );
+
+	int count = 0;
+	int numpix = width*height*depth;
+	while (count < numpix) {
+		pixel_dump_file << data[count].intensity << std::endl;
+		++count;
+	}
+	pixel_dump_file.close();
+}
+
 
 /* to8bits
    convert a 16 bit matrix to 8 bits

@@ -26,7 +26,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#define DEBUG 0
+#define DEBUG 1
 
 #ifdef WIN32
 #pragma hdrstop
@@ -380,9 +380,6 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 	string feature_name;
 	vector<FeatureInfo*> feature_list;
 	
-	#if DEBUG
-	std::string group_name;
-	#endif
 	int group_count = 0;
 
 	vector<FeatureGroup*>::const_iterator grp_it = feature_groups.begin();
@@ -393,11 +390,8 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 			continue;
 		}
 
-		#if DEBUG
+		std::cout << "Group " << group_count << ": " << std::endl;
 		(*grp_it)->print_info();
-		#else
-		std::cout << "Group " << group_count << ": " << (*grp_it)->name << std::endl;
-		#endif
 
 		if( NULL == (*grp_it)->algorithm )
 			continue;
@@ -418,16 +412,6 @@ int signatures::ComputeFromGroupList( ImageMatrix *untransformed_matrix, std::ve
 	} // end iterating over feature groups
 
 	vector<FeatureInfo*>::iterator fi_it = feature_list.begin();
-
-	#if DEBUG
-	int count = 0;
-	for( ; fi_it != feature_list.end(); ++fi_it )
-	{
-		string temp_str;
-		(*fi_it)->get_name( temp_str );
-		cout << ++count << ". " << temp_str << endl;
-	}
-	#endif
 
 	// For right now, don't save the feature_infos, cause it's a lot of memory
 	// (~5MB for 12 images)

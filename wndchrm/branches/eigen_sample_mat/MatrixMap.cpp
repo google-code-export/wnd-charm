@@ -5,7 +5,7 @@
 #include "transforms.h"
 #include "wndchrm_error.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 //==========================================================================
 MatrixMap::MatrixMap( ImageMatrix* untransformed_matrix )
@@ -42,30 +42,18 @@ WNDCHRM_ERROR MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageM
 		return WC_EMPTY;
 
 #if DEBUG
-	std::cout << "\tMatrixMap::obtain_transform:" << std::endl;
-	std::cout << "\t\tMatrixMap size =" << m_map.size() << std::endl;
-	std::cout << "\t\tsequence size =" << sequence.size() << std::endl;
-	std::cout << "\t\tsequence to be obtained: ";
+	std::cout << "(MatrixMap size = " << m_map.size() << ")" << std::endl;
 #endif
+	vector<Transform*>::iterator seq_it;
 	stringstream transform_name;
 	if( sequence.size() == 0 )
 		transform_name << "Raw ";
 	else
-		for( vector<Transform*>::iterator seq_it = sequence.begin(); seq_it != sequence.end(); ++seq_it )
+		for( seq_it = sequence.begin(); seq_it != sequence.end(); ++seq_it )
 			transform_name << (*seq_it)->name << " ";
 
 	MapType::iterator t_it = m_map.find(sequence);
 	if( t_it != m_map.end() ) {
-#if DEBUG
-		std::cout << "\t\tFound transform ";
-		std::pair< std::vector< Transform* > , ImageMatrix* > temp_pair = *t_it;
-		std::vector<Transform*> seq_in_matrixmap = temp_pair.first;
-		for( vector<Transform*>::iterator seq2_it = seq_in_matrixmap.begin(); seq2_it != seq_in_matrixmap.end(); ++seq2_it )
-		{
-			std::cout << (*seq2_it)->name << " ";
-		}
-		std::cout << std::endl;
-#endif
 		std::cout << "\t\t" << transform_name.str() << "pixelplane acquired." << std::endl;
 		*out_matr = t_it->second;
 		return WC_NO_ERROR;
@@ -83,18 +71,11 @@ WNDCHRM_ERROR MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageM
 	// Step 4: Save the resulting transformed pixel plane from Step 3 in "saved_pixel_planes"
 	// Step 5: Return.
 
-	#if DEBUG
-	std::cout << "\t\tsequence not found" << std::endl;
-	#endif
-
 	// Step 1.
 	ImageMatrix* output_pixel_plane = NULL;
 	ImageMatrix* intermediate_pixel_plane = NULL;
 
 	Transform* last_transform_in_sequence = sequence.back();
-	#if DEBUG
-	std::cout << "\t\tlast tform in sequence is " << last_transform_in_sequence->name << std::endl;
-	#endif
 	vector<Transform *> original_sequence = sequence;
 	sequence.pop_back();
 
@@ -103,9 +84,13 @@ WNDCHRM_ERROR MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageM
 	t_it = m_map.find(sequence);
 	if( t_it != m_map.end() )
 	{
-		#if DEBUG
-		std::cout << "MatrixMap::obtain_transform: found the shortened sequence in the MatrixMap" << std::endl;
-		#endif
+		stringstream shortened_seq_name;
+		if( sequence.size() == 0 )
+			shortened_seq_name << "Raw ";
+		else
+			for( seq_it = sequence.begin(); seq_it != sequence.end(); ++seq_it )
+				shortened_seq_name << (*seq_it)->name << " ";
+		std::cout << "\t\t" << shortened_seq_name.str() << "pixelplane acquired." << std::endl;
 		intermediate_pixel_plane = t_it->second;
 		if( NULL == intermediate_pixel_plane ) {
 			return WC_IPP_NULL;
@@ -129,10 +114,6 @@ WNDCHRM_ERROR MatrixMap::obtain_transform( vector<Transform *> &sequence, ImageM
 
 	// Step 3.
 	retval = last_transform_in_sequence->transform( intermediate_pixel_plane, &output_pixel_plane );
-	#if DEBUG
-	std::cout << "MatrixMap::obtain_transform: Return value from transform is "
-	          << tform_retval << std::endl;
-	#endif
 
 	// Step 4.
 	if( ( retval != WC_NO_ERROR ) || ( NULL == output_pixel_plane ) )

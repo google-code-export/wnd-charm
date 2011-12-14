@@ -1431,10 +1431,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			if( work_order.size() <= 0 )
 				ImageSignatures->GenerateStandardFeatureGroupList( feature_opts->large_set, feature_opts->compute_colors, work_order );
 			ImageSignatures->ComputeFromGroupList( tile_matrix, work_order );
-
-			//if (feature_opts->large_set) ImageSignatures->ComputeEverything(tile_matrix,feature_opts->compute_colors);
-			//if (feature_opts->large_set) ImageSignatures->ComputeGroups(tile_matrix,feature_opts->compute_colors);
-			//else ImageSignatures->compute(tile_matrix,feature_opts->compute_colors);
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.

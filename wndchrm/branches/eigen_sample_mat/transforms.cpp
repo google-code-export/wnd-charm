@@ -8,7 +8,7 @@
 #include "transforms/fft/bcb_fftw3/fftw3.h"
 
 void Transform::print_info() {
-
+	std::cout << "Transform: " << name << std::endl;
 }
 
 EmptyTransform::EmptyTransform () {
@@ -18,7 +18,7 @@ EmptyTransform::EmptyTransform () {
 
 WNDCHRM_ERROR EmptyTransform::transform( ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p )
 {
-	std::cout << "\tEmpty transform." << std::endl;
+	std::cout << "\t\tEmpty transform." << std::endl;
 	return WC_NOT_IMPLEMENTED;
 }
 
@@ -36,7 +36,7 @@ WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
 	if( !matrix_IN )
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
 	ImageMatrix* matrix_OUT = NULL;
 
 	fftw_complex *out;
@@ -111,6 +111,9 @@ WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
    fftw_free(in);
    fftw_free(out);
 
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
+
    /* calculate the magnitude and angle */
 
    return WC_NO_ERROR;
@@ -158,9 +161,11 @@ WNDCHRM_ERROR ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ChebyshevTransform(0);
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -179,9 +184,11 @@ WNDCHRM_ERROR WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->Symlet5Transform();
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -200,9 +207,12 @@ WNDCHRM_ERROR EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** m
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->EdgeTransform();
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
+
 	return WC_NO_ERROR;
 }
 
@@ -221,11 +231,13 @@ WNDCHRM_ERROR ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** 
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
 	double temp_vec [COLORS_NUM+1];
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(temp_vec, 0);
 	histogram_vals.assign(temp_vec, temp_vec+COLORS_NUM+1);
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -244,9 +256,11 @@ WNDCHRM_ERROR HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** ma
 		return WC_INPUT_IMAGEMATRIX_NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
-	std::cout << "\tPerforming transform " << name << std::endl;
+	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(NULL,1);
+	matrix_OUT->what_am_i += "-" + name;
+	matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 

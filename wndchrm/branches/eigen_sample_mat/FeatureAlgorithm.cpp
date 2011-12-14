@@ -15,7 +15,7 @@
 using namespace std;
 
 void FeatureAlgorithm::print_info() const {
-	std::cout << "FeatureAlgorithm:\t" << name << " (" << n_features << " features) " << std::endl;
+	std::cout << "FeatureAlgorithm: " << name << " (" << n_features << " features) " << std::endl;
 }
 
 //===========================================================================
@@ -42,6 +42,7 @@ WNDCHRM_ERROR ChebyshevFourierCoefficients::calculate( MatrixMap &saved_pixel_pl
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->ChebyshevFourierTransform2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -107,6 +108,7 @@ WNDCHRM_ERROR ChebyshevCoefficients::calculate( MatrixMap &saved_pixel_planes,
 
 	ImageMatrix * temp = IN_matrix->duplicate();
 	for( int i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	temp->dump();
 	temp->ChebyshevStatistics2D(temp_vec, 0, 32);
 	delete temp;
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -141,6 +143,7 @@ WNDCHRM_ERROR ZernikeCoefficients::calculate( MatrixMap &saved_pixel_planes, std
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->zernike2D(temp_vec, &output_size);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -172,6 +175,7 @@ WNDCHRM_ERROR HaralickTextures::calculate( MatrixMap &saved_pixel_planes, std::v
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->HaarlickTexture2D(0,temp_vec); // Note the misspelling
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -203,6 +207,7 @@ WNDCHRM_ERROR MultiscaleHistograms::calculate( MatrixMap &saved_pixel_planes, st
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->MultiScaleHistogram(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -234,6 +239,7 @@ WNDCHRM_ERROR TamuraTextures::calculate( MatrixMap &saved_pixel_planes, std::vec
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->TamuraTexture2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -265,6 +271,7 @@ WNDCHRM_ERROR CombFirstFourMoments::calculate( MatrixMap &saved_pixel_planes, st
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->CombFirstFourMoments2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -296,6 +303,7 @@ WNDCHRM_ERROR RadonCoefficients::calculate( MatrixMap &saved_pixel_planes, std::
 	std::cout << "\t\tcalculating features..." << std::endl;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
+	IN_matrix->dump();
 	IN_matrix->RadonTransform2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -330,6 +338,7 @@ WNDCHRM_ERROR FractalFeatures::calculate( MatrixMap &saved_pixel_planes, std::ve
 		return retval;
 	std::cout << "\t\tcalculating features..." << std::endl;
 
+	IN_matrix->dump();
 	return calculate( IN_matrix, coeffs );
 }
 
@@ -397,6 +406,7 @@ WNDCHRM_ERROR PixelIntensityStatistics::calculate( MatrixMap &saved_pixel_planes
 
 	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
+	IN_matrix->dump();
 	IN_matrix->BasicStatistics(&temp_vec[0], &temp_vec[1], &temp_vec[2], &temp_vec[3], &temp_vec[4], NULL, 10);
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
@@ -425,6 +435,7 @@ WNDCHRM_ERROR EdgeFeatures::calculate( MatrixMap &saved_pixel_planes, std::vecto
 	if( WC_NO_ERROR != retval )
 		return retval;
 	std::cout << "\t\tcalculating features..." << std::endl;
+	IN_matrix->dump();
 
 	long EdgeArea = 0;
 	double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
@@ -432,32 +443,32 @@ WNDCHRM_ERROR EdgeFeatures::calculate( MatrixMap &saved_pixel_planes, std::vecto
 	IN_matrix->EdgeStatistics(&EdgeArea, &MagMean, &MagMedian, &MagVar, MagHist, &DirecMean, &DirecMedian, &DirecVar, DirecHist, &DirecHomogeneity, DiffDirecHist, 8);
 
 	int j;
+	int i;
 	
 	double temp_vec[28];
 	for( j = 0; j < n_features; j++ ) temp_vec[j] = 0;
 
-	double * here = &temp_vec[0];
-	*here = double( EdgeArea ); here++;
+	temp_vec[i] = double( EdgeArea ); i++;
 	
 	for( j=0; j<4; j++ ){
-		*here = DiffDirecHist[j]; here++;
+		temp_vec[i] = DiffDirecHist[j]; i++;
 	}
 	for( j=0; j<8; j++ ){
-		*here = DirecHist[j]; here++;
+		temp_vec[i] = DirecHist[j]; i++;
 	}
 
-	*here = DirecHomogeneity; here++;
-	*here = DirecMean; here++;
-	*here = DirecMedian; here++;
-	*here = DirecVar; here++;
+	temp_vec[i] = DirecHomogeneity; i++;
+	temp_vec[i] = DirecMean; i++;
+	temp_vec[i] = DirecMedian; i++;
+	temp_vec[i] = DirecVar; i++;
 
 	for( j=0; j<8; j++ ){
-		*here = MagHist[j]; here++;
+		temp_vec[i] = MagHist[j]; i++;
 	}
 
-	*here = MagMean; here++;
-	*here = MagMedian; here++;
-	*here = MagVar; here++;
+	temp_vec[i] = MagMean; i++;
+	temp_vec[i] = MagMedian; i++;
+	temp_vec[i] = MagVar; i++;
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return WC_NO_ERROR;
@@ -485,6 +496,7 @@ WNDCHRM_ERROR ObjectFeatures::calculate( MatrixMap &saved_pixel_planes, std::vec
 	if( WC_NO_ERROR != retval )
 		return retval;
 	std::cout << "\t\tcalculating features..." << std::endl;
+	IN_matrix->dump();
 
 	int feature_count=0, Euler=0, AreaMin=0, AreaMax=0, AreaMedian=0,
 			area_histogram[10]={0,0,0,0,0,0,0,0,0,0},
@@ -557,6 +569,7 @@ WNDCHRM_ERROR GaborTextures::calculate( MatrixMap &saved_pixel_planes, std::vect
 	if( WC_NO_ERROR != retval )
 		return retval;
 	std::cout << "\t\tcalculating features..."<< std::endl;
+	IN_matrix->dump();
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->GaborFilters2D(temp_vec);
@@ -592,6 +605,7 @@ WNDCHRM_ERROR GiniCoefficient::calculate( MatrixMap &saved_pixel_planes, std::ve
 	if( WC_NO_ERROR != retval )
 		return retval;
 	std::cout << "\t\tcalculating features..." << std::endl;
+	IN_matrix->dump();
 
 	double temp_vec [1];
 	int j;
