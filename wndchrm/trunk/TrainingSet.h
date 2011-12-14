@@ -34,6 +34,7 @@
 
 // STL stuff
 #include <vector>
+#include <list>
 #include <string>
 #include "FeatureNames.hpp"
 
@@ -164,6 +165,7 @@ typedef struct {
    double pearson_coefficient;             /* pearson correlation between the predicted and actual value        */
    double avg_abs_dif;                     /* average absolute difference between the actual and the predicted values */
    double pearson_p_value;
+	std::vector< std::list< float > > marginal_probabilities; //keep track of marginal probs
 } data_split;
 
 class TrainingSet

@@ -388,46 +388,50 @@ int ImageMatrix::LoadPPM(char *filename, int ColorMode)
 
 
 int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding_rect, double mean, double stddev)
-{  int res=0;
-#ifdef WIN32
-   if (strstr(image_file_name,".bmp") || strstr(image_file_name,".BMP"))
-     res=LoadBMP(image_file_name,cmHSV);
-#endif
-   if (strstr(image_file_name,".tif") || strstr(image_file_name,".TIF"))
-   {  res=LoadTIFF(image_file_name);
-// if (res && matrix->bits==16) matrix->to8bits();
-   }
-//#endif
-   if (strstr(image_file_name,".ppm") || strstr(image_file_name,".PPM"))
-     res=LoadPPM(image_file_name,cmHSV);
-   if (strstr(image_file_name,".dcm") || strstr(image_file_name,".DCM"))
-   {  char buffer[512],temp_filename[64];
-      sprintf(temp_filename,"tempimage%d.tif",rand() % 30000);  /* the getpid is to allow several processes to run from the same folder */
-      sprintf(buffer,"convert %s %s",image_file_name,temp_filename);  
-      system(buffer);
-	  res=LoadTIFF(temp_filename);
-      if (res<=0) printf("Could not convert dcm to tiff\n");
-	  sprintf(buffer,"rm %s",temp_filename);
-      system(buffer);	  
-   }
-   if (res)  /* add the image only if it was loaded properly */
-   {  if (bounding_rect && bounding_rect->x>=0)    /* compute features only from an area of the image */
-      {  ImageMatrix *temp;
-         temp=new ImageMatrix(this,bounding_rect->x,bounding_rect->y,bounding_rect->x+bounding_rect->w-1,bounding_rect->y+bounding_rect->h-1,0,depth-1);
-         delete data;
-		 width=temp->width;height=temp->height;
-         if (!(data=new pix_data[width*height*depth])) return(0);  /* allocate new memory */
-         memcpy(data,temp->data,width*height*depth*sizeof(pix_data));		 
-//         for (int a=0;a<width*height*depth;a++)
-//		   data[a]=temp->data[a];
-		 delete temp;
-      }
-      if (downsample>0 && downsample<100)  /* downsample by a given factor */
-        Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
-      if (mean>0)  /* normalize to a given mean and standard deviation */
-        normalize(-1,-1,-1,mean,stddev);
-   }
-   return(res);
+{  
+	int res=0;
+	#ifdef WIN32
+	if (strstr(image_file_name,".bmp") || strstr(image_file_name,".BMP"))
+		res=LoadBMP(image_file_name,cmHSV);
+	#endif
+	if (strstr(image_file_name,".tif") || strstr(image_file_name,".TIF"))
+	{  
+		res=LoadTIFF(image_file_name);
+		// if (res && matrix->bits==16) matrix->to8bits();
+	}
+	if (strstr(image_file_name,".ppm") || strstr(image_file_name,".PPM"))
+		res=LoadPPM(image_file_name,cmHSV);
+	if (strstr(image_file_name,".dcm") || strstr(image_file_name,".DCM"))
+	{ 
+		char buffer[512],temp_filename[64];
+		sprintf(temp_filename,"tempimage%d.tif",rand() % 30000);  /* the getpid is to allow several processes to run from the same folder */
+		sprintf(buffer,"convert %s %s",image_file_name,temp_filename);  
+		system(buffer);
+		res=LoadTIFF(temp_filename);
+		if (res<=0) printf("Could not convert dcm to tiff\n");
+		sprintf(buffer,"rm %s",temp_filename);
+		system(buffer);	  
+	}
+	if (res)  /* add the image only if it was loaded properly */
+	{  
+		if (bounding_rect && bounding_rect->x>=0)    /* compute features only from an area of the image */
+		{ 
+			ImageMatrix *temp;
+			temp=new ImageMatrix(this,bounding_rect->x,bounding_rect->y,bounding_rect->x+bounding_rect->w-1,bounding_rect->y+bounding_rect->h-1,0,depth-1);
+			delete data;
+			width=temp->width;height=temp->height;
+			if (!(data=new pix_data[width*height*depth])) return(0);  /* allocate new memory */
+			memcpy(data,temp->data,width*height*depth*sizeof(pix_data));		 
+			//         for (int a=0;a<width*height*depth;a++)
+			//		   data[a]=temp->data[a];
+			delete temp;
+		}
+		if (downsample>0 && downsample<100)  /* downsample by a given factor */
+			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
+		if (mean>0)  /* normalize to a given mean and standard deviation */
+			normalize(-1,-1,-1,mean,stddev);
+	}
+	return(res);
 }
 
 /* simple constructors */
