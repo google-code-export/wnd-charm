@@ -40,7 +40,7 @@
 #include "FeatureNames.hpp"
 #include "wndchrm_error.h"
 
-// #include <iostream> // Debug
+//#include <iostream> // Debug
 //#include <limits>
 
 
@@ -3499,9 +3499,61 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
       }
       fprintf(output_file,"</table><br>\n");
    }
-   
+
+#ifdef AVG_CLASS_PROB_TSV
+		std::string filename;
+		std::string path_to_file (output_file_name);
+
+		//std::cout << "report file: " << path_to_file << std::endl;
+		size_t last_slash = path_to_file.find_last_of( '/' );
+		if( last_slash != std::string::npos ) {
+			path_to_file.erase( last_slash + 1 );
+			filename += path_to_file + '/';
+		}
+		filename += "average_class_probabilities.tsv";
+
+		std::ofstream class_probs ( filename.c_str() );
+
+		if( class_probs.good() ) {
+
+			class_probs << "Supplement to " << output_file_name << std::endl;
+			class_probs << "Average class probability matrices" << std::endl;
+			class_probs << "\t";
+			
+			for( class_index = 1; class_index <= class_num; class_index++ )
+				class_probs << class_labels[class_index] << "\t\t\t\t";
+			class_probs << std::endl;
+
+			for( class_index = 1; class_index <= class_num; class_index++ )
+					for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
+						class_probs << class_labels[class_index2] << "\t";
+
+			class_probs << std::endl;
+
+			for( split_index = 0; split_index < split_num; split_index++ )
+			{
+				class_probs << "split " << split_index << "\t";
+				for( class_index = 1; class_index <= class_num; class_index++ )
+				{
+					for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
+					{
+						class_probs << splits[split_index].class_probability_matrix[class_index*class_num+class_index2] << "\t";
+					}
+				}
+				class_probs << std::endl;
+			}
+		}
+		else
+		{
+			catError( "Non-fatal error: Couldn't create %s.\n", filename.c_str() );
+		}
+
+#endif
+
 	if( skip_split_reporting ) {
 		fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
+		// don't fclose() here, calling function handles it.
+		//fclose( output_file );
 		return (1);
 	}
 
@@ -3649,6 +3701,8 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
    fprintf(output_file,"<br><br><br><br><br><br> \n\n\n\n\n\n\n\n");
 
    fprintf(output_file,"</CENTER> \n </BODY> \n </HTML>\n");
+
+	 // don't fclose() here, the calling function does it if it's not stdout.
    return (1);
 }
 

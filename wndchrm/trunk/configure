@@ -1291,6 +1291,9 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-class-prob-tsv   When creating a report, output a tsv\
+  containing the Average Class Probability Matrix data for the purpose \
+  of computing Morphological Divergence Scores
 
 Some influential environment variables:
   CC          C compiler command
@@ -5400,6 +5403,17 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+
+
+# Check whether --enable-class-prob-tsv was given.
+if test "${enable_class_prob_tsv+set}" = set; then
+  enableval=$enable_class_prob_tsv;
+cat >>confdefs.h <<\_ACEOF
+#define AVG_CLASS_PROB_TSV
+_ACEOF
+
+
+fi
 
 
 # Write out our compile flags

@@ -229,6 +229,13 @@ AC_DEFUN([AC_HEADER_TR1_UNORDERED_SET], [
 ])
 AC_HEADER_TR1_UNORDERED_SET
 
+AC_ARG_ENABLE(class-prob-tsv,
+ [  --enable-class-prob-tsv   When creating a report, output a tsv\
+  containing the Average Class Probability Matrix data for the purpose \
+  of computing Morphological Divergence Scores],
+ [ AC_DEFINE(AVG_CLASS_PROB_TSV,,[Define optional output. ]) 
+ ])
+
 # Write out our compile flags
 AC_SUBST(CXXFLAGS)
 AC_SUBST(AM_CXXFLAGS)

@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define optional output. */
+#undef AVG_CLASS_PROB_TSV
+
 /* "Turn on FFTW3 support." */
 #undef HAVE_FFTW3
 
