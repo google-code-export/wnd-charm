@@ -68,7 +68,8 @@ for( my $i = 0; $i <= $#htmlfile_list; $i++) {
 		@cols = $rows[$i]->look_down("_tag","td");
 		foreach (@cols) {
 			my $val = $_->as_text;
-			if( $val =~ /(\d?\.\d+) +\/- (\d?\.\d+)/)
+			#print "\"$val\"\n";
+			if( $val =~ /(\d\.\d*)\D*(\d\.\d*)/)
 			{
 				$using_error_bars = 1;
 				my $mean = $1;
@@ -118,11 +119,14 @@ for( my $i = 0; $i <= $#htmlfile_list; $i++) {
 	$class_info{$gene2}{$gene1} = $correctedvector_MAG;
 
 	my $propagated_uncertainty = 0;
-
-	foreach( @dm_errors ) {
-		$propagated_uncertainty += ($_)**2;
+	foreach my $row ( @dm_errors ) {
+		foreach my $avg_marg_prob ( @{ $row } ) {
+			$propagated_uncertainty += ($avg_marg_prob)**2;
+		}
 	}
+
 	$propagated_uncertainty = sqrt( $propagated_uncertainty );
+	print "uncertainty: $propagated_uncertainty\n";
 	$uncertainties{$gene1}{$gene2} = $propagated_uncertainty;
 	$uncertainties{$gene2}{$gene1} = $propagated_uncertainty;
 
@@ -150,17 +154,17 @@ foreach $row ( @master_gene_list ) {
 
 close OUTPUT;
 
-open OUTPUT, ">master_dendfile_CLASS_PROBABILITIES_WITH_UNCERTAINTIES.txt" or die "Error, process aborted: Can't open output file: $!\n";
+open OUTPUT, ">master_dendfile_CLASS_PROBABILITIES_WITH_UNCERTAINTIES.csv" or die "Error, process aborted: Can't open output file: $!\n";
 
 print OUTPUT "$thecount\n";
 
 foreach $row ( @master_gene_list ) {
-	printf( OUTPUT "%s                 ", $row);
+	printf( OUTPUT "%s,", $row);
 	foreach $col ( @master_gene_list ) {
 		if( defined $class_info{$row}{$col} ) {
-			printf OUTPUT "%0.4f +/- %0.4f   ", $class_info{$row}{$col}, $uncertainties{$row}{$col};
+			printf OUTPUT "%0.4f +/- %0.4f,", $class_info{$row}{$col}, $uncertainties{$row}{$col};
 		} else {
-			print OUTPUT "0.0000             ";
+			print OUTPUT "0.0000,";
 		}
 	}
 	print OUTPUT "\n";
