@@ -8,6 +8,7 @@ sub ParseSigFile($$);
 sub uniq;
 sub feature_sort;
 sub main;
+sub Comparison_Of_Rank_Ordered_Group_Values($$$);
 
 # Globals
 my %old_featurenames_mapped_to_new;
@@ -113,6 +114,7 @@ sub main {
 	print "Groups with unmatched features:\n";
 	foreach my $group_name (keys %groups_that_have_unmatched) {
 		print "\t$group_count.\t".$groups_that_have_unmatched{$group_name}."\t$group_name:\n";
+		#&Comparison_Of_Rank_Ordered_Group_Values( $group_name, \%file1_values, \%file2_values );
 		$group_count++;
 	}
 	$group_count = 1;
@@ -214,6 +216,61 @@ sub ParseSigFile($$) {
 } #end sub
 
 
+
+#################################################################
+sub Comparison_Of_Rank_Ordered_Group_Values ($$$) {
+	my $group_name = shift;
+	my $file1_values_ref = shift;
+	my $file2_values_ref = shift;
+
+	my @file1_group_values;
+	my @file2_group_values;
+
+	my $feature_name;
+	my $meta_escaped_group_name;
+	foreach $feature_name ( keys %{ $file1_values_ref } ) {
+		$meta_escaped_group_name = quotemeta($group_name);
+		#print "*** groupname \"$group_name\" ... quotemeta: \"$meta_escaped_group_name\"\n";
+		if( $feature_name =~ /$meta_escaped_group_name/ ) {
+			push @file1_group_values, $$file1_values_ref{$feature_name};
+		}
+	}
+	foreach $feature_name ( keys %{ $file2_values_ref } ) {
+		$meta_escaped_group_name = quotemeta($group_name);
+		if( $feature_name =~ /$meta_escaped_group_name/ ) {
+			push @file2_group_values, $$file2_values_ref{$feature_name};
+		}
+	}
+
+	@file1_group_values = sort { $a <=> $b } @file1_group_values;
+	@file2_group_values = sort { $a <=> $b } @file2_group_values;
+
+	my $max = $#file1_group_values;
+	my $min = $#file2_group_values;
+	my $short = 2;
+	if( $#file2_group_values > $max ) {
+		$max = $#file2_group_values;
+		$min = $#file1_group_values;
+		$short = 1;
+	}
+	print "\nGroup analysis: $group_name:\n";
+	my $i;
+	for( $i = 0; $i <= $min; ++$i ) {
+		print $file1_group_values[$i] . "\t" . $file2_group_values[$i] . "\n";
+	}
+
+	for( $i = ($min +1); $i <= $max; ++$i ) {
+		if( $short == 2) {
+			print $file1_group_values[$i] . "\t" . "N/A" . "\n";
+		}
+		else
+		{
+			print "N/A" . "\t" . $file2_group_values[$i] . "\n";
+		}
+	}
+
+
+}
 
 
 #################################################################
