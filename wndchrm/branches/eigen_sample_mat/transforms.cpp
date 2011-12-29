@@ -111,8 +111,8 @@ WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
    fftw_free(in);
    fftw_free(out);
 
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 
    /* calculate the magnitude and angle */
 
@@ -164,8 +164,8 @@ WNDCHRM_ERROR ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix
 	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ChebyshevTransform(0);
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -187,8 +187,8 @@ WNDCHRM_ERROR WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
 	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->Symlet5Transform();
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -210,8 +210,8 @@ WNDCHRM_ERROR EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** m
 	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->EdgeTransform();
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 
 	return WC_NO_ERROR;
 }
@@ -236,8 +236,8 @@ WNDCHRM_ERROR ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** 
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(temp_vec, 0);
 	histogram_vals.assign(temp_vec, temp_vec+COLORS_NUM+1);
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 
@@ -259,8 +259,8 @@ WNDCHRM_ERROR HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** ma
 	std::cout << "\t\tPerforming transform " << name << std::endl;
   *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(NULL,1);
-	matrix_OUT->what_am_i += "-" + name;
-	matrix_OUT->dump();
+	//matrix_OUT->what_am_i += "-" + name;
+	//matrix_OUT->dump();
 	return WC_NO_ERROR;
 }
 

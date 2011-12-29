@@ -132,7 +132,6 @@ FeatureNames* FeatureNames::pInstance = NULL;
 static FeatureNames* __FeatureNames_instance = FeatureNames::get_instance();
 
 FeatureNames::FeatureNames() {
-	initFeatureAlgorithms();
 	initOldFeatureNameLookup();
 }
 
@@ -463,26 +462,7 @@ const void FeatureNames::dump_phonebook() {
 */
 //==========================================================================
 
-const bool FeatureNames::initFeatureAlgorithms() {
-/*
-	if (!feature_algorithms_.empty()) return (true);
-	feature_algorithms_["Chebyshev Coefficients"]         = new FeatureAlgorithm ("Chebyshev Coefficients",         31);
-	feature_algorithms_["Chebyshev-Fourier Coefficients"] = new FeatureAlgorithm ("Chebyshev-Fourier Coefficients", 31);
-	feature_algorithms_["Color Histogram"]                = new FeatureAlgorithm ("Color Histogram",                18);
-	feature_algorithms_["Comb Moments"]                   = new FeatureAlgorithm ("Comb Moments",                   47);
-	feature_algorithms_["Edge Features"]                  = new FeatureAlgorithm ("Edge Features",                  27);
-	feature_algorithms_["Fractal Features"]               = new FeatureAlgorithm ("Fractal Features",               19);
-	feature_algorithms_["Gabor Textures"]                 = new FeatureAlgorithm ("Gabor Textures",                  6);
-	feature_algorithms_["Haralick Textures"]              = new FeatureAlgorithm ("Haralick Textures",              27);
-	feature_algorithms_["Multiscale Histograms"]          = new FeatureAlgorithm ("Multiscale Histograms",          23);
-	feature_algorithms_["Object Features"]                = new FeatureAlgorithm ("Object Features",                33);
-	feature_algorithms_["Pixel Intensity Statistics"]     = new FeatureAlgorithm ("Pixel Intensity Statistics",      4);
-	feature_algorithms_["Radon Coefficients"]             = new FeatureAlgorithm ("Radon Coefficients",             11);
-	feature_algorithms_["Tamura Textures"]                = new FeatureAlgorithm ("Tamura Textures",                 5);
-	feature_algorithms_["Zernike Coefficients"]           = new FeatureAlgorithm ("Zernike Coefficients",           71);
-	*/
-	return (true);
-}
+
 
 const bool FeatureNames::initOldFeatureNameLookup () {
 	

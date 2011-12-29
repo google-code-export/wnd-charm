@@ -81,7 +81,6 @@ public:
 
   // These have to be public and static in order to be called pre-main without an object.
   // This is done in FeatureNames.cpp in the global scope - outside of any functions/methods.
-	const bool initFeatureAlgorithms();
 	const bool initOldFeatureNameLookup();
 
 	//! List of FeatureGroups that comprise the Long chain
@@ -99,6 +98,9 @@ public:
 	//AlgorithmMap RegisteredAlgorithms;
 
 	//void dump_phonebook();
+	
+	//a read-only alias for the privately owned member _long_chain
+	const std::vector<const FeatureGroup*> &long_chain;
 
 protected:
 	FeatureNames();
@@ -128,6 +130,7 @@ private:
 	typedef UNORDERED_MAP<std::string,std::string> ofnm_t;
 	ofnm_t old_features_;
 
+	std::vector<const FeatureGroup*> _long_chain;
 
 };
 

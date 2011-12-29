@@ -431,12 +431,13 @@ int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding
 			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
 		if (mean>0)  /* normalize to a given mean and standard deviation */
 			normalize(-1,-1,-1,mean,stddev);
-
+/*
 		// keep track of what file this pixel plane came from
 		what_am_i = image_file_name;
 		size_t last_slash = what_am_i.find_last_of( '/' );
 		if( last_slash != std::string::npos ) 
 			what_am_i = what_am_i.substr( last_slash+1 );
+	*/
 	}
 	return(res);
 }
@@ -490,7 +491,7 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2, int
        for (x=x1;x<x1+width;x++)
 	     set(x-x1,y-y1,z-z1,matrix->pixel(x,y,z));
 
-	 what_am_i = matrix->what_am_i;
+	 //what_am_i = matrix->what_am_i;
 }
 
 /* free the memory allocated in "ImageMatrix::LoadImage" */
@@ -551,10 +552,10 @@ ImageMatrix *ImageMatrix::duplicate()
 	new_matrix->ColorMode=ColorMode;
 	memcpy(new_matrix->data,data,width*height*depth*sizeof(pix_data));
 
-	new_matrix->what_am_i = what_am_i;
+	//new_matrix->what_am_i = what_am_i;
 	return(new_matrix);
 }
-
+/*
 void ImageMatrix::dump( )
 {
 	
@@ -586,7 +587,7 @@ void ImageMatrix::dump( )
 	}
 	pixel_dump_file.close();
 }
-
+*/
 
 /* to8bits
    convert a 16 bit matrix to 8 bits
