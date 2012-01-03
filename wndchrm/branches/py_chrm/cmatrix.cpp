@@ -31,7 +31,6 @@
 
 #pragma hdrstop
 
-#include <vector>
 #include <math.h>
 #include <stdio.h>
 #include "cmatrix.h"
@@ -49,14 +48,6 @@
 #include "textures/tamura.h"
 #include "textures/haarlick/haarlick.h"
 #include "textures/zernike/zernike.h"
-
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <time.h>
-#include <sys/time.h>
 
 #ifndef WIN32
 #include <stdlib.h>
