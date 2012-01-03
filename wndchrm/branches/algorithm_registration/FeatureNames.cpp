@@ -141,9 +141,12 @@ void FeatureGroup::print_info() const {
 		algorithm->print_info();
 	if( channel )
 		channel->print_info();
-	for( TransformList::iterator t_it = transforms.begin(); t_it != transforms.end(); ++t_it ) {
+  //for( TransformList::iterator t_it = transforms.begin(); t_it != transforms.end(); ++t_it ) {
+	unsigned int i;
+	for( i = 0; i < transforms.size(); ++i ) {
 		std::cout << "\t";
-		(*t_it).print_info();
+		transforms[i]->print_info();
+		//t_it->print_info() //doesn't compile
 	}
 }
 
@@ -152,11 +155,11 @@ void FeatureAlgorithm::print_info() const {
 }
 
 void Transform::print_info() const {
-	std::cout << "\ttransform name\t" << name << std::endl;
+	std::cout << "\ttransform name:\t" << name << std::endl;
 }
 
 void Channel::print_info() const {
-	std::cout << "\tchannel name\t" << name << std::endl;
+	std::cout << "\tchannel name:\t" << name << std::endl;
 }
 
 

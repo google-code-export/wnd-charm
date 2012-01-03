@@ -2099,6 +2099,8 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 		// Get feature information from the name and store the feature and group name in our maps
 		featureinfo = FN_instance->getFeatureInfoByName ( SignatureNames[ sig_index ] );
 
+		featureinfo->print_info();
+
 		// find it in our map by name
 		fg_it = featuregroups.find( featureinfo->group->name );
 		// if its a new feature group, initialize a stats structure, and add it to our map
