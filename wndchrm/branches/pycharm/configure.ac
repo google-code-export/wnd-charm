@@ -1,0 +1,33 @@
+
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(pycharm, 0.1, christopher.coletta@nih.gov)
+AC_CONFIG_MACRO_DIR(m4)
+AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_SRCDIR(src/cmatrix.cpp)
+
+AM_INIT_AUTOMAKE
+AC_PROG_CC
+AC_PROG_RANLIB
+
+AC_PROG_CXX
+AM_PROG_LEX
+AC_PROG_YACC
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+AX_PYTHON_DEVEL(>= '2.3')
+AM_PATH_PYTHON
+AC_PROG_SWIG
+SWIG_ENABLE_CXX
+SWIG_PYTHON
+
+DX_HTML_FEATURE(ON)
+DX_CHM_FEATURE(OFF)
+DX_CHI_FEATURE(OFF)
+DX_MAN_FEATURE(OFF)
+DX_RTF_FEATURE(OFF)
+DX_XML_FEATURE(OFF)
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+DX_INIT_DOXYGEN(mfgraph, doxygen.cfg, doc)
+
+AC_OUTPUT(Makefile src/Makefile pymfg/Makefile test/Makefile)
