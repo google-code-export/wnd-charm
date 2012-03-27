@@ -1,6 +1,6 @@
 
 BUILT_SOURCES = $(srcdir)/swig_wrap.cpp
-SWIG_SOURCES = swig.i cmatrix.i wndchrm_error.i FeatureAlgorithms.i
+SWIG_SOURCES = swig.i cmatrix.i wndchrm_error.i FeatureAlgorithms.i FeatureTransforms.i
 
 pkgpython_PYTHON = pymfg.py __init__.py
 pkgpyexec_LTLIBRARIES = _pymfg.la

@@ -24,6 +24,7 @@
 #include "cmatrix.h"
 #include "wndchrm_error.h"
 #include "FeatureAlgorithms.h"
+#include "FeatureTransforms.h"
 %}
 
 %module pymfg
@@ -32,3 +33,4 @@
 %include "cmatrix.i"
 %include "wndchrm_error.i"
 %include "FeatureAlgorithms.i"
+%include "FeatureTransforms.i"

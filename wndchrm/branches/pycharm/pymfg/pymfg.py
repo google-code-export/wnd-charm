@@ -576,6 +576,152 @@ class GiniCoefficient(FeatureAlgorithm):
 GiniCoefficient_swigregister = _pymfg.GiniCoefficient_swigregister
 GiniCoefficient_swigregister(GiniCoefficient)
 
+class Transform(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Transform, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Transform, name)
+    def __init__(self, *args, **kwargs): raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
+    def transform(self, *args): return _pymfg.Transform_transform(self, *args)
+    __swig_setmethods__["name"] = _pymfg.Transform_name_set
+    __swig_getmethods__["name"] = _pymfg.Transform_name_get
+    if _newclass:name = _swig_property(_pymfg.Transform_name_get, _pymfg.Transform_name_set)
+    def print_info(self): return _pymfg.Transform_print_info(self)
+    __swig_destroy__ = _pymfg.delete_Transform
+    __del__ = lambda self : None;
+Transform_swigregister = _pymfg.Transform_swigregister
+Transform_swigregister(Transform)
+
+class EmptyTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, EmptyTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, EmptyTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args): 
+        this = _pymfg.new_EmptyTransform(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.EmptyTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_EmptyTransform
+    __del__ = lambda self : None;
+EmptyTransform_swigregister = _pymfg.EmptyTransform_swigregister
+EmptyTransform_swigregister(EmptyTransform)
+
+class FourierTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FourierTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, FourierTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_FourierTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.FourierTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_FourierTransform
+    __del__ = lambda self : None;
+FourierTransform_swigregister = _pymfg.FourierTransform_swigregister
+FourierTransform_swigregister(FourierTransform)
+
+class ChebyshevTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ChebyshevTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ChebyshevTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ChebyshevTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.ChebyshevTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_ChebyshevTransform
+    __del__ = lambda self : None;
+ChebyshevTransform_swigregister = _pymfg.ChebyshevTransform_swigregister
+ChebyshevTransform_swigregister(ChebyshevTransform)
+
+class WaveletTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, WaveletTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, WaveletTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_WaveletTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.WaveletTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_WaveletTransform
+    __del__ = lambda self : None;
+WaveletTransform_swigregister = _pymfg.WaveletTransform_swigregister
+WaveletTransform_swigregister(WaveletTransform)
+
+class EdgeTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, EdgeTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, EdgeTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_EdgeTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.EdgeTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_EdgeTransform
+    __del__ = lambda self : None;
+EdgeTransform_swigregister = _pymfg.EdgeTransform_swigregister
+EdgeTransform_swigregister(EdgeTransform)
+
+class ColorTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ColorTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ColorTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ColorTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_setmethods__["histogram_vals"] = _pymfg.ColorTransform_histogram_vals_set
+    __swig_getmethods__["histogram_vals"] = _pymfg.ColorTransform_histogram_vals_get
+    if _newclass:histogram_vals = _swig_property(_pymfg.ColorTransform_histogram_vals_get, _pymfg.ColorTransform_histogram_vals_set)
+    def transform(self, *args): return _pymfg.ColorTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_ColorTransform
+    __del__ = lambda self : None;
+ColorTransform_swigregister = _pymfg.ColorTransform_swigregister
+ColorTransform_swigregister(ColorTransform)
+
+class HueTransform(Transform):
+    __swig_setmethods__ = {}
+    for _s in [Transform]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, HueTransform, name, value)
+    __swig_getmethods__ = {}
+    for _s in [Transform]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, HueTransform, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_HueTransform()
+        try: self.this.append(this)
+        except: self.this = this
+    def transform(self, *args): return _pymfg.HueTransform_transform(self, *args)
+    __swig_destroy__ = _pymfg.delete_HueTransform
+    __del__ = lambda self : None;
+HueTransform_swigregister = _pymfg.HueTransform_swigregister
+HueTransform_swigregister(HueTransform)
+
 # This file is compatible with both classic and new-style classes.
 
 
