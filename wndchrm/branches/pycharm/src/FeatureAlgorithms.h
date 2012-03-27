@@ -6,16 +6,14 @@
 #include <string>
 
 
-using namespace std;
-
 namespace mfg {
 class ImageMatrix;
 
 class FeatureAlgorithm {
 	public:
-		string name;
+		std::string name;
 		int n_features;
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs ) = 0;
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs ) = 0;
 		void print_info() const;	
 	protected:
 		FeatureAlgorithm() {} ;
@@ -25,7 +23,7 @@ class FeatureAlgorithm {
 
 class EmptyFeatureAlgorithm : public FeatureAlgorithm {
 	public:
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs ) 	{ return WC_NOT_IMPLEMENTED; }
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs ) 	{ return WC_NOT_IMPLEMENTED; }
 		EmptyFeatureAlgorithm () { FeatureAlgorithm::name = ""; FeatureAlgorithm::n_features = 1; }
 		EmptyFeatureAlgorithm (std::string &s,int i) { FeatureAlgorithm::name = s; FeatureAlgorithm::n_features = i;}
 		EmptyFeatureAlgorithm (const char *s,int i) { FeatureAlgorithm::name = s; FeatureAlgorithm::n_features = i;}
@@ -34,85 +32,85 @@ class EmptyFeatureAlgorithm : public FeatureAlgorithm {
 class ChebyshevFourierCoefficients : public FeatureAlgorithm {
 	public:
 		ChebyshevFourierCoefficients();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class ChebyshevCoefficients : public FeatureAlgorithm {
 	public:
 		ChebyshevCoefficients();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class ZernikeCoefficients : public FeatureAlgorithm {
 	public:
 		ZernikeCoefficients();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class HaralickTextures : public FeatureAlgorithm {
 	public:
 		HaralickTextures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class MultiscaleHistograms : public FeatureAlgorithm {
 	public:
 		MultiscaleHistograms();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class TamuraTextures : public FeatureAlgorithm {
 	public:
 		TamuraTextures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class CombFirstFourMoments : public FeatureAlgorithm {
 	public:
 		CombFirstFourMoments();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class RadonCoefficients : public FeatureAlgorithm {
 	public:
 		RadonCoefficients();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class FractalFeatures : public FeatureAlgorithm {
 	public:
 		FractalFeatures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class PixelIntensityStatistics : public FeatureAlgorithm {
 	public:
 		PixelIntensityStatistics();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class EdgeFeatures : public FeatureAlgorithm {
 	public:
 		EdgeFeatures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class ObjectFeatures : public FeatureAlgorithm {
 	public:
 		ObjectFeatures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class GaborTextures : public FeatureAlgorithm {
 	public:
 		GaborTextures();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 class GiniCoefficient : public FeatureAlgorithm {
 	public:
 		GiniCoefficient();
-		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, vector<double> &coeffs );
+		virtual WNDCHRM_ERROR calculate( ImageMatrix * IN_matrix, std::vector<double> &coeffs );
 };
 
 /*

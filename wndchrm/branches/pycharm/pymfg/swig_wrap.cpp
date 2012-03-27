@@ -2944,15 +2944,32 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_double swig_types[2]
 #define SWIGTYPE_p_int swig_types[3]
 #define SWIGTYPE_p_long swig_types[4]
-#define SWIGTYPE_p_mfg__HSVCOLOR swig_types[5]
-#define SWIGTYPE_p_mfg__ImageMatrix swig_types[6]
-#define SWIGTYPE_p_mfg__PIX_DATA swig_types[7]
-#define SWIGTYPE_p_mfg__RGBCOLOR swig_types[8]
-#define SWIGTYPE_p_mfg__color swig_types[9]
-#define SWIGTYPE_p_mfg__rect swig_types[10]
-#define SWIGTYPE_p_unsigned_char swig_types[11]
-static swig_type_info *swig_types[13];
-static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
+#define SWIGTYPE_p_mfg__ChebyshevCoefficients swig_types[5]
+#define SWIGTYPE_p_mfg__ChebyshevFourierCoefficients swig_types[6]
+#define SWIGTYPE_p_mfg__CombFirstFourMoments swig_types[7]
+#define SWIGTYPE_p_mfg__EdgeFeatures swig_types[8]
+#define SWIGTYPE_p_mfg__FeatureAlgorithm swig_types[9]
+#define SWIGTYPE_p_mfg__FractalFeatures swig_types[10]
+#define SWIGTYPE_p_mfg__GaborTextures swig_types[11]
+#define SWIGTYPE_p_mfg__GiniCoefficient swig_types[12]
+#define SWIGTYPE_p_mfg__HSVCOLOR swig_types[13]
+#define SWIGTYPE_p_mfg__HaralickTextures swig_types[14]
+#define SWIGTYPE_p_mfg__ImageMatrix swig_types[15]
+#define SWIGTYPE_p_mfg__MultiscaleHistograms swig_types[16]
+#define SWIGTYPE_p_mfg__ObjectFeatures swig_types[17]
+#define SWIGTYPE_p_mfg__PIX_DATA swig_types[18]
+#define SWIGTYPE_p_mfg__PixelIntensityStatistics swig_types[19]
+#define SWIGTYPE_p_mfg__RGBCOLOR swig_types[20]
+#define SWIGTYPE_p_mfg__RadonCoefficients swig_types[21]
+#define SWIGTYPE_p_mfg__TamuraTextures swig_types[22]
+#define SWIGTYPE_p_mfg__ZernikeCoefficients swig_types[23]
+#define SWIGTYPE_p_mfg__color swig_types[24]
+#define SWIGTYPE_p_mfg__rect swig_types[25]
+#define SWIGTYPE_p_std__string swig_types[26]
+#define SWIGTYPE_p_std__vectorT_double_t swig_types[27]
+#define SWIGTYPE_p_unsigned_char swig_types[28]
+static swig_type_info *swig_types[30];
+static swig_module_info swig_module = {swig_types, 29, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3072,6 +3089,8 @@ namespace swig {
 /****************************************************************************/
 
 #include "cmatrix.h"
+#include "wndchrm_error.h"
+#include "FeatureAlgorithms.h"
 
 
 #include "cmatrix.h"
@@ -3423,6 +3442,40 @@ SWIG_AsCharPtrAndSize(PyObject *obj, char** cptr, size_t* psize, int *alloc)
 
 
 
+
+
+#include "wndchrm_error.h"
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_FromCharPtrAndSize(const char* carray, size_t size)
+{
+  if (carray) {
+    if (size > INT_MAX) {
+      swig_type_info* pchar_descriptor = SWIG_pchar_descriptor();
+      return pchar_descriptor ? 
+	SWIG_InternalNewPointerObj(const_cast< char * >(carray), pchar_descriptor, 0) : SWIG_Py_Void();
+    } else {
+#if PY_VERSION_HEX >= 0x03000000
+      return PyUnicode_FromStringAndSize(carray, static_cast< int >(size));
+#else
+      return PyString_FromStringAndSize(carray, static_cast< int >(size));
+#endif
+    }
+  } else {
+    return SWIG_Py_Void();
+  }
+}
+
+
+SWIGINTERNINLINE PyObject * 
+SWIG_FromCharPtr(const char *cptr)
+{ 
+  return SWIG_FromCharPtrAndSize(cptr, (cptr ? strlen(cptr) : 0));
+}
+
+
+#include "FeatureAlgorithms.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -6920,6 +6973,1509 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_catError__varargs__(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *varargs) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  void *arg2 = 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:catError",&obj0)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "catError" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  mfg::catError((char const *)arg1,arg2);
+  resultobj = SWIG_Py_Void();
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_catError(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj;
+  PyObject *varargs;
+  PyObject *newargs;
+  
+  newargs = PyTuple_GetSlice(args,0,1);
+  varargs = PyTuple_GetSlice(args,1,PyTuple_Size(args)+1);
+  resultobj = _wrap_catError__varargs__(NULL,newargs,varargs);
+  Py_XDECREF(newargs);
+  Py_XDECREF(varargs);
+  return resultobj;
+}
+
+
+SWIGINTERN PyObject *_wrap_showError__varargs__(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *varargs) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  char *arg2 = (char *) 0 ;
+  void *arg3 = 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:showError",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "showError" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "showError" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = reinterpret_cast< char * >(buf2);
+  result = (int)mfg::showError(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_showError(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj;
+  PyObject *varargs;
+  PyObject *newargs;
+  
+  newargs = PyTuple_GetSlice(args,0,2);
+  varargs = PyTuple_GetSlice(args,2,PyTuple_Size(args)+1);
+  resultobj = _wrap_showError__varargs__(NULL,newargs,varargs);
+  Py_XDECREF(newargs);
+  Py_XDECREF(varargs);
+  return resultobj;
+}
+
+
+SWIGINTERN PyObject *_wrap_getErrorString(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  std::string result;
+  
+  if (!PyArg_ParseTuple(args,(char *)":getErrorString")) SWIG_fail;
+  result = mfg::getErrorString();
+  resultobj = SWIG_NewPointerObj((new std::string(static_cast< const std::string& >(result))), SWIGTYPE_p_std__string, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_translateError(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::WNDCHRM_ERROR arg1 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  char *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:translateError",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "translateError" "', argument " "1"" of type '" "mfg::WNDCHRM_ERROR""'");
+  } 
+  arg1 = static_cast< mfg::WNDCHRM_ERROR >(val1);
+  result = (char *)mfg::translateError(arg1);
+  resultobj = SWIG_FromCharPtr((const char *)result);
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_name_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  std::string arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:FeatureAlgorithm_name_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_name_set" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_std__string,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "FeatureAlgorithm_name_set" "', argument " "2"" of type '" "std::string""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "FeatureAlgorithm_name_set" "', argument " "2"" of type '" "std::string""'");
+    } else {
+      std::string * temp = reinterpret_cast< std::string * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  if (arg1) (arg1)->name = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_name_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::string result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:FeatureAlgorithm_name_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_name_get" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  result =  ((arg1)->name);
+  resultobj = SWIG_NewPointerObj((new std::string(static_cast< const std::string& >(result))), SWIGTYPE_p_std__string, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_n_features_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:FeatureAlgorithm_n_features_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_n_features_set" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "FeatureAlgorithm_n_features_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (arg1) (arg1)->n_features = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_n_features_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:FeatureAlgorithm_n_features_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_n_features_get" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  result = (int) ((arg1)->n_features);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:FeatureAlgorithm_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_calculate" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "FeatureAlgorithm_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "FeatureAlgorithm_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "FeatureAlgorithm_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FeatureAlgorithm_print_info(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:FeatureAlgorithm_print_info",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FeatureAlgorithm_print_info" "', argument " "1"" of type '" "mfg::FeatureAlgorithm const *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  ((mfg::FeatureAlgorithm const *)arg1)->print_info();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_FeatureAlgorithm(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FeatureAlgorithm *arg1 = (mfg::FeatureAlgorithm *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_FeatureAlgorithm",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FeatureAlgorithm, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_FeatureAlgorithm" "', argument " "1"" of type '" "mfg::FeatureAlgorithm *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FeatureAlgorithm * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *FeatureAlgorithm_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__FeatureAlgorithm, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_ChebyshevFourierCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevFourierCoefficients *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_ChebyshevFourierCoefficients")) SWIG_fail;
+  result = (mfg::ChebyshevFourierCoefficients *)new mfg::ChebyshevFourierCoefficients();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ChebyshevFourierCoefficients, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ChebyshevFourierCoefficients_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevFourierCoefficients *arg1 = (mfg::ChebyshevFourierCoefficients *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:ChebyshevFourierCoefficients_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ChebyshevFourierCoefficients, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ChebyshevFourierCoefficients_calculate" "', argument " "1"" of type '" "mfg::ChebyshevFourierCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ChebyshevFourierCoefficients * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ChebyshevFourierCoefficients_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ChebyshevFourierCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ChebyshevFourierCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ChebyshevFourierCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevFourierCoefficients *arg1 = (mfg::ChebyshevFourierCoefficients *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ChebyshevFourierCoefficients",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ChebyshevFourierCoefficients, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ChebyshevFourierCoefficients" "', argument " "1"" of type '" "mfg::ChebyshevFourierCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ChebyshevFourierCoefficients * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ChebyshevFourierCoefficients_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__ChebyshevFourierCoefficients, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_ChebyshevCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevCoefficients *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_ChebyshevCoefficients")) SWIG_fail;
+  result = (mfg::ChebyshevCoefficients *)new mfg::ChebyshevCoefficients();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ChebyshevCoefficients, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ChebyshevCoefficients_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevCoefficients *arg1 = (mfg::ChebyshevCoefficients *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:ChebyshevCoefficients_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ChebyshevCoefficients, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ChebyshevCoefficients_calculate" "', argument " "1"" of type '" "mfg::ChebyshevCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ChebyshevCoefficients * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ChebyshevCoefficients_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ChebyshevCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ChebyshevCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ChebyshevCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ChebyshevCoefficients *arg1 = (mfg::ChebyshevCoefficients *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ChebyshevCoefficients",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ChebyshevCoefficients, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ChebyshevCoefficients" "', argument " "1"" of type '" "mfg::ChebyshevCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ChebyshevCoefficients * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ChebyshevCoefficients_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__ChebyshevCoefficients, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_ZernikeCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ZernikeCoefficients *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_ZernikeCoefficients")) SWIG_fail;
+  result = (mfg::ZernikeCoefficients *)new mfg::ZernikeCoefficients();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ZernikeCoefficients, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ZernikeCoefficients_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ZernikeCoefficients *arg1 = (mfg::ZernikeCoefficients *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:ZernikeCoefficients_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ZernikeCoefficients, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ZernikeCoefficients_calculate" "', argument " "1"" of type '" "mfg::ZernikeCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ZernikeCoefficients * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ZernikeCoefficients_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ZernikeCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ZernikeCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ZernikeCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ZernikeCoefficients *arg1 = (mfg::ZernikeCoefficients *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ZernikeCoefficients",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ZernikeCoefficients, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ZernikeCoefficients" "', argument " "1"" of type '" "mfg::ZernikeCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ZernikeCoefficients * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ZernikeCoefficients_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__ZernikeCoefficients, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_HaralickTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::HaralickTextures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_HaralickTextures")) SWIG_fail;
+  result = (mfg::HaralickTextures *)new mfg::HaralickTextures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__HaralickTextures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_HaralickTextures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::HaralickTextures *arg1 = (mfg::HaralickTextures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:HaralickTextures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__HaralickTextures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "HaralickTextures_calculate" "', argument " "1"" of type '" "mfg::HaralickTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::HaralickTextures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "HaralickTextures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "HaralickTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "HaralickTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_HaralickTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::HaralickTextures *arg1 = (mfg::HaralickTextures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_HaralickTextures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__HaralickTextures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_HaralickTextures" "', argument " "1"" of type '" "mfg::HaralickTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::HaralickTextures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *HaralickTextures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__HaralickTextures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_MultiscaleHistograms(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::MultiscaleHistograms *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_MultiscaleHistograms")) SWIG_fail;
+  result = (mfg::MultiscaleHistograms *)new mfg::MultiscaleHistograms();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__MultiscaleHistograms, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_MultiscaleHistograms_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::MultiscaleHistograms *arg1 = (mfg::MultiscaleHistograms *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:MultiscaleHistograms_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__MultiscaleHistograms, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "MultiscaleHistograms_calculate" "', argument " "1"" of type '" "mfg::MultiscaleHistograms *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::MultiscaleHistograms * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "MultiscaleHistograms_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "MultiscaleHistograms_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "MultiscaleHistograms_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_MultiscaleHistograms(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::MultiscaleHistograms *arg1 = (mfg::MultiscaleHistograms *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_MultiscaleHistograms",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__MultiscaleHistograms, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_MultiscaleHistograms" "', argument " "1"" of type '" "mfg::MultiscaleHistograms *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::MultiscaleHistograms * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *MultiscaleHistograms_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__MultiscaleHistograms, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_TamuraTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::TamuraTextures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_TamuraTextures")) SWIG_fail;
+  result = (mfg::TamuraTextures *)new mfg::TamuraTextures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__TamuraTextures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_TamuraTextures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::TamuraTextures *arg1 = (mfg::TamuraTextures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:TamuraTextures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__TamuraTextures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "TamuraTextures_calculate" "', argument " "1"" of type '" "mfg::TamuraTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::TamuraTextures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "TamuraTextures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "TamuraTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "TamuraTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_TamuraTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::TamuraTextures *arg1 = (mfg::TamuraTextures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_TamuraTextures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__TamuraTextures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_TamuraTextures" "', argument " "1"" of type '" "mfg::TamuraTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::TamuraTextures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *TamuraTextures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__TamuraTextures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_CombFirstFourMoments(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::CombFirstFourMoments *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_CombFirstFourMoments")) SWIG_fail;
+  result = (mfg::CombFirstFourMoments *)new mfg::CombFirstFourMoments();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__CombFirstFourMoments, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CombFirstFourMoments_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::CombFirstFourMoments *arg1 = (mfg::CombFirstFourMoments *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:CombFirstFourMoments_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__CombFirstFourMoments, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CombFirstFourMoments_calculate" "', argument " "1"" of type '" "mfg::CombFirstFourMoments *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::CombFirstFourMoments * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "CombFirstFourMoments_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "CombFirstFourMoments_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "CombFirstFourMoments_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_CombFirstFourMoments(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::CombFirstFourMoments *arg1 = (mfg::CombFirstFourMoments *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_CombFirstFourMoments",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__CombFirstFourMoments, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_CombFirstFourMoments" "', argument " "1"" of type '" "mfg::CombFirstFourMoments *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::CombFirstFourMoments * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *CombFirstFourMoments_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__CombFirstFourMoments, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_RadonCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::RadonCoefficients *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_RadonCoefficients")) SWIG_fail;
+  result = (mfg::RadonCoefficients *)new mfg::RadonCoefficients();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__RadonCoefficients, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_RadonCoefficients_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::RadonCoefficients *arg1 = (mfg::RadonCoefficients *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:RadonCoefficients_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__RadonCoefficients, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "RadonCoefficients_calculate" "', argument " "1"" of type '" "mfg::RadonCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::RadonCoefficients * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "RadonCoefficients_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "RadonCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "RadonCoefficients_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_RadonCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::RadonCoefficients *arg1 = (mfg::RadonCoefficients *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_RadonCoefficients",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__RadonCoefficients, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_RadonCoefficients" "', argument " "1"" of type '" "mfg::RadonCoefficients *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::RadonCoefficients * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *RadonCoefficients_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__RadonCoefficients, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_FractalFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FractalFeatures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_FractalFeatures")) SWIG_fail;
+  result = (mfg::FractalFeatures *)new mfg::FractalFeatures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__FractalFeatures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_FractalFeatures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FractalFeatures *arg1 = (mfg::FractalFeatures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:FractalFeatures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FractalFeatures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FractalFeatures_calculate" "', argument " "1"" of type '" "mfg::FractalFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FractalFeatures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "FractalFeatures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "FractalFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "FractalFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_FractalFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::FractalFeatures *arg1 = (mfg::FractalFeatures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_FractalFeatures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FractalFeatures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_FractalFeatures" "', argument " "1"" of type '" "mfg::FractalFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::FractalFeatures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *FractalFeatures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__FractalFeatures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_PixelIntensityStatistics(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::PixelIntensityStatistics *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_PixelIntensityStatistics")) SWIG_fail;
+  result = (mfg::PixelIntensityStatistics *)new mfg::PixelIntensityStatistics();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__PixelIntensityStatistics, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PixelIntensityStatistics_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::PixelIntensityStatistics *arg1 = (mfg::PixelIntensityStatistics *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:PixelIntensityStatistics_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__PixelIntensityStatistics, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PixelIntensityStatistics_calculate" "', argument " "1"" of type '" "mfg::PixelIntensityStatistics *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::PixelIntensityStatistics * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "PixelIntensityStatistics_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "PixelIntensityStatistics_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "PixelIntensityStatistics_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_PixelIntensityStatistics(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::PixelIntensityStatistics *arg1 = (mfg::PixelIntensityStatistics *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_PixelIntensityStatistics",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__PixelIntensityStatistics, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_PixelIntensityStatistics" "', argument " "1"" of type '" "mfg::PixelIntensityStatistics *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::PixelIntensityStatistics * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *PixelIntensityStatistics_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__PixelIntensityStatistics, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_EdgeFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::EdgeFeatures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_EdgeFeatures")) SWIG_fail;
+  result = (mfg::EdgeFeatures *)new mfg::EdgeFeatures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__EdgeFeatures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_EdgeFeatures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::EdgeFeatures *arg1 = (mfg::EdgeFeatures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:EdgeFeatures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__EdgeFeatures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "EdgeFeatures_calculate" "', argument " "1"" of type '" "mfg::EdgeFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::EdgeFeatures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "EdgeFeatures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "EdgeFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "EdgeFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_EdgeFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::EdgeFeatures *arg1 = (mfg::EdgeFeatures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_EdgeFeatures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__EdgeFeatures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_EdgeFeatures" "', argument " "1"" of type '" "mfg::EdgeFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::EdgeFeatures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *EdgeFeatures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__EdgeFeatures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_ObjectFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ObjectFeatures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_ObjectFeatures")) SWIG_fail;
+  result = (mfg::ObjectFeatures *)new mfg::ObjectFeatures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ObjectFeatures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ObjectFeatures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ObjectFeatures *arg1 = (mfg::ObjectFeatures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:ObjectFeatures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ObjectFeatures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ObjectFeatures_calculate" "', argument " "1"" of type '" "mfg::ObjectFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ObjectFeatures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ObjectFeatures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ObjectFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ObjectFeatures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ObjectFeatures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ObjectFeatures *arg1 = (mfg::ObjectFeatures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ObjectFeatures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ObjectFeatures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ObjectFeatures" "', argument " "1"" of type '" "mfg::ObjectFeatures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ObjectFeatures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ObjectFeatures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__ObjectFeatures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_GaborTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GaborTextures *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_GaborTextures")) SWIG_fail;
+  result = (mfg::GaborTextures *)new mfg::GaborTextures();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__GaborTextures, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GaborTextures_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GaborTextures *arg1 = (mfg::GaborTextures *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:GaborTextures_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__GaborTextures, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaborTextures_calculate" "', argument " "1"" of type '" "mfg::GaborTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::GaborTextures * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "GaborTextures_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "GaborTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "GaborTextures_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_GaborTextures(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GaborTextures *arg1 = (mfg::GaborTextures *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_GaborTextures",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__GaborTextures, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_GaborTextures" "', argument " "1"" of type '" "mfg::GaborTextures *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::GaborTextures * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *GaborTextures_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__GaborTextures, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_GiniCoefficient(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GiniCoefficient *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_GiniCoefficient")) SWIG_fail;
+  result = (mfg::GiniCoefficient *)new mfg::GiniCoefficient();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__GiniCoefficient, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GiniCoefficient_calculate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GiniCoefficient *arg1 = (mfg::GiniCoefficient *) 0 ;
+  mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
+  std::vector< double > *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  mfg::WNDCHRM_ERROR result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:GiniCoefficient_calculate",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__GiniCoefficient, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GiniCoefficient_calculate" "', argument " "1"" of type '" "mfg::GiniCoefficient *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::GiniCoefficient * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "GiniCoefficient_calculate" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_double_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "GiniCoefficient_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "GiniCoefficient_calculate" "', argument " "3"" of type '" "std::vector< double > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< double > * >(argp3);
+  result = (mfg::WNDCHRM_ERROR)(arg1)->calculate(arg2,*arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_GiniCoefficient(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::GiniCoefficient *arg1 = (mfg::GiniCoefficient *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_GiniCoefficient",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__GiniCoefficient, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_GiniCoefficient" "', argument " "1"" of type '" "mfg::GiniCoefficient *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::GiniCoefficient * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *GiniCoefficient_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_mfg__GiniCoefficient, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"RGBcolor_red_set", _wrap_RGBcolor_red_set, METH_VARARGS, NULL},
@@ -7028,23 +8584,150 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"HSV2RGB", _wrap_HSV2RGB, METH_VARARGS, NULL},
 	 { (char *)"RGB2COLOR", _wrap_RGB2COLOR, METH_VARARGS, NULL},
 	 { (char *)"COLOR2GRAY", _wrap_COLOR2GRAY, METH_VARARGS, NULL},
+	 { (char *)"catError", _wrap_catError, METH_VARARGS, NULL},
+	 { (char *)"showError", _wrap_showError, METH_VARARGS, NULL},
+	 { (char *)"getErrorString", _wrap_getErrorString, METH_VARARGS, NULL},
+	 { (char *)"translateError", _wrap_translateError, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_name_set", _wrap_FeatureAlgorithm_name_set, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_name_get", _wrap_FeatureAlgorithm_name_get, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_n_features_set", _wrap_FeatureAlgorithm_n_features_set, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_n_features_get", _wrap_FeatureAlgorithm_n_features_get, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_calculate", _wrap_FeatureAlgorithm_calculate, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_print_info", _wrap_FeatureAlgorithm_print_info, METH_VARARGS, NULL},
+	 { (char *)"delete_FeatureAlgorithm", _wrap_delete_FeatureAlgorithm, METH_VARARGS, NULL},
+	 { (char *)"FeatureAlgorithm_swigregister", FeatureAlgorithm_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_ChebyshevFourierCoefficients", _wrap_new_ChebyshevFourierCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ChebyshevFourierCoefficients_calculate", _wrap_ChebyshevFourierCoefficients_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_ChebyshevFourierCoefficients", _wrap_delete_ChebyshevFourierCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ChebyshevFourierCoefficients_swigregister", ChebyshevFourierCoefficients_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_ChebyshevCoefficients", _wrap_new_ChebyshevCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ChebyshevCoefficients_calculate", _wrap_ChebyshevCoefficients_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_ChebyshevCoefficients", _wrap_delete_ChebyshevCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ChebyshevCoefficients_swigregister", ChebyshevCoefficients_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_ZernikeCoefficients", _wrap_new_ZernikeCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ZernikeCoefficients_calculate", _wrap_ZernikeCoefficients_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_ZernikeCoefficients", _wrap_delete_ZernikeCoefficients, METH_VARARGS, NULL},
+	 { (char *)"ZernikeCoefficients_swigregister", ZernikeCoefficients_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_HaralickTextures", _wrap_new_HaralickTextures, METH_VARARGS, NULL},
+	 { (char *)"HaralickTextures_calculate", _wrap_HaralickTextures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_HaralickTextures", _wrap_delete_HaralickTextures, METH_VARARGS, NULL},
+	 { (char *)"HaralickTextures_swigregister", HaralickTextures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_MultiscaleHistograms", _wrap_new_MultiscaleHistograms, METH_VARARGS, NULL},
+	 { (char *)"MultiscaleHistograms_calculate", _wrap_MultiscaleHistograms_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_MultiscaleHistograms", _wrap_delete_MultiscaleHistograms, METH_VARARGS, NULL},
+	 { (char *)"MultiscaleHistograms_swigregister", MultiscaleHistograms_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_TamuraTextures", _wrap_new_TamuraTextures, METH_VARARGS, NULL},
+	 { (char *)"TamuraTextures_calculate", _wrap_TamuraTextures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_TamuraTextures", _wrap_delete_TamuraTextures, METH_VARARGS, NULL},
+	 { (char *)"TamuraTextures_swigregister", TamuraTextures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_CombFirstFourMoments", _wrap_new_CombFirstFourMoments, METH_VARARGS, NULL},
+	 { (char *)"CombFirstFourMoments_calculate", _wrap_CombFirstFourMoments_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_CombFirstFourMoments", _wrap_delete_CombFirstFourMoments, METH_VARARGS, NULL},
+	 { (char *)"CombFirstFourMoments_swigregister", CombFirstFourMoments_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_RadonCoefficients", _wrap_new_RadonCoefficients, METH_VARARGS, NULL},
+	 { (char *)"RadonCoefficients_calculate", _wrap_RadonCoefficients_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_RadonCoefficients", _wrap_delete_RadonCoefficients, METH_VARARGS, NULL},
+	 { (char *)"RadonCoefficients_swigregister", RadonCoefficients_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_FractalFeatures", _wrap_new_FractalFeatures, METH_VARARGS, NULL},
+	 { (char *)"FractalFeatures_calculate", _wrap_FractalFeatures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_FractalFeatures", _wrap_delete_FractalFeatures, METH_VARARGS, NULL},
+	 { (char *)"FractalFeatures_swigregister", FractalFeatures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_PixelIntensityStatistics", _wrap_new_PixelIntensityStatistics, METH_VARARGS, NULL},
+	 { (char *)"PixelIntensityStatistics_calculate", _wrap_PixelIntensityStatistics_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_PixelIntensityStatistics", _wrap_delete_PixelIntensityStatistics, METH_VARARGS, NULL},
+	 { (char *)"PixelIntensityStatistics_swigregister", PixelIntensityStatistics_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_EdgeFeatures", _wrap_new_EdgeFeatures, METH_VARARGS, NULL},
+	 { (char *)"EdgeFeatures_calculate", _wrap_EdgeFeatures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_EdgeFeatures", _wrap_delete_EdgeFeatures, METH_VARARGS, NULL},
+	 { (char *)"EdgeFeatures_swigregister", EdgeFeatures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_ObjectFeatures", _wrap_new_ObjectFeatures, METH_VARARGS, NULL},
+	 { (char *)"ObjectFeatures_calculate", _wrap_ObjectFeatures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_ObjectFeatures", _wrap_delete_ObjectFeatures, METH_VARARGS, NULL},
+	 { (char *)"ObjectFeatures_swigregister", ObjectFeatures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_GaborTextures", _wrap_new_GaborTextures, METH_VARARGS, NULL},
+	 { (char *)"GaborTextures_calculate", _wrap_GaborTextures_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_GaborTextures", _wrap_delete_GaborTextures, METH_VARARGS, NULL},
+	 { (char *)"GaborTextures_swigregister", GaborTextures_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_GiniCoefficient", _wrap_new_GiniCoefficient, METH_VARARGS, NULL},
+	 { (char *)"GiniCoefficient_calculate", _wrap_GiniCoefficient_calculate, METH_VARARGS, NULL},
+	 { (char *)"delete_GiniCoefficient", _wrap_delete_GiniCoefficient, METH_VARARGS, NULL},
+	 { (char *)"GiniCoefficient_swigregister", GiniCoefficient_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static void *_p_mfg__GiniCoefficientTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::GiniCoefficient *) x));
+}
+static void *_p_mfg__PixelIntensityStatisticsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::PixelIntensityStatistics *) x));
+}
+static void *_p_mfg__MultiscaleHistogramsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::MultiscaleHistograms *) x));
+}
+static void *_p_mfg__GaborTexturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::GaborTextures *) x));
+}
+static void *_p_mfg__TamuraTexturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::TamuraTextures *) x));
+}
+static void *_p_mfg__HaralickTexturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::HaralickTextures *) x));
+}
+static void *_p_mfg__RadonCoefficientsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::RadonCoefficients *) x));
+}
+static void *_p_mfg__ZernikeCoefficientsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::ZernikeCoefficients *) x));
+}
+static void *_p_mfg__ChebyshevCoefficientsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::ChebyshevCoefficients *) x));
+}
+static void *_p_mfg__ChebyshevFourierCoefficientsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::ChebyshevFourierCoefficients *) x));
+}
+static void *_p_mfg__CombFirstFourMomentsTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::CombFirstFourMoments *) x));
+}
+static void *_p_mfg__ObjectFeaturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::ObjectFeatures *) x));
+}
+static void *_p_mfg__EdgeFeaturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::EdgeFeatures *) x));
+}
+static void *_p_mfg__FractalFeaturesTo_p_mfg__FeatureAlgorithm(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((mfg::FeatureAlgorithm *)  ((mfg::FractalFeatures *) x));
+}
 static swig_type_info _swigt__p_TColor = {"_p_TColor", "TColor *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long = {"_p_long", "long *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__ChebyshevCoefficients = {"_p_mfg__ChebyshevCoefficients", "mfg::ChebyshevCoefficients *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__ChebyshevFourierCoefficients = {"_p_mfg__ChebyshevFourierCoefficients", "mfg::ChebyshevFourierCoefficients *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__CombFirstFourMoments = {"_p_mfg__CombFirstFourMoments", "mfg::CombFirstFourMoments *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__EdgeFeatures = {"_p_mfg__EdgeFeatures", "mfg::EdgeFeatures *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__FeatureAlgorithm = {"_p_mfg__FeatureAlgorithm", "mfg::FeatureAlgorithm *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__FractalFeatures = {"_p_mfg__FractalFeatures", "mfg::FractalFeatures *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__GaborTextures = {"_p_mfg__GaborTextures", "mfg::GaborTextures *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__GiniCoefficient = {"_p_mfg__GiniCoefficient", "mfg::GiniCoefficient *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__HSVCOLOR = {"_p_mfg__HSVCOLOR", "mfg::HSVcolor *|mfg::HSVCOLOR *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__HaralickTextures = {"_p_mfg__HaralickTextures", "mfg::HaralickTextures *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__ImageMatrix = {"_p_mfg__ImageMatrix", "mfg::ImageMatrix *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__MultiscaleHistograms = {"_p_mfg__MultiscaleHistograms", "mfg::MultiscaleHistograms *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__ObjectFeatures = {"_p_mfg__ObjectFeatures", "mfg::ObjectFeatures *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__PIX_DATA = {"_p_mfg__PIX_DATA", "mfg::pix_data *|mfg::PIX_DATA *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__PixelIntensityStatistics = {"_p_mfg__PixelIntensityStatistics", "mfg::PixelIntensityStatistics *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__RGBCOLOR = {"_p_mfg__RGBCOLOR", "mfg::RGBcolor *|mfg::RGBCOLOR *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__RadonCoefficients = {"_p_mfg__RadonCoefficients", "mfg::RadonCoefficients *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__TamuraTextures = {"_p_mfg__TamuraTextures", "mfg::TamuraTextures *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_mfg__ZernikeCoefficients = {"_p_mfg__ZernikeCoefficients", "mfg::ZernikeCoefficients *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__color = {"_p_mfg__color", "mfg::color *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__rect = {"_p_mfg__rect", "mfg::rect *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__vectorT_double_t = {"_p_std__vectorT_double_t", "std::vector< double > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|mfg::byte *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -7053,12 +8736,29 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_double,
   &_swigt__p_int,
   &_swigt__p_long,
+  &_swigt__p_mfg__ChebyshevCoefficients,
+  &_swigt__p_mfg__ChebyshevFourierCoefficients,
+  &_swigt__p_mfg__CombFirstFourMoments,
+  &_swigt__p_mfg__EdgeFeatures,
+  &_swigt__p_mfg__FeatureAlgorithm,
+  &_swigt__p_mfg__FractalFeatures,
+  &_swigt__p_mfg__GaborTextures,
+  &_swigt__p_mfg__GiniCoefficient,
   &_swigt__p_mfg__HSVCOLOR,
+  &_swigt__p_mfg__HaralickTextures,
   &_swigt__p_mfg__ImageMatrix,
+  &_swigt__p_mfg__MultiscaleHistograms,
+  &_swigt__p_mfg__ObjectFeatures,
   &_swigt__p_mfg__PIX_DATA,
+  &_swigt__p_mfg__PixelIntensityStatistics,
   &_swigt__p_mfg__RGBCOLOR,
+  &_swigt__p_mfg__RadonCoefficients,
+  &_swigt__p_mfg__TamuraTextures,
+  &_swigt__p_mfg__ZernikeCoefficients,
   &_swigt__p_mfg__color,
   &_swigt__p_mfg__rect,
+  &_swigt__p_std__string,
+  &_swigt__p_std__vectorT_double_t,
   &_swigt__p_unsigned_char,
 };
 
@@ -7067,12 +8767,29 @@ static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0,
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long[] = {  {&_swigt__p_long, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__ChebyshevCoefficients[] = {  {&_swigt__p_mfg__ChebyshevCoefficients, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__ChebyshevFourierCoefficients[] = {  {&_swigt__p_mfg__ChebyshevFourierCoefficients, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__CombFirstFourMoments[] = {  {&_swigt__p_mfg__CombFirstFourMoments, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__EdgeFeatures[] = {  {&_swigt__p_mfg__EdgeFeatures, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__FeatureAlgorithm[] = {  {&_swigt__p_mfg__FeatureAlgorithm, 0, 0, 0},  {&_swigt__p_mfg__GiniCoefficient, _p_mfg__GiniCoefficientTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__PixelIntensityStatistics, _p_mfg__PixelIntensityStatisticsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__MultiscaleHistograms, _p_mfg__MultiscaleHistogramsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__GaborTextures, _p_mfg__GaborTexturesTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__TamuraTextures, _p_mfg__TamuraTexturesTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__HaralickTextures, _p_mfg__HaralickTexturesTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__RadonCoefficients, _p_mfg__RadonCoefficientsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__ZernikeCoefficients, _p_mfg__ZernikeCoefficientsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__ChebyshevCoefficients, _p_mfg__ChebyshevCoefficientsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__ChebyshevFourierCoefficients, _p_mfg__ChebyshevFourierCoefficientsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__CombFirstFourMoments, _p_mfg__CombFirstFourMomentsTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__ObjectFeatures, _p_mfg__ObjectFeaturesTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__EdgeFeatures, _p_mfg__EdgeFeaturesTo_p_mfg__FeatureAlgorithm, 0, 0},  {&_swigt__p_mfg__FractalFeatures, _p_mfg__FractalFeaturesTo_p_mfg__FeatureAlgorithm, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__FractalFeatures[] = {  {&_swigt__p_mfg__FractalFeatures, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__GaborTextures[] = {  {&_swigt__p_mfg__GaborTextures, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__GiniCoefficient[] = {  {&_swigt__p_mfg__GiniCoefficient, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__HSVCOLOR[] = {  {&_swigt__p_mfg__HSVCOLOR, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__HaralickTextures[] = {  {&_swigt__p_mfg__HaralickTextures, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__ImageMatrix[] = {  {&_swigt__p_mfg__ImageMatrix, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__MultiscaleHistograms[] = {  {&_swigt__p_mfg__MultiscaleHistograms, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__ObjectFeatures[] = {  {&_swigt__p_mfg__ObjectFeatures, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__PIX_DATA[] = {  {&_swigt__p_mfg__PIX_DATA, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__PixelIntensityStatistics[] = {  {&_swigt__p_mfg__PixelIntensityStatistics, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__RGBCOLOR[] = {  {&_swigt__p_mfg__RGBCOLOR, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__RadonCoefficients[] = {  {&_swigt__p_mfg__RadonCoefficients, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__TamuraTextures[] = {  {&_swigt__p_mfg__TamuraTextures, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_mfg__ZernikeCoefficients[] = {  {&_swigt__p_mfg__ZernikeCoefficients, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__color[] = {  {&_swigt__p_mfg__color, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__rect[] = {  {&_swigt__p_mfg__rect, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__vectorT_double_t[] = {  {&_swigt__p_std__vectorT_double_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -7081,12 +8798,29 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_double,
   _swigc__p_int,
   _swigc__p_long,
+  _swigc__p_mfg__ChebyshevCoefficients,
+  _swigc__p_mfg__ChebyshevFourierCoefficients,
+  _swigc__p_mfg__CombFirstFourMoments,
+  _swigc__p_mfg__EdgeFeatures,
+  _swigc__p_mfg__FeatureAlgorithm,
+  _swigc__p_mfg__FractalFeatures,
+  _swigc__p_mfg__GaborTextures,
+  _swigc__p_mfg__GiniCoefficient,
   _swigc__p_mfg__HSVCOLOR,
+  _swigc__p_mfg__HaralickTextures,
   _swigc__p_mfg__ImageMatrix,
+  _swigc__p_mfg__MultiscaleHistograms,
+  _swigc__p_mfg__ObjectFeatures,
   _swigc__p_mfg__PIX_DATA,
+  _swigc__p_mfg__PixelIntensityStatistics,
   _swigc__p_mfg__RGBCOLOR,
+  _swigc__p_mfg__RadonCoefficients,
+  _swigc__p_mfg__TamuraTextures,
+  _swigc__p_mfg__ZernikeCoefficients,
   _swigc__p_mfg__color,
   _swigc__p_mfg__rect,
+  _swigc__p_std__string,
+  _swigc__p_std__vectorT_double_t,
   _swigc__p_unsigned_char,
 };
 
@@ -7773,6 +9507,14 @@ SWIG_init(void) {
   
   SWIG_InstallConstants(d,swig_const_table);
   
+  SWIG_Python_SetConstant(d, "WC_UNINITIALIZED",SWIG_From_int(static_cast< int >(mfg::WC_UNINITIALIZED)));
+  SWIG_Python_SetConstant(d, "WC_NO_ERROR",SWIG_From_int(static_cast< int >(mfg::WC_NO_ERROR)));
+  SWIG_Python_SetConstant(d, "WC_IPP_NULL",SWIG_From_int(static_cast< int >(mfg::WC_IPP_NULL)));
+  SWIG_Python_SetConstant(d, "WC_MM_FAIL_RECURSIVE_CALL",SWIG_From_int(static_cast< int >(mfg::WC_MM_FAIL_RECURSIVE_CALL)));
+  SWIG_Python_SetConstant(d, "WC_TRANSFORM_FAIL",SWIG_From_int(static_cast< int >(mfg::WC_TRANSFORM_FAIL)));
+  SWIG_Python_SetConstant(d, "WC_EMPTY",SWIG_From_int(static_cast< int >(mfg::WC_EMPTY)));
+  SWIG_Python_SetConstant(d, "WC_NOT_IMPLEMENTED",SWIG_From_int(static_cast< int >(mfg::WC_NOT_IMPLEMENTED)));
+  SWIG_Python_SetConstant(d, "WC_INPUT_IMAGEMATRIX_NULL",SWIG_From_int(static_cast< int >(mfg::WC_INPUT_IMAGEMATRIX_NULL)));
 #if PY_VERSION_HEX >= 0x03000000
   return m;
 #else

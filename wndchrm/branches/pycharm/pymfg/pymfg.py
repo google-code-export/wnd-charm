@@ -280,6 +280,302 @@ RGB2COLOR = _pymfg.RGB2COLOR
 def COLOR2GRAY(*args):
   return _pymfg.COLOR2GRAY(*args)
 COLOR2GRAY = _pymfg.COLOR2GRAY
+WC_UNINITIALIZED = _pymfg.WC_UNINITIALIZED
+WC_NO_ERROR = _pymfg.WC_NO_ERROR
+WC_IPP_NULL = _pymfg.WC_IPP_NULL
+WC_MM_FAIL_RECURSIVE_CALL = _pymfg.WC_MM_FAIL_RECURSIVE_CALL
+WC_TRANSFORM_FAIL = _pymfg.WC_TRANSFORM_FAIL
+WC_EMPTY = _pymfg.WC_EMPTY
+WC_NOT_IMPLEMENTED = _pymfg.WC_NOT_IMPLEMENTED
+WC_INPUT_IMAGEMATRIX_NULL = _pymfg.WC_INPUT_IMAGEMATRIX_NULL
+
+def catError(*args):
+  return _pymfg.catError(*args)
+catError = _pymfg.catError
+
+def showError(*args):
+  return _pymfg.showError(*args)
+showError = _pymfg.showError
+
+def getErrorString():
+  return _pymfg.getErrorString()
+getErrorString = _pymfg.getErrorString
+
+def translateError(*args):
+  return _pymfg.translateError(*args)
+translateError = _pymfg.translateError
+class FeatureAlgorithm(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FeatureAlgorithm, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, FeatureAlgorithm, name)
+    def __init__(self, *args, **kwargs): raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
+    __swig_setmethods__["name"] = _pymfg.FeatureAlgorithm_name_set
+    __swig_getmethods__["name"] = _pymfg.FeatureAlgorithm_name_get
+    if _newclass:name = _swig_property(_pymfg.FeatureAlgorithm_name_get, _pymfg.FeatureAlgorithm_name_set)
+    __swig_setmethods__["n_features"] = _pymfg.FeatureAlgorithm_n_features_set
+    __swig_getmethods__["n_features"] = _pymfg.FeatureAlgorithm_n_features_get
+    if _newclass:n_features = _swig_property(_pymfg.FeatureAlgorithm_n_features_get, _pymfg.FeatureAlgorithm_n_features_set)
+    def calculate(self, *args): return _pymfg.FeatureAlgorithm_calculate(self, *args)
+    def print_info(self): return _pymfg.FeatureAlgorithm_print_info(self)
+    __swig_destroy__ = _pymfg.delete_FeatureAlgorithm
+    __del__ = lambda self : None;
+FeatureAlgorithm_swigregister = _pymfg.FeatureAlgorithm_swigregister
+FeatureAlgorithm_swigregister(FeatureAlgorithm)
+
+class ChebyshevFourierCoefficients(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ChebyshevFourierCoefficients, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ChebyshevFourierCoefficients, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ChebyshevFourierCoefficients()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.ChebyshevFourierCoefficients_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_ChebyshevFourierCoefficients
+    __del__ = lambda self : None;
+ChebyshevFourierCoefficients_swigregister = _pymfg.ChebyshevFourierCoefficients_swigregister
+ChebyshevFourierCoefficients_swigregister(ChebyshevFourierCoefficients)
+
+class ChebyshevCoefficients(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ChebyshevCoefficients, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ChebyshevCoefficients, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ChebyshevCoefficients()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.ChebyshevCoefficients_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_ChebyshevCoefficients
+    __del__ = lambda self : None;
+ChebyshevCoefficients_swigregister = _pymfg.ChebyshevCoefficients_swigregister
+ChebyshevCoefficients_swigregister(ChebyshevCoefficients)
+
+class ZernikeCoefficients(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ZernikeCoefficients, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ZernikeCoefficients, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ZernikeCoefficients()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.ZernikeCoefficients_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_ZernikeCoefficients
+    __del__ = lambda self : None;
+ZernikeCoefficients_swigregister = _pymfg.ZernikeCoefficients_swigregister
+ZernikeCoefficients_swigregister(ZernikeCoefficients)
+
+class HaralickTextures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, HaralickTextures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, HaralickTextures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_HaralickTextures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.HaralickTextures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_HaralickTextures
+    __del__ = lambda self : None;
+HaralickTextures_swigregister = _pymfg.HaralickTextures_swigregister
+HaralickTextures_swigregister(HaralickTextures)
+
+class MultiscaleHistograms(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, MultiscaleHistograms, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, MultiscaleHistograms, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_MultiscaleHistograms()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.MultiscaleHistograms_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_MultiscaleHistograms
+    __del__ = lambda self : None;
+MultiscaleHistograms_swigregister = _pymfg.MultiscaleHistograms_swigregister
+MultiscaleHistograms_swigregister(MultiscaleHistograms)
+
+class TamuraTextures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, TamuraTextures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, TamuraTextures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_TamuraTextures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.TamuraTextures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_TamuraTextures
+    __del__ = lambda self : None;
+TamuraTextures_swigregister = _pymfg.TamuraTextures_swigregister
+TamuraTextures_swigregister(TamuraTextures)
+
+class CombFirstFourMoments(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, CombFirstFourMoments, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, CombFirstFourMoments, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_CombFirstFourMoments()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.CombFirstFourMoments_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_CombFirstFourMoments
+    __del__ = lambda self : None;
+CombFirstFourMoments_swigregister = _pymfg.CombFirstFourMoments_swigregister
+CombFirstFourMoments_swigregister(CombFirstFourMoments)
+
+class RadonCoefficients(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, RadonCoefficients, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, RadonCoefficients, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_RadonCoefficients()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.RadonCoefficients_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_RadonCoefficients
+    __del__ = lambda self : None;
+RadonCoefficients_swigregister = _pymfg.RadonCoefficients_swigregister
+RadonCoefficients_swigregister(RadonCoefficients)
+
+class FractalFeatures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FractalFeatures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, FractalFeatures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_FractalFeatures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.FractalFeatures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_FractalFeatures
+    __del__ = lambda self : None;
+FractalFeatures_swigregister = _pymfg.FractalFeatures_swigregister
+FractalFeatures_swigregister(FractalFeatures)
+
+class PixelIntensityStatistics(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, PixelIntensityStatistics, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, PixelIntensityStatistics, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_PixelIntensityStatistics()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.PixelIntensityStatistics_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_PixelIntensityStatistics
+    __del__ = lambda self : None;
+PixelIntensityStatistics_swigregister = _pymfg.PixelIntensityStatistics_swigregister
+PixelIntensityStatistics_swigregister(PixelIntensityStatistics)
+
+class EdgeFeatures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, EdgeFeatures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, EdgeFeatures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_EdgeFeatures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.EdgeFeatures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_EdgeFeatures
+    __del__ = lambda self : None;
+EdgeFeatures_swigregister = _pymfg.EdgeFeatures_swigregister
+EdgeFeatures_swigregister(EdgeFeatures)
+
+class ObjectFeatures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ObjectFeatures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, ObjectFeatures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_ObjectFeatures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.ObjectFeatures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_ObjectFeatures
+    __del__ = lambda self : None;
+ObjectFeatures_swigregister = _pymfg.ObjectFeatures_swigregister
+ObjectFeatures_swigregister(ObjectFeatures)
+
+class GaborTextures(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, GaborTextures, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, GaborTextures, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_GaborTextures()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.GaborTextures_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_GaborTextures
+    __del__ = lambda self : None;
+GaborTextures_swigregister = _pymfg.GaborTextures_swigregister
+GaborTextures_swigregister(GaborTextures)
+
+class GiniCoefficient(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, GiniCoefficient, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, GiniCoefficient, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _pymfg.new_GiniCoefficient()
+        try: self.this.append(this)
+        except: self.this = this
+    def calculate(self, *args): return _pymfg.GiniCoefficient_calculate(self, *args)
+    __swig_destroy__ = _pymfg.delete_GiniCoefficient
+    __del__ = lambda self : None;
+GiniCoefficient_swigregister = _pymfg.GiniCoefficient_swigregister
+GiniCoefficient_swigregister(GiniCoefficient)
+
 # This file is compatible with both classic and new-style classes.
 
 

@@ -22,9 +22,13 @@
 /****************************************************************************/
 
 #include "cmatrix.h"
+#include "wndchrm_error.h"
+#include "FeatureAlgorithms.h"
 %}
 
 %module pymfg
 
 
 %include "cmatrix.i"
+%include "wndchrm_error.i"
+%include "FeatureAlgorithms.i"
