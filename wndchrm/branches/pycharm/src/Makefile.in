@@ -84,7 +84,8 @@ am_libmfgraph_la_OBJECTS = FuzzyCalc.lo CombFirst4Moments.lo \
 	ChebyshevFourier.lo chebyshev.lo radon.lo Common.lo \
 	convolution.lo DataGrid2D.lo DataGrid3D.lo Filter.lo \
 	FilterSet.lo Symlet5.lo Wavelet.lo WaveletHigh.lo \
-	WaveletLow.lo WaveletMedium.lo wt.lo cmatrix.lo
+	WaveletLow.lo WaveletMedium.lo wt.lo cmatrix.lo \
+	wndchrm_error.lo FeatureTransforms.lo FeatureAlgorithms.lo
 libmfgraph_la_OBJECTS = $(am_libmfgraph_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -339,7 +340,13 @@ libmfgraph_la_SOURCES = \
        transforms/wavelet/wt.cpp \
        transforms/wavelet/wt.h \
        cmatrix.cpp \
-       cmatrix.h
+       cmatrix.h \
+			 wndchrm_error.cpp \
+			 wndchrm_error.h \
+			 FeatureTransforms.cpp \
+			 FeatureTransforms.h \
+			 FeatureAlgorithms.cpp \
+			 FeatureAlgorithms.h
 
 libmfgraph_la_LIBADD = -ltiff -L. -lfftw3
 all: all-am
@@ -422,7 +429,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataGrid2D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataGrid3D.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureAlgorithms.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureStatistics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FeatureTransforms.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Filter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FilterSet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FuzzyCalc.Plo@am__quote@
@@ -441,6 +450,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapkit_generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/radon.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tamura.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wndchrm_error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zernike.Plo@am__quote@
 

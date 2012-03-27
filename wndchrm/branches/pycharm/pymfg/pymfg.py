@@ -194,6 +194,9 @@ class ImageMatrix(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, ImageMatrix, name)
     __repr__ = _swig_repr
+    __swig_setmethods__["data"] = _pymfg.ImageMatrix_data_set
+    __swig_getmethods__["data"] = _pymfg.ImageMatrix_data_get
+    if _newclass:data = _swig_property(_pymfg.ImageMatrix_data_get, _pymfg.ImageMatrix_data_set)
     __swig_setmethods__["ColorMode"] = _pymfg.ImageMatrix_ColorMode_set
     __swig_getmethods__["ColorMode"] = _pymfg.ImageMatrix_ColorMode_get
     if _newclass:ColorMode = _swig_property(_pymfg.ImageMatrix_ColorMode_get, _pymfg.ImageMatrix_ColorMode_set)

@@ -84,7 +84,8 @@ am_libmfgraph_la_OBJECTS = FuzzyCalc.lo CombFirst4Moments.lo \
 	ChebyshevFourier.lo chebyshev.lo radon.lo Common.lo \
 	convolution.lo DataGrid2D.lo DataGrid3D.lo Filter.lo \
 	FilterSet.lo Symlet5.lo Wavelet.lo WaveletHigh.lo \
-	WaveletLow.lo WaveletMedium.lo wt.lo cmatrix.lo
+	WaveletLow.lo WaveletMedium.lo wt.lo cmatrix.lo \
+	wndchrm_error.lo FeatureTransforms.lo FeatureAlgorithms.lo
 libmfgraph_la_OBJECTS = $(am_libmfgraph_la_OBJECTS)
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -265,7 +266,7 @@ oldincludedir = /usr/include
 pdfdir = ${docdir}
 pkgpyexecdir = ${pyexecdir}/pycharm
 pkgpythondir = ${pythondir}/pycharm
-prefix = /opt/local/Library/Frameworks/Python.framework/Versions/2.7
+prefix = /usr/local
 program_transform_name = s,x,x,
 psdir = ${docdir}
 pyexecdir = ${exec_prefix}/lib/python2.7/site-packages
@@ -339,7 +340,13 @@ libmfgraph_la_SOURCES = \
        transforms/wavelet/wt.cpp \
        transforms/wavelet/wt.h \
        cmatrix.cpp \
-       cmatrix.h
+       cmatrix.h \
+			 wndchrm_error.cpp \
+			 wndchrm_error.h \
+			 FeatureTransforms.cpp \
+			 FeatureTransforms.h \
+			 FeatureAlgorithms.cpp \
+			 FeatureAlgorithms.h
 
 libmfgraph_la_LIBADD = -ltiff -L. -lfftw3
 all: all-am
@@ -422,7 +429,9 @@ include ./$(DEPDIR)/CombFirst4Moments.Plo
 include ./$(DEPDIR)/Common.Plo
 include ./$(DEPDIR)/DataGrid2D.Plo
 include ./$(DEPDIR)/DataGrid3D.Plo
+include ./$(DEPDIR)/FeatureAlgorithms.Plo
 include ./$(DEPDIR)/FeatureStatistics.Plo
+include ./$(DEPDIR)/FeatureTransforms.Plo
 include ./$(DEPDIR)/Filter.Plo
 include ./$(DEPDIR)/FilterSet.Plo
 include ./$(DEPDIR)/FuzzyCalc.Plo
@@ -441,6 +450,7 @@ include ./$(DEPDIR)/mapkit.Plo
 include ./$(DEPDIR)/mapkit_generic.Plo
 include ./$(DEPDIR)/radon.Plo
 include ./$(DEPDIR)/tamura.Plo
+include ./$(DEPDIR)/wndchrm_error.Plo
 include ./$(DEPDIR)/wt.Plo
 include ./$(DEPDIR)/zernike.Plo
 

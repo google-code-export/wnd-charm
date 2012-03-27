@@ -83,9 +83,8 @@ int compare_doubles (const void *a, const void *b);
 
 class ImageMatrix
 {
-  private:
-   pix_data *data;                                 /* data of the colors                   */  
   public:
+   pix_data *data;                                 /* data of the colors                   */  
 	 //std::string what_am_i;                          // informative label
 	 int ColorMode;                                  /* can be cmRGB or cmHSV                */
    unsigned short bits;                            /* the number of intensity bits (8,16, etc) */

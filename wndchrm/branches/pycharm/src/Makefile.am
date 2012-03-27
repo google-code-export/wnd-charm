@@ -62,6 +62,12 @@ libmfgraph_la_SOURCES = \
        transforms/wavelet/wt.cpp \
        transforms/wavelet/wt.h \
        cmatrix.cpp \
-       cmatrix.h
+       cmatrix.h \
+			 wndchrm_error.cpp \
+			 wndchrm_error.h \
+			 FeatureTransforms.cpp \
+			 FeatureTransforms.h \
+			 FeatureAlgorithms.cpp \
+			 FeatureAlgorithms.h
 
 libmfgraph_la_LIBADD = -ltiff -L. -lfftw3

@@ -4387,6 +4387,58 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_ImageMatrix_data_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ImageMatrix *arg1 = (mfg::ImageMatrix *) 0 ;
+  mfg::pix_data *arg2 = (mfg::pix_data *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:ImageMatrix_data_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_data_set" "', argument " "1"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ImageMatrix * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_mfg__PIX_DATA, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ImageMatrix_data_set" "', argument " "2"" of type '" "mfg::pix_data *""'"); 
+  }
+  arg2 = reinterpret_cast< mfg::pix_data * >(argp2);
+  if (arg1) (arg1)->data = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ImageMatrix_data_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  mfg::ImageMatrix *arg1 = (mfg::ImageMatrix *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  mfg::pix_data *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:ImageMatrix_data_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_data_get" "', argument " "1"" of type '" "mfg::ImageMatrix *""'"); 
+  }
+  arg1 = reinterpret_cast< mfg::ImageMatrix * >(argp1);
+  result = (mfg::pix_data *) ((arg1)->data);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__PIX_DATA, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_ImageMatrix_ColorMode_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   mfg::ImageMatrix *arg1 = (mfg::ImageMatrix *) 0 ;
@@ -6914,6 +6966,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"delete_rect", _wrap_delete_rect, METH_VARARGS, NULL},
 	 { (char *)"rect_swigregister", rect_swigregister, METH_VARARGS, NULL},
 	 { (char *)"compare_doubles", _wrap_compare_doubles, METH_VARARGS, NULL},
+	 { (char *)"ImageMatrix_data_set", _wrap_ImageMatrix_data_set, METH_VARARGS, NULL},
+	 { (char *)"ImageMatrix_data_get", _wrap_ImageMatrix_data_get, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_ColorMode_set", _wrap_ImageMatrix_ColorMode_set, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_ColorMode_get", _wrap_ImageMatrix_ColorMode_get, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_bits_set", _wrap_ImageMatrix_bits_set, METH_VARARGS, NULL},

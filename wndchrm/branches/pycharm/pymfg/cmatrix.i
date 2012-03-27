@@ -39,9 +39,8 @@ namespace mfg
   int compare_doubles (const void *a, const void *b);
   class ImageMatrix
   {
-    private:
-      pix_data *data;                                   
     public:
+      pix_data *data;                                   
       /* void CmatrixMessage(); */
       int ColorMode;                                  
       unsigned short bits;                            
