@@ -16,10 +16,10 @@ EmptyTransform::EmptyTransform () {
 };
 
 
-WNDCHRM_ERROR EmptyTransform::transform( ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p )
+ImageMatrix* EmptyTransform::transform( ImageMatrix * matrix_IN )
 {
 	std::cout << "Empty transform." << std::endl;
-	return WC_NOT_IMPLEMENTED;
+	return NULL;
 }
 
 //===========================================================================
@@ -31,10 +31,10 @@ FourierTransform::FourierTransform () {
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
 //TODO: The ImageMatrix::duplicate() function should really be const
-WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* FourierTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
 	ImageMatrix* matrix_OUT = NULL;
@@ -43,7 +43,7 @@ WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
    double *in;
    fftw_plan p;
    long x,y,z;
-	 *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+	 matrix_OUT = matrix_IN->duplicate();
 	 int width = matrix_OUT->width;
 	 int height = matrix_OUT->height;
 	 int depth = matrix_OUT->depth;
@@ -113,7 +113,7 @@ WNDCHRM_ERROR FourierTransform::transform(ImageMatrix * matrix_IN, ImageMatrix *
 
    /* calculate the magnitude and angle */
 
-   return WC_NO_ERROR;
+   return matrix_OUT;
 }
 
 
@@ -152,16 +152,16 @@ ChebyshevTransform::ChebyshevTransform () {
 };
 
 
-WNDCHRM_ERROR ChebyshevTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* ChebyshevTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+  matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ChebyshevTransform(0);
-	return WC_NO_ERROR;
+	return matrix_OUT;
 }
 
 //WNDCHARM_REGISTER_TRANSFORM(ChebyshevTransform)
@@ -173,16 +173,16 @@ WaveletTransform::WaveletTransform () {
 };
 
 
-WNDCHRM_ERROR WaveletTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* WaveletTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+  matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->Symlet5Transform();
-	return WC_NO_ERROR;
+	return matrix_OUT;
 }
 
 //WNDCHARM_REGISTER_TRANSFORM(WaveletTransform)
@@ -194,16 +194,16 @@ EdgeTransform::EdgeTransform () {
 };
 
 
-WNDCHRM_ERROR EdgeTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* EdgeTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+  matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->EdgeTransform();
-	return WC_NO_ERROR;
+	return matrix_OUT;
 }
 
 //WNDCHARM_REGISTER_TRANSFORM(EdgeTransform)
@@ -215,18 +215,18 @@ ColorTransform::ColorTransform () {
 };
 
 
-WNDCHRM_ERROR ColorTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* ColorTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
 	double temp_vec [COLORS_NUM+1];
-  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+  matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(temp_vec, 0);
 	histogram_vals.assign(temp_vec, temp_vec+COLORS_NUM+1);
-	return WC_NO_ERROR;
+	return matrix_OUT;
 }
 
 //WNDCHARM_REGISTER_TRANSFORM(ColorTransform)
@@ -238,16 +238,16 @@ HueTransform::HueTransform () {
 };
 
 
-WNDCHRM_ERROR HueTransform::transform(ImageMatrix * matrix_IN, ImageMatrix ** matrix_OUT_p)
+ImageMatrix* HueTransform::transform( ImageMatrix * matrix_IN )
 {
 	if( !matrix_IN )
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return NULL;
 	ImageMatrix* matrix_OUT = NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-  *matrix_OUT_p = matrix_OUT = matrix_IN->duplicate();
+  matrix_OUT = matrix_IN->duplicate();
   matrix_OUT->ColorTransform(NULL,1);
-	return WC_NO_ERROR;
+	return matrix_OUT;
 }
 
 //WNDCHARM_REGISTER_TRANSFORM(HueTransform)

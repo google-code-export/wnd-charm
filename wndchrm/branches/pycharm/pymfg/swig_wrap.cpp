@@ -2973,13 +2973,12 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_mfg__ZernikeCoefficients swig_types[31]
 #define SWIGTYPE_p_mfg__color swig_types[32]
 #define SWIGTYPE_p_mfg__rect swig_types[33]
-#define SWIGTYPE_p_p_mfg__ImageMatrix swig_types[34]
-#define SWIGTYPE_p_std__string swig_types[35]
-#define SWIGTYPE_p_std__vectorT_double_t swig_types[36]
-#define SWIGTYPE_p_unsigned_char swig_types[37]
-#define SWIGTYPE_p_vectorT_double_t swig_types[38]
-static swig_type_info *swig_types[40];
-static swig_module_info swig_module = {swig_types, 39, 0, 0, 0, 0};
+#define SWIGTYPE_p_std__string swig_types[34]
+#define SWIGTYPE_p_std__vectorT_double_t swig_types[35]
+#define SWIGTYPE_p_unsigned_char swig_types[36]
+#define SWIGTYPE_p_vectorT_double_t swig_types[37]
+static swig_type_info *swig_types[39];
+static swig_module_info swig_module = {swig_types, 38, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -8494,19 +8493,15 @@ SWIGINTERN PyObject *_wrap_Transform_transform(PyObject *SWIGUNUSEDPARM(self), P
   PyObject *resultobj = 0;
   mfg::Transform *arg1 = (mfg::Transform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:Transform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:Transform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__Transform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transform_transform" "', argument " "1"" of type '" "mfg::Transform *""'"); 
@@ -8517,13 +8512,8 @@ SWIGINTERN PyObject *_wrap_Transform_transform(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Transform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Transform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -8747,19 +8737,15 @@ SWIGINTERN PyObject *_wrap_EmptyTransform_transform(PyObject *SWIGUNUSEDPARM(sel
   PyObject *resultobj = 0;
   mfg::EmptyTransform *arg1 = (mfg::EmptyTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:EmptyTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:EmptyTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__EmptyTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "EmptyTransform_transform" "', argument " "1"" of type '" "mfg::EmptyTransform *""'"); 
@@ -8770,13 +8756,8 @@ SWIGINTERN PyObject *_wrap_EmptyTransform_transform(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "EmptyTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "EmptyTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -8828,19 +8809,15 @@ SWIGINTERN PyObject *_wrap_FourierTransform_transform(PyObject *SWIGUNUSEDPARM(s
   PyObject *resultobj = 0;
   mfg::FourierTransform *arg1 = (mfg::FourierTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:FourierTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:FourierTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__FourierTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FourierTransform_transform" "', argument " "1"" of type '" "mfg::FourierTransform *""'"); 
@@ -8851,13 +8828,8 @@ SWIGINTERN PyObject *_wrap_FourierTransform_transform(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "FourierTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "FourierTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -8909,19 +8881,15 @@ SWIGINTERN PyObject *_wrap_ChebyshevTransform_transform(PyObject *SWIGUNUSEDPARM
   PyObject *resultobj = 0;
   mfg::ChebyshevTransform *arg1 = (mfg::ChebyshevTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:ChebyshevTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:ChebyshevTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ChebyshevTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ChebyshevTransform_transform" "', argument " "1"" of type '" "mfg::ChebyshevTransform *""'"); 
@@ -8932,13 +8900,8 @@ SWIGINTERN PyObject *_wrap_ChebyshevTransform_transform(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ChebyshevTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ChebyshevTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -8990,19 +8953,15 @@ SWIGINTERN PyObject *_wrap_WaveletTransform_transform(PyObject *SWIGUNUSEDPARM(s
   PyObject *resultobj = 0;
   mfg::WaveletTransform *arg1 = (mfg::WaveletTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:WaveletTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:WaveletTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__WaveletTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "WaveletTransform_transform" "', argument " "1"" of type '" "mfg::WaveletTransform *""'"); 
@@ -9013,13 +8972,8 @@ SWIGINTERN PyObject *_wrap_WaveletTransform_transform(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "WaveletTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "WaveletTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -9071,19 +9025,15 @@ SWIGINTERN PyObject *_wrap_EdgeTransform_transform(PyObject *SWIGUNUSEDPARM(self
   PyObject *resultobj = 0;
   mfg::EdgeTransform *arg1 = (mfg::EdgeTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:EdgeTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:EdgeTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__EdgeTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "EdgeTransform_transform" "', argument " "1"" of type '" "mfg::EdgeTransform *""'"); 
@@ -9094,13 +9044,8 @@ SWIGINTERN PyObject *_wrap_EdgeTransform_transform(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "EdgeTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "EdgeTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -9212,19 +9157,15 @@ SWIGINTERN PyObject *_wrap_ColorTransform_transform(PyObject *SWIGUNUSEDPARM(sel
   PyObject *resultobj = 0;
   mfg::ColorTransform *arg1 = (mfg::ColorTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:ColorTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:ColorTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__ColorTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ColorTransform_transform" "', argument " "1"" of type '" "mfg::ColorTransform *""'"); 
@@ -9235,13 +9176,8 @@ SWIGINTERN PyObject *_wrap_ColorTransform_transform(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ColorTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "ColorTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -9293,19 +9229,15 @@ SWIGINTERN PyObject *_wrap_HueTransform_transform(PyObject *SWIGUNUSEDPARM(self)
   PyObject *resultobj = 0;
   mfg::HueTransform *arg1 = (mfg::HueTransform *) 0 ;
   mfg::ImageMatrix *arg2 = (mfg::ImageMatrix *) 0 ;
-  mfg::ImageMatrix **arg3 = (mfg::ImageMatrix **) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  mfg::WNDCHRM_ERROR result;
+  mfg::ImageMatrix *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:HueTransform_transform",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:HueTransform_transform",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_mfg__HueTransform, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "HueTransform_transform" "', argument " "1"" of type '" "mfg::HueTransform *""'"); 
@@ -9316,13 +9248,8 @@ SWIGINTERN PyObject *_wrap_HueTransform_transform(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "HueTransform_transform" "', argument " "2"" of type '" "mfg::ImageMatrix *""'"); 
   }
   arg2 = reinterpret_cast< mfg::ImageMatrix * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_mfg__ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "HueTransform_transform" "', argument " "3"" of type '" "mfg::ImageMatrix **""'"); 
-  }
-  arg3 = reinterpret_cast< mfg::ImageMatrix ** >(argp3);
-  result = (mfg::WNDCHRM_ERROR)(arg1)->transform(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
+  result = (mfg::ImageMatrix *)(arg1)->transform(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_mfg__ImageMatrix, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -9672,7 +9599,6 @@ static swig_type_info _swigt__p_mfg__WaveletTransform = {"_p_mfg__WaveletTransfo
 static swig_type_info _swigt__p_mfg__ZernikeCoefficients = {"_p_mfg__ZernikeCoefficients", "mfg::ZernikeCoefficients *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__color = {"_p_mfg__color", "mfg::color *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_mfg__rect = {"_p_mfg__rect", "mfg::rect *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_p_mfg__ImageMatrix = {"_p_p_mfg__ImageMatrix", "mfg::ImageMatrix **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__vectorT_double_t = {"_p_std__vectorT_double_t", "std::vector< double > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|mfg::byte *", 0, 0, (void*)0, 0};
@@ -9713,7 +9639,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_mfg__ZernikeCoefficients,
   &_swigt__p_mfg__color,
   &_swigt__p_mfg__rect,
-  &_swigt__p_p_mfg__ImageMatrix,
   &_swigt__p_std__string,
   &_swigt__p_std__vectorT_double_t,
   &_swigt__p_unsigned_char,
@@ -9754,7 +9679,6 @@ static swig_cast_info _swigc__p_mfg__WaveletTransform[] = {  {&_swigt__p_mfg__Wa
 static swig_cast_info _swigc__p_mfg__ZernikeCoefficients[] = {  {&_swigt__p_mfg__ZernikeCoefficients, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__color[] = {  {&_swigt__p_mfg__color, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_mfg__rect[] = {  {&_swigt__p_mfg__rect, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_p_mfg__ImageMatrix[] = {  {&_swigt__p_p_mfg__ImageMatrix, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__vectorT_double_t[] = {  {&_swigt__p_std__vectorT_double_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -9795,7 +9719,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_mfg__ZernikeCoefficients,
   _swigc__p_mfg__color,
   _swigc__p_mfg__rect,
-  _swigc__p_p_mfg__ImageMatrix,
   _swigc__p_std__string,
   _swigc__p_std__vectorT_double_t,
   _swigc__p_unsigned_char,
