@@ -304,6 +304,129 @@ getErrorString = _pymfg.getErrorString
 def translateError(*args):
   return _pymfg.translateError(*args)
 translateError = _pymfg.translateError
+class SwigPyIterator(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SwigPyIterator, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, SwigPyIterator, name)
+    def __init__(self, *args, **kwargs): raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
+    __swig_destroy__ = _pymfg.delete_SwigPyIterator
+    __del__ = lambda self : None;
+    def value(self): return _pymfg.SwigPyIterator_value(self)
+    def incr(self, n = 1): return _pymfg.SwigPyIterator_incr(self, n)
+    def decr(self, n = 1): return _pymfg.SwigPyIterator_decr(self, n)
+    def distance(self, *args): return _pymfg.SwigPyIterator_distance(self, *args)
+    def equal(self, *args): return _pymfg.SwigPyIterator_equal(self, *args)
+    def copy(self): return _pymfg.SwigPyIterator_copy(self)
+    def next(self): return _pymfg.SwigPyIterator_next(self)
+    def __next__(self): return _pymfg.SwigPyIterator___next__(self)
+    def previous(self): return _pymfg.SwigPyIterator_previous(self)
+    def advance(self, *args): return _pymfg.SwigPyIterator_advance(self, *args)
+    def __eq__(self, *args): return _pymfg.SwigPyIterator___eq__(self, *args)
+    def __ne__(self, *args): return _pymfg.SwigPyIterator___ne__(self, *args)
+    def __iadd__(self, *args): return _pymfg.SwigPyIterator___iadd__(self, *args)
+    def __isub__(self, *args): return _pymfg.SwigPyIterator___isub__(self, *args)
+    def __add__(self, *args): return _pymfg.SwigPyIterator___add__(self, *args)
+    def __sub__(self, *args): return _pymfg.SwigPyIterator___sub__(self, *args)
+    def __iter__(self): return self
+SwigPyIterator_swigregister = _pymfg.SwigPyIterator_swigregister
+SwigPyIterator_swigregister(SwigPyIterator)
+
+class IntVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, IntVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, IntVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _pymfg.IntVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _pymfg.IntVector___nonzero__(self)
+    def __bool__(self): return _pymfg.IntVector___bool__(self)
+    def __len__(self): return _pymfg.IntVector___len__(self)
+    def pop(self): return _pymfg.IntVector_pop(self)
+    def __getslice__(self, *args): return _pymfg.IntVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _pymfg.IntVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _pymfg.IntVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _pymfg.IntVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _pymfg.IntVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _pymfg.IntVector___setitem__(self, *args)
+    def append(self, *args): return _pymfg.IntVector_append(self, *args)
+    def empty(self): return _pymfg.IntVector_empty(self)
+    def size(self): return _pymfg.IntVector_size(self)
+    def clear(self): return _pymfg.IntVector_clear(self)
+    def swap(self, *args): return _pymfg.IntVector_swap(self, *args)
+    def get_allocator(self): return _pymfg.IntVector_get_allocator(self)
+    def begin(self): return _pymfg.IntVector_begin(self)
+    def end(self): return _pymfg.IntVector_end(self)
+    def rbegin(self): return _pymfg.IntVector_rbegin(self)
+    def rend(self): return _pymfg.IntVector_rend(self)
+    def pop_back(self): return _pymfg.IntVector_pop_back(self)
+    def erase(self, *args): return _pymfg.IntVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _pymfg.new_IntVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _pymfg.IntVector_push_back(self, *args)
+    def front(self): return _pymfg.IntVector_front(self)
+    def back(self): return _pymfg.IntVector_back(self)
+    def assign(self, *args): return _pymfg.IntVector_assign(self, *args)
+    def resize(self, *args): return _pymfg.IntVector_resize(self, *args)
+    def insert(self, *args): return _pymfg.IntVector_insert(self, *args)
+    def reserve(self, *args): return _pymfg.IntVector_reserve(self, *args)
+    def capacity(self): return _pymfg.IntVector_capacity(self)
+    __swig_destroy__ = _pymfg.delete_IntVector
+    __del__ = lambda self : None;
+IntVector_swigregister = _pymfg.IntVector_swigregister
+IntVector_swigregister(IntVector)
+
+class DoubleVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, DoubleVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, DoubleVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _pymfg.DoubleVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _pymfg.DoubleVector___nonzero__(self)
+    def __bool__(self): return _pymfg.DoubleVector___bool__(self)
+    def __len__(self): return _pymfg.DoubleVector___len__(self)
+    def pop(self): return _pymfg.DoubleVector_pop(self)
+    def __getslice__(self, *args): return _pymfg.DoubleVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _pymfg.DoubleVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _pymfg.DoubleVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _pymfg.DoubleVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _pymfg.DoubleVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _pymfg.DoubleVector___setitem__(self, *args)
+    def append(self, *args): return _pymfg.DoubleVector_append(self, *args)
+    def empty(self): return _pymfg.DoubleVector_empty(self)
+    def size(self): return _pymfg.DoubleVector_size(self)
+    def clear(self): return _pymfg.DoubleVector_clear(self)
+    def swap(self, *args): return _pymfg.DoubleVector_swap(self, *args)
+    def get_allocator(self): return _pymfg.DoubleVector_get_allocator(self)
+    def begin(self): return _pymfg.DoubleVector_begin(self)
+    def end(self): return _pymfg.DoubleVector_end(self)
+    def rbegin(self): return _pymfg.DoubleVector_rbegin(self)
+    def rend(self): return _pymfg.DoubleVector_rend(self)
+    def pop_back(self): return _pymfg.DoubleVector_pop_back(self)
+    def erase(self, *args): return _pymfg.DoubleVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _pymfg.new_DoubleVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _pymfg.DoubleVector_push_back(self, *args)
+    def front(self): return _pymfg.DoubleVector_front(self)
+    def back(self): return _pymfg.DoubleVector_back(self)
+    def assign(self, *args): return _pymfg.DoubleVector_assign(self, *args)
+    def resize(self, *args): return _pymfg.DoubleVector_resize(self, *args)
+    def insert(self, *args): return _pymfg.DoubleVector_insert(self, *args)
+    def reserve(self, *args): return _pymfg.DoubleVector_reserve(self, *args)
+    def capacity(self): return _pymfg.DoubleVector_capacity(self)
+    __swig_destroy__ = _pymfg.delete_DoubleVector
+    __del__ = lambda self : None;
+DoubleVector_swigregister = _pymfg.DoubleVector_swigregister
+DoubleVector_swigregister(DoubleVector)
+
 class FeatureAlgorithm(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, FeatureAlgorithm, name, value)
@@ -323,6 +446,24 @@ class FeatureAlgorithm(_object):
     __del__ = lambda self : None;
 FeatureAlgorithm_swigregister = _pymfg.FeatureAlgorithm_swigregister
 FeatureAlgorithm_swigregister(FeatureAlgorithm)
+
+class EmptyFeatureAlgorithm(FeatureAlgorithm):
+    __swig_setmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, EmptyFeatureAlgorithm, name, value)
+    __swig_getmethods__ = {}
+    for _s in [FeatureAlgorithm]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, EmptyFeatureAlgorithm, name)
+    __repr__ = _swig_repr
+    def calculate(self, *args): return _pymfg.EmptyFeatureAlgorithm_calculate(self, *args)
+    def __init__(self, *args): 
+        this = _pymfg.new_EmptyFeatureAlgorithm(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _pymfg.delete_EmptyFeatureAlgorithm
+    __del__ = lambda self : None;
+EmptyFeatureAlgorithm_swigregister = _pymfg.EmptyFeatureAlgorithm_swigregister
+EmptyFeatureAlgorithm_swigregister(EmptyFeatureAlgorithm)
 
 class ChebyshevFourierCoefficients(FeatureAlgorithm):
     __swig_setmethods__ = {}

@@ -8,8 +8,6 @@
 //start #including the functions directly once you start pulling them out of cmatrix
 //#include "transforms/Chebyshev.h"
 
-using namespace std;
-
 namespace mfg {
 void FeatureAlgorithm::print_info() const {
         std::cout << "FeatureAlgorithm: " << name << " (" << n_features << " features) " << std::endl;
@@ -22,13 +20,13 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;	
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
 	int i;
@@ -36,7 +34,7 @@ WNDCHRM_ERROR ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix, 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->ChebyshevFourierTransform2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(ChebyshevFourierCoefficients)
@@ -53,13 +51,13 @@ ChebyshevCoefficients::ChebyshevCoefficients() {
  * and generating a histogram of pixel intensities.
  *
  */
-WNDCHRM_ERROR ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
 
@@ -69,7 +67,7 @@ WNDCHRM_ERROR ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix, vector<
 	delete temp;
 	coeffs.assign( temp_vec, temp_vec + n_features);
 
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(ChebyshevCoefficients)
@@ -82,13 +80,13 @@ ZernikeCoefficients::ZernikeCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR ZernikeCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> ZernikeCoefficients::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [72];
 	int i;
@@ -98,7 +96,7 @@ WNDCHRM_ERROR ZernikeCoefficients::calculate( ImageMatrix * IN_matrix, vector<do
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->zernike2D(temp_vec, &output_size);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(ZernikeCoefficients)
@@ -111,13 +109,13 @@ HaralickTextures::HaralickTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR HaralickTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> HaralickTextures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [28];
 	int i;
@@ -125,7 +123,7 @@ WNDCHRM_ERROR HaralickTextures::calculate( ImageMatrix * IN_matrix, vector<doubl
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->HaarlickTexture2D(0,temp_vec); // Note the misspelling
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(HaralickTextures)
@@ -138,13 +136,13 @@ MultiscaleHistograms::MultiscaleHistograms() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR MultiscaleHistograms::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> MultiscaleHistograms::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [24];
 	int i;
@@ -152,7 +150,7 @@ WNDCHRM_ERROR MultiscaleHistograms::calculate( ImageMatrix * IN_matrix, vector<d
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->MultiScaleHistogram(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(MultiscaleHistograms)
@@ -165,13 +163,13 @@ TamuraTextures::TamuraTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR TamuraTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> TamuraTextures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [6];
 	int i;
@@ -179,7 +177,7 @@ WNDCHRM_ERROR TamuraTextures::calculate( ImageMatrix * IN_matrix, vector<double>
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->TamuraTexture2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(TamuraTextures)
@@ -192,13 +190,13 @@ CombFirstFourMoments::CombFirstFourMoments() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR CombFirstFourMoments::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> CombFirstFourMoments::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [48];
 	int i;
@@ -206,7 +204,7 @@ WNDCHRM_ERROR CombFirstFourMoments::calculate( ImageMatrix * IN_matrix, vector<d
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->CombFirstFourMoments2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(CombFirstFourMoments)
@@ -219,13 +217,13 @@ RadonCoefficients::RadonCoefficients() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR RadonCoefficients::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> RadonCoefficients::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [12];
 	int i;
@@ -233,7 +231,7 @@ WNDCHRM_ERROR RadonCoefficients::calculate( ImageMatrix * IN_matrix, vector<doub
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->RadonTransform2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(RadonCoefficients)
@@ -252,13 +250,13 @@ FractalFeatures::FractalFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR FractalFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> FractalFeatures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 	double temp_vec [20];
 	int i;
@@ -287,7 +285,7 @@ WNDCHRM_ERROR FractalFeatures::calculate( ImageMatrix * IN_matrix, vector<double
 	}
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(FractalFeatures)
@@ -300,13 +298,13 @@ PixelIntensityStatistics::PixelIntensityStatistics() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	double temp_vec[5];
@@ -316,7 +314,7 @@ WNDCHRM_ERROR PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix, vect
 	IN_matrix->BasicStatistics(&temp_vec[0], &temp_vec[1], &temp_vec[2], &temp_vec[3], &temp_vec[4], NULL, 10);
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(PixelIntensityStatistics)
@@ -329,13 +327,13 @@ EdgeFeatures::EdgeFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR EdgeFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> EdgeFeatures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	long EdgeArea = 0;
@@ -372,7 +370,7 @@ WNDCHRM_ERROR EdgeFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &
 	*here = MagVar; here++;
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(EdgeFeatures)
@@ -385,13 +383,13 @@ ObjectFeatures::ObjectFeatures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR ObjectFeatures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> ObjectFeatures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	int feature_count=0, Euler=0, AreaMin=0, AreaMax=0, AreaMedian=0,
@@ -438,7 +436,7 @@ WNDCHRM_ERROR ObjectFeatures::calculate( ImageMatrix * IN_matrix, vector<double>
 	*here = Euler; here++;
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(ObjectFeatures)
@@ -451,13 +449,13 @@ GaborTextures::GaborTextures() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> GaborTextures::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	double temp_vec [7];
@@ -466,7 +464,7 @@ WNDCHRM_ERROR GaborTextures::calculate( ImageMatrix * IN_matrix, vector<double> 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
 	IN_matrix->GaborFilters2D(temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(GaborTextures)
@@ -485,13 +483,13 @@ GiniCoefficient::GiniCoefficient() {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
-WNDCHRM_ERROR GiniCoefficient::calculate( ImageMatrix * IN_matrix, vector<double> &coeffs )
+std::vector<double> GiniCoefficient::calculate( ImageMatrix * IN_matrix )
 {
+	std::vector<double> coeffs;
 	std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
-		return WC_INPUT_IMAGEMATRIX_NULL;
+		return coeffs;
 	}
-	coeffs.clear();
 	coeffs.reserve(n_features-1);
 
 	double temp_vec [1];
@@ -526,7 +524,7 @@ WNDCHRM_ERROR GiniCoefficient::calculate( ImageMatrix * IN_matrix, vector<double
 		temp_vec[0] = g / ( mean * count * ( count-1 ) );
 
 	coeffs.assign( temp_vec, temp_vec + n_features);
-	return WC_NO_ERROR;
+	return coeffs;
 }
 
 //WNDCHARM_REGISTER_ALGORITHM(GiniCoefficient)
