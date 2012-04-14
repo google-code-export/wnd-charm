@@ -47,6 +47,9 @@ sub main {
 	my $feature_count = 0;
 	my %groups_that_have_unmatched;
 	my %groups_that_have_missing;
+
+	open( SORTED1, ">$file1.sorted" ) or die;
+	open( SORTED2, ">$file2.sorted" ) or die;
 	foreach $feature_name ( @sorted_feature_names )
 	{
 		++$feature_count;
@@ -57,6 +60,8 @@ sub main {
 			if( $file1_val == $file2_val ) {
 				++$matched;
 				#print "Feature \"$feature_name\" matches\n";
+				print SORTED1 "$file1_val $feature_name\n";
+				print SORTED2 "$file1_val $feature_name\n";
 			}
 			else
 			{
@@ -74,6 +79,8 @@ sub main {
 				{
 					$groups_that_have_unmatched{ $feature_group } = 1;
 				}
+				print SORTED1 "$file1_val $feature_name\n";
+				print SORTED2 "$file2_val $feature_name\n";
 			}
 		}
 		elsif( $file1_val xor $file2_val )
@@ -81,10 +88,14 @@ sub main {
 			++$missing;
 			if( $file1_val ) {
 				print "***Feature \"$feature_name\"\n\tappears in file \"$file1\"\n\tbut not file \"$file2\"\n";
+				print SORTED1 "$file1_val $feature_name\n";
+				print SORTED2 "MISSING $feature_name\n";
 			}
 			else
 			{
 				print "****Feature \"$feature_name\"\n\tappears in file \"$file2\"\n\tbut not file \"$file1\"\n";
+				print SORTED2 "$file2_val $feature_name\n";
+				print SORTED1 "MISSING $feature_name\n";
 			}
 			my $feature_group = $feature_name;
 			# strip off the bin number if it exists
@@ -123,6 +134,7 @@ sub main {
 		print "\t$group_count.\t".$groups_that_have_missing{$group_name}."\t$group_name:\n";
 		$group_count++;
 	}
+	print "Wrote files $file1.sorted and $file2.sorted so you can do a diff on them to compare values.\n";
 	return 1;
 }
 
