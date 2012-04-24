@@ -1,8 +1,12 @@
 %module pymfg
 
 %{
-#include "FeatureAlgorithms.h"
+#include "FeatureTransforms.h"
 %}
+
+%include "std_string.i"
+
+
 namespace mfg
 {
 
