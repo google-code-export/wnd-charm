@@ -86,6 +86,7 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/wt.h
 
 AM_CPPFLAGS = -fPIC
+libimfit_a_CXXFLAGS = -Wall -g -O2 -fpermissive
 
 bin_PROGRAMS=wndchrm util/color_deconvolution
 
