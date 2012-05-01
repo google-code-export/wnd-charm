@@ -71,3 +71,4 @@ libmfgraph_la_SOURCES = \
 			 FeatureAlgorithms.h
 
 libmfgraph_la_LIBADD = -ltiff -L. -lfftw3
+libmfgraph_la_CXXFLAGS = -Wall -g -O2 -fpermissive
