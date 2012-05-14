@@ -3,29 +3,52 @@
 from pycharm import pymfg
 import numpy as np
 from StringIO import StringIO
-from collections import defaultdict
-import pickle
+from collections import OrderedDict
+try:
+	import cPickle as pickle
+except:
+	import pickle
 from os import path as path_parse
 
-import sys
+#import sys
 
 def main():
 
+	name_dict = LoadFeatureNameTranslationDict()
 	
-	training_set = TrainingSet( '/Users/chris/projects/josiah_worms/terminal_bulb.fit' )
+	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
 
-	# read in weights from a wndchrm html file
-	# or just calculate them outright
+	# read in weights from a c-chrm feature weights file
+	weight_names, weight_values = ReadInFeatureWeights('/Users/chris/projects/josiah_worms/feature_weights.txt')
+	# FIXME: just calculate them outright
+	weight_names = TranslateFeatureNames( name_dict, weight_names )
+	fisher_scores = zip( weight_names, weight_values )
+	nonzero_fisher_scores = [ (name, weight) for name, weight in fisher_scores if weight != 0 ]
+	#print "{}".format( nonzero_weights )
+	nonzero_fisher_names, nonzero_fisher_scores = zip( *nonzero_fisher_scores )
 
-	# now, give me only those columns that correspond with feature weights
+	reduced_ts = None
 
-	one_tile = training_set.sig_matrix[0,:-1]
+	if True:
+		full_ts = TrainingSet.FromFitFile( fitfilepath )
+		full_ts.featurenames_list = TranslateFeatureNames( name_dict, full_ts.featurenames_list )
+		reduced_ts = full_ts.FeatureReduce( nonzero_fisher_names )
+		reduced_ts.Normalize()
+		reduced_ts.PickleMe( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
+	else:
+		reduced_ts = TrainingSet.FromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
+
+	print "the lists are {} the same!".\
+			format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
+
+	one_image = reduced_ts.data_list[0][0,:]
+	one_image_name = reduced_ts.imagenames_list[0][0]
+
 	# do a classify operation
+	norm_factor, marg_probs = ClassifyWND5( reduced_ts, one_image, nonzero_fisher_scores )
 
-	fake_weights = [1] * training_set.num_features
-	norm_factor, marg_probs = ClassifyWND5( training_set, one_tile, fake_weights )
-
-	print "norm factor {}, marg probs {}".format( norm_factor, marg_probs )
+	print "image {}, norm factor {}, marg probs {}".\
+			format( one_image_name, norm_factor, marg_probs )
 
 #============================================================================
 class TrainingSet:
@@ -34,81 +57,267 @@ class TrainingSet:
 	num_classes = -1
 	num_features = -1
 	num_images = -1
-	classnames_list = []
-	featurenames_list = []
-	tilenames_list = []
-	sig_matrix = None
 
-	def __init__( self, pathname ):
+	# For C classes, each with Ni images and M features:
+	# If the dataset is contiguous, C = 1
 
+	# A list of numpy matrices, length C (one Ni x M matrix for each class)
+	# The design is such because it's useful to be able to quickly collect feature statistics
+	# across an image class excluding the other classes
+	data_list = None
+
+	# A list of strings, length C
+	classnames_list = None
+
+	# A list of strings length M
+	featurenames_list = None
+
+	# a list of lists, length C, where each list is length Ni, contining pathnames of tiles/imgs
+	imagenames_list = None
+
+	# Stored feature maxima and minima go in here
+	feature_maxima = None
+	feature_minima = None
+
+	def __init__( self, data_dict = None):
+		"""
+		TrainingSet constructor
+		"""
+
+		self.data_list = []
+		self.classnames_list = []
+		self.featurenames_list = []
+		self.imagenames_list = []
+
+		if data_dict != None:
+			if "num_classes" in data_dict:
+				self.num_classes = data_dict[ 'num_classes' ]
+			if "num_features" in data_dict:
+				self.num_features = data_dict[ 'num_features' ]
+			if "num_images" in data_dict:
+				self.num_images = data_dict[ 'num_images' ]
+			if "data_list" in data_dict:
+				self.data_list = data_dict[ 'data_list' ]
+			if "classnames_list" in data_dict:
+				self.classnames_list = data_dict[ 'classnames_list' ]
+			if "featurenames_list" in data_dict:
+				self.featurenames_list = data_dict[ 'featurenames_list' ]
+			if "imagenames_list" in data_dict:
+				self.imagenames_list = data_dict[ 'imagenames_list' ]
+
+	@classmethod
+	def FromPickleFile( cls, pathname ):
+		"""
+		The pickle is in the form of a dict
+		FIXME: Shouldn't call Normalize if feature_maxima/minima are in the data_dict
+		"""
 		path, filename = path_parse.split( pathname )
 		if filename == "":
 			raise ValueError( 'Invalid pathname: {}'.format( pathname ) )
 
-		pickled_pathname = pathname
-		if not pathname.endswith( ".pycharm" ):
-			pickled_pathname += ".pycharm"
-		if path_parse.exists( pickled_pathname ):
-			print "Loading Training Set from pickled file {}".format( pickled_pathname )
-			with open( pickled_pathname, "rb" ) as pkled_in:
-				self = pickle.load( pkled_in )
-			return
+		if not filename.endswith( ".fit.pickled" ):
+			raise ValueError( 'Not a pickled TrainingSet file: {}'.format( pathname ) )
 
-		fitfile = open( pathname )
+		print "Loading Training Set from pickled file {}".format( pathname )
+		unpkled = None
+		the_training_set = None
+		with open( pathname, "rb" ) as pkled_in:
+			the_training_set = cls( pickle.load( pkled_in ) )
+
+		# it might already be normalized!
+		# FIXME: check for that
+		# the_training_set.Normalize()
+
+		return the_training_set
+
+	@classmethod
+	def FromFitFile( cls, pathname ):
+		"""
+		Helper function which reads in a c-chrm fit file, builds a dict with the info
+		Then calls the constructor and passes the dict as an argument
+		"""
+		path, filename = path_parse.split( pathname )
+		if filename == "":
+			raise ValueError( 'Invalid pathname: {}'.format( pathname ) )
+
+		if not filename.endswith( ".fit" ):
+			raise ValueError( 'Not a .fit file: {}'.format( pathname ) )
+
+		pickled_pathname = pathname + ".pychrm"
+
 		print "Creating Training Set from legacy WND-CHARM text file file {}".format( pathname )
+		with open( pathname ) as fitfile:
+			data_dict = {}
+			data_dict[ 'data_list' ] = []
+			data_dict[ 'imagenames_list' ] = []
+			data_dict[ 'featurenames_list' ] = []
+			data_dict[ 'classnames_list' ] = []
+			data_dict[ 'imagenames_list' ] = []
+			data_dict[ 'data_list' ] = []
+			tmp_string_data_list = []
 
-		data_lists = []
+			name_line = False
+			line_num = 0
+			feature_count = 0
+			image_pathname = ""
+			num_classes = 0
+			num_features = 0
 
-		name_line = False
-		line_num = 0
-		for line in fitfile:
-			if line_num is 0:
-				self.num_classes = int( line )
-			elif line_num is 1:
-				self.num_features = int( line )
-			elif line_num is 2:
-				self.num_images = int( line )
-			elif line_num <= ( self.num_features + 2 ):
-				self.featurenames_list.append( line.strip() )
-			elif line_num == ( self.num_features + 3 ):
-				pass # skip a line
-			elif line_num <= ( self.num_features + 3 + self.num_classes ):
-				self.classnames_list.append( line.strip() )
-			else:
-				# read in features
-				if name_line:
-					self.tilenames_list.append( line.strip() )
+			for line in fitfile:
+				if line_num is 0:
+					num_classes = int( line )
+					data_dict[ 'num_classes' ] = num_classes
+					# initialize list for string data
+					for i in range( num_classes ):
+						tmp_string_data_list.append( [] )
+						data_dict[ 'imagenames_list' ].append( [] )
+				elif line_num is 1:
+					num_features = int( line )
+					data_dict[ 'num_features' ] = num_features
+				elif line_num is 2:
+					data_dict[ 'num_images' ] = int( line )
+				elif line_num <= ( num_features + 2 ):
+					data_dict[ 'featurenames_list' ].append( line.strip() )
+					feature_count += 1
+				elif line_num == ( num_features + 3 ):
+					pass # skip a line
+				elif line_num <= ( num_features + 3 + num_classes ):
+					data_dict[ 'classnames_list' ].append( line.strip() )
 				else:
-					data_lists.append( line.strip() )
-				name_line = not name_line
-			line_num += 1
-
-		fitfile.close()
+					# Read in features
+					# Comes in alternating lines of data, then tile name
+					if not name_line:
+						# strip off the class identity value, which is the last in the array
+						split_line = line.strip().rsplit( " ", 1)
+						#print "class {}".format( split_line[1] )
+						zero_indexed_class_id = int( split_line[1] ) - 1
+						tmp_string_data_list[ zero_indexed_class_id ].append( split_line[0] )
+					else:
+						image_pathname = line.strip()
+						data_dict[ 'imagenames_list' ][ zero_indexed_class_id ].append( image_pathname )
+					name_line = not name_line
+				line_num += 1
 
 		string_data = "\n"
 		
-		self.sig_matrix = np.genfromtxt( StringIO( string_data.join( data_lists ) ) )
-		# normalize the features at some point
-		
-		# class_ids should be zero-indexed
-		if int( np.amin( self.sig_matrix[:, -1] ) ) == 1:
-			self.sig_matrix = self.sig_matrix - 1
+		for i in range( num_classes ):
+			print "generating matrix for class {}".format( i )
+			#print "{}".format( tmp_string_data_list[i] )
+			npmatr = np.genfromtxt( StringIO( string_data.join( tmp_string_data_list[i] ) ) )
+			data_dict[ 'data_list' ].append( npmatr )
 
-		with open( pickled_pathname, 'wb') as outfile:
-			pickle.dump( self, outfile )
+		# Instantiate the class
+		the_training_set = cls( data_dict )
+
+		# normalize the features
+		#the_training_set.Normalize()
+		# no wait, don't normalize until we feature reduce!
+		
+		return the_training_set
+
+	def Normalize( self ):
+		"""
+		By convention, the range of values are normalized on an interval [0,100]
+		FIXME: edge cases
+		FIXME: take an additional argument that is a vector to be normalized against
+		"""
+
+		full_stack = np.vstack( self.data_list )
+
+		total_num_imgs, num_features = full_stack.shape
+
+		self.feature_maxima = [None] * num_features
+		self.feature_minima = [None] * num_features
+
+		index = 0
+		for i in range( num_features ):
+			feature_max = np.max( full_stack[:,i] )
+			self.feature_maxima[ index ] = feature_max
+			feature_min = np.min( full_stack[:,i] )
+			self.feature_minima[ index ] = feature_min
+			for class_matrix in self.data_list:
+				class_matrix[:,i] -= feature_min
+				class_matrix[:,i] /= (feature_max - feature_min)
+				class_matrix[:,i] *= 100
+			index += 1
 			
+
+	def FeatureReduce( self, requested_features ):
+		"""
+		Returns a new TrainingSet that contains a subset of the features
+		arg requested_features is a tuple of features
+		the returned TrainingSet will have features in the same order as they appear in
+		     requested_features
+		"""
+
+		# Check that self's faturelist contains all the features in requested_features
+
+		selfs_features = set( self.featurenames_list )
+		their_features = set( requested_features )
+		if not their_features <= selfs_features:
+			raise ValueError( 'ERROR: Not all the features you asked for are in this training set.\n'+\
+					'The following features are missing: {}'.format( their_features - selfs_features ) )
+
+		# copy everything but the data
+		reduced_ts = TrainingSet()
+		reduced_ts.num_classes = self.num_classes
+		assert reduced_ts.num_classes == len( self.data_list )
+		new_num_features = len( requested_features )
+		reduced_ts.num_features = new_num_features
+		reduced_ts.num_images = self.num_images
+		reduced_ts.imagenames_list = self.imagenames_list[:] # [:] = deepcopy
+		reduced_ts.classnames_list = self.classnames_list[:]
+		reduced_ts.featurenames_list = requested_features[:]
+		reduced_ts.feature_maxima = [None] * new_num_features
+		reduced_ts.feature_minima = [None] * new_num_features
+
+		# copy feature minima/maxima
+		if self.feature_maxima and self.feature_minima:
+			new_index = 0
+			for featurename in requested_features:
+				old_index = self.featurenames_list.index( featurename )
+				reduced_ts.feature_maxima[ new_index ] = self.feature_maxima[ old_index ]
+				reduced_ts.feature_minima[ new_index ] = self.feature_minima[ old_index ]
+				new_index += 1
+
+		# feature reduce
+		for fat_matrix in self.data_list:
+			num_imgs_in_class, num_old_features = fat_matrix.shape
+			# NB: double parentheses required when calling numpy.empty(), i don't know why
+			new_matrix = np.empty( ( num_imgs_in_class, new_num_features ) )
+			new_column_index = 0
+			for featurename in requested_features:
+				fat_column_index = self.featurenames_list.index( featurename )
+				new_matrix[:,new_column_index] = fat_matrix[:,fat_column_index]
+				new_column_index += 1
+			reduced_ts.data_list.append( new_matrix )
+
+		return reduced_ts
+
+	def CalculateFisherScores( self ):
+		"""
+		FIXME: implement!
+		"""
+		pass
+
+	def PickleMe( self, pathname ):
+		if path_parse.exists( pathname ):
+			print "Overwriting {}".format( pathname )
+		with open( pathname, 'wb') as outfile:
+			pickle.dump( self.__dict__, outfile, pickle.HIGHEST_PROTOCOL )
+
 
 def ClassifyWND5( trainingset, testimg, feature_weights ):
 	"""
-	If you're using this function, your training set data is not continuous.
-	For N images and M features:
-		trainingset is of type TrainingSet with N x M+1 numpy matrix (+1 is ground truth)
-		testtile is a 1 x M list of feature values
+	If you're using this function, your training set data is not continuous
+	for N images and M features:
+	  trainingset is list of length L of N x M numpy matrices
+	  testtile is a 1 x M list of feature values
 	NOTE: the trainingset and test image must have the same number of features!!!
+	AND: the features must be in the same order!!
 	Returns a tuple with norm factor and list of length L of marginal probabilities
 	FIXME: what about tiling??
 	"""
-
 
 	print "classifying..."
 	epsilon = np.finfo( np.float ).eps
@@ -117,46 +326,73 @@ def ClassifyWND5( trainingset, testimg, feature_weights ):
 	num_features_in_testimg = len( testimg ) 
 	weights_squared = np.square( feature_weights )
 
-	# Create a view to the trainingset matrix that doesn't include the last ground truth column
-	sig_matrix = trainingset.sig_matrix[:,:-1]
-	class_ids = trainingset.sig_matrix[:,-1]
+	# initialize
+	# class_distances = [0]* len( trainingset )
+	class_similarities = [0] * trainingset.num_classes
 
-	class_similarities = [0.0] * trainingset.num_classes
-	class_tile_counts = [0.0] * trainingset.num_classes
+	for class_index in range( trainingset.num_classes ):
+		print "Calculating distances to class {}".format( class_index )
+		num_tiles, num_features = trainingset.data_list[ class_index ].shape
+		assert num_features_in_testimg == num_features,\
+		"num features {}, num features in test img {}".format( num_features, num_test_img_features )
 
-	num_tiles, num_features = sig_matrix.shape
-	assert num_features_in_testimg == num_features,\
-	"num features {}, num features in test img {}".format( num_features, num_test_img_features )
-
-	#print "num tiles: {}, num_test_img_features {}".format( num_tiles, num_test_img_features )
-	for tile_index in range( (num_tiles) ):
-		#print "{} ".format( tile_index )
-		
-		class_index = int( class_ids[ tile_index ] )
+		# create a view
+		sig_matrix = trainingset.data_list[ class_index ]
 		wnd_sum = 0
-		dists = []
-		dists = np.absolute( sig_matrix[ tile_index ] - testimg )
-		# dists = EpsTest( np.absolute( sig_matrix[ tile_index ] - testimg ) )
-		# epsilon checking for each feature is too expensive
-		# do this quick and dirty check until we can figure something else out
-		w_dist = np.sum( dists )
-		if w_dist < epsilon:
-			continue
-		class_tile_counts[ class_index ] += 1
-		w_dist = np.sum( np.multiply( weights_squared, np.square( dists ) ) )
-		class_similarities[ class_index ] += w_dist ** -5
+		num_collisions = 0
 
-	for class_index in range( len( class_similarities ) ):
-		class_similarities[ class_index ] /= class_tile_counts[ class_index ]
+		#print "num tiles: {}, num_test_img_features {}".format( num_tiles, num_test_img_features )
+		for tile_index in range( (num_tiles) ):
+			#print "{} ".format( tile_index )
+			# dists = EpsTest( np.absolute( sig_matrix[ tile_index ] - testimg ) )
+			# epsilon checking for each feature is too expensive
+			# do this quick and dirty check until we can figure something else out
+			dists = np.absolute( sig_matrix[ tile_index ] - testimg )
+			w_dist = np.sum( dists )
+			if w_dist < epsilon:
+				num_collisions += 1
+				continue
+			dists = np.multiply( weights_squared, np.square( dists ) )
+			w_dist = np.sum( dists )
+			#class_distances[ class_index ] += w_dist
+			class_similarities[ class_index ] += w_dist ** -5
+		#print "\n"
+
+		#class_distances[ class_index ] /= num_tiles - num_collisions
+		class_similarities[ class_index ] /= ( num_tiles - num_collisions )
 
 	normalization_factor = sum( class_similarities )
 
 	return ( normalization_factor, [ x / normalization_factor for x in class_similarities ] ) 
 
 
-def LoadFeatureNameTranslationMap():
+
+def ReadInFeatureWeights( weights_filepath ):
+	
+	feature_names = []
+	feature_values = []
+	with open( weights_filepath, 'r' ) as weights_file:
+		for line in weights_file:
+			# split line "number <space> name"
+			feature_line = line.strip().split( " ", 1 )
+			feature_values.append( float( feature_line[0] ) )
+			feature_names.append( feature_line[1] )
+	return feature_names, feature_values
+
+def TranslateFeatureNames( name_dict, old_name_list ):
+	new_name_list = []
+	for old_name in old_name_list:
+		new_name_list.append( name_dict[ old_name ] )
+	return new_name_list
+
+def LoadFeatureNameTranslationDict():
 
 	# IMPORTANT: the order of the names in both hashes correspond to each other.
+	# FIXME: Any fit file created with a wndchrm pre r280 will have
+	#        10 features listed named "Feature DistHist"
+	#        See http://code.google.com/p/wnd-charm/issues/detail?id=35
+	# FIXME: Maybe put the new names mapped to themselves in here to
+	#        avoid KeyError exception?
 
 	old_featurenames_mapped_to_new = {}
 	old_featurenames_mapped_to_new[ "Chebishev Statistics bin 0 ()" ]                                     = "Chebyshev Coefficients () [0]"
@@ -2506,6 +2742,20 @@ def LoadFeatureNameTranslationMap():
 	old_featurenames_mapped_to_new[ "Fractal 17 (Wavelet Fourier)" ]                                      = "Fractal Features (Wavelet (Fourier ())) [17]"
 	old_featurenames_mapped_to_new[ "Fractal 18 (Wavelet Fourier)" ]                                      = "Fractal Features (Wavelet (Fourier ())) [18]"
 	old_featurenames_mapped_to_new[ "Fractal 19 (Wavelet Fourier)" ]                                      = "Fractal Features (Wavelet (Fourier ())) [19]"
+
+	old_featurenames_mapped_to_new[ "gini coefficient ()" ]                                               = "Gini Coefficient () [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Fourier)" ]                                               = "Gini Coefficient (Fourier) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Wavelet)" ]                                               = "Gini Coefficient (Wavelet) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Chebyshev)" ]                                               = "Gini Coefficient (Chebyshev) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Chebyshev Fourier)" ]                                               = "Gini Coefficient (Chebyshev (Fourier ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Wavelet Fourier)" ]                                               = "Gini Coefficient (Wavelet (Fourier ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Fourier Wavelet)" ]                                               = "Gini Coefficient (Fourier (Wavelet ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Fourier Chebyshev)" ]                                               = "Gini Coefficient (Fourier (Chebyshev ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Chebyshev Wavelet)" ]                                               = "Gini Coefficient (Chebyshev (Wavelet ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Edge Transform)" ]                                               = "Gini Coefficient (Edge) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Edge Fourier Transform)" ]                                               = "Gini Coefficient (Edge (Fourier ())) [0]"
+	old_featurenames_mapped_to_new[ "gini coefficient (Edge Wavelet Transform)" ]                                               = "Gini Coefficient (Edge (Wavelet ())) [0]"
+
 	old_featurenames_mapped_to_new[ "Gabor Filters bin 0" ]                                               = "Gabor Textures () [0]"
 	old_featurenames_mapped_to_new[ "GaborTextures Gabor01" ]                                             = "Gabor Textures () [0]"
 	old_featurenames_mapped_to_new[ "Gabor Filters bin 1" ]                                               = "Gabor Textures () [1]"
