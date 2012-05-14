@@ -3,14 +3,13 @@
 from pycharm import pymfg
 import numpy as np
 from StringIO import StringIO
-from collections import OrderedDict
 try:
 	import cPickle as pickle
 except:
 	import pickle
 from os import path as path_parse
+import re
 
-#import sys
 
 def main():
 
@@ -19,7 +18,7 @@ def main():
 	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
 
 	# read in weights from a c-chrm feature weights file
-	weight_names, weight_values = ReadInFeatureWeights('/Users/chris/projects/josiah_worms/feature_weights.txt')
+	weight_names, weight_values = ReadFeatureWeightsFromFile('/Users/chris/projects/josiah_worms/feature_weights.txt')
 	# FIXME: just calculate them outright
 	weight_names = TranslateFeatureNames( name_dict, weight_names )
 	fisher_scores = zip( weight_names, weight_values )
@@ -29,7 +28,7 @@ def main():
 
 	reduced_ts = None
 
-	if True:
+	if False:
 		full_ts = TrainingSet.FromFitFile( fitfilepath )
 		full_ts.featurenames_list = TranslateFeatureNames( name_dict, full_ts.featurenames_list )
 		reduced_ts = full_ts.FeatureReduce( nonzero_fisher_names )
@@ -38,17 +37,18 @@ def main():
 	else:
 		reduced_ts = TrainingSet.FromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
 
-	print "the lists are {} the same!".\
-			format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
+	#print "the lists are {} the same!".\
+	#		format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
 
-	one_image = reduced_ts.data_list[0][0,:]
-	one_image_name = reduced_ts.imagenames_list[0][0]
+	# classify 1 image
+	#one_image = reduced_ts.data_list[0][0,:]
+	#one_image_name = reduced_ts.imagenames_list[0][0]
+	#norm_factor, marg_probs = ClassifyOneImageWND5( reduced_ts, one_image, nonzero_fisher_scores )
+	#print "image {}, norm factor {}, marg probs {}".\
+	#		format( one_image_name, norm_factor, marg_probs )
 
-	# do a classify operation
-	norm_factor, marg_probs = ClassifyWND5( reduced_ts, one_image, nonzero_fisher_scores )
-
-	print "image {}, norm factor {}, marg probs {}".\
-			format( one_image_name, norm_factor, marg_probs )
+	# classify training set against itself
+	ClassifyTestSet( reduced_ts, reduced_ts, nonzero_fisher_scores)
 
 #============================================================================
 class TrainingSet:
@@ -75,9 +75,13 @@ class TrainingSet:
 	# a list of lists, length C, where each list is length Ni, contining pathnames of tiles/imgs
 	imagenames_list = None
 
+	# The following class members are optional:
 	# Stored feature maxima and minima go in here
 	feature_maxima = None
 	feature_minima = None
+
+	# Can the class names be coefficients for interpolated values?
+	interpolation_coefficients = None
 
 	def __init__( self, data_dict = None):
 		"""
@@ -104,6 +108,12 @@ class TrainingSet:
 				self.featurenames_list = data_dict[ 'featurenames_list' ]
 			if "imagenames_list" in data_dict:
 				self.imagenames_list = data_dict[ 'imagenames_list' ]
+			if "feature_maxima" in data_dict:
+				self.feature_maxima = data_dict[ 'feature_maxima' ]
+			if "feature_minima" in data_dict:
+				self.feature_minima = data_dict[ 'feature_minima' ]
+			if "interpolation_coefficients" in data_dict:
+				self.interpolation_coefficients = data_dict[ 'interpolation_coefficients' ]
 
 	@classmethod
 	def FromPickleFile( cls, pathname ):
@@ -206,6 +216,18 @@ class TrainingSet:
 			npmatr = np.genfromtxt( StringIO( string_data.join( tmp_string_data_list[i] ) ) )
 			data_dict[ 'data_list' ].append( npmatr )
 
+		# Can the class names be interpolated?
+		tmp_vals = []
+		for class_index in range( num_classes ):
+			m = re.search( r'(\d*\.?\d+)', data_dict[ 'classnames_list' ][class_index] )
+			if m:
+				tmp_vals.append( float( m.group(1) ) )
+			else:
+				tmp_vals = None
+				break
+		if tmp_vals:
+			data_dict[ 'interpolation_coefficients' ] = tmp_vals
+
 		# Instantiate the class
 		the_training_set = cls( data_dict )
 
@@ -268,6 +290,7 @@ class TrainingSet:
 		reduced_ts.imagenames_list = self.imagenames_list[:] # [:] = deepcopy
 		reduced_ts.classnames_list = self.classnames_list[:]
 		reduced_ts.featurenames_list = requested_features[:]
+		reduced_ts.interpolation_coefficients = self.interpolation_coefficients[:]
 		reduced_ts.feature_maxima = [None] * new_num_features
 		reduced_ts.feature_minima = [None] * new_num_features
 
@@ -307,7 +330,7 @@ class TrainingSet:
 			pickle.dump( self.__dict__, outfile, pickle.HIGHEST_PROTOCOL )
 
 
-def ClassifyWND5( trainingset, testimg, feature_weights ):
+def ClassifyOneImageWND5( trainingset, testimg, feature_weights ):
 	"""
 	If you're using this function, your training set data is not continuous
 	for N images and M features:
@@ -319,7 +342,7 @@ def ClassifyWND5( trainingset, testimg, feature_weights ):
 	FIXME: what about tiling??
 	"""
 
-	print "classifying..."
+	#print "classifying..."
 	epsilon = np.finfo( np.float ).eps
 	#EpsTest = np.vectorize( lambda x: 0 if x < epsilon else x )
 
@@ -331,7 +354,7 @@ def ClassifyWND5( trainingset, testimg, feature_weights ):
 	class_similarities = [0] * trainingset.num_classes
 
 	for class_index in range( trainingset.num_classes ):
-		print "Calculating distances to class {}".format( class_index )
+		#print "Calculating distances to class {}".format( class_index )
 		num_tiles, num_features = trainingset.data_list[ class_index ].shape
 		assert num_features_in_testimg == num_features,\
 		"num features {}, num features in test img {}".format( num_features, num_test_img_features )
@@ -342,7 +365,7 @@ def ClassifyWND5( trainingset, testimg, feature_weights ):
 		num_collisions = 0
 
 		#print "num tiles: {}, num_test_img_features {}".format( num_tiles, num_test_img_features )
-		for tile_index in range( (num_tiles) ):
+		for tile_index in range( num_tiles ):
 			#print "{} ".format( tile_index )
 			# dists = EpsTest( np.absolute( sig_matrix[ tile_index ] - testimg ) )
 			# epsilon checking for each feature is too expensive
@@ -365,9 +388,55 @@ def ClassifyWND5( trainingset, testimg, feature_weights ):
 
 	return ( normalization_factor, [ x / normalization_factor for x in class_similarities ] ) 
 
+def ClassifyTestSet( training_set, test_set, feature_weights ):
+	"""
+	FIXME: Put the output into some sort of result class that can be parsed or rendered
+	       independently of this function.
+	FIXME: What happens when the ground truth is not known? Currently they would all be shoved
+	       into class 1, might not be a big deal since class name should be something
+	       like "UNKNOWN"
+	"""
 
+	column_header = "image\tnorm. fact.\t"
+	column_header +=\
+			"".join( [ "p(" + class_name + ")\t" for class_name in training_set.classnames_list ] )
 
-def ReadInFeatureWeights( weights_filepath ):
+	column_header += "act. class\tpred. class\tpred. val."
+	print column_header
+
+	interp_coeffs = None
+	if training_set.interpolation_coefficients:
+		interp_coeffs = np.array( training_set.interpolation_coefficients )
+
+	for test_class_index in range( test_set.num_classes ):
+		num_class_imgs, num_class_features = test_set.data_list[ test_class_index ].shape
+		for test_image_index in range( num_class_imgs ):
+			one_image_features = test_set.data_list[ test_class_index ][ test_image_index,: ]
+			normalization_factor, marginal_probabilities = \
+					ClassifyOneImageWND5( training_set, one_image_features, feature_weights )
+
+			# print to STDOUT:
+			# img name:
+			output_str = test_set.imagenames_list[ test_class_index ][ test_image_index ]
+			# normalization factor:
+			output_str += "\t{val:0.3g}\t".format( val=normalization_factor )
+			# marginal probabilities:
+			output_str += "".join(\
+					[ "{val:0.3f}".format( val=prob ) + "\t" for prob in marginal_probabilities ] )
+			output_str += test_set.classnames_list[ test_class_index ] + "\t"
+			# actual class:
+			output_str += test_set.classnames_list[ test_class_index ] + "\t"
+			# predicted class:
+			marg_probs = np.array( marginal_probabilities )
+			output_str += "{}\t".format( training_set.classnames_list[ marg_probs.argmax() ] )
+			# interpolated value, if applicable
+			if interp_coeffs is not None:
+				interp_val = np.sum( marg_probs * interp_coeffs )
+				output_str += "{val:0.3f}".format( val=interp_val )
+			print output_str
+			
+
+def ReadFeatureWeightsFromFile( weights_filepath ):
 	
 	feature_names = []
 	feature_values = []
@@ -384,6 +453,7 @@ def TranslateFeatureNames( name_dict, old_name_list ):
 	for old_name in old_name_list:
 		new_name_list.append( name_dict[ old_name ] )
 	return new_name_list
+
 
 def LoadFeatureNameTranslationDict():
 
