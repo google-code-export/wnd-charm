@@ -9,21 +9,20 @@ from pycharm import pymfg
 #	full_list = "\n"
 #	full_list = full_list.join( feature_lists )
 #	original = pymfg.ImageMatrix()
-#	original.OpenImage("Y24-2-2_GREEN.tif", 0, None, 0, 0)
+#	retval = original.OpenImage("Y24-2-2_GREEN.tif", 0, None, 0, 0)
+#	if retval != 1:
+#		import sys; sys.exit(1)
 #	
 #	im_cache = {}
 #	im_cache[ '' ] = original
 #
-#	global global_AllAlgorithms
-#	global global_AllTransforms
-#
-#	global_AllAlgorithms = LoadFeatureAlgorithms()
-#	global_AllTransforms = LoadFeatureTransforms()
+#	algs = LoadFeatureAlgorithms()
+#	tforms = LoadFeatureTransforms()
 #
 #	feature_groups = []
 #
 #	for feature_group_str in full_list.splitlines():
-#		feature_groups.append( ParseFeatureGroupString( feature_group_str ) )
+#		feature_groups.append( ParseFeatureGroupString( feature_group_str, algs, tforms ) )
 #
 #	print "{} feature groups".format( len( feature_groups ) )
 #
@@ -44,7 +43,7 @@ from pycharm import pymfg
 #================================================================
 class FeatureGroup:
 	"""
-	Attributes Name, Alg and Tforms are string representations, not links to the object
+	Attributes Name, Alg and Tforms are references to the SWIG objects
 	"""
 
 	Name = ""
@@ -64,7 +63,7 @@ class FeatureGroup:
 			pixel_plane = RetrievePixelPlane( cached_pixel_planes, self.Tforms )
 		except:
 			raise
-		return global_AllAlgorithms[ self.Alg ].calculate( pixel_plane )
+		return self.Alg.calculate( pixel_plane )
 
 
 #================================================================
@@ -76,7 +75,7 @@ def RetrievePixelPlane( image_matrix_cache, tform_list ):
 	Recurses through the compound transform chain in tform_list
 	"""
 	#print "passed in: {}".format( tform_list )
-	requested_transform = " ".join( tform_list )
+	requested_transform = " ".join( [ tform.name for tform in tform_list ] )
 	#print "requesting pixel plane: '{}'".format( requested_transform )
 	if requested_transform in image_matrix_cache:
 		return image_matrix_cache[ requested_transform ]
@@ -93,18 +92,17 @@ def RetrievePixelPlane( image_matrix_cache, tform_list ):
 
 	sublist = tform_list[:]
 	sublist.reverse()
-	top_level_transform_name = sublist.pop()
+	top_level_transform = sublist.pop()
 	intermediate_pixel_plane = RetrievePixelPlane( image_matrix_cache, sublist )
 
-	
-	tformed_pp = global_AllTransforms[ top_level_transform_name ].transform( intermediate_pixel_plane )
+	tformed_pp = top_level_transform.transform( intermediate_pixel_plane )
 	#assert( intermediate_pixel_plane ), "Pixel Plane returned from transform() was NULL"
 	image_matrix_cache[ requested_transform ] = tformed_pp
 	return tformed_pp
 
 
 #================================================================
-def ParseFeatureGroupString( name ):
+def ParseFeatureGroupString( name, AllAlgorithms, AllTransforms ):
 	"""Takes a string input, parses, and returns an instance of a FeatureGroup class"""
 	#TBD: make a member function of the FeatureGroup
 	# get the algorithm
@@ -112,7 +110,7 @@ def ParseFeatureGroupString( name ):
 	parsed = string_rep.split( ' (' )
 	
 	alg = parsed[0]
-	if alg not in global_AllAlgorithms:
+	if alg not in AllAlgorithms:
 		raise KeyError( "Don't know about a feature algorithm with the name {}".format(alg) )
 	
 	tform_list = parsed[1:]
@@ -122,12 +120,15 @@ def ParseFeatureGroupString( name ):
 		pass
 	if len(tform_list) != 0:
 		for tform in tform_list:
-			if tform not in global_AllTransforms:
-				raise KeyError( "Don't know about a transform named {}".format(tform) )
-	return FeatureGroup( name, alg, tform_list )
+			if tform not in AllTransforms:
+				raise KeyError( "Don't know about a transform named {}".format( tform ) )
+
+	tform_swig_obj_list = [ AllTransforms[ tform ] for tform in tform_list ]
+
+	return FeatureGroup( name, AllAlgorithms[ alg ], tform_swig_obj_list )
 
 #================================================================
-def GenerateWorkOrderFromListOfFeatureStrings( feature_list ):
+def GenerateWorkOrderFromListOfFeatureStrings( feature_list, algs, tforms ):
 	"""
 	Takes list of feature strings and chops off bin number at the first space on right, e.g.,
 	"feature alg (transform()) [bin]" ... Returns a list of FeatureGroups.
@@ -144,7 +145,7 @@ def GenerateWorkOrderFromListOfFeatureStrings( feature_list ):
 	# iterate over set and construct feature groups
 	work_order = []
 	for feature_group in feature_group_strings:
-		fg = ParseFeatureGroupString( feature_group )
+		fg = ParseFeatureGroupString( feature_group, algs, tforms )
 		output_features_count += fg.Alg.n_features
 		work_order.append( fg )
 

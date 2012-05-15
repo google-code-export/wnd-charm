@@ -104,7 +104,7 @@ class TrainingSet:
 		self.imagenames_list = []
 
 		if data_dict != None:
-			if "source_file" in dict_data:
+			if "source_file" in data_dict:
 				self.source_file = data_dict[ 'source_file' ]
 			if "num_classes" in data_dict:
 				self.num_classes = data_dict[ 'num_classes' ]
@@ -286,9 +286,15 @@ class TrainingSet:
 
 			for i in range( test_set.num_features ):
 				for class_matrix in test_set.data_list:
-					class_matrix[:,i] -= self.feature_minima[i]
-					class_matrix[:,i] /= (self.feature_maxima[i] - self.feature_minima[i])
-					class_matrix[:,i] *= 100
+					# Is there more than one image in here?
+					if len( class_matrix.shape ) > 1:
+						class_matrix[:,i] -= self.feature_minima[i]
+						class_matrix[:,i] /= (self.feature_maxima[i] - self.feature_minima[i])
+						class_matrix[:,i] *= 100
+					else:
+						class_matrix[i] -= self.feature_minima[i]
+						class_matrix[i] /= (self.feature_maxima[i] - self.feature_minima[i])
+						class_matrix[i] *= 100
 
 			test_set.normalized_against = self.source_file
 			
@@ -320,12 +326,14 @@ class TrainingSet:
 		reduced_ts.imagenames_list = self.imagenames_list[:] # [:] = deepcopy
 		reduced_ts.classnames_list = self.classnames_list[:]
 		reduced_ts.featurenames_list = requested_features[:]
-		reduced_ts.interpolation_coefficients = self.interpolation_coefficients[:]
-		reduced_ts.feature_maxima = [None] * new_num_features
-		reduced_ts.feature_minima = [None] * new_num_features
+
+		if self.interpolation_coefficients:
+			reduced_ts.interpolation_coefficients = self.interpolation_coefficients[:]
 
 		# copy feature minima/maxima
 		if self.feature_maxima and self.feature_minima:
+			reduced_ts.feature_maxima = [None] * new_num_features
+			reduced_ts.feature_minima = [None] * new_num_features
 			new_index = 0
 			for featurename in requested_features:
 				old_index = self.featurenames_list.index( featurename )
@@ -335,15 +343,28 @@ class TrainingSet:
 
 		# feature reduce
 		for fat_matrix in self.data_list:
-			num_imgs_in_class, num_old_features = fat_matrix.shape
-			# NB: double parentheses required when calling numpy.empty(), i don't know why
-			new_matrix = np.empty( ( num_imgs_in_class, new_num_features ) )
-			new_column_index = 0
-			for featurename in requested_features:
-				fat_column_index = self.featurenames_list.index( featurename )
-				new_matrix[:,new_column_index] = fat_matrix[:,fat_column_index]
-				new_column_index += 1
-			reduced_ts.data_list.append( new_matrix )
+			# sometimes there's only 1 image in the test_set, and therefore the
+			# fat_matrix.shape is a scalar indicating num_features
+			# Makes a difference when indexing.
+			new_matrix = None
+			if( len( fat_matrix.shape ) > 1 ):
+				num_imgs_in_class, num_old_features = fat_matrix.shape
+				# NB: double parentheses required when calling numpy.zeros(), i don't know why
+				new_matrix = np.zeros( ( num_imgs_in_class, new_num_features ) )
+				new_column_index = 0
+				for featurename in requested_features:
+					fat_column_index = self.featurenames_list.index( featurename )
+					new_matrix[:,new_column_index] = fat_matrix[:,fat_column_index]
+					new_column_index += 1
+				reduced_ts.data_list.append( new_matrix )
+			else:
+				new_matrix = np.zeros( new_num_features )
+				new_column_index = 0
+				for featurename in requested_features:
+					fat_column_index = self.featurenames_list.index( featurename )
+					new_matrix[new_column_index] = fat_matrix[fat_column_index]
+					new_column_index += 1
+				reduced_ts.data_list.append( new_matrix )
 
 		return reduced_ts
 
@@ -442,16 +463,45 @@ def ClassifyTestSet( training_set, test_set, feature_weights ):
 	if training_set.interpolation_coefficients:
 		interp_coeffs = np.array( training_set.interpolation_coefficients )
 
+	# FIXME: this is a mess. need to figure out way to cleverly handle single image classes
 	for test_class_index in range( test_set.num_classes ):
-		num_class_imgs, num_class_features = test_set.data_list[ test_class_index ].shape
-		for test_image_index in range( num_class_imgs ):
-			one_image_features = test_set.data_list[ test_class_index ][ test_image_index,: ]
+		if len( test_set.data_list[ test_class_index ].shape ) > 1:
+			# MULTI IMAGE CLASS
+			num_class_imgs, num_class_features = test_set.data_list[ test_class_index ].shape
+			for test_image_index in range( num_class_imgs ):
+				one_image_features = test_set.data_list[ test_class_index ][ test_image_index,: ]
+				normalization_factor, marginal_probabilities = \
+						ClassifyOneImageWND5( training_set, one_image_features, feature_weights )
+
+				# print to STDOUT:
+				# img name:
+				output_str = test_set.imagenames_list[ test_class_index ][ test_image_index ]
+				# normalization factor:
+				output_str += "\t{val:0.3g}\t".format( val=normalization_factor )
+				# marginal probabilities:
+				output_str += "".join(\
+						[ "{val:0.3f}".format( val=prob ) + "\t" for prob in marginal_probabilities ] )
+				output_str += test_set.classnames_list[ test_class_index ] + "\t"
+				# actual class:
+				output_str += test_set.classnames_list[ test_class_index ] + "\t"
+				# predicted class:
+				marg_probs = np.array( marginal_probabilities )
+				output_str += "{}\t".format( training_set.classnames_list[ marg_probs.argmax() ] )
+				# interpolated value, if applicable
+				if interp_coeffs is not None:
+					interp_val = np.sum( marg_probs * interp_coeffs )
+					output_str += "{val:0.3f}".format( val=interp_val )
+				print output_str
+		else:
+			# SINGLE IMAGE CLASS
+			one_image_features = test_set.data_list[ test_class_index ]
 			normalization_factor, marginal_probabilities = \
 					ClassifyOneImageWND5( training_set, one_image_features, feature_weights )
 
 			# print to STDOUT:
 			# img name:
-			output_str = test_set.imagenames_list[ test_class_index ][ test_image_index ]
+			#import pdb; pdb.set_trace()
+			output_str = test_set.imagenames_list[ test_class_index ][0]
 			# normalization factor:
 			output_str += "\t{val:0.3g}\t".format( val=normalization_factor )
 			# marginal probabilities:
@@ -468,7 +518,7 @@ def ClassifyTestSet( training_set, test_set, feature_weights ):
 				interp_val = np.sum( marg_probs * interp_coeffs )
 				output_str += "{val:0.3f}".format( val=interp_val )
 			print output_str
-			
+
 
 def ReadFeatureWeightsFromFile( weights_filepath ):
 	
