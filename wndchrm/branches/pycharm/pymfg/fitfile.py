@@ -11,49 +11,52 @@ from os import path as path_parse
 import re
 
 
-def main():
-
-	name_dict = LoadFeatureNameTranslationDict()
-	
-	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
-
-	# read in weights from a c-chrm feature weights file
-	weight_names, weight_values = ReadFeatureWeightsFromFile('/Users/chris/projects/josiah_worms/feature_weights.txt')
-	# FIXME: just calculate them outright
-	weight_names = TranslateFeatureNames( name_dict, weight_names )
-	fisher_scores = zip( weight_names, weight_values )
-	nonzero_fisher_scores = [ (name, weight) for name, weight in fisher_scores if weight != 0 ]
-	#print "{}".format( nonzero_weights )
-	nonzero_fisher_names, nonzero_fisher_scores = zip( *nonzero_fisher_scores )
-
-	reduced_ts = None
-
-	if False:
-		full_ts = TrainingSet.FromFitFile( fitfilepath )
-		full_ts.featurenames_list = TranslateFeatureNames( name_dict, full_ts.featurenames_list )
-		reduced_ts = full_ts.FeatureReduce( nonzero_fisher_names )
-		reduced_ts.Normalize()
-		reduced_ts.PickleMe( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
-	else:
-		reduced_ts = TrainingSet.FromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
-
-	#print "the lists are {} the same!".\
-	#		format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
-
-	# classify 1 image
-	#one_image = reduced_ts.data_list[0][0,:]
-	#one_image_name = reduced_ts.imagenames_list[0][0]
-	#norm_factor, marg_probs = ClassifyOneImageWND5( reduced_ts, one_image, nonzero_fisher_scores )
-	#print "image {}, norm factor {}, marg probs {}".\
-	#		format( one_image_name, norm_factor, marg_probs )
-
-	# classify training set against itself
-	ClassifyTestSet( reduced_ts, reduced_ts, nonzero_fisher_scores)
+#def main():
+#
+#	name_dict = LoadFeatureNameTranslationDict()
+#	
+#	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
+#
+#	# read in weights from a c-chrm feature weights file
+#	weight_names, weight_values = ReadFeatureWeightsFromFile('/Users/chris/projects/josiah_worms/feature_weights.txt')
+#	# FIXME: just calculate them outright
+#	weight_names = TranslateFeatureNames( name_dict, weight_names )
+#	fisher_scores = zip( weight_names, weight_values )
+#	nonzero_fisher_scores = [ (name, weight) for name, weight in fisher_scores if weight != 0 ]
+#	#print "{}".format( nonzero_weights )
+#	nonzero_fisher_names, nonzero_fisher_scores = zip( *nonzero_fisher_scores )
+#
+#	reduced_ts = None
+#
+#	if False:
+#		full_ts = TrainingSet.FromFitFile( fitfilepath )
+#		full_ts.featurenames_list = TranslateFeatureNames( name_dict, full_ts.featurenames_list )
+#		reduced_ts = full_ts.FeatureReduce( nonzero_fisher_names )
+#		reduced_ts.Normalize()
+#		reduced_ts.PickleMe( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
+#	else:
+#		reduced_ts = TrainingSet.FromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
+#
+#	#print "the lists are {} the same!".\
+#	#		format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
+#
+#	# classify 1 image
+#	#one_image = reduced_ts.data_list[0][0,:]
+#	#one_image_name = reduced_ts.imagenames_list[0][0]
+#	#norm_factor, marg_probs = ClassifyOneImageWND5( reduced_ts, one_image, nonzero_fisher_scores )
+#	#print "image {}, norm factor {}, marg probs {}".\
+#	#		format( one_image_name, norm_factor, marg_probs )
+#
+#	# classify training set against itself
+#	ClassifyTestSet( reduced_ts, reduced_ts, nonzero_fisher_scores)
 
 #============================================================================
 class TrainingSet:
 	"""
   """
+
+	# Source_file is essentially a name - might want to make separate name member in the future
+	source_file = ""
 	num_classes = -1
 	num_features = -1
 	num_images = -1
@@ -76,11 +79,18 @@ class TrainingSet:
 	imagenames_list = None
 
 	# The following class members are optional:
+	# normalized_against is a string that keeps track of whether or not self has been
+	# normalized. For test sets, value will be the source_file of the training_set.
+	# For training sets, value will be "itself"
+	normalized_against = None
+
 	# Stored feature maxima and minima go in here
+	# only exist, if self has been normalized against itself
 	feature_maxima = None
 	feature_minima = None
 
-	# Can the class names be coefficients for interpolated values?
+	# A list of floats against which marg probs can be multiplied
+	# to obtain an interpolated value
 	interpolation_coefficients = None
 
 	def __init__( self, data_dict = None):
@@ -94,6 +104,8 @@ class TrainingSet:
 		self.imagenames_list = []
 
 		if data_dict != None:
+			if "source_file" in dict_data:
+				self.source_file = data_dict[ 'source_file' ]
 			if "num_classes" in data_dict:
 				self.num_classes = data_dict[ 'num_classes' ]
 			if "num_features" in data_dict:
@@ -158,6 +170,7 @@ class TrainingSet:
 		print "Creating Training Set from legacy WND-CHARM text file file {}".format( pathname )
 		with open( pathname ) as fitfile:
 			data_dict = {}
+			data_dict[ 'source_file' ] = pathname
 			data_dict[ 'data_list' ] = []
 			data_dict[ 'imagenames_list' ] = []
 			data_dict[ 'featurenames_list' ] = []
@@ -237,31 +250,47 @@ class TrainingSet:
 		
 		return the_training_set
 
-	def Normalize( self ):
+	def Normalize( self, test_set = None ):
 		"""
 		By convention, the range of values are normalized on an interval [0,100]
-		FIXME: edge cases
-		FIXME: take an additional argument that is a vector to be normalized against
+		FIXME: edge cases, clipping, etc
 		"""
 
-		full_stack = np.vstack( self.data_list )
+		if not( self.normalized_against ):
 
-		total_num_imgs, num_features = full_stack.shape
+			full_stack = np.vstack( self.data_list )
+			total_num_imgs, num_features = full_stack.shape
+			self.feature_maxima = [None] * num_features
+			self.feature_minima = [None] * num_features
 
-		self.feature_maxima = [None] * num_features
-		self.feature_minima = [None] * num_features
+			for i in range( num_features ):
+				feature_max = np.max( full_stack[:,i] )
+				self.feature_maxima[ i ] = feature_max
+				feature_min = np.min( full_stack[:,i] )
+				self.feature_minima[ i ] = feature_min
+				for class_matrix in self.data_list:
+					class_matrix[:,i] -= feature_min
+					class_matrix[:,i] /= (feature_max - feature_min)
+					class_matrix[:,i] *= 100
+			self.normalized_against = "itself"
 
-		index = 0
-		for i in range( num_features ):
-			feature_max = np.max( full_stack[:,i] )
-			self.feature_maxima[ index ] = feature_max
-			feature_min = np.min( full_stack[:,i] )
-			self.feature_minima[ index ] = feature_min
-			for class_matrix in self.data_list:
-				class_matrix[:,i] -= feature_min
-				class_matrix[:,i] /= (feature_max - feature_min)
-				class_matrix[:,i] *= 100
-			index += 1
+		if test_set:
+
+			# sanity checks
+			if test_set.normalized_against:
+				raise ValueError( "Test set {} has already been normalized against {}."\
+						.format( test_set.source_file, test_set.normalized_against ) )
+			if test_set.featurenames_list != self.featurenames_list:
+				raise ValueError("Can't normalize test_set {} against training_set {}: Features don't match."\
+						.format( test_set.source_file, self.source_file ) )
+
+			for i in range( test_set.num_features ):
+				for class_matrix in test_set.data_list:
+					class_matrix[:,i] -= self.feature_minima[i]
+					class_matrix[:,i] /= (self.feature_maxima[i] - self.feature_minima[i])
+					class_matrix[:,i] *= 100
+
+			test_set.normalized_against = self.source_file
 			
 
 	def FeatureReduce( self, requested_features ):
@@ -280,8 +309,9 @@ class TrainingSet:
 			raise ValueError( 'ERROR: Not all the features you asked for are in this training set.\n'+\
 					'The following features are missing: {}'.format( their_features - selfs_features ) )
 
-		# copy everything but the data
+		# copy everything but the signature data
 		reduced_ts = TrainingSet()
+		reduced_ts.source_file = self.source_file + "(feature reduced)"
 		reduced_ts.num_classes = self.num_classes
 		assert reduced_ts.num_classes == len( self.data_list )
 		new_num_features = len( requested_features )
@@ -324,6 +354,10 @@ class TrainingSet:
 		pass
 
 	def PickleMe( self, pathname ):
+		"""
+		FIXME: pathname needs to end with suffix '.fit.pickled'
+		       or TrainingSet.FromPickleFile() won't read it.
+		"""
 		if path_parse.exists( pathname ):
 			print "Overwriting {}".format( pathname )
 		with open( pathname, 'wb') as outfile:
@@ -5518,7 +5552,7 @@ def LoadFeatureNameTranslationDict():
 
 
 #================================================================
-if __name__=="__main__":
-	main()
+#if __name__=="__main__":
+#	main()
 
 
