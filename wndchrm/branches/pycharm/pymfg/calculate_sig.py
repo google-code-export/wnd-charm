@@ -3,42 +3,42 @@
 from pycharm import pymfg
 
 #================================================================
-def main():
-
-	feature_lists = LoadFeatureLists()
-	full_list = "\n"
-	full_list = full_list.join( feature_lists )
-	original = pymfg.ImageMatrix()
-	original.OpenImage("Y24-2-2_GREEN.tif", 0, None, 0, 0)
-	
-	im_cache = {}
-	im_cache[ '' ] = original
-
-	global global_AllAlgorithms
-	global global_AllTransforms
-
-	global_AllAlgorithms = LoadFeatureAlgorithms()
-	global_AllTransforms = LoadFeatureTransforms()
-
-	feature_groups = []
-
-	for feature_group_str in full_list.splitlines():
-		feature_groups.append( ParseFeatureString( feature_group_str ) )
-
-	print "{} feature groups".format( len( feature_groups ) )
-
-	feature_names = []
-	signatures = []
-	for fg in feature_groups:
-		print "Group {}".format(fg.Name)
-		feature_vector = fg.CalculateFeatures( im_cache )
-		count = 0
-		for value in feature_vector:
-			feature_names.append( fg.Name + " [{}]".format( count ) )
-			signatures.append( value )	
-			count += 1
-	
-	WriteFeaturesToSigFile( "pychrm_calculated.sig", feature_names, signatures )
+#def main():
+#
+#	feature_lists = LoadFeatureLists()
+#	full_list = "\n"
+#	full_list = full_list.join( feature_lists )
+#	original = pymfg.ImageMatrix()
+#	original.OpenImage("Y24-2-2_GREEN.tif", 0, None, 0, 0)
+#	
+#	im_cache = {}
+#	im_cache[ '' ] = original
+#
+#	global global_AllAlgorithms
+#	global global_AllTransforms
+#
+#	global_AllAlgorithms = LoadFeatureAlgorithms()
+#	global_AllTransforms = LoadFeatureTransforms()
+#
+#	feature_groups = []
+#
+#	for feature_group_str in full_list.splitlines():
+#		feature_groups.append( ParseFeatureGroupString( feature_group_str ) )
+#
+#	print "{} feature groups".format( len( feature_groups ) )
+#
+#	feature_names = []
+#	signatures = []
+#	for fg in feature_groups:
+#		print "Group {}".format(fg.Name)
+#		feature_vector = fg.CalculateFeatures( im_cache )
+#		count = 0
+#		for value in feature_vector:
+#			feature_names.append( fg.Name + " [{}]".format( count ) )
+#			signatures.append( value )	
+#			count += 1
+#	
+#	WriteFeaturesToSigFile( "pychrm_calculated.sig", feature_names, signatures )
 
 
 #================================================================
@@ -104,7 +104,7 @@ def RetrievePixelPlane( image_matrix_cache, tform_list ):
 
 
 #================================================================
-def ParseFeatureString( name ):
+def ParseFeatureGroupString( name ):
 	"""Takes a string input, parses, and returns an instance of a FeatureGroup class"""
 	#TBD: make a member function of the FeatureGroup
 	# get the algorithm
@@ -126,11 +126,34 @@ def ParseFeatureString( name ):
 				raise KeyError( "Don't know about a transform named {}".format(tform) )
 	return FeatureGroup( name, alg, tform_list )
 
+#================================================================
+def GenerateWorkOrderFromListOfFeatureStrings( feature_list ):
+	"""
+	Takes list of feature strings and chops off bin number at the first space on right, e.g.,
+	"feature alg (transform()) [bin]" ... Returns a list of FeatureGroups.
+	"""
+
+	feature_group_strings = set()
+	output_features_count = 0
+
+	for feature in feature_list:
+		split_line = feature.rsplit( " ", 1 )
+		# add to set to ensure uniqueness
+		feature_group_strings.add( split_line[0] )
+
+	# iterate over set and construct feature groups
+	work_order = []
+	for feature_group in feature_group_strings:
+		fg = ParseFeatureGroupString( feature_group )
+		output_features_count += fg.Alg.n_features
+		work_order.append( fg )
+
+	return work_order, output_features_count
 
 #================================================================
-def	WriteFeaturesToSigFile( file_name, feature_names, signatures ):
+def	WriteFeaturesToSigFile( filepath, feature_names, signatures ):
 	"""Write a sig file."""
-	with open( file_name, "w" ) as out_file:
+	with open( filepath, "w" ) as out_file:
 		if len( feature_names ) != len( signatures ):
 			raise ValueError( "Internal error: Can't write sig file: # of feature names " +\
 			"({}) doesn't match # signatures ({})".format( len( feature_names ), len( signatures ) ) )
@@ -301,7 +324,7 @@ Zernike Coefficients (Wavelet (Edge ()))"""
 
 
 #================================================================
-if __name__=="__main__":
-	main()
+#if __name__=="__main__":
+#	main()
 
 
