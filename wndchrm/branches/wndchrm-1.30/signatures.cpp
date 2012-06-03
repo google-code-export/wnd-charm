@@ -73,6 +73,7 @@ signatures::signatures()
    sample_name[0]='\0';
    NamesTrainingSet=NULL;   
    ScoresTrainingSet=NULL;
+   wf = NULL;
 }
 //---------------------------------------------------------------------------
 
@@ -1052,7 +1053,7 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(ChebyshevFourierTransform,"Chebyshev Fourier");
 // Fourier, then Wavelet
   CompGroupC(FourierWaveletSelector,"Wavelet Fourier");
-/**/
+	
 // Wavelet, then Fourier
   CompGroupB(WaveletFourier,"Fourier Wavelet");
   CompGroupC(WaveletFourier,"Fourier Wavelet");
@@ -1061,7 +1062,6 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupC(FourierChebyshev,"Fourier Chebyshev");
 // Wavelet, then Chebyshev
   CompGroupC(ChebyshevWavelet,"Chebyshev Wavelet");
-
   CompGroupB(EdgeTransform,"Edge Transform");
   CompGroupC(EdgeTransform,"Edge Transform");
 // Edge, then fourier - named in wrong order!
@@ -1140,37 +1140,6 @@ void signatures::ComputeFromDouble(double *data, int width, int height, int dept
 }
 
 
-/* FileOpen
-   Creates and opens a files before writing feature value content
-   path -char *- path to the file to be opened.
-     If NULL then open path is the original file name up to the last '.', followed by '_', the sample_name and ".sig".
-   int overwrite - 1 for forceably overwritting existing .sig files
-*/
-FILE *signatures::FileOpen(char *path, int overwrite)
-{  char filename[512];
-   FILE *ret;
-   if (path && *path != '\0') strcpy(filename,path);
-   else GetFileName (filename);
-   /*
-     FIXME: this sets up a race condition.
-       another process can try open-for-read between this process' open-for-read and open-for-write,
-       resulting in the other process also failing open-for-read and opening this same file for write.
-       Solution: The sig file acts as a lockfile.  The existence test and the file creation have to be in one atomic transaction.
-       If we are able to get a file handle this way, it means that the file did not previously exist, and no other process has it open.
-       If we cannot get the handle, it means some other process has this file opened.
-   */
-   if ( (ret=fopen(filename,"r")) )
-   {  struct stat ft;
-      fclose(ret);
-      if (overwrite) 
-	  {  stat(filename,&ft); /* check the file date only if overwrite is specified */
-         if (time(NULL)-ft.st_mtime>7200) return(fopen(filename,"w"));  /* check if the file is forced to be overwritten */
-      }   //st_mtimespec.tv_sec
-      else return(NULL);   /* file already exists */
-   }
-   return(fopen(filename,"w"));
-}
-
 /* FileClose
    Closes a value file.  This is the closing command for files opened with ReadFromFile.
    This closes the stream as well as filedescriptor
@@ -1178,62 +1147,84 @@ FILE *signatures::FileOpen(char *path, int overwrite)
 void signatures::FileClose(FILE *value_file)
 {
 	if (!value_file) return;
-	int fd = fileno (value_file);
-	fclose(value_file);
-	close (fd);
+	if (wf) {
+		wf->finish();
+		delete wf;
+		wf = NULL;
+	}
 }
 
-int signatures::SaveToFile(FILE *value_file, int save_feature_names)
-{  int sig_index;
-   if (!value_file) {printf("Cannot write to .sig file\n");return(0);}
-   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
-   	fprintf(value_file,"%f\n",sample_value);  /* save the continouos value */
-   } else fprintf(value_file,"%d\n",sample_class);  /* save the class index */
-   fprintf(value_file,"%s\n",full_path);
-   for (sig_index=0;sig_index<count;sig_index++)
-     if (save_feature_names && NamesTrainingSet) fprintf(value_file,"%f %s\n",data[sig_index].value,((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);
-	 else fprintf(value_file,"%f\n",data[sig_index].value);   
+int signatures::SaveToFile(FILE *value_file, int save_feature_names) {
+	int sig_index;
+	if ( !wf || !(wf->status == WORMfile::WORM_WR) ) {
+		printf("Cannot write to .sig file\n");
+		return(0);
+	}
+	FILE *wf_fp = wf->fp();
+
+	if ( NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous ) {
+		fprintf(wf_fp,"%f\n",sample_value);  /* save the continouos value */
+	} else {
+		fprintf(wf_fp,"%d\n",sample_class);  /* save the class index */
+	}
+	fprintf(wf_fp,"%s\n",full_path);
+	for (sig_index=0; sig_index < count; sig_index++) {
+		if (save_feature_names && NamesTrainingSet)
+			fprintf(wf_fp,"%f %s\n",data[sig_index].value,((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);
+		else
+			fprintf(wf_fp,"%f\n",data[sig_index].value);
+	}
    return(1);
 }
 
-int signatures::LoadFromFile(char *filename)
-{  char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer;
-   FILE *value_file;
+
+int signatures::LoadFromFile(char *filename) {
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
+	WORMfile *wf_temp = NULL;
+	int ret = 0;
 
 	if (!filename || *filename == '\0')
 		GetFileName (buffer);
 	else strncpy (buffer,filename,sizeof(buffer));
 
-   if (!(value_file=fopen(buffer,"r")))
-     return(0);
-   /* read the class or value */
-   fgets(buffer,sizeof(buffer),value_file);   
-   if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
-   	sample_value=atof(buffer);   /* continouos value */
-   	sample_class = 1;
-   } else sample_class=atoi(buffer);                /* class index      */
+	wf_temp = new WORMfile (buffer, true); // readonly
+	if (wf_temp->status == WORMfile::WORM_RD) {
+		LoadFromFilep (wf_temp->fp());
+		ret = 1;
+	}
+	delete wf_temp;  // closes readonly, unlinks write-locked.
+	return (ret);
+}
 
-   /* read the path */
-   fgets(buffer,sizeof(buffer),value_file);
-   chomp (buffer);
-   strcpy(full_path,buffer);
+void signatures::LoadFromFilep (FILE *value_file) {
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer;
 
-   /* read the feature values */
-   p_buffer=fgets(buffer,sizeof(buffer),value_file);
-   chomp (p_buffer);
-   while (p_buffer)
-   {  char *p_name;
-      p_name=strchr(buffer,' ');
-      if (p_name)    /* if there is a feature name in the file */
-	  {  *p_name='\0';
-         p_name++;
-	  }
-      Add(p_name,atof(buffer));
-      p_buffer=fgets(buffer,sizeof(buffer),value_file);
-      chomp (p_buffer);
-   }
-   fclose(value_file);
-   return(1);
+	/* read the class or value */
+	fgets(buffer,sizeof(buffer),value_file);   
+	if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
+		sample_value=atof(buffer);   /* continouos value */
+		sample_class = 1;
+	} else sample_class=atoi(buffer);                /* class index      */
+	
+	/* read the path */
+	fgets(buffer,sizeof(buffer),value_file);
+	chomp (buffer);
+	strcpy(full_path,buffer);
+	
+	/* read the feature values */
+	p_buffer=fgets(buffer,sizeof(buffer),value_file);
+	chomp (p_buffer);
+	while (p_buffer) {
+		char *p_name;
+		p_name=strchr(buffer,' ');
+		if (p_name) {    /* if there is a feature name in the file */
+			*p_name='\0';
+			p_name++;
+		}
+	Add(p_name,atof(buffer));
+	p_buffer=fgets(buffer,sizeof(buffer),value_file);
+	chomp (p_buffer);
+	}
 }
 
 
@@ -1248,57 +1239,34 @@ int signatures::LoadFromFile(char *filename)
 */
 int signatures::ReadFromFile (FILE **fpp, bool wait) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
-	int fd;
-	struct flock fl;
-	struct stat stat_buf;
-	// or, use 	mode_t mask = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-	mode_t mask = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 
 	// This is non-null only if we have a lock on an empty file.
 	if (fpp) *fpp = NULL;
+	else return (0);
 
-
-	// We will never read from this fd or from its fp
-    if ( (fd = open(GetFileName (buffer), wait ? (O_RDONLY) : (O_WRONLY | O_CREAT),mask)) < 0 )
-		return (-1);
-    // Make a non-blocking request for a whole-file write lock
-    fl.l_type = wait ? F_RDLCK : F_WRLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0;
-
-	if (fcntl(fd, wait ? F_SETLKW : F_SETLK, &fl) == -1) {
-		if (errno == EACCES || errno == EAGAIN) {
-		// locked by another process
-			errno = 0;
-			close (fd);
-			return (0);
-		} else {
-		// an unexpected error
-			close (fd);
-			return (-1);
-        }
+	if (!wf) wf = new WORMfile (GetFileName (buffer), wait, wait);
+	if (wf->status == WORMfile::WORM_BUSY) {
+		delete wf;
+		wf = NULL;
+		return (0); // return 0, *fpp = NULL
+	} else if (wf->status == WORMfile::WORM_WR) {
+		*fpp = wf->fp();
+		return (0);
+	} else if (wf->status == WORMfile::WORM_RD) {
+		Clear(); // reset sample count
+		LoadFromFilep (wf->fp());
+		delete wf; // this unlocks, closes, etc.
+		wf = NULL;
+		// Of course, if it was empty afterall, its an error.
+		if (count < 1) {
+			return (NO_SIGS_IN_FILE);
+		}
+		else return (1);
 	} else {
-	// got the lock, check if it was just created and empty
-		if (fstat(fd, &stat_buf)) {
-			close (fd);
-			return (-1);
-		}
-		errno = 0;
-		if (stat_buf.st_size > 1) {
-		// This file has stuff in it - release the lock and read it.
-			close (fd); // this releases our lock
-			Clear(); // reset sample count
-			LoadFromFile (buffer);
-			// Of course, if it was empty afterall, its an error.
-			if (count < 1) return (NO_SIGS_IN_FILE);
-			else return (1);
-		} else {
-		// We just made an empty file. Open it as a stream, keeping the lock
-		// Call FileClose to close the file.  It closes the stream and the filedes.  Probably not necessary.
-			if (fpp) *fpp = wait ? (fdopen (fd, "r")) : (fdopen (fd, "w"));
-			return (0);
-		}
+	// I/O error
+		delete wf;
+		wf = NULL;
+		return (-1);
 	}
 }
 

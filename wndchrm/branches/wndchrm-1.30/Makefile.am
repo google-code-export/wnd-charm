@@ -83,7 +83,9 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.cpp \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
-	transforms/wavelet/wt.h
+	transforms/wavelet/wt.h \
+	WORMfile.cpp \
+	WORMfile.h
 
 AM_CPPFLAGS = -fPIC
 libimfit_a_CXXFLAGS = -Wall -g -O2 -fpermissive
