@@ -62,7 +62,7 @@ WORMfile::WORMfile (const char *p_path, bool readonly, bool wait) :
 WORMfile::~WORMfile() {
 	if (_fd > -1) {
 		if (status == WORM_WR) {
-			unlink (path);
+			unlink (path.c_str());
 		}
 		if (_fp) fclose(_fp);
 		close (_fd);
@@ -158,7 +158,8 @@ void WORMfile::open_rw () {
 // If the readlock succeeds, then return.  Otherwise request a writelock on the readlocked file.
 // If the file is busy, return.
 	status_errno = errno = 0;
-	_fd = open (path, O_RDWR | O_CREAT, S_IWUSR |  S_IRUSR);
+	_fd = open (path.c_str(), O_RDWR | O_CREAT, S_IWUSR |  S_IRUSR);
+
 	if (_fd < 0) {
 		// if the file was determined stale by open_r, keep that as the status
 		if (status != WORM_STALE) status = WORM_IO_ERR;
@@ -234,7 +235,8 @@ void WORMfile::open_r (bool wait) {
 	int set_lock = wait ? F_SETLKW : F_SETLK;
 
 	status_errno = errno = 0;
-	_fd = open (path, O_RDONLY);
+	_fd = open (path.c_str(), O_RDONLY);
+
 	if (_fd > -1) {
 		status_errno = errno = 0;
 		if (fcntl(_fd, set_lock, &fl_r) != -1) {

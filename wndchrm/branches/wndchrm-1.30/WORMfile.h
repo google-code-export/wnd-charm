@@ -33,6 +33,7 @@
 
 #ifndef __WORMfile_H__
 #define __WORMfile_H__
+#include <string>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -59,7 +60,7 @@ public:
 	
 	WORMfile::Status status;
 	int status_errno;
-	const char *path;
+	std::string path;
 	int read_mode;
 	static int def_read_mode;
 
