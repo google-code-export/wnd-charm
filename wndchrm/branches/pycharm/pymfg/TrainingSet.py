@@ -167,19 +167,17 @@ class Signatures:
 				raise ValueError( "Can't write sig file. No filepath specified in function call, and no path associated with this instance of Signatures." )
 			outfile_path = self.path_to_image_file
 
-		path, filename = os.path.split( outfile_path )
-		if not os.path.exists( path ):
-			raise ValueError( 'Invalid path {}'.format( path ) )
+			path, filename = os.path.split( outfile_path )
+			if not os.path.exists( path ):
+				raise ValueError( 'Invalid path {}'.format( path ) )
 
-		filename_parts = filename.rsplit( '.', 1 )
-
-		if self.options and self.options is not "":
-			outfile_path = "{}{}.pysig".format( path, filename_parts[0],\
-		                                    self.options if self.options else "" )
-		else:
-			outfile_path = "{}.pysig".format( path, filename_parts[0] )
-
-		outfile_path = os.path.join( path, outfile_path )
+			filename_parts = filename.rsplit( '.', 1 )
+			if self.options and self.options is not "":
+				outfile_path = "{}{}.pysig".format( filename_parts[0],\
+																					self.options if self.options else "" )
+			else:
+				outfile_path = "{}.pysig".format( filename_parts[0] )
+			outfile_path = os.path.join( path, outfile_path )
 
 		if os.path.exists( outfile_path ):
 			print "Overwriting {}".format( outfile_path )
@@ -373,7 +371,8 @@ class TrainingSet:
 	# to obtain an interpolated value
 	interpolation_coefficients = None
 
-	#
+	# keep track of all the options (-l -S###, etc)
+	# FIXME: expand to have all options kept track of individually
 	feature_options = None
 
 	def __init__( self, data_dict = None):
