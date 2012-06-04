@@ -77,6 +77,9 @@ signatures::signatures()
 }
 //---------------------------------------------------------------------------
 
+signatures::~signatures() {
+	delete wf;
+}
 /* duplicate
 */
 signatures *signatures::duplicate()
@@ -95,6 +98,7 @@ signatures *signatures::duplicate()
 //   {  new_samp->data[sig_index].value=data[sig_index].value;
 //      strcpy(new_samp->data[sig_index].name,data[sig_index].name);
 //   }
+   wf = NULL;
    return(new_samp);
 }
 
@@ -1144,20 +1148,28 @@ void signatures::ComputeFromDouble(double *data, int width, int height, int dept
    Closes a value file.  This is the closing command for files opened with ReadFromFile.
    This closes the stream as well as filedescriptor
 */
-void signatures::FileClose(FILE *value_file)
+void signatures::FileClose()
 {
-	if (!value_file) return;
 	if (wf) {
 		wf->finish();
-		delete wf;
-		wf = NULL;
 	}
 }
 
-int signatures::SaveToFile(FILE *value_file, int save_feature_names) {
+int signatures::SaveToFile (int save_feature_names) {
 	int sig_index;
-	if ( !wf || !(wf->status == WORMfile::WORM_WR) ) {
-		printf("Cannot write to .sig file\n");
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
+
+	if (!wf) {
+		if (strlen (full_path) > 0)
+			wf = new WORMfile (GetFileName (buffer));
+		else {
+			fprintf(stderr, "Cannot write to .sig file - full_path not set.\n");
+			return(0);
+		}
+	}
+
+	if (!wf || !(wf->status == WORMfile::WORM_WR) ) {
+		printf("Cannot write to .sig file: cannot open sigfile for writing\n");
 		return(0);
 	}
 	FILE *wf_fp = wf->fp();
@@ -1231,32 +1243,25 @@ void signatures::LoadFromFilep (FILE *value_file) {
 
 /*
   Yet another variant of reading from a file.
-  In this case, the filename is computed from full_path and sample_name using GetFileName
-  The fp (FILE **) will be set to the successfully opened and locked file (return 0).
-  If another process has a lock, return 0 (fpp = NULL).
-  If the file exists, and is not locked, the sigs will be loaded from it, and no lock will be issued. (return 1, *fpp = NULL)
+  The filename is computed from full_path and sample_name using GetFileName
+  If the file is successfully opened and write-locked, return 0 (wf.status = WORMfile::WORM_WR).
+  If another process has a lock, return 0 (wf.status = WORMfile::WORM_BUSY).
+  If the file exists, and is not locked, the sigs will be loaded from it, and no lock will be issued. (return 1, (wf.status = WORMfile::WORM_FINISHED))
   If an error occurs in obtaining the lock (if necessary) or creating the file (if necessary) or reading it (if possible), return -1.
 */
-int signatures::ReadFromFile (FILE **fpp, bool wait) {
+int signatures::ReadFromFile (bool wait) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
-	// This is non-null only if we have a lock on an empty file.
-	if (fpp) *fpp = NULL;
-	else return (0);
-
 	if (!wf) wf = new WORMfile (GetFileName (buffer), wait, wait);
+	if (!wf) return (-1);
 	if (wf->status == WORMfile::WORM_BUSY) {
-		delete wf;
-		wf = NULL;
-		return (0); // return 0, *fpp = NULL
+		return (0);
 	} else if (wf->status == WORMfile::WORM_WR) {
-		*fpp = wf->fp();
 		return (0);
 	} else if (wf->status == WORMfile::WORM_RD) {
 		Clear(); // reset sample count
 		LoadFromFilep (wf->fp());
-		delete wf; // this unlocks, closes, etc.
-		wf = NULL;
+		wf->finish(); // this unlocks, closes, etc.
 		// Of course, if it was empty afterall, its an error.
 		if (count < 1) {
 			return (NO_SIGS_IN_FILE);
@@ -1264,8 +1269,6 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 		else return (1);
 	} else {
 	// I/O error
-		delete wf;
-		wf = NULL;
 		return (-1);
 	}
 }
@@ -1278,6 +1281,11 @@ int signatures::ReadFromFile (FILE **fpp, bool wait) {
 */
 char *signatures::GetFileName (char *buffer) {
 	char *char_p;
+
+	if (wf) {
+		strcpy (buffer, wf->path.c_str());
+		return buffer;
+	}
 
 	strcpy(buffer,full_path);
 	char_p = strrchr(buffer,'.');

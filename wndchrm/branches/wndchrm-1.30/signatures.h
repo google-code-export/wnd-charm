@@ -73,6 +73,7 @@ class signatures
     void *ScoresTrainingSet;            /* a pointer to a training set with computed Fisher scores (to avoid computing 0-scored signatures)                 */
 	WORMfile *wf;                       // class for mutex'ed files for storing sig values
     signatures();                       /* constructor                                 */
+    ~signatures();                       /* destructor                                 */
     signatures *duplicate();            /* create an identical signature vector object */
     void Add(const char *name, double value);
     void Clear();
@@ -84,11 +85,11 @@ class signatures
     void ComputeGroups(ImageMatrix *matrix, int compute_colors);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
-    void FileClose(FILE *value_file);
-    int SaveToFile(FILE *value_file,int save_feature_names);
+    void FileClose();
+    int SaveToFile(int save_feature_names);
     int LoadFromFile(char *filename);
     void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
-	int ReadFromFile (FILE **fpp, bool wait); // load if exists, or lock and set fpp.
+	int ReadFromFile (bool wait); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
 	int CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set);
 };
