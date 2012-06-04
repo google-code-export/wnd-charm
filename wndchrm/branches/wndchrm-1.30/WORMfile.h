@@ -70,6 +70,8 @@ public:
 	// calling the destructor when the file is opened for writing causes the file to be unlinked!
 	// must call finish() before the destructor to keep the file.
 	~WORMfile();
+	
+	void reopen (bool readonly = false, bool wait = false);
 
 	int get_read_mode ();
 	int set_read_mode (int p_read_mode);

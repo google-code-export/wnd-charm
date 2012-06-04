@@ -38,6 +38,26 @@
 WORMfile::WORMfile (const char *p_path, bool readonly, bool wait) :
 	status (WORM_UNDEF), status_errno (0), path (p_path),
 	_fd (-1), _fp (NULL), _read_mode (def_read_mode) {
+	
+	reopen (readonly, wait);
+}
+
+WORMfile::~WORMfile() {
+	if (_fd > -1) {
+		if (status == WORM_WR) {
+			unlink (path.c_str());
+		}
+		if (_fp) fclose(_fp);
+		close (_fd);
+	}
+	status = WORM_UNDEF;
+	_fd = -1;
+	_fp = NULL;
+}
+
+void WORMfile::reopen (bool readonly, bool wait) {
+
+	if (_fd > 0) return;
 
 	// These retries are to resolve the race between the
 	// read-only permissions set with finish() and the time between failing a readlock and opening/creating with read/write
@@ -57,19 +77,6 @@ WORMfile::WORMfile (const char *p_path, bool readonly, bool wait) :
 		if (k > MAX_WAIT_MULT) k = MAX_WAIT_MULT;
 		usleep (109 * (rand() % (k - 1)) );
 	}
-}
-
-WORMfile::~WORMfile() {
-	if (_fd > -1) {
-		if (status == WORM_WR) {
-			unlink (path.c_str());
-		}
-		if (_fp) fclose(_fp);
-		close (_fd);
-	}
-	status = WORM_UNDEF;
-	_fd = -1;
-	_fp = NULL;
 }
 
 int WORMfile::get_read_mode () {
