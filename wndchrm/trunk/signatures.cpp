@@ -1253,6 +1253,8 @@ int signatures::ReadFromFile (bool wait) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
 	if (!wf) wf = new WORMfile (GetFileName (buffer), wait, wait);
+	else wf->reopen(wait, wait);
+
 	if (!wf) return (-1);
 	if (wf->status == WORMfile::WORM_BUSY) {
 		return (0);
@@ -1265,8 +1267,9 @@ int signatures::ReadFromFile (bool wait) {
 		// Of course, if it was empty afterall, its an error.
 		if (count < 1) {
 			return (NO_SIGS_IN_FILE);
+		} else {
+			return (1);
 		}
-		else return (1);
 	} else {
 	// I/O error
 		return (-1);
