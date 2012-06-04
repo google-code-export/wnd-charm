@@ -39,6 +39,7 @@
 #include <assert.h>
 #include "FeatureNames.hpp"
 #include "wndchrm_error.h"
+#include "WORMfile.h"
 
 //#include <iostream> // Debug
 //#include <limits>
@@ -784,7 +785,7 @@ int TrainingSet::AddAllSignatures() {
 		errno = 0;
 		res = 1;
 		if (samples[samp_index]->count < 1) {
-			res = samples[samp_index]->ReadFromFile(NULL,1);
+			res = samples[samp_index]->ReadFromFile(1);
 		}
 
 		if (res > 0) {
@@ -1142,7 +1143,10 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 			if ( (sigfile = fopen (buffer,"r")) ) {
 				// first line is classname, second line is full_path
 				*buffer = '\0';
-				if ( fgets (buffer , 512 , sigfile) ) sig_fullpath = fgets (buffer , 512 , sigfile);
+				if ( fgets (buffer , 512 , sigfile) ) {
+					*buffer = '\0';
+					sig_fullpath = fgets (buffer , 512 , sigfile);
+				}
 				fclose (sigfile);
 				if (sig_fullpath && *sig_fullpath) { // not empty
 				 // the leading paths may not be correct for all sigs (i.e. NFS mounts with different mountpoints)
@@ -1233,12 +1237,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	int sample_index;
 	signatures *ImageSignatures;
 	char buffer[IMAGE_PATH_LENGTH];
-	FILE *sigfile;
 	int sig_index,n_sigs=0;
 
 	struct siginfo_s {
 		signatures *sig;
-		FILE *file;
 		int rot_index;
 		int tile_index_x;
 		int tile_index_y;
@@ -1257,7 +1259,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 // It seems this would be a good application of functional programming (i.e. closures, functors, etc).
 
 	our_sigs[0].sig = NULL;
-	our_sigs[0].file = NULL;
 	our_sigs[0].rot_index = our_sigs[0].tile_index_x = our_sigs[0].tile_index_y = -1;
 	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
 	// make signature objects for samples
@@ -1278,18 +1279,16 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		strcpy (ImageSignatures->sample_name,featureset->samples[sample_index].sample_name);
 	// ask for an exclusive write-lock if file doesn't exist
 	// if its the last sample, then we wait for the lock.
-		res = ImageSignatures->ReadFromFile(&sigfile,0);
-		if (res == 0 && sigfile) { // got a lock: file didn't exist previously, and is not locked by another process.
+		res = ImageSignatures->ReadFromFile(0);
+		if (res == 0 && ImageSignatures->wf && ImageSignatures->wf->status == WORMfile::WORM_WR) { // got a lock: file didn't exist previously, and is not locked by another process.
 			if (verbosity>=2) printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
 			our_sigs[n_sigs].sig = ImageSignatures;
-			our_sigs[n_sigs].file = sigfile;
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
 			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
 			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
 		// Initialize the next one 
 			n_sigs++;
 			our_sigs[n_sigs].sig = NULL;
-			our_sigs[n_sigs].file = NULL;
 			our_sigs[n_sigs].rot_index = our_sigs[n_sigs].tile_index_x = our_sigs[n_sigs].tile_index_y = -1;
 
 		} else if (res == 0) {
@@ -1299,9 +1298,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 		} else if (res == NO_SIGS_IN_FILE) {
 		// File exists and lockable, but no sigs
-			catError ("File '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n"
-				"Delete the file and try again.\n",ImageSignatures->GetFileName(buffer));
-			break;
+			catError ("Sig File '%s' for image '%s' has no data. Processing may have prematurely terminated, or file locking may not be functional.\n",
+				ImageSignatures->GetFileName(buffer), filename);
+			if ( (res=AddSample(ImageSignatures)) < 0) break;
 
 		} else if (res < 0) {
 		// no lock or sig file, couldn't create, other errors
@@ -1321,9 +1320,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	
 	if (res < 0) {
 		for (sample_index=0; sample_index < n_sigs; sample_index++) {
-			if (our_sigs[sample_index].file) {
-				our_sigs[sample_index].sig->FileClose (our_sigs[sample_index].file);
-				unlink (our_sigs[sample_index].sig->GetFileName(buffer));
+			if (our_sigs[sample_index].sig) {
+				our_sigs[sample_index].sig->FileClose ();
 			}
 			if (our_sigs[sample_index].sig) delete our_sigs[sample_index].sig;
 		}
@@ -1346,7 +1344,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	int rot_index,tile_index_x,tile_index_y;
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		ImageSignatures = our_sigs[sig_index].sig;
-		sigfile = our_sigs[sig_index].file;
 		rot_index = our_sigs[sig_index].rot_index;
 		tile_index_x = our_sigs[sig_index].tile_index_x;
 		tile_index_y = our_sigs[sig_index].tile_index_y;
@@ -1429,8 +1426,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
-	// This uses our open sigfile handle, so it doesn't call close on it, which would release the lock.
-		ImageSignatures->SaveToFile (sigfile,1);
+	// This doesn't call close on our file, which would release the lock.
+		ImageSignatures->SaveToFile (1);
 		our_sigs[sig_index].saved = true;
 		if ( (res=AddSample(ImageSignatures)) < 0) {
 			break;
@@ -1446,8 +1443,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 // don't release any locks until we're done with this image
 // this prevents another process from opening the same image to calculate a different sub-set of sigs
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
-		if (our_sigs[sig_index].file) {
-			our_sigs[sig_index].sig->FileClose (our_sigs[sig_index].file);
+		if (our_sigs[sig_index].sig) {
+			our_sigs[sig_index].sig->FileClose ();
 		}
 		if (!our_sigs[sig_index].saved) {
 			unlink (our_sigs[sig_index].sig->GetFileName(buffer));
