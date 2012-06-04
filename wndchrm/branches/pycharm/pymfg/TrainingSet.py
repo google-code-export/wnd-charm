@@ -71,7 +71,7 @@ class Signatures:
 
 	path_to_image_file = None
 	feature_names = None
-	signatures = None
+	feature_values = None
 	options = ""
 
 	#================================================================
@@ -83,38 +83,68 @@ class Signatures:
 
 	#================================================================
 	@classmethod
-	def SmallFeatureSet( cls, path ):
+	def SmallFeatureSet( cls, imagepath, options = None ):
 		"""@brief Equivalent of invoking wndchrm train in c-chrm
+		@argument path - path to a tiff file
 		@return An instance of the class Signatures for image with sigs calculated."""
 
 		print "====================================================================="
 		print "Calculating small feature set for file:"
 		global small_featureset_featuregroup_list
-		return cls.FromFeatureGroupList( path, small_featureset_featuregroup_list )
+		return cls.FromFeatureGroupList( imagepath, small_featureset_featuregroup_list, options )
 
 	#================================================================
 	@classmethod
-	def LargeFeatureSet( cls, path ):
+	def LargeFeatureSet( cls, imagepath, options = None):
 		"""@brief Equivalent of invoking wndchrm train -l in c-chrm
+		@argument path - path to a tiff file
 		@return An instance of the class Signatures for image with sigs calculated."""
 
 		print "====================================================================="
 		print "Calculating large feature set for file:"
+
 		global large_featureset_featuregroup_list
-		return cls.FromFeatureGroupList( path, large_featureset_featuregroup_list, "-l" )
+		retval = None
+
+		if options == None:
+			retval = cls.FromFeatureGroupList( imagepath, large_featureset_featuregroup_list, "-l" )
+		else:
+			# FIXME: dummyproofing: does options already contain '-l'?
+			retval = cls.FromFeatureGroupList( imagepath, large_featureset_featuregroup_list, \
+					options + "-l" )
+		return retval
 
 	#================================================================
 	@classmethod
-	def FromFeatureGroupList( cls, path, feature_groups, options = None ):
+	def FromFeatureGroupList( cls, path_to_image, feature_groups, options = None ):
 		"""@brief calculates signatures
 
 		@remarks: Currently, you are not allowed to ask for a Signatures using a feature list,
 		but instead use this call with a feature group list, load the signature into a
 		TrainingSet instance, then call TrainingSet.FeatureReduce.
 		"""
-		print path
+
+		print path_to_image
+		# derive the name of the sig/pysig file that would exist if there were one
+		# given the options requested
+
+		sigpath = None
+		root, extension = os.path.splitext( path_to_image )
+		options_str = options if options else ""
+
+		# FIXME: Do a sanity check to see that the sig file contains sigs that match
+		#        given the options and the features requested
+		sigpath = root + options + ".pysig"
+		if os.path.exists( sigpath ):
+			return cls.FromSigFile( path_to_image, sigpath, options )
+		
+		sigpath = root + options + ".sig" 
+		if os.path.exists( sigpath ):
+			return cls.FromSigFile( path_to_image, sigpath, options )
+
+		# All hope is lost. Calculate sigs
 		original = pymfg.ImageMatrix()
-		if 1 != original.OpenImage( path, 0, None, 0, 0 ):
+		if 1 != original.OpenImage( path_to_image, 0, None, 0, 0 ):
 			raise ValueError('Could not build an ImageMatrix from {}, check the path.'.format( path ))
 
 		im_cache = {}
@@ -122,7 +152,7 @@ class Signatures:
 
 		# instantiate an empty Signatures object
 		signatures = cls()
-		signatures.path_to_image_file = path
+		signatures.path_to_image_file = path_to_image
 		signatures.options = options
 
 		for fg in feature_groups:
@@ -150,6 +180,40 @@ class Signatures:
 		FIXME: Implement!
 		"""
 		pass
+
+	#================================================================
+	@classmethod
+	def FromSigFile( cls, image_path, sigfile_path, options = None ):
+		"""@argument sigfile_path must be a .sig or a .pysig file
+		
+		@remarks - old style sig files don't know about their options other than 
+		           the information contained in the name. In the future pysig files
+							 may keep that info within the file. Thus, for now, the argument
+							 options is something set externally rather than gleaned from
+							 reading the file."""
+
+		print "Loading features from sigfile {}".format( sigfile_path )
+
+		signatures = cls()
+		signatures.path_to_image_file = image_path
+		signatures.options = options
+
+		with open( sigfile_path ) as infile:
+			linenum = 0
+			for line in infile:
+				if linenum == 0:
+					# The class id here may be trash
+					signatures.class_id = line.strip()
+					pass
+				elif linenum == 1:
+					signatures.path_to_image_file = line.strip()
+				else:
+					value, name = line.strip().split( ' ', 1 )
+					signatures.feature_values.append( float( value ) )
+					signatures.feature_names.append( name )
+				linenum += 1
+		
+		return signatures
 	
 	#================================================================
 	def	WriteFeaturesToASCIISigFile( self, filepath = None ):
@@ -333,8 +397,11 @@ class TrainingSet:
 	"""
   """
 
-	# Source_file is essentially a name - might want to make separate name member in the future
-	source_file = ""
+	# source_path - could be the name of a .fit, or pickle file from which this
+	# instance was generated, could be a directory
+	# source_path is essentially a name
+	# might want to make separate name member in the future
+	source_path = ""
 	num_classes = -1
 	num_features = -1
 	num_images = -1
@@ -358,7 +425,7 @@ class TrainingSet:
 
 	# The following class members are optional:
 	# normalized_against is a string that keeps track of whether or not self has been
-	# normalized. For test sets, value will be the source_file of the training_set.
+	# normalized. For test sets, value will be the source_path of the training_set.
 	# For training sets, value will be "itself"
 	normalized_against = None
 
@@ -386,8 +453,8 @@ class TrainingSet:
 		self.imagenames_list = []
 
 		if data_dict != None:
-			if "source_file" in data_dict:
-				self.source_file = data_dict[ 'source_file' ]
+			if "source_path" in data_dict:
+				self.source_path = data_dict[ 'source_path' ]
 			if "num_classes" in data_dict:
 				self.num_classes = data_dict[ 'num_classes' ]
 			if "num_features" in data_dict:
@@ -454,7 +521,7 @@ class TrainingSet:
 		print "Creating Training Set from legacy WND-CHARM text file file {}".format( pathname )
 		with open( pathname ) as fitfile:
 			data_dict = {}
-			data_dict[ 'source_file' ] = pathname
+			data_dict[ 'source_path' ] = pathname
 			data_dict[ 'data_list' ] = []
 			data_dict[ 'imagenames_list' ] = []
 			data_dict[ 'featurenames_list' ] = []
@@ -547,7 +614,7 @@ class TrainingSet:
 			raise
 
 		new_ts = cls()
-		new_ts.source_file = ts_name
+		new_ts.source_path = ts_name
 		new_ts.num_classes = 1
 		new_ts.num_features = len( signature.feature_values )
 		new_ts.num_images = 1
@@ -601,6 +668,9 @@ class TrainingSet:
 				if len( file_list ) <= 0:
 					# nothing here to process!
 					continue
+				# this class's name will be "subdir" in /path/to/topleveldir/subdir
+				root, dirname = os.path.split( root )
+				classnames_list.append( dirname )
 				num_images += len( file_list )
 				num_classes += 1
 				imagenames_list.append( file_list )
@@ -614,7 +684,11 @@ class TrainingSet:
 		new_ts.num_classes = num_classes
 		new_ts.classnames_list = classnames_list
 		new_ts.imagenames_list = imagenames_list
+		new_ts.source_path = top_level_dir_path
 		new_ts._ProcessSigCalculationSerially( feature_set, write_sig_files_todisk )
+		if feature_set == "large":
+			# FIXME: add other options
+			new_ts.feature_options = "-l"
 		return new_ts
 
 
@@ -632,7 +706,7 @@ class TrainingSet:
 
 
   #=================================================================================
-	def _ProcessSigCalculationSerially( self, feature_set = "large", write_sig_files_to_disk = True ):
+	def _ProcessSigCalculationSerially( self, feature_set = "large", write_sig_files_to_disk = True, options = None ):
 		"""
 		Work off the self.imagenames_list
 		"""
@@ -642,14 +716,16 @@ class TrainingSet:
 		sig = None
 		class_id = 0
 		for class_filelist in self.imagenames_list:
-			for file in class_filelist:
+			for sourcefile in class_filelist:
 				if feature_set == "large":
-					sig = Signatures.LargeFeatureSet( file )
+					sig = Signatures.LargeFeatureSet( sourcefile, options )
 				elif feature_set == "small":
-					sig = Signatures.SmallFeatureSet( file )
+					sig = Signatures.SmallFeatureSet( sourcefile, options )
 				else:
 					raise ValueError( "sig calculation other than small and large feature set hasn't been implemented yet." )
 				# FIXME: add all the other options
+				# check validity
+				sig.is_valid()
 				if write_sig_files_to_disk:
 					sig.WriteFeaturesToASCIISigFile()
 				self.AddSignature( sig, class_id )
@@ -694,10 +770,10 @@ class TrainingSet:
 			# sanity checks
 			if test_set.normalized_against:
 				raise ValueError( "Test set {} has already been normalized against {}."\
-						.format( test_set.source_file, test_set.normalized_against ) )
+						.format( test_set.source_path, test_set.normalized_against ) )
 			if test_set.featurenames_list != self.featurenames_list:
 				raise ValueError("Can't normalize test_set {} against training_set {}: Features don't match."\
-						.format( test_set.source_file, self.source_file ) )
+						.format( test_set.source_path, self.source_path ) )
 
 			for i in range( test_set.num_features ):
 				for class_matrix in test_set.data_list:
@@ -705,7 +781,7 @@ class TrainingSet:
 					class_matrix[:,i] /= (self.feature_maxima[i] - self.feature_minima[i])
 					class_matrix[:,i] *= 100
 
-			test_set.normalized_against = self.source_file
+			test_set.normalized_against = self.source_path
 			
 
   #=================================================================================
@@ -727,7 +803,7 @@ class TrainingSet:
 
 		# copy everything but the signature data
 		reduced_ts = TrainingSet()
-		reduced_ts.source_file = self.source_file + "(feature reduced)"
+		reduced_ts.source_path = self.source_path + "(feature reduced)"
 		reduced_ts.num_classes = self.num_classes
 		assert reduced_ts.num_classes == len( self.data_list )
 		new_num_features = len( requested_features )
@@ -766,17 +842,18 @@ class TrainingSet:
   #=================================================================================
 	def AddSignature( self, signature, class_id_index = None ):
 		"""
+		@argument signature is a valid signature
 		@argument class_id_index identifies the class to which the signature belongs
 		"""
 		
-		try:
-			signature.is_valid()
-		except:
-			raise
-
 		if (self.data_list == None) or ( len( self.data_list ) == 0 ) :
+			# If no class_id_index is specified, sig goes in first matrix in the list by default
+			# make sure there's something there when you try to dereference that index
 			self.data_list = []
+			self.data_list.append( None )
+
 			self.featurenames_list = signature.feature_names
+			self.num_features = len( signature.feature_names )
 		else:
 			if not( self.featurenames_list == signature.feature_names ):
 				raise ValueError("Can't add the signature '{}' to training set because it contains different features.".format( signature.path_to_image_file ) )
@@ -801,14 +878,44 @@ class TrainingSet:
 		pass
 
   #=================================================================================
-	def PickleMe( self, pathname ):
+	def PickleMe( self, pathname = None ):
 		"""
 		FIXME: pathname needs to end with suffix '.fit.pickled'
 		       or TrainingSet.FromPickleFile() won't read it.
 		"""
-		if os.path.exists( pathname ):
-			print "Overwriting {}".format( pathname )
-		with open( pathname, 'wb') as outfile:
+
+		outfile_pathname = ""
+		if pathname != None:
+			outfile_pathname = pathname
+		else:
+			# try to generate a path based on member source_path
+			if self.source_path == None or self.source_path == "":
+				raise ValueError( "Can't pickle this training set: its 'source_path' member"\
+						"is not defined, and you did not specify a file path for the pickle file." )
+			if os.path.isdir( self.source_path ):
+				# this trainingset was generated from a directory
+				# naming convention is /path/to/topleveldir/topleveldir-options.fit.pickled
+				root, top_level_dir = os.path.split( self.source_path )
+				if self.feature_options != None and self.feature_options != "":
+					outfile_pathname = os.path.join( self.source_path, \
+							                  top_level_dir + self.feature_options + ".fit.pickled" )
+				else:
+					outfile_pathname = os.path.join( self.source_path, \
+					                      top_level_dir + ".fit.pickled" )
+			else:
+				# was genearated from a file, could have already been a pickled file
+				if self.source_path.endswith( "fit.pickled" ):
+					outfile_pathname = self.source_path
+				elif self.source_path.endswith( ".fit" ):
+					outfile_pathname = self.source_path + ".pickled"
+				else:
+					outfile_pathname = self.source_path + ".fit.pickled"	
+
+		if os.path.exists( outfile_pathname ):
+			print "Overwriting {}".format( outfile_pathname )
+		else:
+			print "Writing {}".format( outfile_pathname )
+		with open( outfile_pathname, 'wb') as outfile:
 			pickle.dump( self.__dict__, outfile, pickle.HIGHEST_PROTOCOL )
 
 
