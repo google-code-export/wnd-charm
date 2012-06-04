@@ -636,6 +636,8 @@ class TrainingSet:
 		"""
 		Work off the self.imagenames_list
 		"""
+		# FIXME: check to see if any .sig, or .pysig files exist that match our
+		#        Signature calculation criteria, and if so read them in and incorporate them
 
 		sig = None
 		class_id = 0
@@ -764,7 +766,6 @@ class TrainingSet:
   #=================================================================================
 	def AddSignature( self, signature, class_id_index = None ):
 		"""
-		FIXME: implement!
 		@argument class_id_index identifies the class to which the signature belongs
 		"""
 		
