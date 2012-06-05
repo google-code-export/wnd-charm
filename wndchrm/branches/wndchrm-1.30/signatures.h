@@ -62,19 +62,22 @@ class signatures
   private:
     int IsNeeded(long start_index, long group_length);  /* check if the group of signatures is needed */
   public:
-    signature data[MAX_SIGNATURE_NUM];
+    signature *data;
     unsigned short sample_class;        /* the class of the sample             */
     double sample_value;                /* a continous value (if TrainingSet->is_continuous is true, sample_value = 1 for known samples, and 0 for unknown samples */      
 	double interpolated_value;          /* a predicted continous value if class_num==1, or an interploated class value if class labels are all numerical */
     long count;
+    long allocated;
+    static long max_sigs;
     char full_path[IMAGE_PATH_LENGTH];  /* optional - full path the the image file     */
     char sample_name[SAMPLE_NAME_LENGTH];  /* A string to identify the image sample (e.g. tile). For .sig files, added before last '.' of the image name */
 	void *NamesTrainingSet;             /* the training set in which this set of signatures belongs - is assigned so that the signature names will be added */
     void *ScoresTrainingSet;            /* a pointer to a training set with computed Fisher scores (to avoid computing 0-scored signatures)                 */
 	WORMfile *wf;                       // class for mutex'ed files for storing sig values
-    signatures();                       /* constructor                                 */
-    ~signatures();                       /* destructor                                 */
-    signatures *duplicate();            /* create an identical signature vector object */
+    signatures();                       // constructor
+    ~signatures();                      // destructor
+    signatures *duplicate();            // create an identical signature vector object */
+    void Allocate(size_t nsigs);        // call before adding sigs
     void Add(const char *name, double value);
     void Clear();
     void compute(ImageMatrix *matrix, int compute_colors);
