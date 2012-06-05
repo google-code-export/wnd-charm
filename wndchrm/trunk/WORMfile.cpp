@@ -66,6 +66,7 @@ void WORMfile::reopen (bool readonly, bool wait) {
 	// maximum of 13 retries seen so far with a heavy load on a shared filesystem.
 	int k = 1;
 	int retries = OPEN_RETRIES;
+	status = WORM_UNDEF;
 	while ( !(status == WORM_WR || status == WORM_RD || status == WORM_BUSY) && retries--) {
 		if (readonly) open_r (wait);
 		else open_rw();
