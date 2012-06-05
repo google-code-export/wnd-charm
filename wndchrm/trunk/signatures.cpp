@@ -57,49 +57,60 @@
 /* global variable */
 extern int verbosity;
 
+// static signatures::max_sigs
+long signatures::max_sigs = NUM_DEF_FEATURES;
 
 //---------------------------------------------------------------------------
 /*  signatures (constructor)
 */
-signatures::signatures()
-{  int sig_index;
-   for (sig_index=0;sig_index<MAX_SIGNATURE_NUM;sig_index++)
-   {  //data[sig_index].name[0]='\0';
-      data[sig_index].value=0;
-   }
-   count=0;
-   sample_class=0;
-   full_path[0]='\0';
-   sample_name[0]='\0';
-   NamesTrainingSet=NULL;   
-   ScoresTrainingSet=NULL;
-   wf = NULL;
+signatures::signatures() {
+	data = NULL;
+	count=0;
+	sample_class=0;
+	full_path[0]='\0';
+	sample_name[0]='\0';
+	NamesTrainingSet=NULL;   
+	ScoresTrainingSet=NULL;
+	wf = NULL;
+	allocated = 0;
 }
 //---------------------------------------------------------------------------
 
 signatures::~signatures() {
-	delete wf;
+	if (data) delete data;
+	data = NULL;
+	if (wf) delete wf;
+	wf = NULL;
 }
 /* duplicate
 */
-signatures *signatures::duplicate()
-{  int sig_index;
-   signatures *new_samp;
-   new_samp=new signatures();
-   new_samp->sample_class=sample_class;
-   new_samp->sample_value=sample_value;   
-   new_samp->interpolated_value=interpolated_value;
-   new_samp->count=count;
-   new_samp->NamesTrainingSet=NamesTrainingSet;   
-   new_samp->ScoresTrainingSet=ScoresTrainingSet;
-   strcpy(new_samp->full_path,full_path);
-   for (sig_index=0;sig_index<count;sig_index++)
-     new_samp->data[sig_index]=data[sig_index];
-//   {  new_samp->data[sig_index].value=data[sig_index].value;
-//      strcpy(new_samp->data[sig_index].name,data[sig_index].name);
-//   }
-   wf = NULL;
-   return(new_samp);
+signatures *signatures::duplicate() {
+	signatures *new_samp;
+	new_samp=new signatures();
+	new_samp->sample_class=sample_class;
+	new_samp->sample_value=sample_value;   
+	new_samp->interpolated_value=interpolated_value;
+	new_samp->count=count;
+	new_samp->NamesTrainingSet=NamesTrainingSet;   
+	new_samp->ScoresTrainingSet=ScoresTrainingSet;
+	strcpy(new_samp->full_path,full_path);
+
+	new_samp->Allocate (count);
+	memcpy (new_samp->data, data, sizeof (signature) * count );
+	wf = NULL;
+	return(new_samp);
+}
+
+/* Allocate
+   Allocate memory for specified number of signatures
+   nsigs -size_t - number of signatures to preallocate
+*/
+void signatures::Allocate(size_t nsigs) {
+	data = new signature[nsigs];
+	if (data) {
+		memset (data,0,sizeof(signature)*nsigs);
+		allocated = nsigs;
+	}
 }
 
 /* Add
@@ -107,22 +118,34 @@ signatures *signatures::duplicate()
    name -char *- the name of the signature (e.g. Multiscale Histogram bin 3)
    value -double- the value to add
 */
-void signatures::Add(const char *name,double value)
-{
-   if (name && NamesTrainingSet) strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
-
-   if (value>INF) value=INF;        /* prevent error */
-   if (value<-INF) value=-INF;      /* prevent error */
-   if (value<1/INF && value>-1/INF) value=0;  /* prevent a numerical error */
-   data[count].value=value;
-   count++;
+void signatures::Add(const char *name,double value) {
+	if (name && NamesTrainingSet) strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
+	
+	if (value>INF) value=INF;        /* prevent error */
+	if (value<-INF) value=-INF;      /* prevent error */
+	if (value<1/INF && value>-1/INF) value=0;  /* prevent a numerical error */
+	
+	if (count == 0 && allocated == 0) {
+		Allocate (max_sigs);
+	} else if (count >= allocated) {
+		signature *old_data = data;
+		Allocate (count + 1024);
+		memcpy (data, old_data, count * sizeof (signature));
+		delete old_data;
+	}
+	data[count].value=value;
+	count++;
+	if (count > max_sigs) max_sigs = count;
 }
 
 /* Clear
    clear all signature values
 */
-void signatures::Clear()
-{  count=0;
+void signatures::Clear() {
+	if (data) delete data;
+	data = NULL;
+	allocated = 0;
+	count = 0;
 }
 
 int signatures::IsNeeded(long start_index, long group_length)
@@ -1233,9 +1256,9 @@ void signatures::LoadFromFilep (FILE *value_file) {
 			*p_name='\0';
 			p_name++;
 		}
-	Add(p_name,atof(buffer));
-	p_buffer=fgets(buffer,sizeof(buffer),value_file);
-	chomp (p_buffer);
+		Add(p_name,atof(buffer));
+		p_buffer=fgets(buffer,sizeof(buffer),value_file);
+		chomp (p_buffer);
 	}
 }
 

@@ -413,33 +413,35 @@ int TrainingSet::ReadFromFile(char *filename)
       }
    }
    /* read the samples */
-   for (sample_index=0;sample_index<sample_count;sample_index++)
-   {  char *p_buffer;
-      signatures *one_sample;
-      one_sample=new signatures();
-      fgets(buffer,sizeof(buffer),file);
-      p_buffer=strtok(buffer," \n");
-      for (sig_index=0;sig_index<signature_count;sig_index++)
-      {  one_sample->Add(SignatureNames[sig_index],atof(p_buffer));
-         p_buffer=strtok(NULL," \n");
-      }
-      one_sample->sample_class=atoi(p_buffer);                  /* read the class of the sample                     */
-      if (is_continuous) one_sample->sample_value=atof(p_buffer);/* use the same value as an continouos value        */
-      else one_sample->sample_value=atof(class_labels[one_sample->sample_class]); /* use the class label as a value */
-      fgets(buffer,sizeof(buffer),file);                        /* read the image path (can also be en ampty line)  */
-      chomp (buffer);
-      strcpy(one_sample->full_path,buffer);                     /* copy the full path to the signatures object      */
-      if ( (res=AddSample(one_sample)) < 0) {
-        for (sig_index=0;sig_index<sample_index;sig_index++) delete samples[sig_index];
-      	delete samples;
-      	fclose(file);
-      	return (res);
-      }
-   }
-   
-   fclose(file);
+	for (sample_index=0;sample_index<sample_count;sample_index++) {
+	   	char *p_buffer;
+		signatures *one_sample;
+		one_sample=new signatures();
+		one_sample->Allocate (count);
 
-   return(1);
+		fgets(buffer,sizeof(buffer),file);
+		p_buffer=strtok(buffer," \n");
+		for (sig_index=0;sig_index<signature_count;sig_index++) {
+			one_sample->Add(SignatureNames[sig_index],atof(p_buffer));
+			p_buffer=strtok(NULL," \n");
+		}
+		one_sample->sample_class=atoi(p_buffer);                   // read the class of the sample
+		if (is_continuous) one_sample->sample_value=atof(p_buffer);// use the same value as an continouos value
+		else one_sample->sample_value=atof(class_labels[one_sample->sample_class]); // use the class label as a value
+		fgets(buffer,sizeof(buffer),file);                        // read the image path (can also be en ampty line)
+		chomp (buffer);
+		strcpy(one_sample->full_path,buffer);                     // copy the full path to the signatures object
+		if ( (res=AddSample(one_sample)) < 0) {
+			for (sig_index=0;sig_index<sample_index;sig_index++) delete samples[sig_index];
+			delete samples;
+			fclose(file);
+			return (res);
+		}
+	}
+   
+	fclose(file);
+
+	return(1);
 }
 
 /*
@@ -1140,14 +1142,16 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 		// Should really be using an std::map for this
 		if ( (char_p = strstr(ent->d_name,".sig")) && *(char_p+4) == '\0') {
 			sprintf (buffer,"%s/%s",path,ent->d_name);
-			if ( (sigfile = fopen (buffer,"r")) ) {
+			WORMfile wf (buffer, true);
+			if ( wf.status == WORMfile::WORM_RD ) {
+				sigfile = wf.fp();
 				// first line is classname, second line is full_path
 				*buffer = '\0';
 				if ( fgets (buffer , 512 , sigfile) ) {
 					*buffer = '\0';
 					sig_fullpath = fgets (buffer , 512 , sigfile);
 				}
-				fclose (sigfile);
+				wf.finish();
 				if (sig_fullpath && *sig_fullpath) { // not empty
 				 // the leading paths may not be correct for all sigs (i.e. NFS mounts with different mountpoints)
 				 // The only thing we care about right now is the set of sig files in this directory stemming from the same base image.
@@ -1161,7 +1165,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 					}
 				} // empty means somebody else is taking care of it.
 			// if it exists and we can't open it, then there's an error.
-			} else {
+			} else if (wf.status == WORMfile::WORM_IO_ERR) {
 				catError ("Sig file '%s/%s' could not be opened.\n",path,ent->d_name);
 				return (0);
 			}
@@ -1262,7 +1266,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	our_sigs[0].rot_index = our_sigs[0].tile_index_x = our_sigs[0].tile_index_y = -1;
 	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
 	// make signature objects for samples
-		ImageSignatures=new signatures;
+		ImageSignatures=new signatures ();
+		ImageSignatures->Allocate (featureset->n_features);
+
 		ImageSignatures->NamesTrainingSet=this;
 		strcpy(ImageSignatures->full_path,filename);
 		ImageSignatures->sample_class=sample_class;
@@ -1452,6 +1458,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		if (!our_sigs[sig_index].added) {
 			delete (our_sigs[sig_index].sig);
 		}
+		our_sigs[sig_index].sig->Clear ();
 	}
 
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
