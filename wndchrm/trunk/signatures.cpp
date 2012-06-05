@@ -66,13 +66,13 @@ long signatures::max_sigs = NUM_DEF_FEATURES;
 signatures::signatures() {
 	data = NULL;
 	count=0;
+	allocated = 0;
 	sample_class=0;
 	full_path[0]='\0';
 	sample_name[0]='\0';
 	NamesTrainingSet=NULL;   
 	ScoresTrainingSet=NULL;
 	wf = NULL;
-	allocated = 0;
 }
 //---------------------------------------------------------------------------
 
@@ -106,6 +106,7 @@ signatures *signatures::duplicate() {
    nsigs -size_t - number of signatures to preallocate
 */
 void signatures::Allocate(size_t nsigs) {
+	if (data) delete data;
 	data = new signature[nsigs];
 	if (data) {
 		memset (data,0,sizeof(signature)*nsigs);
@@ -129,6 +130,7 @@ void signatures::Add(const char *name,double value) {
 		Allocate (max_sigs);
 	} else if (count >= allocated) {
 		signature *old_data = data;
+		data = NULL; // Avoid Allocate calling delete on this
 		Allocate (count + 1024);
 		memcpy (data, old_data, count * sizeof (signature));
 		delete old_data;
