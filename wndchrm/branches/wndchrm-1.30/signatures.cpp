@@ -655,7 +655,7 @@ void signatures::CompGroupA(ImageMatrix *matrix, const char *transform_label)
       Add("Feature Count",feature_count);
       for (a=0;a<10;a++)
       {  sprintf(buffer,"Feature dist histogram bin %d",a);
-         Add("Feature DistHist",dist_histogram[a]);
+         Add(buffer,dist_histogram[a]);
       }
       Add("Feature DistMax",DistMax);
       Add("Feature DistMean",DistMean);
