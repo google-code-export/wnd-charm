@@ -60,26 +60,103 @@ def initialize_module():
 		fg = ParseFeatureGroupString( fg_str )
 		large_featureset_featuregroup_list.append( fg )
 
+#############################################################################
+# class definition of FeatureVector
+#############################################################################
+# FeatureVector inherits from class object and is thus a Python "new-style" class
+class FeatureVector(object):
+	"""
+	FIXME: Would be nice to define a [] operator that returns
+	       a tuple = (self.names[n], self.values[n])
+	"""
+	names = None
+	values = None
+	#================================================================
+	def __init__( self ):
+		"""@brief: constructor
+		"""
+		self.names = []
+		self.values = []
+	#================================================================
+	@classmethod
+	def is_valid( cls ):
+		"""
+		@brief: an instance should know all the criteria for being a valid FeatureVector
+		"""
+		if len( self.values ) != len( self.names ):
+			raise RuntimeError( "Instance of {} is invalid: ".format( cls.__name__ ) + \
+			  "different number of values ({}) and names ({}).".format( \
+			  len( self.feature_values ), len( self.feature_names ) ) )
+		return True
+
+#############################################################################
+# class definition of FeatureWeights
+#############################################################################
+class FeatureWeights( FeatureVector ):
+	"""
+	"""
+	def __init__( self ):
+		# call parent constructor
+		super( FeatureWeights, self ).__init__()
+
+	#================================================================
+	@classmethod
+	def NewFromFile( cls, weights_filepath ):
+		"""@brief written to read in files created by wndchrm -vw/path/to/weightsfile.txt"""
+
+		weights = cls()
+		with open( weights_filepath, 'r' ) as weights_file:
+			for line in weights_file:
+				# split line "number <space> name"
+				feature_line = line.strip().split( " ", 1 )
+				weights.values.append( float( feature_line[0] ) )
+				weights.names.append( feature_line[1] )
+		return weights
+
+	#================================================================
+	def EliminateZeros( self ):
+		"""@breif Good for Fisher scores, N/A for Pearson scores - FIXME: subclass!"""
+
+		scores = zip( self.names, self.values )
+		nonzero_scores = [ (name, weight) for name, weight in scores if weight != 0 ]
+		self.names, self.values = zip( *nonzero_scores )
+
+
+	#================================================================
+	def Threshold( self, num_features_to_be_used  ):
+		"""@breif Good for Fisher scores, N/A for Pearson scores - FIXME: subclass!"""
+
+		raw_featureweights = zip( self.names, self.values )
+		# raw_featureweights is now a list of tuples := [ (name1, value1), (name2, value2), ... ]
+
+		# sort from max to min
+		# sort by the second item in the tuple, i.e., index 1
+		sort_func = lambda feat_a, feat_b: cmp( feat_a[1], feat_b[1] ) 
+
+		sorted_featureweights = sorted( raw_featureweights, sort_func, reverse = True )
+		# take top N features
+		use_these_feature_weights = \
+				list( itertools.islice( sorted_featureweights, num_features_to_be_used ) )
+		
+		self.names, self.values = zip( *use_these_feature_weights )
 
 
 #############################################################################
 # class definition of Signatures
 #############################################################################
-class Signatures:
+class Signatures( FeatureVector ):
 	"""
 	"""
 
 	path_to_image_file = None
-	feature_names = None
-	feature_values = None
 	options = ""
 
 	#================================================================
 	def __init__( self ):
 		"""@brief: constructor
 		"""
-		self.feature_names = []
-		self.feature_values = []
+		# call parent constructor
+		super( Signatures, self ).__init__()
 
 	#================================================================
 	@classmethod
@@ -95,7 +172,7 @@ class Signatures:
 
 	#================================================================
 	@classmethod
-	def LargeFeatureSet( cls, imagepath, options = None):
+	def LargeFeatureSet( cls, imagepath, options = None ):
 		"""@brief Equivalent of invoking wndchrm train -l in c-chrm
 		@argument path - path to a tiff file
 		@return An instance of the class Signatures for image with sigs calculated."""
@@ -157,11 +234,11 @@ class Signatures:
 
 		for fg in feature_groups:
 			print "Group {}".format( fg.Name )
-			feature_vector = fg.CalculateFeatures( im_cache )
+			returned_feature_vals = fg.CalculateFeatures( im_cache )
 			count = 0
-			for value in feature_vector:
-				signatures.feature_names.append( fg.Name + " [{}]".format( count ) )
-				signatures.feature_values.append( value )	
+			for value in returned_feature_vals:
+				signatures.names.append( fg.Name + " [{}]".format( count ) )
+				signatures.values.append( value )	
 				count += 1
 
 		return signatures
@@ -209,8 +286,8 @@ class Signatures:
 					signatures.path_to_image_file = line.strip()
 				else:
 					value, name = line.strip().split( ' ', 1 )
-					signatures.feature_values.append( float( value ) )
-					signatures.feature_names.append( name )
+					signatures.values.append( float( value ) )
+					signatures.names.append( name )
 				linenum += 1
 		
 		return signatures
@@ -253,19 +330,7 @@ class Signatures:
 			out_file.write( "0\n" )
 			out_file.write( "{}\n".format( self.path_to_image_file ) )
 			for i in range( 0, len( self.feature_names ) ):
-				out_file.write( "{val:0.6f} {name}\n".format( val=self.feature_values[i], name=self.feature_names[i] ) )
-
-
-	#================================================================
-	def is_valid( self ):
-		"""
-		@brief: a signatures instance should know all the criteria for being a valid signature
-		"""
-		if len( self.feature_values ) <= 0:
-			raise ValueError( 'Cannot add the signature to the training set, there are no feature values in it!' )
-		assert len( self.feature_values ) == len( self.feature_names ),\
-				"Can't add signature to training set, signature doesn't have the same number of values ({}) and names ({}).".format( len( signature.feature_values ), len( signature.feature_names ) )
-		return True
+				out_file.write( "{val:0.6f} {name}\n".format( val=self.values[i], name=self.names[i] ) )
 
 
 # end definition class Signatures
@@ -619,9 +684,9 @@ class TrainingSet:
 		new_ts.num_features = len( signature.feature_values )
 		new_ts.num_images = 1
 		new_ts.classnames_list.append( "UNKNOWN" )
-		new_ts.featurenames_list = signature.feature_names
+		new_ts.featurenames_list = signature.names
 		new_ts.imagenames_list.append( [ inputimage_filepath ] )
-		numpy_matrix = np.array( signature.feature_values )
+		numpy_matrix = np.array( signature.values )
 		new_ts.data_list.append( numpy_matrix )
 
 		return new_ts
@@ -852,10 +917,10 @@ class TrainingSet:
 			self.data_list = []
 			self.data_list.append( None )
 
-			self.featurenames_list = signature.feature_names
-			self.num_features = len( signature.feature_names )
+			self.featurenames_list = signature.names
+			self.num_features = len( signature.names )
 		else:
-			if not( self.featurenames_list == signature.feature_names ):
+			if not( self.featurenames_list == signature.names ):
 				raise ValueError("Can't add the signature '{}' to training set because it contains different features.".format( signature.path_to_image_file ) )
 
 		# signatures may be coming in out of class order
@@ -863,11 +928,11 @@ class TrainingSet:
 			self.data_list.append( None )
 
 		if self.data_list[ class_id_index ] == None:
-			self.data_list[ class_id_index ] = np.array( signature.feature_values )
+			self.data_list[ class_id_index ] = np.array( signature.values )
 		else:
 			# vstack takes only one argument, a tuple, thus the extra set of parens
 			self.data_list[ class_id_index ] = np.vstack( ( self.data_list[ class_id_index ] ,\
-					np.array( signature.feature_values ) ) )
+					np.array( signature.values ) ) )
 
 
   #=================================================================================
@@ -983,13 +1048,29 @@ def WeightedNeighborDistance5( trainingset, testimg, feature_weights ):
 	return ( normalization_factor, [ x / normalization_factor for x in class_similarities ] ) 
 
 #=================================================================================
-def ClassifyTestSet( training_set, test_set, feature_weights ):
+def ClassifyTestSet( orig_training_set, orig_test_set, feature_weights ):
 	"""
+	@remarks - all three input arguments must have the same number of features,
+	and in the same order for this to work properly
 	FIXME: What happens when the ground truth is not known? Currently they would all be shoved
 	       into class 1, might not be a big deal since class name should be something
 	       like "UNKNOWN"
 	FIXME: return some python construct that contains classification results
 	"""
+
+	train_set_len = len( orig_training_set.feature_names )
+	test_set_len = len( orig_test_set.test_set.feature_names )
+	feature_weights_len = len( feature_weights.names )
+
+	if train_set_len != test_set_len or \
+	   train_set_len != feature_weights_len or \
+	   test_set_len  != feature_weights_len:
+		raise ValueError( "Can't classify: one or more of the inputs has a different number of" \
+				"features than the others: training set {}, test set {}, feature weights {}".format( \
+				train_set_len, test_set_len, feature_weights_len ) + " Perform a feature reduce." )
+
+	print "Classifying test set '{}' ({} features) against training set '{}' ({} features)".\
+	      format( orig_test_set, test_set_len, orig_training_set, train_set_len )
 
 	column_header = "image\tnorm. fact.\t"
 	column_header +=\
@@ -1007,7 +1088,7 @@ def ClassifyTestSet( training_set, test_set, feature_weights ):
 		for test_image_index in range( num_class_imgs ):
 			one_image_features = test_set.data_list[ test_class_index ][ test_image_index,: ]
 			normalization_factor, marginal_probabilities = \
-					WeightedNeighborDistance5( training_set, one_image_features, feature_weights )
+					WeightedNeighborDistance5( training_set, one_image_features, feature_weights.values )
 
 			# FIXME: call PrintClassificationResultsToSTDOUT( results )
 			# img name:
@@ -1036,57 +1117,22 @@ def PrintClassificationResultsToSTDOUT( result ):
 	"""
 	pass
 
-#=================================================================================
-def ReadFeatureWeightsFromFile( weights_filepath ):
-	
-	feature_names = []
-	feature_values = []
-	with open( weights_filepath, 'r' ) as weights_file:
-		for line in weights_file:
-			# split line "number <space> name"
-			feature_line = line.strip().split( " ", 1 )
-			feature_values.append( float( feature_line[0] ) )
-			feature_names.append( feature_line[1] )
-	return feature_names, feature_values
+
 
 #============================================================================
 def UnitTest1():
-	name_dict = FeatureNameMap.LoadFeatureNameTranslationDict()
 	
+	weights_filepath = '/Users/chris/projects/josiah_worms/feature_weights.txt'
 	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
 
-	# read in weights from a c-chrm feature weights file
-	weight_names, weight_values = ReadFeatureWeightsFromFile('/Users/chris/projects/josiah_worms/feature_weights.txt')
-	# FIXME: just calculate them outright
-	weight_names = FeatureNameMap.TranslateFeatureNames( name_dict, weight_names )
-	fisher_scores = zip( weight_names, weight_values )
-	nonzero_fisher_scores = [ (name, weight) for name, weight in fisher_scores if weight != 0 ]
-	#print "{}".format( nonzero_weights )
-	nonzero_fisher_names, nonzero_fisher_scores = zip( *nonzero_fisher_scores )
+	weights = FeatureWeights.NewFromFile( weights_filepath )
+	weights.EliminateZeros()
+	weights.names = FeatureNameMap.TranslateToNewStyle( weights.names )
 
-	reduced_ts = None
+	big_ts = TrainingSet.NewFromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
 
-	if False:
-		full_ts = TrainingSet.FromFitFile( fitfilepath )
-		full_ts.featurenames_list = FeatureNameMap.TranslateFeatureNames( name_dict, full_ts.featurenames_list )
-		reduced_ts = full_ts.FeatureReduce( nonzero_fisher_names )
-		reduced_ts.Normalize()
-		reduced_ts.PickleMe( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
-	else:
-		reduced_ts = TrainingSet.FromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
-
-	#print "the lists are {} the same!".\
-	#		format( "IN FACT" if reduced_ts.featurenames_list == nonzero_fisher_names else "NOT" )
-
-	# classify 1 image
-	#one_image = reduced_ts.data_list[0][0,:]
-	#one_image_name = reduced_ts.imagenames_list[0][0]
-	#norm_factor, marg_probs = WeightedNeighborDistance5( reduced_ts, one_image, nonzero_fisher_scores )
-	#print "image {}, norm factor {}, marg probs {}".\
-	#		format( one_image_name, norm_factor, marg_probs )
-
-	# classify training set against itself
-	ClassifyTestSet( reduced_ts, reduced_ts, nonzero_fisher_scores)
+	# This should raise an exception
+	ClassifyTestSet( reduced_ts, reduced_ts, weights )
 
 
 #=========================================================================
@@ -1110,8 +1156,8 @@ initialize_module()
 #================================================================
 if __name__=="__main__":
 	
-	# UnitTest1()
-	UnitTest2()
+	UnitTest1()
+	# UnitTest2()
 	# UnitTest3()
 	# pass
 
