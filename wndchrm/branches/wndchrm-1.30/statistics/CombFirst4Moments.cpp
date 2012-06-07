@@ -27,7 +27,9 @@
 /* Written by:  Lior Shamir <shamirl [at] mail [dot] nih [dot] gov>              */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+#ifdef WIN32
 #pragma hdrstop
+#endif
 
 #include <math.h>
 #include "CombFirst4Moments.h"
@@ -173,12 +175,13 @@ void func(ImageMatrix *Im, double **I, double **J, double *tmp, int m, int n, do
 */
 
 int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
-{  double **I,**J,**J1,*tmp,z[4],z4[4]={0,0,0,0};
+{  double **I,**J,**J1,*tmp,z4[4]={0,0,0,0};
    double matr4moments[4][21];
    int m,n,n2,m2;
    int a,x,y,ii;
    int matr4moments_index;
    int vec_count=0;
+   int step;
 
    for (a=0;a<4;a++)    /* initialize */
      for (matr4moments_index=0;matr4moments_index<21;matr4moments_index++)
@@ -207,7 +210,9 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
 
    /* major diag */
    matr4moments_index=0;
-   for (ii=1-m;ii<=m;ii=ii+(int)(round((double)m/10)))
+   step = (int)(round((double)m/10));
+   if (step < 1) step = 1;
+   for (ii=1-m;ii<=m;ii=ii+step)
    {  int count=0;
       for (y=0;y<m;y++)
         for (x=0;x<n;x++)
@@ -238,7 +243,9 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
 //   matr4moments = [];
 
    matr4moments_index=0;
-   for (ii=1-m;ii<=m;ii=ii+(int)(round((double)m/10)))
+   step = (int)(round((double)m/10));
+   if (step < 1) step = 1;
+   for (ii=1-m;ii<=m;ii=ii+step)
    {  int count=0;
       for (y=0;y<m;y++)
         for (x=0;x<n;x++)
@@ -263,7 +270,9 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
 
    /* vertical comb */
    matr4moments_index=0;
-   for (ii=1-n;ii<=n;ii=ii+(int)(round((double)n/10)))
+   step = (int)(round((double)n/10));
+   if (step < 1) step = 1;
+   for (ii=1-n;ii<=n;ii=ii+step)
    {  int count=0;
       for (y=0;y<m;y++)
         for (x=0;x<n;x++)
@@ -286,7 +295,9 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec)
 
    /* horizontal comb */
    matr4moments_index=0;
-   for (ii=1-m;ii<=m;ii=ii+(int)(round((double)m/10)))
+   step = (int)(round((double)m/10));
+   if (step < 1) step = 1;
+   for (ii=1-m;ii<=m;ii=ii+step)
    {  int count=0;
       for (y=0;y<m;y++)
         for (x=0;x<n;x++)
@@ -378,4 +389,6 @@ void vd_Comb4Moments(double *in)
    in[47]=temp[17];
 }
 
+#ifdef WIN32
 #pragma package(smart_init)
+#endif
