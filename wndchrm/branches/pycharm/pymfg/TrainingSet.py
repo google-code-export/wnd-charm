@@ -31,6 +31,8 @@ large_featureset_featuregroup_strings = None
 small_featureset_featuregroup_list = None
 large_featureset_featuregroup_list = None
 
+error_banner = "\n*************************************************************************\n"
+
 def initialize_module(): 
 	# If you're going to calculate any signatures, you need this stuff
 	# FIXME: Maybe rig something up using a load on demand?
@@ -120,7 +122,6 @@ class FeatureWeights( FeatureVector ):
 		scores = zip( self.names, self.values )
 		nonzero_scores = [ (name, weight) for name, weight in scores if weight != 0 ]
 		self.names, self.values = zip( *nonzero_scores )
-
 
 	#================================================================
 	def Threshold( self, num_features_to_be_used  ):
@@ -398,7 +399,6 @@ def RetrievePixelPlane( image_matrix_cache, tform_list ):
 	#assert( intermediate_pixel_plane ), "Pixel Plane returned from transform() was NULL"
 	image_matrix_cache[ requested_transform ] = tformed_pp
 	return tformed_pp
-
 
 #================================================================
 def ParseFeatureGroupString( name ):
@@ -756,7 +756,6 @@ class TrainingSet:
 			new_ts.feature_options = "-l"
 		return new_ts
 
-
   #=================================================================================
 	@classmethod
 	def NewFromFileOfFiles( cls, fof_path, feature_set = "large", write_sig_files_todisk = True ):
@@ -768,7 +767,6 @@ class TrainingSet:
 	def NewFromSQLiteFile(cls, path):
 		"""FIXME: Implement!"""
 		pass
-
 
   #=================================================================================
 	def _ProcessSigCalculationSerially( self, feature_set = "large", write_sig_files_to_disk = True, options = None ):
@@ -803,7 +801,6 @@ class TrainingSet:
 		FIXME: When we figure out concurrency
 		"""
 		pass
-
 
   #=================================================================================
 	def Normalize( self, test_set = None ):
@@ -863,8 +860,14 @@ class TrainingSet:
 		selfs_features = set( self.featurenames_list )
 		their_features = set( requested_features )
 		if not their_features <= selfs_features:
-			raise ValueError( 'ERROR: Not all the features you asked for are in this training set.\n'+\
-					'The following features are missing: {}'.format( their_features - selfs_features ) )
+			missing_features_from_req = their_features - selfs_features
+			err_str = error_banner + "Feature Reduction error:\n"
+			err_str += "The training set '{}' is missing ".format( self.source_path )
+			err_str += "{}/{} features that were requested in the feature reduction list.".format(\
+					len( missing_features_from_req ), len( requested_features ) )
+			err_str += "\nDid you forget to convert the feature names into their modern counterparts?"
+
+			raise ValueError( err_str )
 
 		# copy everything but the signature data
 		reduced_ts = TrainingSet()
@@ -1048,7 +1051,7 @@ def WeightedNeighborDistance5( trainingset, testimg, feature_weights ):
 	return ( normalization_factor, [ x / normalization_factor for x in class_similarities ] ) 
 
 #=================================================================================
-def ClassifyTestSet( orig_training_set, orig_test_set, feature_weights ):
+def ClassifyTestSet( training_set, test_set, feature_weights ):
 	"""
 	@remarks - all three input arguments must have the same number of features,
 	and in the same order for this to work properly
@@ -1058,19 +1061,19 @@ def ClassifyTestSet( orig_training_set, orig_test_set, feature_weights ):
 	FIXME: return some python construct that contains classification results
 	"""
 
-	train_set_len = len( orig_training_set.feature_names )
-	test_set_len = len( orig_test_set.test_set.feature_names )
+	train_set_len = len( training_set.featurenames_list )
+	test_set_len = len( test_set.featurenames_list )
 	feature_weights_len = len( feature_weights.names )
 
 	if train_set_len != test_set_len or \
 	   train_set_len != feature_weights_len or \
 	   test_set_len  != feature_weights_len:
 		raise ValueError( "Can't classify: one or more of the inputs has a different number of" \
-				"features than the others: training set {}, test set {}, feature weights {}".format( \
-				train_set_len, test_set_len, feature_weights_len ) + " Perform a feature reduce." )
+				"features than the others: training set={}, test set={}, feature weights={}".format( \
+				train_set_len, test_set_len, feature_weights_len ) + ". Perform a feature reduce." )
 
 	print "Classifying test set '{}' ({} features) against training set '{}' ({} features)".\
-	      format( orig_test_set, test_set_len, orig_training_set, train_set_len )
+	      format( test_set.source_path, test_set_len, training_set.source_path, train_set_len )
 
 	column_header = "image\tnorm. fact.\t"
 	column_header +=\
@@ -1117,23 +1120,24 @@ def PrintClassificationResultsToSTDOUT( result ):
 	"""
 	pass
 
-
-
 #============================================================================
 def UnitTest1():
 	
-	weights_filepath = '/Users/chris/projects/josiah_worms/feature_weights.txt'
-	fitfilepath = '/Users/chris/projects/josiah_worms/terminal_bulb.fit'
+	weights_filepath = '/Users/chris/projects/josiah_worms_subset/josiah_worms_subset.fisher_weights'
 
 	weights = FeatureWeights.NewFromFile( weights_filepath )
 	weights.EliminateZeros()
 	weights.names = FeatureNameMap.TranslateToNewStyle( weights.names )
 
-	big_ts = TrainingSet.NewFromPickleFile( '/Users/chris/projects/josiah_worms/terminal_bulb.fit.pickled' )
+	#big_ts = TrainingSet.NewFromFitFile( '/Users/chris/projects/josiah_worms_subset/trunk_train.fit' )
+	#big_ts.PickleMe()
+	big_ts = TrainingSet.NewFromPickleFile( '/Users/chris/projects/josiah_worms_subset/trunk_train.fit.pickled' )
+	big_ts.featurenames_list = FeatureNameMap.TranslateToNewStyle( big_ts.featurenames_list )
 
-	# This should raise an exception
+	reduced_ts = big_ts.FeatureReduce( weights.names )
+	reduced_ts.Normalize()
+	
 	ClassifyTestSet( reduced_ts, reduced_ts, weights )
-
 
 #=========================================================================
 def UnitTest2():
@@ -1142,14 +1146,12 @@ def UnitTest2():
 	                                   feature_set = "large" )
 	ts.PickleMe()
 	
-
 #================================================================
 def UnitTest3():
 
 	path = "Y24-2-2_GREEN.tif"
 	sigs = Signatures.LargeFeatureSet( path )
 	sigs.WriteFeaturesToASCIISigFile( "pychrm_calculated.sig" )
-
 
 initialize_module()
 
@@ -1160,5 +1162,3 @@ if __name__=="__main__":
 	# UnitTest2()
 	# UnitTest3()
 	# pass
-
-
