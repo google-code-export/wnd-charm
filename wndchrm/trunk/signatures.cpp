@@ -174,27 +174,33 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    ImageMatrix *TempMatrix;
    ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*WaveletFourierSelector;
    if (verbosity>=2) printf("start processing image...\n");   
+   if (verbosity>3) printf("transforms...\n");
+   if (verbosity>3) printf("...fft2\n");
    FourierTransform=matrix->duplicate();
    FourierTransform->fft2();
    ChebyshevTransform=matrix->duplicate();
+   if (verbosity>3) printf("...ChebyshevTransform\n");
    ChebyshevTransform->ChebyshevTransform(0);
    ChebyshevFourierTransform=FourierTransform->duplicate();
+   if (verbosity>3) printf("...ChebyshevFourierTransform\n");
    ChebyshevFourierTransform->ChebyshevTransform(0);
    WaveletSelector=matrix->duplicate();
+   if (verbosity>3) printf("...Symlet5Transform\n");
    WaveletSelector->Symlet5Transform();
    WaveletFourierSelector=FourierTransform->duplicate();
+   if (verbosity>3) printf("...WaveletFourierSelector\n");
    WaveletFourierSelector->Symlet5Transform();
-#ifndef WIN32
-   printf("start computing features\n");
-#endif
+   if (verbosity>3) printf("start computing features\n");
    count=0;      /* start counting signatures from 0 */
    /* chebichev fourier transform (signatures 0 - 63) */
    for (a=0;a<32;a++) vec[a]=0;
+   if (verbosity>3) printf("...ChebyshevFourierCoefficientHistogram\n");
    matrix->ChebyshevFourierTransform2D(vec);
    for (a=0;a<32;a++)
    {  sprintf(buffer,"ChebyshevFourierCoefficientHistogram Bin%02d",a);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...ChebyshevFourierCoefficientHistogram_FFT\n");
    FourierTransform->ChebyshevFourierTransform2D(vec);
    for (a=0;a<32;a++)
    {  sprintf(buffer,"ChebyshevFourierCoefficientHistogram_FFT Bin%02d",a);
@@ -202,6 +208,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    }
    /* Chebyshev Statistics (signatures 64 - 127) */
    TempMatrix=matrix->duplicate();
+   if (verbosity>3) printf("...ChebyshevCoefficientHistogram\n");
    TempMatrix->ChebyshevStatistics2D(vec,0,32);
    for (a=0;a<32;a++)
    {  sprintf(buffer,"ChebyshevCoefficientHistogram Bin%02d",a);
@@ -209,6 +216,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    }
    delete TempMatrix;
    TempMatrix=FourierTransform->duplicate();
+   if (verbosity>3) printf("...ChebyshevCoefficientHistogram_FFT\n");
    TempMatrix->ChebyshevStatistics2D(vec,0,32);
    for (a=0;a<32;a++)
    {  sprintf(buffer,"ChebyshevCoefficientHistogram_FFT Bin%02d",a);
@@ -225,37 +233,44 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
 		   "90_Kurt_HistBin00","90_Kurt_HistBin01","90_Kurt_HistBin02","0_Mean_HistBin00","0_Mean_HistBin01","0_Mean_HistBin02","0_Std_HistBin00","0_Std_HistBin01","0_Std_HistBin02",
 		   "0_Skew_HistBin00","0_Skew_HistBin01","0_Skew_HistBin02","0_Kurt_HistBin00","0_Kurt_HistBin01","0_Kurt_HistBin02"};
 
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram\n");
    matrix->CombFirstFourMoments2D(vec);
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_Chebyshev\n");
    ChebyshevTransform->CombFirstFourMoments2D(vec);
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram_Chebyshev %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_ChebyshevFFT\n");
    ChebyshevFourierTransform->CombFirstFourMoments2D(vec);
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram_ChebyshevFFT %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_FFT\n");
    FourierTransform->CombFirstFourMoments2D(vec);  
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram_FFT %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }  
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_Wavelet\n");
    WaveletSelector->CombFirstFourMoments2D(vec);
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram_Wavelet %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }       
+   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_WaveletFFT\n");
    WaveletFourierSelector->CombFirstFourMoments2D(vec);
    for (a=0;a<48;a++)
    {  sprintf(buffer,"Comb4Orient4MomentsHistogram_WaveletFFT %s",four_moments_names[a]);
       Add(buffer,vec[a]);
    }
 
+   if (verbosity>3) printf("...EdgeStatistics\n");
    /* edge statistics (signatures 416 - 443) */
    {  long EdgeArea;
       double MagMean, MagMedian, MagVar, MagHist[8], DirecMean, DirecMedian, DirecVar, DirecHist[8], DirecHomogeneity, DiffDirecHist[4];
@@ -282,6 +297,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add("EdgeMagVar MagVar",MagVar);
    }
  
+   if (verbosity>3) printf("...FeatureStatistics\n");
    /*feature statistics (signatures 444 - 477) */
    {  int count, Euler, AreaMin, AreaMax, AreaMedian, area_histogram[10], dist_histogram[10];
       double centroid_x, centroid_y, AreaMean, AreaVar, DistMin, DistMax, DistMean, DistMedian, DistVar;
@@ -313,6 +329,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add("FeatureEuler FeatureEuler",Euler);
    }  
 
+   if (verbosity>3) printf("...GaborTextures\n");
    /* gabor filters (signatures 478 - 484) */
    matrix->GaborFilters2D(vec);
    for (a=0;a<7;a++)
@@ -320,38 +337,44 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
 
-   /* haarlick textures (signatures 485 - 652) */
+   /* haralick textures (signatures 485 - 652) */
    char haarlick_names[80][80]={"CoOcMat_AngularSecondMoment","ASM","CoOcMat_Contrast","Contrast","CoOcMat_Correlation","Correlation","CoOcMat_Variance","Variance","CoOcMat_InverseDifferenceMoment","IDM","CoOcMat_SumAverage" ,"SumAvg",
            "CoOcMat_SumVariance","SumVar","CoOcMat_SumEntropy", "SumEntropy","CoOcMat_Entropy" ,"Entropy","CoOcMat_DifferenceEntropy","DiffEntropy","CoOcMat_DifferenceVariance","DiffVar","CoOcMat_FirstMeasureOfCorrelation","MeasCorr1",
 		   "CoOcMat_SecondMeasureOfCorrelation","MeasCorr2","CoOcMat_MaximalCorrelationCoefficient" ,"MaxCorrCoef","CoOcMat_AngularSecondMomentDif", "ASM","CoOcMat_ContrastDif" ,"Contrast","CoOcMat_CorrelationDif","Correlation","CoOcMat_VarianceDif","Variance",
 		   "CoOcMat_InverseDifferenceMomentDif","IDM","CoOcMat_SumAverageDif","SumAvg","CoOcMat_SumVarianceDif","SumVar","CoOcMat_SumEntropyDif" ,"SumEntropy","CoOcMat_EntropyDif","Entropy","CoOcMat_DifferenceEntropyDif","DiffEntropy","CoOcMat_DifferenceVarianceDif","DiffVar",
 		   "CoOcMat_FirstMeasureOfCorrelationDif","MeasCorr1","CoOcMat_SecondMeasureOfCorrelationDif","MeasCorr2","CoOcMat_MaximalCorrelationCoefficientDif","MaxCorrCoef"};
 
+   if (verbosity>3) printf("...HaralickTextures\n");
    matrix->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s %s",haarlick_names[a*2],haarlick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...HaralickTextures_Chebyshev\n");
    ChebyshevTransform->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s_Chebyshev %s",haarlick_names[a*2],haarlick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...HaralickTextures_ChebyshevFFT\n");
    ChebyshevFourierTransform->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s_ChebyshevFFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...HaralickTextures_FFT\n");
    FourierTransform->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s_FFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...HaralickTextures_Wavelet\n");
    WaveletSelector->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s_Wavelet %s",haarlick_names[a*2],haarlick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...HaralickTextures_WaveletFFT\n");
    WaveletFourierSelector->HaarlickTexture2D(0,vec);
    for (a=0;a<28;a++)
    {  sprintf(buffer,"%s_WaveletFFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
@@ -360,6 +383,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    /* multiple histogram (signatures 653 - 796) */
    /* ***************************************** */
    /* multiple histogram of the original image (signatures 653 - 676) */
+   if (verbosity>3) printf("...MultipleScaleHistograms\n");
    matrix->MultiScaleHistogram(vec);
    b=3;c=3;
    for (a=0;a<24;a++)
@@ -368,6 +392,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
    /* multiple histogram of the chebyshev transform (signatures 677 - 700) */
+   if (verbosity>3) printf("...MultipleScaleHistograms_Chebyshev\n");
    ChebyshevTransform->MultiScaleHistogram(vec);
    b=3;c=3;
    for (a=0;a<24;a++)
@@ -376,6 +401,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
    /* multiple histogram of the Chebushev Fourier transform (signatures 701 - 724) */
+   if (verbosity>3) printf("...MultipleScaleHistograms_ChebyshevFFT\n");
    ChebyshevFourierTransform->MultiScaleHistogram(vec);
    b=3;c=3;
    for (a=0;a<24;a++)
@@ -384,6 +410,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
    /* multiple histogram of the Fourier transform (signatures 725 - 748) */
+   if (verbosity>3) printf("...MultipleScaleHistograms_FFT\n");
    FourierTransform->MultiScaleHistogram(vec);
    b=3;c=3;
    for (a=0;a<24;a++)
@@ -392,6 +419,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
    /* multiple histogram of the wavelet transform (signatures 749 - 772) */
+   if (verbosity>3) printf("...MultipleScaleHistograms_Wavelet\n");
    WaveletSelector->MultiScaleHistogram(vec);
    b=3;c=3;
    for (a=0;a<24;a++)
@@ -400,6 +428,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
       Add(buffer,vec[a]);
    }
    /* multiple histogram of the wavelet Fourier transform (signatures 773 - 796) */
+   if (verbosity>3) printf("...MultipleScaleHistograms_WaveletFFT\n");
    WaveletFourierSelector->MultiScaleHistogram(vec);
    b=3;c=3;   
    for (a=0;a<24;a++)
@@ -409,21 +438,25 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    }
 
    /* radon transform (signatures 797 - 844) */
+   if (verbosity>3) printf("...RadonTransformStatistics\n");
    matrix->RadonTransform2D(vec);
    for (a=0;a<12;a++)
    {  sprintf(buffer,"RadonTransformStatistics Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...RadonTransformStatistics_Chebyshev\n");
    ChebyshevTransform->RadonTransform2D(vec);
    for (a=0;a<12;a++)
    {  sprintf(buffer,"RadonTransformStatistics_Chebyshev Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...RadonTransformStatistics_ChebyshevFFT\n");
    ChebyshevFourierTransform->RadonTransform2D(vec);
    for (a=0;a<12;a++)
    {  sprintf(buffer,"RadonTransformStatistics_ChebyshevFFT Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...RadonTransformStatistics_FFT\n");
    FourierTransform->RadonTransform2D(vec);
    for (a=0;a<12;a++)
    {  sprintf(buffer,"RadonTransformStatistics_FFT Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
@@ -432,37 +465,44 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
 
    char tamura_names[80][80]={"Total_Coarseness","Coarseness_Hist_Bin_00","Coarseness_Hist_Bin_01","Coarseness_Hist_Bin_02","Directionality","Contrast"};
    /* tamura texture (signatures 845 - 880) */
+   if (verbosity>3) printf("...TamuraTextures\n");
    matrix->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...TamuraTextures_Chebyshev\n");
    ChebyshevTransform->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures_Chebyshev %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...TamuraTextures_ChebyshevFFT\n");
    ChebyshevFourierTransform->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures_ChebyshevFFT %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...TamuraTextures_FFT\n");
    FourierTransform->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures_FFT %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...TamuraTextures_Wavelet\n");
    WaveletSelector->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures_Wavelet %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
+   if (verbosity>3) printf("...TamuraTextures_WaveletFFT\n");
    WaveletFourierSelector->TamuraTexture2D(vec);
    for (a=0;a<6;a++)
    {  sprintf(buffer,"TamuraTextures_WaveletFFT %s",tamura_names[a]);
       Add(buffer,vec[a]);
    }
 
+   if (verbosity>3) printf("...ZernikeMoments\n");
    /* zernike (signatures 881 - 1024) */
    { long x,y,output_size;   /* output size is normally 72 */
      matrix->zernike2D(vec,&output_size);
@@ -474,6 +514,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
         else x+=2;
      }
     x=0;y=0;
+   if (verbosity>3) printf("...ZernikeMoments_FFT\n");
     FourierTransform->zernike2D(vec,&output_size);
     for (a=0;a<output_size;a++)
     {  sprintf(buffer,"ZernikeMoments_FFT Z_%02d_%02d",(int)y,(int)x);
@@ -483,8 +524,10 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
      }
    }
 
-   if (compute_colors)
-     CompGroupD(matrix,"");
+	if (compute_colors) {
+		if (verbosity>3) printf("...ColorFeatures\n");
+		CompGroupD(matrix,"");
+	}
 
    delete FourierTransform;
    delete ChebyshevTransform;
@@ -497,6 +540,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    /* basic statistics (signatures 1025 - 1049) */
 
    /* basic image statistics */
+   if (verbosity>3) printf("...Statistics\n");
    matrix->BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
    Add("mean",mean);
    Add("median",median);
@@ -505,6 +549,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    Add("max",max);
 
    /* basic chebyshev statistics */
+   if (verbosity>3) printf("...Statistics_Chebyshev\n");
    ChebyshevTransform->BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
    Add("Chebyshev mean",mean);
    Add("Chebyshev median",median);
@@ -513,6 +558,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    Add("Chebyshev max",max);
 
    /* basic Fourier statistics */
+   if (verbosity>3) printf("...Statistics_Fourier\n");
    FourierTransform->BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
    Add("Fourier mean",mean);
    Add("Fourier median",median);
@@ -521,6 +567,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    Add("Fourier max",max);
 
    /* basic Wavelet statistics */
+   if (verbosity>3) printf("...Statistics_Wavelet\n");
    WaveletSelector->BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
    Add("Wavelet mean",mean);
    Add("Wavelet median",median);
@@ -529,6 +576,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    Add("Wavelet max",max);
 
    /* basic Wavelet Fourier statistics */
+   if (verbosity>3) printf("...Statistics_Wavelet_Fourier\n");
    WaveletFourierSelector->BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
    Add("Wavelet Fourier mean",mean);
    Add("Wavelet Fourier median",median);
