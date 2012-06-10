@@ -262,9 +262,13 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	// If a testset was specified, make sure its classes are consistent with ts.
 	if (testset) {
 		testset->train_class = new int[testset->class_num+1];
+		// CEC added June 8 2012, initialize to 0 even the zeroth class,
+		// since the zeroth class is associated with the unknown class
+		for( int i = 0; i < testset->class_num+1; i++ )
+			testset->train_class[class_index] = 0;
+
 		int ts_class_index;
 		for (class_index = 1; class_index <= testset->class_num; class_index++) {
-			testset->train_class[class_index] = 0;
 			for (ts_class_index = 1; ts_class_index <= ts->class_num; ts_class_index++) {
 				if ( ! strcmp(ts->class_labels[ts_class_index],testset->class_labels[class_index]) ) {
 					testset->train_class[class_index] = ts_class_index;

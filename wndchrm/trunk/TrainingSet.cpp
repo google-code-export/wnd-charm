@@ -1651,20 +1651,29 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 		}
 	}
 
-   // update the split confusion and similarity matrices
-   if( split && split->confusion_matrix )
-	 	split->confusion_matrix[ class_num * sample_class + predicted_class ]++;
-   if( split && split->similarity_matrix && class_num > 0 )
-	 {
-		 for( class_index = 1; class_index <= class_num; class_index++ )
-		 {
-			 split->similarity_matrix[ class_num * sample_class + class_index ] += probabilities_sum[ class_index ];
-			 // CEC - added to facilitate the generation of statistics for
-			 // Average Class Probabilities. Since classes count from 1, have to subtract 1.
-			 int matrix_index = (class_num * (sample_class - 1)) + (class_index - 1);
-			 split->marginal_probabilities[ matrix_index ].push_back( probabilities_sum[ class_index ] ) ;
-		 }
-	 }
+	// update the split confusion and similarity matrices
+	if( split && split->confusion_matrix )
+		split->confusion_matrix[ class_num * sample_class + predicted_class ]++;
+	if( split && split->similarity_matrix && class_num > 0 )
+	{
+		for( class_index = 1; class_index <= class_num; class_index++ )
+		{
+			split->similarity_matrix[ class_num * sample_class + class_index ] += probabilities_sum[ class_index ];
+			// CEC - added to facilitate the generation of statistics for
+			// Average Class Probabilities. split->marginal_probabilities is vector of length n*n
+			// where n is the number of classes. The marginal probability vector is of course 1*n
+			// Every marginal probability from every individual result
+			// is appended to an std::list
+			// Since classes count from 1, have to subtract 1.
+			int matrix_index = 0;
+			if( sample_class <= 0 )
+				// If there's no known ground truth
+				matrix_index = class_index - 1;
+			else
+				matrix_index = (class_num * (sample_class - 1)) + (class_index - 1);
+			split->marginal_probabilities[ matrix_index ].push_back( probabilities_sum[ class_index ] ) ;
+		}
+	}
    // print the report line to a string (for the final report)
 	if (split && split->individual_images) do_html = 1;
 
