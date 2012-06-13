@@ -260,6 +260,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	if (testset) {
 		testset->train_class = new int[testset->class_num+1];
 		int ts_class_index;
+		testset->train_class[0] = 0;
 		for (class_index = 1; class_index <= testset->class_num; class_index++) {
 			testset->train_class[class_index] = 0;
 			for (ts_class_index = 1; ts_class_index <= ts->class_num; ts_class_index++) {
