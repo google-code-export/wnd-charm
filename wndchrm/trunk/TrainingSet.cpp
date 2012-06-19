@@ -1451,14 +1451,14 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	for (sig_index = 0; sig_index < n_sigs; sig_index++) {
 		if (our_sigs[sig_index].sig) {
 			our_sigs[sig_index].sig->FileClose ();
+			our_sigs[sig_index].sig->Clear ();
+			if (!our_sigs[sig_index].saved) {
+				unlink (our_sigs[sig_index].sig->GetFileName(buffer));
+			}
+			if (!our_sigs[sig_index].added) {
+				delete (our_sigs[sig_index].sig);
+			}
 		}
-		if (!our_sigs[sig_index].saved) {
-			unlink (our_sigs[sig_index].sig->GetFileName(buffer));
-		}
-		if (!our_sigs[sig_index].added) {
-			delete (our_sigs[sig_index].sig);
-		}
-		our_sigs[sig_index].sig->Clear ();
 	}
 
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
