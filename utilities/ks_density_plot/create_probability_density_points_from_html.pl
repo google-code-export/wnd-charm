@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use File::Basename; # part of the core
+
 require HTML::Tree;
 require Statistics::Descriptive;
 require Statistics::KernelEstimation;
@@ -38,7 +40,7 @@ print "Histogram will be created with number of bins: $num_bins\n" if( defined $
 #print "Window size : $bin_width\n" if( defined $bin_width );
 print "Age scores will be normalized\n" if( defined $normalize );
 
-$verbose = $stats_only if $stats_only ;
+$verbose = $stats_only if $stats_only;
 
 my %results_hash;
 my $min = -1;
@@ -58,6 +60,9 @@ if( !defined $input_file )
 # sorted into the given bins.
   my $output_file = shift;
 
+	if( ! -e $output_file ) {
+		die "No file $output_file exists!";
+	}
   print "Loading $output_file\n";
   my $tree = HTML::TreeBuilder->new_from_file( $output_file );
   print "Done loading $output_file\n";
@@ -76,6 +81,7 @@ if( !defined $input_file )
          return 0;
        }
      );
+
 
   die "Couldn't find the test results table element in file $output_file\n" if( !@table_elements );
 # print "Number of splits found: $#table_elements\n";
@@ -112,8 +118,13 @@ if( !defined $input_file )
   #my $max = -1;
   my $image_column;
 
+	my $split_count = 0;
   foreach my $split_table_element (@table_elements)
   {
+
+		print "====================================\nSplit " . ++$split_count if $DEBUG1;
+		print $split_table_element->as_HTML if $DEBUG1;
+
     @rows = $split_table_element->look_down("_tag", "tr");
 
     # print "Parsing $output_file, " . $split_table_element->attr("ID") ."\n";
@@ -173,6 +184,7 @@ if( !defined $input_file )
       @row = ();
       $img_link_element = undef;
       @row = $rows[$i]->look_down("_tag","td");
+			#print $rows[$i]->as_text;
       if( $DEBUG1 ) {
         foreach (@row) {
           print "  " . $_->as_text;
@@ -180,10 +192,11 @@ if( !defined $input_file )
         print "\n";
       }
       $img_link_element = $row[$image_column]->look_down( "_tag", "A" );
+			print  $img_link_element->as_HTML;
       $fullpath = $img_link_element->attr("HREF");
-      if( $fullpath =~ /\S*\/(\S+)/ ) {
-        $filename = $1;
-#      print "\tFound file $filename\n";
+			my $filename = basename( $fullpath );
+      if( defined $filename ) {
+				print "\tFound file $filename\n";
 
         $normalized_distances = "";
         # Skip the first two columns, which should be the Image No. and the Normalization Factor
@@ -206,6 +219,10 @@ if( !defined $input_file )
         print "\t\tactual: $actual_class, predicted: $predicted_class, interp val: $interpolated_value\n" if( $DEBUG1 );
         push @{ $results_hash{ $actual_class }->{ $filename } }, { "split_num" => $split_number, "val" => $interpolated_value, "class" => $predicted_class, "dists" => $normalized_distances };
       }
+			else
+			{
+				die "non-user error (not your fault): Can't pull a filename out of the lineitem for some reason\n\n"
+			}
     }
   }
   $tree->delete();
