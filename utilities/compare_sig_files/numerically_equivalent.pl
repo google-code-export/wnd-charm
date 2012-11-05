@@ -209,7 +209,10 @@ sub ParseSigFile($$) {
 				}
 				if( defined $$values_ref{ $feature } )
 				{
-					die "The feature $feature has already been defined for file $filename.\n";
+					unless( "Object Features () [27]" eq $feature ) {
+						# a known c-chrm issue
+						die "The feature $feature has already been defined for file $filename.\n";
+					}
 				}
 				else
 				{
