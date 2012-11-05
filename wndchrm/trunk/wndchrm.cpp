@@ -265,7 +265,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		// CEC added June 8 2012, initialize to 0 even the zeroth class,
 		// since the zeroth class is associated with the unknown class
 		for( int i = 0; i < testset->class_num+1; i++ )
-			testset->train_class[class_index] = 0;
+			testset->train_class[i] = 0;
 
 		int ts_class_index;
 		for (class_index = 1; class_index <= testset->class_num; class_index++) {
