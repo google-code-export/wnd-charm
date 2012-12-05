@@ -22,6 +22,7 @@ if not (test_dir):
 	print "svn checkout http://wnd-charm.googlecode.com/svn/wndchrm/tests tests"
 	print "{0} tests".format (sys.argv[0])
 	sys.exit(0)
+from pychrm import __version__ as pychrm_version
 # -------- END preamble to get the test data --------------------
 
 test_name = "Feature calculation"
@@ -39,7 +40,7 @@ test_result_2873 = [0.033,0.967]
 
 test_sigs = Signatures.NewFromSigFile( test_sig, test_tif )
 
-ts = DiscreteTrainingSet.NewFromFitFile( test_fit )
+ts = FeatureSet_Discrete.NewFromFitFile( test_fit )
 ts.featurenames_list = FeatureNameMap.TranslateToNewStyle( ts.featurenames_list )
 ts.Normalize()
 test_wghts = FisherFeatureWeights.NewFromFile (test_fit_wght)
@@ -74,8 +75,6 @@ for idx in range( ts.num_classes ):
 
 print "{0} comparissons, maximum diff = {1}, mean = {2}".format ( int (num_diffs), max_diff, sum_diff / num_diffs )
 if (max_diff > max_diff_pass or (sum_diff / num_diffs) > max_mean_pass):
-	print test_name+" test: FAIL"
+	print "pychrm {0} {1} test: {2}".format (pychrm_version, test_name, 'FAIL')
 else:
-	print test_name+" test: PASS"
-
-
+	print "pychrm {0} {1} test: {2}".format (pychrm_version, test_name, 'PASS')
