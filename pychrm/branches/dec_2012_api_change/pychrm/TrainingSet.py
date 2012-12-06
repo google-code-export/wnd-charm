@@ -134,6 +134,11 @@ def initialize_module():
 		if fg:
 			large_featureset_featuregroup_list.append( fg )
 
+	# while we're debugging, raise exceptions for numerical weirdness, since it all has to be dealt with somehow
+	# In cases where numerical weirdness is expected and dealt with explicitly, these exceptions are
+	# temporarily turned off and then restored to their previous settings.
+	np.seterr (all='raise')
+
 def output_railroad_switch( method_that_prints_output ):
 	"""This is a decorator that optionally lets the user specify a file to which to redirect
 	STDOUT. To use, you must use the keyword argument "output_filepath" and optionally
@@ -180,8 +185,8 @@ def normalize_by_columns ( full_stack, mins = None, maxs = None ):
 #   Normalization:
 #     2. feature values outside of range
 #        values clipped to range (-inf to min -> min, max to inf -> max) - leaves nan as nan
-#     3. feature ranges that are 0
-#        normalized value will be 0
+#     3. feature ranges that are 0 result in nan feature values
+#     4. all nan feature values set to 0
 
 # Turn off numpy warnings, since e're taking care of invalid values explicitly
 	oldsettings = np.seterr(all='ignore')
@@ -200,7 +205,7 @@ def normalize_by_columns ( full_stack, mins = None, maxs = None ):
 	full_stack_m -= mins
 	full_stack_m /= (maxs - mins)
 	# Left over NANs and divide-by-zero from max == min become 0
-	full_stack = full_stack_m.filled (0) * 100 # nans, divide by zeros become 0
+	full_stack = full_stack_m.filled (0) * 100
 
 	# return settings to original
 	np.seterr(**oldsettings)
@@ -488,17 +493,25 @@ class FisherFeatureWeights( FeatureWeights ):
 
 
 		# 1D matrix 1 * F
-		feature_weights =  np.square( population_means - intra_class_means ).sum( axis = 0 ) / \
-		    (training_set.num_classes - 1) / np.mean( intra_class_variances, axis = 0 ) 
-		
-		# remove nan's
-		# np.isnan( feature_weights ) returns a boolean array
-		# which numpy uses "fancy indexing" to assign 0's
-		feature_weights[ np.isnan(feature_weights) ] = 0
+		# we deal with NANs/INFs separately, so turn off numpy warnings about invalid floats.
+		# for the record, in numpy:
+		#     1./0. = inf, 0./inf = 0., 1./inf = 0. inf/0. = inf, inf/inf = nan
+		#     0./0. = nan,  nan/0. = nan, 0/nan = nan, nan/nan = nan, nan/inf = nan, inf/nan = nan
+		# We can't deal with NANs only, must also deal with pos/neg infs
+		# The masked array allows for dealing with "invalid" floats, which includes nan and +/-inf
+		oldsettings = np.seterr(invalid='ignore')
+		feature_weights_m =  np.ma.masked_invalid (
+			np.square( population_means - intra_class_means ).sum( axis = 0 ) /
+		    (training_set.num_classes - 1) / np.mean( intra_class_variances, axis = 0 )
+		    )
+		# return numpy error settings to original
+		np.seterr(**oldsettings)
+
 
 		new_fw = cls()
 		new_fw.names = training_set.featurenames_list[:]
-		new_fw.values = feature_weights.tolist()
+		# the filled(0) method of the masked array sets all nan and infs to 0
+		new_fw.values = feature_weights_m.filled(0).tolist()
 		new_fw.associated_training_set = training_set
 	
 		return new_fw
@@ -1409,9 +1422,9 @@ class FeatureSet( object ):
 
 		# re-generate data_list views from data_matrix and classsizes_list
 		if ("data_list" in the_training_set.__dict__):
-			the_training_set.data_list = [0] * num_classes
+			the_training_set.data_list = [0] * the_training_set.num_classes
 			sample_row = 0
-			for i in range( num_classes ):
+			for i in range( the_training_set.num_classes ):
 				nrows = the_training_set.classsizes_list[i]
 				the_training_set.data_list[i] = the_training_set.data_matrix[sample_row : sample_row + nrows]
 				sample_row += nrows
@@ -1712,14 +1725,14 @@ class FeatureSet_Discrete( FeatureSet ):
 		if self.data_matrix is not None:
 			self.data_matrix.resize (self.num_images, self.num_features)
 		else:
-			print "called with empty data_matrix"
+			#print "called with empty data_matrix"
 			self.data_matrix = np.empty ([ self.num_images, self.num_features ], dtype='double')
 			copy_class = 0
 			copy_row = 0
 
 		# We need to start copying at the first non-view class mat to the end.
 		for class_index in range (copy_class, len (self.data_list)):
-			print "copy class"+str(class_index)
+			#print "copy class"+str(class_index)
 			nrows = self.data_list[class_index].shape[0]
 			self.data_matrix[copy_row : copy_row + nrows] = np.copy (self.data_list[class_index])
 			self.data_list[class_index] = self.data_matrix[copy_row : copy_row + nrows]
@@ -2175,7 +2188,7 @@ class FeatureSet_Discrete( FeatureSet ):
 		training_set.num_images = 0
 		training_set.num_classes = self.num_classes
 		training_set.classnames_list = self.classnames_list
-		training_set.classsizes_list = self.classsizes_list
+		training_set.classsizes_list = [ 0 ] * self.num_classes
 		training_set.featurenames_list = self.featurenames_list
 		training_set.num_features = len( self.featurenames_list )
 		training_set.imagenames_list = [ [] for j in range( self.num_classes ) ]
@@ -2189,7 +2202,7 @@ class FeatureSet_Discrete( FeatureSet ):
 			test_set.num_images = 0
 			test_set.num_classes = self.num_classes
 			test_set.classnames_list = self.classnames_list
-			test_set.classsizes_list = self.classsizes_list
+			test_set.classsizes_list = [ 0 ] * self.num_classes
 			test_set.featurenames_list = self.featurenames_list
 			test_set.num_features = len( self.featurenames_list )
 			test_set.imagenames_list = [ [] for j in range( self.num_classes ) ]
@@ -2206,6 +2219,9 @@ class FeatureSet_Discrete( FeatureSet ):
 				random.shuffle( image_lottery )
 
 			num_images_in_training_set = int( training_set_fraction * num_images )
+			training_set.classsizes_list[ class_index ] = num_images_in_training_set
+			if test_set:
+				test_set.classsizes_list[ class_index ] = num_images - num_images_in_training_set
 
 			training_matrix = None
 			test_matrix = None
@@ -2550,7 +2566,7 @@ class FeatureSet_Continuous( FeatureSet ):
 		if self.classnames_list:
 			training_set.classnames_list = self.classnames_list
 		if self.classsizes_list:
-			training_set.classsizes_list = self.classsizes_list
+			training_set.classsizes_list = [ 0 ] * self.num_classes
 		if self.interpolation_coefficients:
 			training_set.interpolation_coefficients = self.interpolation_coefficients
 	
@@ -2564,7 +2580,7 @@ class FeatureSet_Continuous( FeatureSet ):
 			if self.classnames_list:
 				test_set.classnames_list = self.classnames_list
 			if self.classsizes_list:
-				test_set.classsizes_list = self.classsizes_list
+				test_set.classsizes_list = [ 0 ] * self.num_classes
 			if self.interpolation_coefficients:
 				test_set.interpolation_coefficients = self.interpolation_coefficients
 
@@ -3596,7 +3612,7 @@ class DiscreteClassificationExperimentResult( ClassificationExperimentResult ):
 		for batch_result in self.individual_results:
 			if batch_result.figure_of_merit == None:
 				batch_result.GenerateStats()
-			print "{0}\t\"{1}\"\t{2:0.4f}".format( count, batch_result.name, batch_result.figure_of_merit )
+			print "{0}\t\"{1}\"\t{2:0.4f}".format( count, batch_result.name, batch_result.classification_accuracy )
 			count += 1
 
 #============================================================================
