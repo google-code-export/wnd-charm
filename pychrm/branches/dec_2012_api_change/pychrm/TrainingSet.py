@@ -648,6 +648,12 @@ class ContinuousFeatureWeights( FeatureWeights ):
 		
 		from scipy import stats
 
+		# Known issue: running stats.linregress() with np.seterr (all='raise') has caused
+		# arithmetic underflow (FloatingPointError: 'underflow encountered in stdtr' )
+		# I think this is something we can safely ignore in this function, and return settings
+		# back to normal at the end. -CEC
+		np.seterr (under='ignore')
+
 		matrix = training_set.data_matrix
 		#FIXME: maybe add some dummyproofing to constrain incoming array size
 
@@ -657,12 +663,13 @@ class ContinuousFeatureWeights( FeatureWeights ):
 		if training_set.source_path:
 			new_fw.name = cls.__name__ + ' from training set "' + training_set.source_path + '"'
 
-		#r_val_squared_sum = 0
-		r_val_cubed_sum = 0
+		r_val_squared_sum = 0
+		#r_val_cubed_sum = 0
+
+		ground_truths = np.array( [float(val) for val in training_set.ground_truths] )
 
 		for feature_index in range( training_set.num_features ):
 			feature_values = matrix[:,feature_index]
-			ground_truths = [float(val) for val in training_set.ground_truths]
 
 			slope, intercept, pearson_coeff, p_value, std_err = \
 			             stats.linregress( ground_truths, feature_values )
@@ -674,15 +681,18 @@ class ContinuousFeatureWeights( FeatureWeights ):
 			new_fw.pearson_stderrs.append( std_err )
 			new_fw.pearson_p_values.append( p_value )
 
-			#r_val_squared_sum += pearson_coeff * pearson_coeff
-			r_val_cubed_sum += pearson_coeff * pearson_coeff * pearson_coeff
+			r_val_squared_sum += pearson_coeff * pearson_coeff
+			#r_val_cubed_sum += pearson_coeff * pearson_coeff * pearson_coeff
 
 			spearman_coeff, spearman_p_val = stats.spearmanr( ground_truths, feature_values )
 			new_fw.spearman_coeffs.append( spearman_coeff )
 			new_fw.spearman_p_values.append( spearman_p_val )
 
-		#new_fw.values = [val*val / r_val_squared_sum for val in new_fw.pearson_coeffs ]
-		new_fw.values = [val*val*val / r_val_cubed_sum for val in new_fw.pearson_coeffs ]
+		new_fw.values = [val*val / r_val_squared_sum for val in new_fw.pearson_coeffs ]
+		#new_fw.values = [val*val*val / r_val_cubed_sum for val in new_fw.pearson_coeffs ]
+		
+		# Reset numpy 
+		np.seterr (all='raise')
 
 		return new_fw
 
@@ -2445,7 +2455,9 @@ class FeatureSet_Continuous( FeatureSet ):
 		reduced_ts.feature_minima = np.empty (new_num_features)
 
 		# copy feature minima/maxima
-		if self.feature_maxima and self.feature_minima:
+		# Have to explicitly check for "is not None" due to exception:
+		# ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+		if (not self.feature_maxima == None) and (not self.feature_minima == None):
 			new_index = 0
 			for featurename in requested_features:
 				old_index = self.featurenames_list.index( featurename )
@@ -2964,11 +2976,14 @@ class BatchClassificationResult( ClassificationResult ):
 			import math; from scipy import stats
 			self.figure_of_merit = math.sqrt( err_sum / self.num_classifications )
 
+			# For now, ignore "FloatingPointError: 'underflow encountered in stdtr'"
+			np.seterr (under='ignore')
 			slope, intercept, self.pearson_coeff, self.pearson_p_value, self.pearson_std_err = \
 			             stats.linregress( self.ground_truth_values, self.predicted_values )
 
 			self.spearman_coeff, self.spearman_p_value =\
 			       stats.spearmanr( self.ground_truth_values, self.predicted_values )
+			np.seterr (all='raise')
 
 
 	#==============================================================
@@ -3660,11 +3675,14 @@ class ContinuousClassificationExperimentResult( ClassificationExperimentResult )
 		import math; from scipy import stats
 		self.figure_of_merit = math.sqrt( err_sum / self.num_classifications )
 
+		# For now, ignore "FloatingPointError: 'underflow encountered in stdtr'"
+		np.seterr (under='ignore')
 		slope, intercept, self.pearson_coeff, self.pearson_p_value, self.pearson_std_err = \
 								 stats.linregress( self.ground_truth_values, self.predicted_values )
 
 		self.spearman_coeff, self.spearman_p_value =\
 					 stats.spearmanr( self.ground_truth_values, self.predicted_values )
+		np.seterr (all='raise')
 
 
 	#=====================================================================

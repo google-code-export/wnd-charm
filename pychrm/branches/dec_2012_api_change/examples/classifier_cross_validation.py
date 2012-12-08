@@ -26,15 +26,10 @@
 Meant to exercize train/test/split functionality"""
 
 
-import sys
-import os
-import re 
-
 # import pychrm
 from pychrm.TrainingSet import *
 from pychrm import __version__ as pychrm_version
 print "pychrm "+pychrm_version
-
 
 import argparse
 
@@ -94,7 +89,7 @@ for i in range( num_splits ):
 	reduced_training_set = training_set.FeatureReduce( fisher_weights.names )
 
 	batch_result = DiscreteBatchClassificationResult.New( reduced_training_set, \
-										reduced_test_set, fisher_weights, batch_number = i )
+	                                    reduced_test_set, fisher_weights, batch_number = i )
 
 	experiment.individual_results.append( batch_result )
 
