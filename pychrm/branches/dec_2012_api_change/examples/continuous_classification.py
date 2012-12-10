@@ -124,4 +124,7 @@ for bin_index in range( num_bins ):
 	bin_offset += num_features_per_bin 
 
 
+import subprocess
+subprocess.call( [ "convert", "rank_ordered_features*", "rank_ordered.pdf"] )
+subprocess.call( [ "convert", "ks_density_features*", "ks_density.pdf"] )
 
