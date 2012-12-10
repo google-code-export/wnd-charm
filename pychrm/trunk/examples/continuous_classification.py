@@ -116,10 +116,10 @@ for bin_index in range( num_bins ):
 
 	grapher = PredictedValuesGraph( experiment )
 	grapher.RankOrderedPredictedValuesGraph( name )
-	grapher.SaveToFile( "rank_ordered_features_{0:03d}-{1:03d}".format( bin_offset + 1, bin_offset + 1 + num_features_per_bin  ) )
+	grapher.SaveToFile( "rank_ordered_features_{0:03d}-{1:03d}".format( bin_offset + 1, bin_offset + num_features_per_bin  ) )
 
 	grapher.KernelSmoothedDensityGraph( name )
-	grapher.SaveToFile( "ks_density_features_{0:03d}-{1:03d}".format( bin_offset + 1, bin_offset + 1 + num_features_per_bin ) )
+	grapher.SaveToFile( "ks_density_features_{0:03d}-{1:03d}".format( bin_offset + 1, bin_offset + num_features_per_bin ) )
 
 	bin_offset += num_features_per_bin 
 
