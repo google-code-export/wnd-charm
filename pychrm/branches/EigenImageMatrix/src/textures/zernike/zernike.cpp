@@ -36,6 +36,7 @@
 
 #include "zernike.h"
 #define PI 3.14159265358979323846264338328
+#define MAX_L 32
 
 // This sets the maximum D parameter (15)
 // The D parameter has to match MAX_D. See mb_Znl() below.
