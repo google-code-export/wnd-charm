@@ -28,9 +28,6 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-
-#pragma hdrstop
-
 #include <vector>
 #include <math.h>
 #include <stdio.h>
@@ -1044,41 +1041,14 @@ void ImageMatrix::EdgeTransform() {
 	long x,y,z;
 	ImageMatrix *TempMatrix;
 	TempMatrix = new ImageMatrix (this);
-	for (y=0;y<TempMatrix->height;y++)
-		for (x=0;x<TempMatrix->width;x++) {
+	for (y = 0; y < TempMatrix->height; y++)
+		for (x = 0; x < TempMatrix->width; x++) {
 			double max_x=0,max_y=0,max_z=0;
-			if (y>0 && y < height-1) max_y=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y-1,x)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y+1,x)));
-			if (x>0 && x < width-1)  max_x=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x-1)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x+1)));
+			if (y > 0 && y < height-1) max_y=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y-1,x)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y+1,x)));
+			if (x > 0 && x < width-1)  max_x=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x-1)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x+1)));
 			pix_plane(y,x) = MAX(max_x,max_y);
 		}
    delete TempMatrix;
-}
-
-/* transform by gradient magnitude */
-void ImageMatrix::GradientMagnitude(int span) {
-	long x,y,z;
-	//double sum;
-	if (span==0) span=2;  /* make sure 0 is not a default */
-	for (x=0;x<width-span;x++)
-		for (y=0;y<height-span;y++) {
-			double sum = pow(pix_plane(y,x+span) - pix_plane(y,x),2) + pow(pix_plane(y+span,x) - pix_plane(y,x),2);
-			pix_plane(y,x) = sqrt(sum); // FIXME: is aliasing supposed to be happening here?
-		}
-}
-
-/* transform by gradient direction */
-void ImageMatrix::GradientDirection2D(int span) {
-	long x,y;
-	if (span==0) span=2;  /* make sure 0 is not a default */
-	for (x=0;x<width-span;x++)
-		for (y=0;y<height-span;y++) {
-			if (pix_plane(y+span,x) - pix_plane(y,x) == 0)
-				pix_plane(y,x) = 0;
-			else
-				pix_plane(y,x) = atan2(
-					pix_plane(y,x+span) - pix_plane(y,x), pix_plane(y+span,x) - pix_plane(y,x)
-				);
-		}
 }
 
 /* Perwitt gradient magnitude
@@ -1104,7 +1074,7 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
 			for (i = x-1; i <= x+1; i++)
 				if (i >= 0 && i < width && y+1 < height)
 					sumy += pix_plane(y+1,i)*-1;//0.3333;
-			output->pix_plane (y,x) = sqrt(sumx*sumx+sumy*sumy);
+			output->pix_plane(y,x) = sqrt(sumx*sumx+sumy*sumy);
 		}
 }
 
@@ -1112,29 +1082,28 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
    output - a pre-allocated matrix that will hold the output (the input matrix is not changed)
             output should be of the same size as the input matrix
 */
-void ImageMatrix::PerwittDirection2D(ImageMatrix *output)
-{  long x,y,z,i,j;
-   double sumx,sumy;
-   for (x=0;x<width;x++)
-     for (y=0;y<height;y++)
-       for (z=0;z<depth;z++)	 
-       {  sumx=0;
-          sumy=0;
-          for (j=y-1;j<=y+1;j++)
-            if (j>=0 && j<height && x-1>=0)
-               sumx+=pixel(x-1,j,0).intensity*1;//0.3333;
-          for (j=y-1;j<=y+1;j++)
-            if (j>=0 && j<height && x+1<width)
-              sumx+=pixel(x+1,j,0).intensity*-1;//-0.3333;
-          for (i=x-1;i<=x+1;i++)
-            if (i>=0 && i<width && y-1>=0)
-              sumy+=pixel(i,y-1,0).intensity*1;//-0.3333;
-          for (i=x-1;i<=x+1;i++)
-            if (i>=0 && i<width && y+1<height)
-              sumy+=pixel(i,y+1,0).intensity*-1;//0.3333;
-          if (sumy==0 || fabs(sumy)<1/INF) output->SetInt(x,y,z,3.1415926*(sumx<0));
-          else output->SetInt(x,y,z,atan2(sumy,sumx));
-       }
+void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
+	long x,y,z,i,j;
+	double sumx,sumy;
+	for (x=0;x<width;x++)
+		for (y=0;y<height;y++) {
+			sumx=0;
+			sumy=0;
+			for (j = y-1; j <= y+1; j++)
+				if (j >= 0 && j < height && x-1 >= 0)
+					sumx += pix_plane(j,x-1)*1;//0.3333;
+			for (j = y-1; j <= y+1; j++)
+				if (j >= 0 && j < height && x+1 < width)
+					sumx += pix_plane(j,x+1)*-1;//-0.3333;
+			for (i = x-1; i <= x+1; i++)
+				if (i >= 0 && i < width && y-1 >= 0)
+					sumy += pix_plane(y-1,i)*1;//-0.3333;
+			for (i = x-1; i <= x+1; i++)
+				if (i >= 0 && i < width && y+1 < height)
+					sumy += pix_plane(y+1,i)*-1;//0.3333;
+			if (sumy == 0 || fabs(sumy)<1/INF) output->pix_plane(y,x) = 3.1415926 * (sumx < 0 ? 1 : 0);
+			else output->pix_plane(y,x) = atan2(sumy,sumx);
+		}
 }
 
 
@@ -1154,130 +1123,132 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output)
    DiffDirecHist -array of double- array of size num_bins/2 should be allocated
 */
 
-void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins)
-{  ImageMatrix *GradientMagnitude,*GradientDirection;
-   long a,bin_index;
-   double min,max,sum,max_intensity;
-   
-   max_intensity=pow(bits,2)-1;
-   
-   GradientMagnitude=new ImageMatrix (this);
-   PerwittMagnitude2D(GradientMagnitude);
-   GradientDirection=new ImageMatrix (this);
-   PerwittDirection2D(GradientDirection);
+void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins) {
+	ImageMatrix *GradientMagnitude,*GradientDirection;
+	long a,bin_index;
+	double min,max,sum,max_intensity;
 
-   /* find gradient statistics */
-   GradientMagnitude->BasicStatistics(MagMean, MagMedian, MagVar, &min, &max, MagHist, num_bins);
-   *MagVar=pow(*MagVar,2);
+	max_intensity = pow(bits,2)-1;
 
-   /* find the edge area (number of edge pixels) */
-   *EdgeArea=0;
-//   level=min+(max-min)/2;   // level=duplicate->OtsuBinaryMaskTransform()   // level=MagMean
+	GradientMagnitude = new ImageMatrix (this);
+	PerwittMagnitude2D(GradientMagnitude);
+	GradientDirection = new ImageMatrix (this);
+	PerwittDirection2D(GradientDirection);
 
-   for (a=0;a<GradientMagnitude->height*GradientMagnitude->width*GradientMagnitude->depth;a++)
-     if (GradientMagnitude->data[a].intensity>max_intensity*0.5) (*EdgeArea)+=1; /* find the edge area */
+	/* find gradient statistics */
+	GradientMagnitude->BasicStatistics(MagMean, MagMedian, MagVar, &min, &max, MagHist, num_bins);
+	*MagVar = pow(*MagVar,2);
+
+	/* find the edge area (number of edge pixels) */
+	*EdgeArea = 0;
+//	level = min+(max-min)/2;   // level=duplicate->OtsuBinaryMaskTransform()   // level=MagMean
+
+	for (a = 0; a < GradientMagnitude->height*GradientMagnitude->width; a++)
+		if (GradientMagnitude->pix_plane.array().coeff(a) > max_intensity*0.5) (*EdgeArea)+=1; /* find the edge area */
 //   GradientMagnitude->OtsuBinaryMaskTransform();
 
-   /* find direction statistics */
-   GradientDirection->BasicStatistics(DirecMean, DirecMedian, DirecVar, &min, &max, DirecHist, num_bins);
-   *DirecVar=pow(*DirecVar,2);
+	/* find direction statistics */
+	GradientDirection->BasicStatistics(DirecMean, DirecMedian, DirecVar, &min, &max, DirecHist, num_bins);
+	*DirecVar=pow(*DirecVar,2);
 
-   /* Calculate statistics about edge difference direction
-      Histogram created by computing differences amongst histogram bins at angle and angle+pi */
-   for (bin_index=0;bin_index<(int)(num_bins/2);bin_index++)
-      DiffDirecHist[bin_index]=fabs(DirecHist[bin_index]-DirecHist[bin_index+(int)(num_bins/2)]);
-   sum=0;
-   for (bin_index=0;bin_index<(int)(num_bins/2);bin_index++)
-   {  if (DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]!=0)  /* protect from a numeric flaw */
-        DiffDirecHist[bin_index]=DiffDirecHist[bin_index]/(DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
-      sum+=(DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
-   }
+	/* Calculate statistics about edge difference direction
+	   Histogram created by computing differences amongst histogram bins at angle and angle+pi
+	*/
+	for (bin_index = 0; bin_index < (int)(num_bins/2); bin_index++)
+		DiffDirecHist[bin_index] = fabs(DirecHist[bin_index]-DirecHist[bin_index+(int)(num_bins/2)]);
+	sum=0;
+	for (bin_index = 0; bin_index < (int)(num_bins/2); bin_index++) {
+		if (DirecHist[bin_index] + DirecHist[bin_index+(int)(num_bins/2)] != 0)  /* protect from a numeric flaw */
+			DiffDirecHist[bin_index] = DiffDirecHist[bin_index]/(DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
+		sum += (DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
+	}
 
-   /* The fraction of edge pixels that are in the first two bins of the histogram measure edge homogeneity */
-   if (sum>0) *DirecHomogeneity = (DirecHist[0]+DirecHist[1])/sum;
+	/* The fraction of edge pixels that are in the first two bins of the histogram measure edge homogeneity */
+	if (sum > 0) *DirecHomogeneity = (DirecHist[0]+DirecHist[1])/sum;
 
-   delete GradientMagnitude;
-   delete GradientDirection;
+	delete GradientMagnitude;
+	delete GradientDirection;
 }
 
 /* radon transform
    vec -array of double- output column. a pre-allocated vector of the size 3*4=12
 */
-void ImageMatrix::RadonTransform2D(double *vec)
-{   int x,y,val_index,output_size,vec_index,bin_index;
-    double *pixels,*ptr,bins[3];
-    int angle,num_angles=4;
-    double theta[4]={0,45,90,135};
-    //double min,max;
-    int rLast,rFirst;
-    rLast = (int) ceil(sqrt(pow(width-1-(width-1)/2,2)+pow(height-1-(height-1)/2,2))) + 1;
-    rFirst = -rLast;
-    output_size=rLast-rFirst+1;
+void ImageMatrix::RadonTransform2D(double *vec) {
+	int x,y,val_index,output_size,vec_index,bin_index;
+	double *pixels,*ptr,bins[3];
+	int angle,num_angles=4;
+	double theta[4]={0,45,90,135};
+	//double min,max;
+	int rLast,rFirst;
+	rLast = (int) ceil(sqrt(pow(width-1-(width-1)/2,2)+pow(height-1-(height-1)/2,2))) + 1;
+	rFirst = -rLast;
+	output_size=rLast-rFirst+1;
 
-    ptr=new double[output_size*num_angles];
-    for (val_index=0;val_index<output_size*num_angles;val_index++)
-      ptr[val_index]=0;  /* initialize the output vector */
+	ptr = new double[output_size*num_angles];
+	for (val_index = 0; val_index < output_size*num_angles; val_index++)
+		ptr[val_index] = 0;  /* initialize the output vector */
 
     pixels=new double[width*height];
-    vec_index=0;
+    vec_index = 0;
 
-    for (x=0;x<width;x++)
-      for (y=0;y<height;y++)
-        pixels[y+height*x]=pixel(x,y,0).intensity;
+	for (x = 0; x < width; x++)
+		for (y = 0; y < height; y++)
+			pixels[y+height*x] = pix_plane(y,x);
 
     radon(ptr,pixels, theta, height, width, (width-1)/2, (height-1)/2, num_angles, rFirst, output_size);
 
-    for (angle=0;angle<num_angles;angle++)
-    {  //radon(ptr,pixels, &theta, height, width, (width-1)/2, (height-1)/2, 1, rFirst, output_size);
-       /* create histogram */
-       double min=INF,max=-INF;
-       /* find the minimum and maximum values */
-       for (val_index=angle*output_size;val_index<(angle+1)*output_size;val_index++)
-       {  if (ptr[val_index]>max) max=ptr[val_index];
-          if (ptr[val_index]<min) min=ptr[val_index];
-       }
+	for (angle = 0; angle < num_angles; angle++) {
+		//radon(ptr,pixels, &theta, height, width, (width-1)/2, (height-1)/2, 1, rFirst, output_size);
+		/* create histogram */
+		double min=INF,max=-INF;
+		/* find the minimum and maximum values */
+		for (val_index = angle*output_size; val_index < (angle+1)*output_size; val_index++) {
+			if (ptr[val_index]>max) max = ptr[val_index];
+			if (ptr[val_index]<min) min = ptr[val_index];
+		}
 
-       for (val_index=0;val_index<3;val_index++)   /* initialize the bins */
-         bins[val_index]=0;
-       for (val_index=angle*output_size;val_index<(angle+1)*output_size;val_index++)
-         if (ptr[val_index]==max) bins[2]+=1;
-         else bins[(int)(((ptr[val_index]-min)/(max-min))*3)]+=1;
+		for (val_index=0;val_index<3;val_index++)   /* initialize the bins */
+			bins[val_index]=0;
+		for (val_index=angle*output_size;val_index<(angle+1)*output_size;val_index++)
+			if (ptr[val_index]==max) bins[2]+=1;
+			else bins[(int)(((ptr[val_index]-min)/(max-min))*3)]+=1;
 
-       for (bin_index=0;bin_index<3;bin_index++)
-         vec[vec_index++]=bins[bin_index];
-    }
-    vd_RadonTextures(vec);
-    delete [] pixels;
-    delete [] ptr;
+		for (bin_index=0;bin_index<3;bin_index++)
+			vec[vec_index++]=bins[bin_index];
+	}
+	vd_RadonTextures(vec);
+	delete [] pixels;
+	delete [] ptr;
 }
 
 //-----------------------------------------------------------------------------------
 /* Otsu
    Find otsu threshold
 */
-double ImageMatrix::Otsu()
-{  long a; //,x,y;
-   double hist[256],omega[256],mu[256],sigma_b2[256],maxval=-INF,sum,count;
-   double max=pow(2,bits)-1;
-   histogram(hist,256,1);
-   omega[0]=hist[0]/(width*height);
-   mu[0]=1*hist[0]/(width*height);
-   for (a=1;a<256;a++)
-   {  omega[a]=omega[a-1]+hist[a]/(width*height);
-      mu[a]=mu[a-1]+(a+1)*hist[a]/(width*height);
-   }
-   for (a=0;a<256;a++)
-   {  if (omega[a]==0 || 1-omega[a]==0) sigma_b2[a]=0;
-      else sigma_b2[a]=pow(mu[255]*omega[a]-mu[a],2)/(omega[a]*(1-omega[a]));
-      if (sigma_b2[a]>maxval) maxval=sigma_b2[a];
-   }
-   sum=0.0;
-   count=0.0;
-   for (a=0;a<256;a++)
-     if (sigma_b2[a]==maxval)
-     {  sum+=a;
-        count++;
-     }	 
+double ImageMatrix::Otsu() {
+	long a; //,x,y;
+	double hist[256],omega[256],mu[256],sigma_b2[256],maxval=-INF,sum,count;
+	double max=pow(2,bits)-1;
+	histogram(hist,256,1);
+	omega[0] = hist[0] / (width*height);
+	mu[0] = 1*hist[0] / (width*height);
+
+	for (a = 1; a < 256; a++) {
+		omega[a] = omega[a-1] + hist[a] / (width*height);
+		mu[a] = mu[a-1] + (a+1) * hist[a] / (width*height);
+	}
+	for (a=0;a<256;a++) {
+		if (omega[a] == 0 || 1-omega[a] == 0) sigma_b2[a]=0;
+		else sigma_b2[a] = pow(mu[255]*omega[a]-mu[a],2) / (omega[a]*(1-omega[a]));
+		if (sigma_b2[a] > maxval) maxval = sigma_b2[a];
+	}
+	sum = 0.0;
+	count = 0.0;
+	for (a = 0; a < 256; a++)
+		if (sigma_b2[a] == maxval) {
+			sum += a;
+			count++;
+		}	 
    return((pow(2,bits)/256.0)*((sum/count)/max));
 }
 
@@ -1286,18 +1257,18 @@ double ImageMatrix::Otsu()
   OtsuBinaryMaskTransform
   Transforms an image to a binary image such that the threshold is otsu global threshold
 */
-double ImageMatrix::OtsuBinaryMaskTransform()
-{  double OtsuGlobalThreshold;
-   double max=pow(2,bits)-1;
+double ImageMatrix::OtsuBinaryMaskTransform() {
+	double OtsuGlobalThreshold;
+	double max=pow(2,bits)-1;
 
-   OtsuGlobalThreshold=Otsu();
+	OtsuGlobalThreshold=Otsu();
 
-   /* classify the pixels by the threshold */
-   for (long a=0;a<width*height*depth;a++)
-     if (data[a].intensity>OtsuGlobalThreshold*max) data[a].intensity=1;
-     else data[a].intensity=0;
+	/* classify the pixels by the threshold */
+	for (long a = 0; a < width*height; a++)
+		if (pix_plane.array().coeff(a) > OtsuGlobalThreshold*max) pix_plane.array().coeff(a) = 1;
+		else pix_plane.array().coeff(a) = 0;
 	 
-   return(OtsuGlobalThreshold);
+	return(OtsuGlobalThreshold);
 }
 
 /*  BWlabel
@@ -1306,16 +1277,14 @@ double ImageMatrix::OtsuBinaryMaskTransform()
     returned value -int- the number of objects found
 */
 //--------------------------------------------------------
-int ImageMatrix::BWlabel(int level)
-{
-   return(bwlabel(this,level));
+int ImageMatrix::BWlabel(int level) {
+	return(bwlabel(this,level));
 }
 
 //--------------------------------------------------------
 
-void ImageMatrix::centroid(double *x_centroid, double *y_centroid, double *z_centroid)
-{
-   GlobalCentroid(this,x_centroid,y_centroid,z_centroid);
+void ImageMatrix::centroid(double *x_centroid, double *y_centroid, double *z_centroid) {
+	GlobalCentroid(this,x_centroid,y_centroid,z_centroid);
 }
 
 //--------------------------------------------------------
@@ -1342,113 +1311,113 @@ void ImageMatrix::centroid(double *x_centroid, double *y_centroid, double *z_cen
 
 */
 
-int compare_ints (const void *a, const void *b)
-{
-  if (*((int *)a) > *((int *)b)) return(1);
-  if (*((int *)a) == *((int *)b)) return(0);
-  return(-1);
+int compare_ints (const void *a, const void *b) {
+	if (*((int *)a) > *((int *)b)) return(1);
+	if (*((int *)a) == *((int *)b)) return(0);
+	return(-1);
 }
 
 void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, double *centroid_z, int *AreaMin, int *AreaMax,
-                                    double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
-                                    double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins)
-{  int object_index,inv_count;
-   double sum_areas,sum_dists;
-   ImageMatrix *BWImage,*BWInvert,*temp;
-   int *object_areas;
-   double *centroid_dists,sum_dist;
+	double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
+	double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins
+) {
+	int object_index,inv_count;
+	double sum_areas,sum_dists;
+	ImageMatrix *BWImage,*BWInvert,*temp;
+	int *object_areas;
+	double *centroid_dists,sum_dist;
 
-   BWInvert=new ImageMatrix (this);   // check if the background is brighter or dimmer
-   BWInvert->invert();
-   BWInvert->OtsuBinaryMaskTransform();
-   inv_count=BWInvert->BWlabel(8);
-	 
-   
-   BWImage=new ImageMatrix (this);
-   BWImage->OtsuBinaryMaskTransform();
-   BWImage->centroid(centroid_x,centroid_y,centroid_z);
-   *count=BWImage->BWlabel(8);
-   if (inv_count>*count)
-   {  temp=BWImage;
-      BWImage=BWInvert;
-      BWInvert=temp;
-      *count=inv_count;
-      BWImage->centroid(centroid_x,centroid_y,centroid_z);	  
-   }
-   delete BWInvert;
-   *Euler=EulerNumber(BWImage,*count)+1;
+	BWInvert=new ImageMatrix (this);   // check if the background is brighter or dimmer
+	BWInvert->invert();
+	BWInvert->OtsuBinaryMaskTransform();
+	inv_count=BWInvert->BWlabel(8);
 
-   // calculate the areas 
-   sum_areas=0;
-   sum_dists=0;
-   object_areas=new int[*count];
-   centroid_dists=new double[*count];
-   for (object_index=1;object_index<=*count;object_index++)
-   {  double x_centroid,y_centroid,z_centroid;
-      object_areas[object_index-1]=FeatureCentroid(BWImage, object_index, &x_centroid, &y_centroid,&z_centroid);
-      centroid_dists[object_index-1]=sqrt(pow(x_centroid-(*centroid_x),2)+pow(y_centroid-(*centroid_y),2));
-      sum_areas+=object_areas[object_index-1];
-      sum_dists+=centroid_dists[object_index-1];
-   }
-   /* compute area statistics */
-   qsort(object_areas,*count,sizeof(int),compare_ints);
-   *AreaMin=object_areas[0];
-   *AreaMax=object_areas[*count-1];
-   if (*count>0) *AreaMean=sum_areas/(*count);
-   else *AreaMean=0;
-   *AreaMedian=object_areas[(*count)/2];
-   for (object_index=0;object_index<num_bins;object_index++)
-     area_histogram[object_index]=0;
-   /* compute the variance and the histogram */
-   sum_areas=0;
-   if (*AreaMax-*AreaMin>0)
-     for (object_index=1;object_index<=*count;object_index++)
-     {  sum_areas+=pow(object_areas[object_index-1]-*AreaMean,2);
-        if (object_areas[object_index-1]==*AreaMax) area_histogram[num_bins-1]+=1;
-        else area_histogram[((object_areas[object_index-1]-*AreaMin)/(*AreaMax-*AreaMin))*num_bins]+=1;
-     }
-   if (*count>1) *AreaVar=sum_areas/((*count)-1);
-   else *AreaVar=sum_areas;
 
-   /* compute distance statistics */
-   qsort(centroid_dists,*count,sizeof(double),compare_doubles);
-   *DistMin=centroid_dists[0];
-   *DistMax=centroid_dists[*count-1];
-   if (*count>0) *DistMean=sum_dists/(*count);
-   else *DistMean=0;
-   *DistMedian=centroid_dists[(*count)/2];
-   for (object_index=0;object_index<num_bins;object_index++)
-     dist_histogram[object_index]=0;
+	BWImage=new ImageMatrix (this);
+	BWImage->OtsuBinaryMaskTransform();
+	BWImage->centroid(centroid_x,centroid_y,centroid_z);
+	*count = BWImage->BWlabel(8);
+	if (inv_count > *count) {
+		temp = BWImage;
+		BWImage = BWInvert;
+		BWInvert = temp;
+		*count = inv_count;
+		BWImage->centroid(centroid_x,centroid_y,centroid_z);	  
+	}
+	delete BWInvert;
+	*Euler=EulerNumber(BWImage,*count)+1;
 
-   /* compute the variance and the histogram */
-   sum_dist=0;
-   for (object_index=1;object_index<=*count;object_index++)
-   {  sum_dist+=pow(centroid_dists[object_index-1]-*DistMean,2);
-      if (centroid_dists[object_index-1]==*DistMax) dist_histogram[num_bins-1]+=1;
-      else dist_histogram[(int)(((centroid_dists[object_index-1]-*DistMin)/(*DistMax-*DistMin))*num_bins)]+=1;
-   }
-   if (*count>1) *DistVar=sum_dist/((*count)-1);
-   else *DistVar=sum_dist;
+	// calculate the areas 
+	sum_areas = 0;
+	sum_dists = 0;
+	object_areas = new int[*count];
+	centroid_dists = new double[*count];
+	for (object_index = 1; object_index <= *count; object_index++) {
+		double x_centroid,y_centroid,z_centroid;
+		object_areas[object_index-1] = FeatureCentroid(BWImage, object_index, &x_centroid, &y_centroid,&z_centroid);
+		centroid_dists[object_index-1] = sqrt(pow(x_centroid-(*centroid_x),2)+pow(y_centroid-(*centroid_y),2));
+		sum_areas += object_areas[object_index-1];
+		sum_dists += centroid_dists[object_index-1];
+	}
+	/* compute area statistics */
+	qsort(object_areas,*count,sizeof(int),compare_ints);
+	*AreaMin = object_areas[0];
+	*AreaMax = object_areas[*count-1];
+	if (*count > 0) *AreaMean = sum_areas/(*count);
+	else *AreaMean = 0;
+	*AreaMedian = object_areas[(*count)/2];
+	for (object_index = 0; object_index < num_bins; object_index++)
+		area_histogram[object_index] = 0;
+	/* compute the variance and the histogram */
+	sum_areas = 0;
+	if (*AreaMax-*AreaMin > 0)
+		for (object_index = 1; object_index <= *count; object_index++) {
+			sum_areas += pow(object_areas[object_index-1]-*AreaMean,2);
+			if (object_areas[object_index-1] == *AreaMax) area_histogram[num_bins-1] += 1;
+			else area_histogram[((object_areas[object_index-1] - *AreaMin) / (*AreaMax-*AreaMin))*num_bins] += 1;
+		}
+	if (*count > 1) *AreaVar = sum_areas / ((*count)-1);
+	else *AreaVar = sum_areas;
 
-   delete BWImage;
-   delete [] object_areas;
-   delete [] centroid_dists;
+	/* compute distance statistics */
+	qsort(centroid_dists,*count,sizeof(double),compare_doubles);
+	*DistMin = centroid_dists[0];
+	*DistMax = centroid_dists[*count-1];
+	if (*count > 0) *DistMean=sum_dists / (*count);
+	else *DistMean = 0;
+	*DistMedian = centroid_dists[(*count)/2];
+	for (object_index = 0; object_index < num_bins; object_index++)
+		dist_histogram[object_index] = 0;
+
+	/* compute the variance and the histogram */
+	sum_dist = 0;
+	for (object_index = 1; object_index <= *count; object_index++) {
+		sum_dist += pow(centroid_dists[object_index-1] - *DistMean, 2);
+		if (centroid_dists[object_index-1] == *DistMax) dist_histogram[num_bins-1] += 1;
+		else dist_histogram[(int)(((centroid_dists[object_index-1] - *DistMin) / (*DistMax-*DistMin))*num_bins)] += 1;
+	}
+	if (*count>1) *DistVar = sum_dist / ((*count)-1);
+	else *DistVar = sum_dist;
+
+	delete BWImage;
+	delete [] object_areas;
+	delete [] centroid_dists;
 }
 
 /* GaborFilters */
 /* ratios -array of double- a pre-allocated array of double[7]
 */
-void ImageMatrix::GaborFilters2D(double *ratios)
-{  GaborTextureFilters2D(this, ratios);
+void ImageMatrix::GaborFilters2D(double *ratios) {
+	GaborTextureFilters2D(this, ratios);
 }
 
 
 /* haarlick
    output -array of double- a pre-allocated array of 28 doubles
 */
-void ImageMatrix::HaarlickTexture2D(double distance, double *out)
-{  if (distance<=0) distance=1;
-   haarlick2D(this,distance,out);
+void ImageMatrix::HaarlickTexture2D(double distance, double *out) {
+	if (distance<=0) distance=1;
+	haarlick2D(this,distance,out);
 }
 
 /* MultiScaleHistogram
@@ -1459,26 +1428,25 @@ void ImageMatrix::HaarlickTexture2D(double distance, double *out)
    Here we used 4 histograms with number of bins being 3,5,7,9.
    out -array of double- a pre-allocated array of 24 bins
 */
-void ImageMatrix::MultiScaleHistogram(double *out)
-{  int a;
-   double max=0;
-   histogram(out,3,0);
-   histogram(&(out[3]),5,0);
-   histogram(&(out[8]),7,0);
-   histogram(&(out[15]),9,0);
-   for (a=0;a<24;a++)
-     if (out[a]>max) max=out[a];
-   for (a=0;a<24;a++)
-     out[a]=out[a]/max;
+void ImageMatrix::MultiScaleHistogram(double *out) {
+	int a;
+	double max=0;
+	histogram(out,3,0);
+	histogram(&(out[3]),5,0);
+	histogram(&(out[8]),7,0);
+	histogram(&(out[15]),9,0);
+	for (a=0;a<24;a++)
+		if (out[a]>max) max = out[a];
+	for (a=0;a<24;a++)
+		out[a] = out[a] / max;
 }
 
 /* TamuraTexture
    Tamura texture signatures: coarseness, directionality, contrast
    vec -array of double- a pre-allocated array of 6 doubles
 */
-void ImageMatrix::TamuraTexture2D(double *vec)
-{
-  Tamura3Sigs2D(this,vec);
+void ImageMatrix::TamuraTexture2D(double *vec) {
+	Tamura3Sigs2D(this,vec);
 }
 
 /* zernike
@@ -1486,11 +1454,9 @@ void ImageMatrix::TamuraTexture2D(double *vec)
                             (the actual size is returned by "output_size))
    output_size -* long- the number of enteries in the array "zvalues" (normally 72)
 */
-void ImageMatrix::zernike2D(double *zvalues, long *output_size)
-{  mb_zernike2D(this, 0, 0, zvalues, output_size);
+void ImageMatrix::zernike2D(double *zvalues, long *output_size) {
+	mb_zernike2D(this, 0, 0, zvalues, output_size);
 }
-
-#pragma package(smart_init)
 
 
 
