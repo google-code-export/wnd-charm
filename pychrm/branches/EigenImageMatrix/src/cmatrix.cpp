@@ -63,82 +63,13 @@
 #include "libtiff32/tiffio.h"
 #endif
 
-#define MIN(a,b) (a<b?a:b)
-#define MAX(a,b) (a>b?a:b)
 
 using namespace std;
 
-RGBcolor HSV2RGB(HSVcolor hsv)
-{   RGBcolor rgb;
-    float R=0, G=0, B=0;
-    float H, S, V;
-    float i, f, p, q, t;
-
-    H=hsv.hue;
-    S=(float)(hsv.saturation)/240;
-    V=(float)(hsv.value)/240;
-    if(S==0 && H==0) {R=G=B=V;}  /*if S=0 and H is undefined*/
-    H=H*(360.0/240.0);
-    if(H==360) {H=0;}
-    H=H/60;
-    i=floor(H);
-    f=H-i;
-    p=V*(1-S);
-    q=V*(1-(S*f));
-    t=V*(1-(S*(1-f)));
-
-    if(i==0) {R=V;  G=t;  B=p;}
-    if(i==1) {R=q;  G=V;  B=p;}
-    if(i==2) {R=p;  G=V;  B=t;}
-    if(i==3) {R=p;  G=q;  B=V;}
-    if(i==4) {R=t;  G=p;  B=V;}
-    if(i==5) {R=V;  G=p;  B=q;}
-
-    rgb.red=(byte)(R*255);
-    rgb.green=(byte)(G*255);
-    rgb.blue=(byte)(B*255);
-    return rgb;
-}
 //-----------------------------------------------------------------------
-HSVcolor RGB2HSV(RGBcolor rgb)
-{
-  float r,g,b,h,max,min,delta;
-  HSVcolor hsv;
-
-  r=(float)(rgb.red) / 255;
-  g=(float)(rgb.green) / 255;
-  b=(float)(rgb.blue) / 255;
-
-  max = MAX (r, MAX (g, b)), min = MIN (r, MIN (g, b));
-  delta = max - min;
-
-  hsv.value = (byte)(max*240.0);
-  if (max != 0.0)
-    hsv.saturation = (byte)((delta / max)*240.0);
-  else
-    hsv.saturation = 0;
-  if (hsv.saturation == 0) hsv.hue = 0; //-1;
-  else {
-  	h = 0;
-    if (r == max)
-      h = (g - b) / delta;
-    else if (g == max)
-      h = 2 + (b - r) / delta;
-    else if (b == max)
-      h = 4 + (r - g) / delta;
-    h *= 60.0;
-    if (h >= 360) h -= 360.0;
-    if (h < 0.0) h += 360.0;
-    hsv.hue = (byte)(h *(240.0/360.0));
-  }
-  return(hsv);
-}
 
 
 
-double RGB2GRAY(RGBcolor rgb) {
-	return((0.2989*rgb.r+0.5870*rgb.g+0.1140*rgb.b));
-}
 
 
 
@@ -151,7 +82,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
 	TIFF *tif = NULL;
 	unsigned char *buf8;
 	unsigned short *buf16;
-	double max_val;
+	double max_range = pow((double)2,bits)-1;
 	RGBcolor rgb;
 	HSVcolor hsv;
 	TIFFSetWarningHandler(NULL);
@@ -168,9 +99,8 @@ int ImageMatrix::LoadTIFF(char *filename) {
 		if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
 
 		/* allocate the data */
-		if (! allocate (width, height) ) return (0);
+		allocate (width, height);
 
-		max_val=pow(2,bits)-1;
 		/* read TIFF header and determine image size */
 		buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
 		buf16 = (unsigned short *)_TIFFmalloc(TIFFScanlineSize(tif)*sizeof(unsigned short)*spp);
@@ -190,9 +120,9 @@ int ImageMatrix::LoadTIFF(char *filename) {
 					if (bits==8) val=(double)byte_data;
 					else val=(double)(short_data);
 					if (spp==3) {  /* RGB image */
-						if (sample_index==0) rgb.r=(unsigned char)(255*(val/max_val));
-						if (sample_index==1) rgb.g=(unsigned char)(255*(val/max_val));
-						if (sample_index==2) rgb.b=(unsigned char)(255*(val/max_val));
+						if (sample_index==0) rgb.r=(unsigned char)(255*(val/max_range));
+						if (sample_index==1) rgb.g=(unsigned char)(255*(val/max_range));
+						if (sample_index==2) rgb.b=(unsigned char)(255*(val/max_range));
 					}
 				}
 				if (spp==3) set (x, y, rgb);
@@ -231,8 +161,8 @@ int ImageMatrix::SaveTiff(char *filename) {
 
 	for (y = 0; y < height; y++)
 		for (x = 0; x < width ; x++) {
-			if (bits==16) BufImage16[x + (y * width)] = (unsigned short) ( pixel_data (x,y) );
-			else BufImage8[x + (y * width)] = (unsigned char) ( pixel_data (x,y) );
+			if (bits==16) BufImage16[x + (y * width)] = (unsigned short) ( pix_plane (y,x) );
+			else BufImage8[x + (y * width)] = (unsigned char) ( pix_plane (y,x) );
 		}
 
 	TIFFSetField(tif,TIFFTAG_IMAGEWIDTH, width);
@@ -257,7 +187,7 @@ int ImageMatrix::SaveTiff(char *filename) {
 /* simple constructors */
 
 // This sets default values for the different constructors
-ImageMatrix::init() {
+void ImageMatrix::init() {
 	width=0;
 	height=0;
 	has_stats = false;
@@ -265,22 +195,22 @@ ImageMatrix::init() {
 	ColorMode=cmHSV;     /* set a default color mode */
 	bits=8; /* set some default value */
 }
-int ImageMatrix::allocate (w, h) {
+
+void ImageMatrix::allocate (int w, int h) {
 	width  = 0;
 	height = 0;
 	// These throw exceptions, which we don't catch (catch in main?)
 	// N.B. Eigen matrix parameter order is rows, cols, not X, Y
 	pix_plane = pixData (h, w);
 	if (ColorMode != cmGRAY) {
-		clr_plane = clrPlane (h, w);
+		clr_plane = clrData (h, w);
 	}
 
 	width  = w;
 	height = h;
-	return (1);
 }
 
-ImageMatrix::copy(ImageMatrix *copy) {
+void ImageMatrix::copy(ImageMatrix *copy) {
 	width = copy->width;
 	height = copy->height;
 	has_stats = copy->has_stats;
@@ -290,7 +220,7 @@ ImageMatrix::copy(ImageMatrix *copy) {
 	allocate(width, height);
 	pix_plane = copy->pix_plane;
 	if (ColorMode != cmGRAY) {
-		clr_plane = matrix->clr_plane;
+		clr_plane = copy->clr_plane;
 	}
 }
 
@@ -339,41 +269,16 @@ ImageMatrix::~ImageMatrix()
 {
 }
 
-/* assign a pixel value in various ways */
-void ImageMatrix::set(int x, int y, RGBcolor val) {
-	pix_plane (x,y) = RGB2GRAY (val);
-	if (ColorMode == cmHSV) {
-		HSVcolor hsv = RGB2HSV(val);
-		clr_plane(y,x) = hsv;
-	} else if (ColorMode == cmRGB) {
-		clr_plane(y,x) = val;
-	}
-}
-void ImageMatrix::set(int x, int y, HSVcolor val) {
-	pix_plane (x,y) = HSV2GRAY (val);
-	if (ColorMode == cmRGB) {
-		HSVcolor hsv = HSV2RGB (val);
-		clr_plane(y,x) = hsv;
-	} else if (ColorMode == cmHSV) {
-		clr_plane(y,x) = val;
-	}
-}
-
-/* assign a pixel intensity only */
-void ImageMatrix::set (int x,int y, double val) {
-	pix_plane (x,y) = val;
-}
 
 /* to8bits
    convert a 16 bit matrix to 8 bits
    N.B.: This assumes that the data takes up the entire 16-bit range, which is almost certainly wrong
 */
 void ImageMatrix::to8bits() {
-	double max_val;
+	double max_range = pow((double)2,bits)-1;
 	if (bits==8) return;
-	max_val=pow(2,bits)-1;
 	bits=8;
-	pix_plane = 255.0 * (pix_plane / max_val);
+	pix_plane = 255.0 * (pix_plane / max_range);
 }
 
 /* flipV
@@ -381,24 +286,24 @@ void ImageMatrix::to8bits() {
 */
 
 void ImageMatrix::flipV() {
-	pix_plane = pix_plane.rowwise.reverseInPlace();
+	pix_plane = pix_plane.rowwise().reverse();
 	if (ColorMode != cmGRAY) {
-		clr_plane.rowwise.reverseInPlace();
+		clr_plane.rowwise().reverse();
 	}
 }
 /* flipH
    flip an image horizontally
 */
 void ImageMatrix::flipH() {
-	pix_plane = pix_plane.colwise.reverseInPlace();
+	pix_plane = pix_plane.colwise().reverse();
 	if (ColorMode != cmGRAY) {
-		clr_plane.colwise.reverseInPlace();
+		clr_plane.colwise().reverse();
 	}
 }
 
 void ImageMatrix::invert() {
-	double max_val=pow(2,bits)-1;
-	pix_plane = max_val - pix_plane;
+	double max_range = pow((double)2,bits)-1;
+	pix_plane = max_range - pix_plane.array();
 }
 
 /* Downsample
@@ -423,9 +328,9 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 		new_x=0;
 		while (x < width) {
     	    double sum_i=0;
-			double sum_h=0;
-			double sum_s=0;
-			double sum_v=0;
+			double sum_c1=0;
+			double sum_c2=0;
+			double sum_c3=0;
 
 			/* the leftmost fraction of pixel */
 			a=(int)(floor(x));
@@ -433,9 +338,9 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 			if (frac>0 && a<width) {
 				sum_i += pix_plane(new_y,a)*frac;
 				if (ColorMode != cmGRAY) {
-					sum_h += clr_plane(new_y,a).h*frac;
-					sum_s += clr_plane(new_y,a).s*frac;
-					sum_v += clr_plane(new_y,a).v*frac;
+					sum_c1 += clr_plane(new_y,a).h*frac;
+					sum_c2 += clr_plane(new_y,a).s*frac;
+					sum_c3 += clr_plane(new_y,a).v*frac;
 				}
 			} 
 			/* the middle full pixels */
@@ -443,9 +348,9 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 				if (a<width) {
 					sum_i += pix_plane(new_y,a)*frac;
 					if (ColorMode != cmGRAY) {
-						sum_h += clr_plane(new_y,a).h*frac;
-						sum_s += clr_plane(new_y,a).s*frac;
-						sum_v += clr_plane(new_y,a).v*frac;
+						sum_c1 += clr_plane(new_y,a).h*frac;
+						sum_c2 += clr_plane(new_y,a).s*frac;
+						sum_c3 += clr_plane(new_y,a).v*frac;
 					}
 				}
 			}
@@ -454,20 +359,20 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 			if (frac>0 && a<width) {
 				sum_i += pix_plane(new_y,a)*frac;
 				if (ColorMode != cmGRAY) {
-					sum_h += clr_plane(new_y,a).h*frac;
-					sum_s += clr_plane(new_y,a).s*frac;
-					sum_v += clr_plane(new_y,a).v*frac;
+					sum_c1 += clr_plane(new_y,a).h*frac;
+					sum_c2 += clr_plane(new_y,a).s*frac;
+					sum_c3 += clr_plane(new_y,a).v*frac;
 				}
 			}
 
 			pix_plane (new_y, new_x) = sum_i/(dx);
 			if (ColorMode != cmGRAY) {
-					sum_h += clr_plane(new_y,a).h*frac;
-					sum_s += clr_plane(new_y,a).s*frac;
-					sum_v += clr_plane(new_y,a).v*frac;
-				clr_plane(new_y, new_x).h = (byte)(sum_h/(dx));
-				clr_plane(new_y, new_x).s = (byte)(sum_s/(dx));
-				clr_plane(new_y, new_x).v = (byte)(sum_v/(dx));
+					sum_c1 += clr_plane(new_y,a).h*frac;
+					sum_c2 += clr_plane(new_y,a).s*frac;
+					sum_c3 += clr_plane(new_y,a).v*frac;
+				clr_plane(new_y, new_x).h = (byte)(sum_c1/(dx));
+				clr_plane(new_y, new_x).s = (byte)(sum_c2/(dx));
+				clr_plane(new_y, new_x).v = (byte)(sum_c3/(dx));
 			}
 			x+=dx;
 			new_x++;
@@ -480,27 +385,27 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 		new_y=0;
 		while (y<height) {
 			double sum_i=0;
-			double sum_r=0;
-			double sum_g=0;
-			double sum_b=0;
+			double sum_c1=0;
+			double sum_c2=0;
+			double sum_c3=0;
 
 			a=(int)(floor(y));
 			frac=ceil(y)-y;
 			if (frac>0 && a<height) {   /* take also the part of the leftmost pixel (if needed) */
 				sum_i += pix_plane(a,new_x)*frac;
 				if (ColorMode != cmGRAY) {
-					sum_h += clr_plane(a,new_x).h*frac;
-					sum_s += clr_plane(a,new_x).s*frac;
-					sum_v += clr_plane(a,new_x).v*frac;
+					sum_c1 += clr_plane(a,new_x).h*frac;
+					sum_c2 += clr_plane(a,new_x).s*frac;
+					sum_c3 += clr_plane(a,new_x).v*frac;
 				}
 			}
 			for (a=(int)(ceil(y));a<floor(y+dy);a=a+1) {
 				if (a<height) {
 					sum_i += pix_plane(a,new_x)*frac;
 					if (ColorMode != cmGRAY) {
-						sum_h += clr_plane(a,new_x).h*frac;
-						sum_s += clr_plane(a,new_x).s*frac;
-						sum_v += clr_plane(a,new_x).v*frac;
+						sum_c1 += clr_plane(a,new_x).h*frac;
+						sum_c2 += clr_plane(a,new_x).s*frac;
+						sum_c3 += clr_plane(a,new_x).v*frac;
 					}
 				}
 			}
@@ -508,17 +413,17 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 			if (frac>0 && a<height) {
 				sum_i += pix_plane(a,new_x)*frac;
 				if (ColorMode != cmGRAY) {
-					sum_h += clr_plane(a,new_x).h*frac;
-					sum_s += clr_plane(a,new_x).s*frac;
-					sum_v += clr_plane(a,new_x).v*frac;
+					sum_c1 += clr_plane(a,new_x).h*frac;
+					sum_c2 += clr_plane(a,new_x).s*frac;
+					sum_c3 += clr_plane(a,new_x).v*frac;
 				}
 			}
 
 			pix_plane (new_y, new_x) = sum_i/(dy);
 			if (ColorMode != cmGRAY) {
-				clr_plane(new_y, new_x).h = (byte)(sum_h/(dy));
-				clr_plane(new_y, new_x).s = (byte)(sum_s/(dy));
-				clr_plane(new_y, new_x).v = (byte)(sum_v/(dy));
+				clr_plane(new_y, new_x).h = (byte)(sum_c1/(dy));
+				clr_plane(new_y, new_x).s = (byte)(sum_c2/(dy));
+				clr_plane(new_y, new_x).v = (byte)(sum_c3/(dy));
 			}
 
 			y+=dy;
@@ -538,7 +443,6 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 ImageMatrix* ImageMatrix::Rotate(double angle) {
 	ImageMatrix *new_matrix;
 	int new_x,new_y,new_width,new_height;
-	pix_plane pix;
 
 	// Only deal with right angles
 	if (! ( (angle == 90) || (angle == 180) || (angle == 270) ) ) return (this);
@@ -562,15 +466,15 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
 	// a 270 is m.transpose()
 	switch ((int)angle) {
 		case 90:
-			new_matrix->pix_plane = pix_plane.transposeInPlace().rowwise.reverseInPlace();
+			new_matrix->pix_plane = pix_plane.transpose().rowwise().reverse();
 		break;
 
 		case 180:
-			new_matrix->pix_plane = pix_plane.reverseInPlace();
+			new_matrix->pix_plane = pix_plane.reverse();
 		break;
 
 		case 270:
-			new_matrix->pix_plane = pix_plane.transposeInPlace();
+			new_matrix->pix_plane = pix_plane.transpose();
 		break;
 	}
 	return(new_matrix);
@@ -579,12 +483,6 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
 
 /* find basic intensity statistics */
 
-int compare_doubles (const void *a, const void *b)
-{
-  if (*((double *)a) > *((double*)b)) return(1);
-  if (*((double*)a) == *((double*)b)) return(0);
-  return(-1);
-}
 
 /* BasicStatistics
    get basic statistical properties of the intensity of the image
@@ -600,8 +498,8 @@ int compare_doubles (const void *a, const void *b)
 */
 void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_p, double *min_p, double *max_p, double *hist_p, int bins) {
 	long pixel_index,num_pixels;
-	double *pixels=NULL, *pix_ptr, val;
-	double min = INF, max = -INF, sum = 0, sum2 = 0, mean = 0, median = 0, delta = 0, M2 = 0, val = 0, val_m = 0, std = 0;
+	double *pixels=NULL, *pix_ptr;
+	double min = INF, max = -INF, mean = 0, median = 0, delta = 0, M2 = 0, val = 0, val_m = 0, var = 0, std = 0;
 	bool calc_stats, calc_median, calc_hist;
 
 	calc_stats = (mean_p || std_p || min_p || max_p);
@@ -644,8 +542,8 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 			for (int x = 0; x < width; x++) {
 				val = pix_plane (y, x);
 				if (pixels) *pix_ptr++ = val;
-				if (val > max1) max1 = val;
-				if (val < min1) min1 = val;
+				if (val > max) max = val;
+				if (val < min) min = val;
 				// This is Welford's cumulative mean+variance algorithm as reported by Knuth
 				pixel_index++;
 				delta = val - mean;
@@ -677,7 +575,7 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 	}
 	
 	if (calc_hist) {
-		histogram(hist,bins,0);
+		histogram(hist_p,bins,0);
 	}
 }
 
@@ -685,42 +583,40 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
    min -double- the min pixel value (ignored if <0)
    max -double- the max pixel value (ignored if <0)
    range -long- nominal dynamic range (ignored if <0)
-   mean -double- the mean of the normalized image (ignored if <0)
-   stddev -double- the stddev of the normalized image (ignored if <0)
+   n_mean -double- the mean of the normalized image (ignored if <0)
+   n_std -double- the stddev of the normalized image (ignored if <0)
 */
-void ImageMatrix::normalize(double min, double max, long range, double mean, double stddev) {
+void ImageMatrix::normalize(double n_min, double n_max, long n_range, double n_mean, double n_std) {
 	long x,y;
 	double val;
-	/* normalized to min and max */
-	if (min >= 0 && max > 0 && range > 0) {
-		double norm_fact = range / (max-min);
+	/* normalized to n_min and n_max */
+	if (n_min >= 0 && n_max > 0 && n_range > 0) {
+		double norm_fact = n_range / (n_max-n_min);
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
 				val = pix_plane (y,x);
-				if (val < min) val = 0;
-				else if (val > max) val = range;
-				else val = norm_fact * (val - min);
+				if (val < n_min) val = 0;
+				else if (val > n_max) val = n_range;
+				else val = norm_fact * (val - n_min);
 				pix_plane (y,x) = val;
 			}
 		}
 	}
 
-    /* normalize to mean and stddev */
-	if (mean > 0) {
-		double d_mean = mean() - mean, std_fact = stddev/std();
-		double max_range = pow(2,bits)-1;
+    /* normalize to n_mean and n_std */
+	if (n_mean > 0) {
+		double d_mean = mean() - n_mean, std_fact = n_std/std();
+		double max_range = pow((double)2,bits)-1;
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
 				val = pix_plane (y,x) - d_mean;
-				if (stddev > 0)
-					val = mean + (val-mean) * std_fact;
+				if (n_std > 0)
+					val = n_mean + (val-n_mean) * std_fact;
 				if (val < 0) val = 0;
 				else if (val > max_range) val = max_range;
 				pix_plane (y,x) = val;
 			}
         }
-//BasicStatistics(&original_mean, NULL, &original_stddev, NULL, NULL, NULL, 0);		  
-//printf("%f %f\n",original_mean,original_stddev);
 	}	   
 }
 
@@ -755,13 +651,13 @@ void ImageMatrix::convolve(ImageMatrix *filter) {
 }
 
 /* find the basic color statistics
-   hue_avg -double *- average hue
-   hue_std -double *- standard deviation of the hue
-   sat_avg -double *- average saturation
-   sat_std -double *- standard deviation of the saturation
-   val_avg -double *- average value
-   val_std -double *- standard deviation of the value
-   max_color -double *- the most popular color
+   hue_avg_p -double *- average hue
+   hue_std_p -double *- standard deviation of the hue
+   sat_avg_p -double *- average saturation
+   sat_std_p -double *- standard deviation of the saturation
+   val_avg_p -double *- average value
+   val_std_p -double *- standard deviation of the value
+   max_color_p -double *- the most popular color
    colors -double *- a histogram of colors
    if values are NULL - the value is not computed
 */
@@ -773,6 +669,7 @@ void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, doubl
 	HSVcolor hsv;
 	double max,pixel_num;
 	float certainties[COLORS_NUM+1];
+	byte h, s, v;
 
 	pixel_num=height*width;
 
@@ -819,13 +716,13 @@ void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, doubl
 	if (val_std_p) *val_std_p = val_std;
 
 	/* max color (the most common color in the image) */
-	if (max_color) {
-		*max_color=0;
+	if (max_color_p) {
+		*max_color_p=0;
 		max=0.0;
 		for (a = 0; a <= COLORS_NUM; a++) {
 			if (colors[a] > max) {
 				max=colors[a];
-				*max_color=a;
+				*max_color_p=a;
 			}
 		}
 	}
@@ -844,12 +741,12 @@ void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, doubl
 void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {  
 	long x,y,z; //,base_color;
 	double cb_intensity;
-	double max_value;
+	double max_range = pow((double)2,bits)-1;
 	HSVcolor hsv_pixel;
 	int color_index=0;   
 	RGBcolor rgb;
 	float certainties[COLORS_NUM+1];
-	max_value=pow(2,bits)-1;
+
 	// initialize the color histogram
 	if( color_hist ) 
 		for( color_index = 0; color_index <= COLORS_NUM; color_index++ )
@@ -863,11 +760,11 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 				if( color_hist )
 					color_hist[ color_index ] ++;
 				// convert the color index to a greyscale value
-				cb_intensity = int( ( max_value * color_index ) / COLORS_NUM );
+				cb_intensity = int( ( max_range * color_index ) / COLORS_NUM );
 			} else { // using hue
 				cb_intensity = hsv_pixel.h;
 			}
-			rgb.r = rgb.g = rgb.b = (byte)( 255 * ( cb_intensity / max_value ) );
+			rgb.r = rgb.g = rgb.b = (byte)( 255 * ( cb_intensity / max_range ) );
 			clr_plane (y, x) = RGB2HSV( rgb );
 			pix_plane (y, x) = cb_intensity;
 		}
@@ -881,14 +778,15 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 /* get image histogram */
 void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 	long a;
-	double min=INF,max=-INF;
+	double h_min=INF,h_max=-INF;
 	/* find the minimum and maximum */
 	if (imhist == 1) {    /* similar to the Matlab imhist */
-		min = 0;
-		max = pow(2,bits) - 1;
+		h_min = 0;
+		h_max = pow((double)2,bits)-1;
+
 	} else {
-		min = min();
-		max = max();
+		h_min = min();
+		h_max = max();
 	}
 	/* initialize the bins */
 	for (a = 0; a < bins_num; a++)
@@ -896,9 +794,9 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 
 	/* build the histogram */
 	for (a = 0; a < width*height; a++) {
-		if (pix_plane.array().coeff(a) >= max) bins[bins_num-1]++;
-		else if (pix_plane.array().coeff(a) <= min) bins[0]++;
-		else bins[(int)(((pix_plane.array().coeff(a) - min)/(max - min)) * bins_num)]++;
+		if (pix_plane.array().coeff(a) >= h_max) bins[bins_num-1]++;
+		else if (pix_plane.array().coeff(a) <= h_min) bins[0]++;
+		else bins[(int)(((pix_plane.array().coeff(a) - h_min)/(h_max - h_min)) * bins_num)]++;
 	}
 
 	return;
@@ -1126,9 +1024,7 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
 void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins) {
 	ImageMatrix *GradientMagnitude,*GradientDirection;
 	long a,bin_index;
-	double min,max,sum,max_intensity;
-
-	max_intensity = pow(bits,2)-1;
+	double min,max,sum, max_range = pow((double)2,bits)-1;
 
 	GradientMagnitude = new ImageMatrix (this);
 	PerwittMagnitude2D(GradientMagnitude);
@@ -1144,7 +1040,7 @@ void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMed
 //	level = min+(max-min)/2;   // level=duplicate->OtsuBinaryMaskTransform()   // level=MagMean
 
 	for (a = 0; a < GradientMagnitude->height*GradientMagnitude->width; a++)
-		if (GradientMagnitude->pix_plane.array().coeff(a) > max_intensity*0.5) (*EdgeArea)+=1; /* find the edge area */
+		if (GradientMagnitude->pix_plane.array().coeff(a) > max_range*0.5) (*EdgeArea)+=1; /* find the edge area */
 //   GradientMagnitude->OtsuBinaryMaskTransform();
 
 	/* find direction statistics */
@@ -1180,7 +1076,7 @@ void ImageMatrix::RadonTransform2D(double *vec) {
 	double theta[4]={0,45,90,135};
 	//double min,max;
 	int rLast,rFirst;
-	rLast = (int) ceil(sqrt(pow(width-1-(width-1)/2,2)+pow(height-1-(height-1)/2,2))) + 1;
+	rLast = (int) ceil(sqrt(pow( (double)(width-1-(width-1)/2),2)+pow( (double)(height-1-(height-1)/2),2))) + 1;
 	rFirst = -rLast;
 	output_size=rLast-rFirst+1;
 
@@ -1228,7 +1124,7 @@ void ImageMatrix::RadonTransform2D(double *vec) {
 double ImageMatrix::Otsu() {
 	long a; //,x,y;
 	double hist[256],omega[256],mu[256],sigma_b2[256],maxval=-INF,sum,count;
-	double max=pow(2,bits)-1;
+	double max_range = pow((double)2,bits)-1;
 	histogram(hist,256,1);
 	omega[0] = hist[0] / (width*height);
 	mu[0] = 1*hist[0] / (width*height);
@@ -1249,7 +1145,7 @@ double ImageMatrix::Otsu() {
 			sum += a;
 			count++;
 		}	 
-   return((pow(2,bits)/256.0)*((sum/count)/max));
+   return((pow((double)2,bits)/256.0)*((sum/count)/max_range));
 }
 
 //-----------------------------------------------------------------------------------
@@ -1259,14 +1155,14 @@ double ImageMatrix::Otsu() {
 */
 double ImageMatrix::OtsuBinaryMaskTransform() {
 	double OtsuGlobalThreshold;
-	double max=pow(2,bits)-1;
+	double max_range = pow((double)2,bits)-1;
 
 	OtsuGlobalThreshold=Otsu();
 
 	/* classify the pixels by the threshold */
 	for (long a = 0; a < width*height; a++)
-		if (pix_plane.array().coeff(a) > OtsuGlobalThreshold*max) pix_plane.array().coeff(a) = 1;
-		else pix_plane.array().coeff(a) = 0;
+		if (pix_plane.array().coeff(a) > OtsuGlobalThreshold*max_range) (pix_plane.array())(a) = 1;
+		else (pix_plane.array())(a) = 0;
 	 
 	return(OtsuGlobalThreshold);
 }
@@ -1283,8 +1179,8 @@ int ImageMatrix::BWlabel(int level) {
 
 //--------------------------------------------------------
 
-void ImageMatrix::centroid(double *x_centroid, double *y_centroid, double *z_centroid) {
-	GlobalCentroid(this,x_centroid,y_centroid,z_centroid);
+void ImageMatrix::centroid(double *x_centroid, double *y_centroid) {
+	GlobalCentroid(this,x_centroid,y_centroid);
 }
 
 //--------------------------------------------------------
@@ -1317,7 +1213,7 @@ int compare_ints (const void *a, const void *b) {
 	return(-1);
 }
 
-void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, double *centroid_z, int *AreaMin, int *AreaMax,
+void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, int *AreaMin, int *AreaMax,
 	double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
 	double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins
 ) {
@@ -1335,14 +1231,14 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
 
 	BWImage=new ImageMatrix (this);
 	BWImage->OtsuBinaryMaskTransform();
-	BWImage->centroid(centroid_x,centroid_y,centroid_z);
+	BWImage->centroid(centroid_x,centroid_y);
 	*count = BWImage->BWlabel(8);
 	if (inv_count > *count) {
 		temp = BWImage;
 		BWImage = BWInvert;
 		BWInvert = temp;
 		*count = inv_count;
-		BWImage->centroid(centroid_x,centroid_y,centroid_z);	  
+		BWImage->centroid(centroid_x,centroid_y);	  
 	}
 	delete BWInvert;
 	*Euler=EulerNumber(BWImage,*count)+1;
@@ -1353,8 +1249,8 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
 	object_areas = new int[*count];
 	centroid_dists = new double[*count];
 	for (object_index = 1; object_index <= *count; object_index++) {
-		double x_centroid,y_centroid,z_centroid;
-		object_areas[object_index-1] = FeatureCentroid(BWImage, object_index, &x_centroid, &y_centroid,&z_centroid);
+		double x_centroid,y_centroid;
+		object_areas[object_index-1] = FeatureCentroid(BWImage, object_index, &x_centroid, &y_centroid);
 		centroid_dists[object_index-1] = sqrt(pow(x_centroid-(*centroid_x),2)+pow(y_centroid-(*centroid_y),2));
 		sum_areas += object_areas[object_index-1];
 		sum_dists += centroid_dists[object_index-1];
