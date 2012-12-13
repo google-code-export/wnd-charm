@@ -1,3 +1,15 @@
+/* compile:
+g++ -O3 -o testeigen testeigen.cpp
+*/
+#include <sys/time.h>
+//#include <ctime>
+typedef unsigned long long timestamp_t;
+static timestamp_t get_timestamp () {
+	struct timeval now;
+	gettimeofday (&now, NULL);
+	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+}
+
 #include <iostream>
 
 #include "Eigen/Dense"
@@ -10,6 +22,7 @@ typedef struct {
 	byte h,s,v;
 } HSVcolor;
 typedef Eigen::Matrix< HSVcolor, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > MatrixXhsv;
+//typedef Eigen::Matrix< HSVcolor, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor > MatrixXhsv;
 typedef MatrixXhsv clrData;
 
 
@@ -19,28 +32,37 @@ typedef Eigen::Matrix< byte, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > M
 
 #define INF 10E200
 
-
-void histogram (pixData pix_data, double *bins, unsigned short bins_num) {
+// note the const when passing an Eigen matrix
+void histogram (const pixData& pix_data, double *bins, unsigned short bins_num) {
 	long a;
 	double min=INF,max=-INF;
 	int width, height;
-	double *data;
 	/* find the minimum and maximum */
 	min = 0;
 	max = pow(2,16) - 1;
 	width = pix_data.cols();
 	height = pix_data.rows();
-	printf ("min: %lf, max: %lf, width: %d. height: %d\n", pix_data.minCoeff(), pix_data.maxCoeff(), width, height);
+//	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", &(pix_data), pix_data.data(), pix_data.minCoeff(), pix_data.maxCoeff());
 
 	/* initialize the bins */
 	for (a = 0; a < bins_num; a++)
 		bins[a] = 0;
 
 	/* build the histogram */
-	data = pix_data.data();
+// without -O3 this is still fast
+// note how the data pointer is declared as const
+// 	const double *data;
+// 	data = pix_data.data();
+// 	for (a = 0; a < width*height; a++) {
+// 		if (data[a] == max) bins[bins_num-1]++;
+// 		else bins[(int)(((data[a] - min)/(max - min)) * bins_num)]++;
+// 	}
+
+// with -O3 this is as fast as above (also safer?)
+// without -O3 this is 15x slower
 	for (a = 0; a < width*height; a++) {
-		if (data[a] == max) bins[bins_num-1]++;
-		else bins[(int)(((data[a] - min)/(max - min)) * bins_num)]++;
+		if (pix_data.array().coeff(a) == max) bins[bins_num-1]++;
+		else bins[(int)(((pix_data.array().coeff(a) - min)/(max - min)) * bins_num)]++;
 	}
 
 	return;
@@ -50,11 +72,20 @@ void test_bigmat() {
 	Eigen::MatrixXd randomMat = Eigen::MatrixXd::Random(1000,2000);
 	double bins[100];
 	pixData pix_data = (randomMat.array() + 1.0) * ((pow(2,16) - 1) / 2.0);
-	printf ("min: %lf, max: %lf\n", pix_data.minCoeff(), pix_data.maxCoeff());
-	histogram (pix_data, bins, 100);
+	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", (void *)&(pix_data), (void *)(pix_data.data()), pix_data.minCoeff(), pix_data.maxCoeff());
+	
+	timestamp_t t0 = get_timestamp();
 	for (int i = 0; i < 100; i++) {
-		printf ("bin [%3d]: %lf\n", i, bins[i]);
+		histogram (pix_data, bins, 100);
 	}
+	timestamp_t t1 = get_timestamp();
+
+	double msecs = (t1 - t0) / 1000.0L;
+	printf ("%d trials, %.4f msecs\n",100,msecs);
+
+// 	for (int i = 0; i < 100; i++) {
+// 		printf ("bin [%3d]: %lf\n", i, bins[i]);
+// 	}
 }
 
 
@@ -72,21 +103,20 @@ HSVcolor hsv, hsv2, *hsv3;
 	hsv.s = 20;
 	hsv.v = 30;
 	
+	// this should be the 6th element in a RowMajor row,col matrix
 	mymat (1,2) = hsv;
-
-//std::cout << "Here is the matrix mymat:\n" << mymat << std::endl;
 	hsv2 = mymat (1,2);
 	std::cout << "Here is the hsv:\n" << (int)hsv2.h << "," << (int)hsv2.s << "," << (int)hsv2.v << std::endl;
 	printf ("hsv is (%d,%d,%d)\n",(int)hsv.h, (int)hsv.s, (int)hsv.v);
 	printf ("hsv2 is (%d,%d,%d)\n",(int)hsv2.h, (int)hsv2.s, (int)hsv2.v);
 	printf ("hsv3 is (%d,%d,%d)\n",(int)(mymat (1,2).h), (int)(mymat (1,2).s), (int)(mymat (1,2).v));
 	for (int i = 0; i < 12; i++) {
-		printf ("hsv[%d] is (%d,%d,%d)\n",i,(int)(mymat.array().coeff(i).h), (int)(mymat.array().coeff(i).s), (int)(mymat.array().coeff(i).v));
-		printf ("hsv[%d]data is (%d,%d,%d)\n",i,(int)(mymat.data()[i].h), (int)(mymat.data()[i].s), (int)(mymat.data()[i].v));
+		printf ("hsv.data[%d] is (%d,%d,%d)\n",i,(int)(mymat.data()[i].h), (int)(mymat.data()[i].s), (int)(mymat.data()[i].v));
+		printf ("hsv.array.coeff[%d] is (%d,%d,%d)\n",i,(int)(mymat.array().coeff(i).h), (int)(mymat.array().coeff(i).s), (int)(mymat.array().coeff(i).v));
 	}
 }
 
 int main (int argc, char **argv) {
-	test_access();
+//	test_access();
 	test_bigmat();
 }
