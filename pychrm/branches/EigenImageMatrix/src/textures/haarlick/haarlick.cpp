@@ -36,7 +36,7 @@ void haarlick2D(ImageMatrix *Im, double distance, double *out) {
 		sum[a] = 0;
 	}
 
-   for (angle = 0; angle< = 135; angle = angle+45) {
+   for (angle = 0; angle <= 135; angle = angle+45) {
 		features = Extract_Texture_Features((int)distance, angle, p_gray,Im->height,Im->width, (int)max_value);
 		/*  (1) Angular Second Moment */
 		sum[0] += features->ASM;

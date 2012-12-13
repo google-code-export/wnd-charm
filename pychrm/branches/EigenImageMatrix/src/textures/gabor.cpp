@@ -231,10 +231,10 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios) {
 			if (max > 0) e2[x] = e2[x]/max;
 			else e2[x] = 0;
 
-		bw = new ImageMatrix (this);
+		bw = new ImageMatrix (Im);
 		for (y = 0; y < bw->height; y++)
 			for (x = 0; x < bw->width; x++)
-				bw->pix_plane(y,x) = e2[y*bw->width+x]*(pow(2,Im->bits)-1);
+				bw->pix_plane(y,x) = e2[y*bw->width+x]*(pow((double)2,Im->bits)-1);
 
 		GRAYthr = bw->Otsu();
 		for (x = 0; x < Im->width*Im->height; x++)

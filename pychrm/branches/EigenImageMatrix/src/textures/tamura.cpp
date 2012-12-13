@@ -41,33 +41,33 @@ double directionality(ImageMatrix *image) {
 	unsigned int ydim = image->height;
 	double Hd[NBINS];
 
-	deltaH = new ImageMatrix (this);
-	deltaV = new ImageMatrix (this);
+	deltaH = new ImageMatrix (image);
+	deltaV = new ImageMatrix (image);
 
 	matrixH = new ImageMatrix(3,3);
 	matrixV = new ImageMatrix(3,3);
 
 
 	//step1
-	matrixH->SetInt(0,0,0,-1); matrixH->SetInt(0,1,0,-2); matrixH->SetInt(0,2,0,-1);
-	matrixH->SetInt(2,0,0,1); matrixH->SetInt(2,1,0,2); matrixH->SetInt(2,2,0,-1);
+	matrixH->pix_plane(0,0) = -1; matrixH->pix_plane(1,0) = -2; matrixH->pix_plane(2,0) = -1;
+	matrixH->pix_plane(0,2) =  1; matrixH->pix_plane(1,2) =  2; matrixH->pix_plane(2,2) = -1;
 
-	matrixV->SetInt(0,0,0,1); matrixH->SetInt(1,0,0,2); matrixH->SetInt(2,0,0,1);
-	matrixV->SetInt(0,2,0,-1); matrixH->SetInt(1,2,0,-2); matrixH->SetInt(2,2,0,-1);
+	matrixV->pix_plane(0,0) =  1; matrixH->pix_plane(0,1) =  2; matrixH->pix_plane(0,2) =  1;
+	matrixV->pix_plane(2,0) = -1; matrixH->pix_plane(2,1) = -2; matrixH->pix_plane(2,2) = -1;
 
 	deltaH->convolve(matrixH);
 	deltaV->convolve(matrixV);
 
 	//step2
-	phi = new ImageMatrix(xdim,ydim,1);
+	phi = new ImageMatrix(xdim,ydim);
 
 	sum_r = 0;
-	for(y = 0; y < (int)ydim; ++y) {
-		for(x = 0; x < (int)xdim; ++x) {
-			if(deltaH->pix_plane(y,x) > =0.0001) {
-				phi->SetInt(x,y,0,atan(deltaV->pix_plane(y,x) / deltaH->pix_plane(y,x))+(M_PI/2.0+0.001)); //+0.001 because otherwise sometimes getting -6.12574e-17
+	for (y = 0; y < (int)ydim; ++y) {
+		for (x = 0; x < (int)xdim; ++x) {
+			if (deltaH->pix_plane(y,x) >= 0.0001) {
+				phi->pix_plane(y,x) = atan(deltaV->pix_plane(y,x) / deltaH->pix_plane(y,x))+(M_PI/2.0+0.001); //+0.001 because otherwise sometimes getting -6.12574e-17
 				sum_r += pow(deltaH->pix_plane(y,x),2)+pow(deltaV->pix_plane(y,x),2)+pow(phi->pix_plane(y,x),2);
-			} else phi->SetInt(x,y,0,0.0);
+			} else phi->pix_plane(y,x) = 0.0;
 		}
 	}
 
@@ -90,7 +90,7 @@ double directionality(ImageMatrix *image) {
 
 	sum = 0;
 	for (a = 0; a < NBINS; a++)
-		sum += Hd[a]*pow(a+1-fmx,2);
+		sum += Hd[a]*pow((double)(a+1-fmx),2);
 
 	return(fabs(log(sum/sum_r+0.0000001)));
 
@@ -112,7 +112,7 @@ double efficientLocalMean(const int x,const int y,const int k, ImageMatrix *lauf
 	if (starty < 0) starty = 0;
 	if (startx < 0) startx = 0;
 	if (stopx > dimx-1) stopx = dimx-1;
-	if (stopy > mimy-1) stopy = dimy-1;
+	if (stopy > dimy-1) stopy = dimy-1;
 
 	double unten, links, oben, obenlinks;
 
@@ -146,7 +146,7 @@ double coarseness(ImageMatrix *image, double *hist,int nbins) {
 	ImageMatrix *laufendeSumme,*Ak[K_VALUE],*Ekh[K_VALUE],*Ekv[K_VALUE],*Sbest;
 
 	//  laufendeSumme = new ImageMatrix;
-	laufendeSumme = new ImageMatrix (this);
+	laufendeSumme = new ImageMatrix (image);
 
 	// initialize for running sum calculation
 	double links, oben, obenlinks;
@@ -161,32 +161,32 @@ double coarseness(ImageMatrix *image, double *hist,int nbins) {
 			if(y < 1 || x < 1) obenlinks = 0;
 			else obenlinks = laufendeSumme->pix_plane(y-1,x-1);
 
-			laufendeSumme->SetInt(x,y,0,image->pix_plane(y,x) + links + oben - obenlinks);
+			laufendeSumme->pix_plane(y,x) = image->pix_plane(y,x) + links + oben - obenlinks;
 		}
 	}
 
 	for (k = 1; k <= K_VALUE; k++) {
-		Ak[k-1] = new ImageMatrix(xDim,yDim,1);
-		Ekh[k-1] = new ImageMatrix(xDim,yDim,1);
-		Ekv[k-1] = new ImageMatrix(xDim,yDim,1);
+		Ak[k-1] = new ImageMatrix(xDim,yDim);
+		Ekh[k-1] = new ImageMatrix(xDim,yDim);
+		Ekv[k-1] = new ImageMatrix(xDim,yDim);
 	}
-	Sbest = new ImageMatrix(image->width,image->height,1);
+	Sbest = new ImageMatrix(image->width,image->height);
 
 
 	//step 1
 	int lenOfk = 1;
 	for(k = 1; k <= K_VALUE; ++k) {
-		lenOfk* = 2;
+		lenOfk *= 2;
 		for(y = 0; y < (int)yDim; ++y)
 			for(x = 0; x < (int)xDim; ++x)
-				Ak[k-1]->SetInt(x,y,0,efficientLocalMean(x,y,lenOfk,laufendeSumme));
+				Ak[k-1]->pix_plane(y,x) = efficientLocalMean(x,y,lenOfk,laufendeSumme);
 	}
 
 	//step 2
 	lenOfk = 1;
 	for(k = 1; k <= K_VALUE; ++k) {
 		int k2 = lenOfk;
-		lenOfk* = 2;
+		lenOfk *= 2;
 		for(y = 0; y < (int)yDim; ++y) {
 			for(x = 0; x < (int)xDim; ++x) {
 				int posx1 = x+k2;
@@ -195,11 +195,11 @@ double coarseness(ImageMatrix *image, double *hist,int nbins) {
 				int posy1 = y+k2;
 				int posy2 = y-k2;
 				if(posx1 < (int)xDim && posx2 >= 0)
-					Ekh[k-1]->SetInt(x,y,0,fabs(Ak[k-1]->pix_plane(y,posx1) - Ak[k-1]->pix_plane(y,posx2)));
-				else Ekh[k-1]->SetInt(x,y,0,0);
+					Ekh[k-1]->pix_plane(y,x) = fabs(Ak[k-1]->pix_plane(y,posx1) - Ak[k-1]->pix_plane(y,posx2));
+				else Ekh[k-1]->pix_plane(y,x) = 0;
 				if(posy1 < (int)yDim && posy2 >= 0)
-					Ekv[k-1]->SetInt(x,y,0,fabs(Ak[k-1]->pix_plane(posy1,x) - Ak[k-1]->pix_plane(posy2,x)));
-				else Ekv[k-1]->SetInt(x,y,0,0);
+					Ekv[k-1]->pix_plane(y,x) = fabs(Ak[k-1]->pix_plane(posy1,x) - Ak[k-1]->pix_plane(posy2,x));
+				else Ekv[k-1]->pix_plane(y,x) = 0;
 			}
 		}
 	}
@@ -219,7 +219,7 @@ double coarseness(ImageMatrix *image, double *hist,int nbins) {
 					maxk = k;
 				}
 			}
-			Sbest->SetInt(x,y,0,maxk);
+			Sbest->pix_plane(y,x) = maxk;
 			sum += maxk;
 		}
 	}

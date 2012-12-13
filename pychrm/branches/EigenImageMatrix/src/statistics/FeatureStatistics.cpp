@@ -147,7 +147,7 @@ int bwlabel(ImageMatrix *Im, int level) {
 
 /* the input should be a binary image */
 void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
-	long x,y,z=0;
+	long x,y;
 	double x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
@@ -168,7 +168,7 @@ void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
    the retruned value is the area of the feature
 */
 int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid) {
-	long x,y,z=0;
+	long x,y;
 	int x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
@@ -216,7 +216,7 @@ int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, dou
    the input image is a binary image
 */
 int area(ImageMatrix *Im) {
-	long x,y,z=0,sum=0;
+	long x,y,sum=0;
 	for (y=0;y<Im->height;y++)
 		for (x=0;x<Im->width;x++)
 			sum=sum+(Im->pix_plane(y,x) > 0);
@@ -227,9 +227,9 @@ int area(ImageMatrix *Im) {
    The input image should be a binary image
 */
 int EulerNumber(ImageMatrix *Im, int FeatureNumber) {
-	long x,y,z=0,HolesNumber;
+	long x,y,HolesNumber;
 	ImageMatrix *cp;
-	cp = new ImageMatrix (this);
+	cp = new ImageMatrix (Im);
 
 	/* inverse the image */
 	for (y=0;y<cp->height;y++)
