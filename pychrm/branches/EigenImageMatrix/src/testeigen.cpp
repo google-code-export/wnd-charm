@@ -33,16 +33,16 @@ typedef Eigen::Matrix< byte, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > M
 #define INF 10E200
 
 // note the const when passing an Eigen matrix
-void histogram (const pixData& pix_data, double *bins, unsigned short bins_num) {
+void histogram (const pixData& pix_plane, double *bins, unsigned short bins_num) {
 	long a;
-	double min=INF,max=-INF;
+	double min = INF,max = -INF;
 	int width, height;
 	/* find the minimum and maximum */
 	min = 0;
 	max = pow(2,16) - 1;
-	width = pix_data.cols();
-	height = pix_data.rows();
-//	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", &(pix_data), pix_data.data(), pix_data.minCoeff(), pix_data.maxCoeff());
+	width = pix_plane.cols();
+	height = pix_plane.rows();
+//	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", &(pix_plane), pix_plane.data(), pix_plane.minCoeff(), pix_plane.maxCoeff());
 
 	/* initialize the bins */
 	for (a = 0; a < bins_num; a++)
@@ -52,7 +52,7 @@ void histogram (const pixData& pix_data, double *bins, unsigned short bins_num) 
 // without -O3 this is still fast
 // note how the data pointer is declared as const
 // 	const double *data;
-// 	data = pix_data.data();
+// 	data = pix_plane.data();
 // 	for (a = 0; a < width*height; a++) {
 // 		if (data[a] == max) bins[bins_num-1]++;
 // 		else bins[(int)(((data[a] - min)/(max - min)) * bins_num)]++;
@@ -61,8 +61,8 @@ void histogram (const pixData& pix_data, double *bins, unsigned short bins_num) 
 // with -O3 this is as fast as above (also safer?)
 // without -O3 this is 15x slower
 	for (a = 0; a < width*height; a++) {
-		if (pix_data.array().coeff(a) == max) bins[bins_num-1]++;
-		else bins[(int)(((pix_data.array().coeff(a) - min)/(max - min)) * bins_num)]++;
+		if (pix_plane.array().coeff(a) == max) bins[bins_num-1]++;
+		else bins[(int)(((pix_plane.array().coeff(a) - min)/(max - min)) * bins_num)]++;
 	}
 
 	return;
@@ -71,12 +71,14 @@ void histogram (const pixData& pix_data, double *bins, unsigned short bins_num) 
 void test_bigmat() {
 	Eigen::MatrixXd randomMat = Eigen::MatrixXd::Random(1000,2000);
 	double bins[100];
-	pixData pix_data = (randomMat.array() + 1.0) * ((pow(2,16) - 1) / 2.0);
-	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", (void *)&(pix_data), (void *)(pix_data.data()), pix_data.minCoeff(), pix_data.maxCoeff());
+	pixData pix_plane = (randomMat.array() + 1.0) * ((pow(2,16) - 1) / 2.0);
+	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", (void *)&(pix_plane), (void *)(pix_plane.data()), pix_plane.minCoeff(), pix_plane.maxCoeff());
 	
+	   m_filteredResult = (columnSums < theQualityFilterThreshold ).select(0.0f, m_filteredResult);
+
 	timestamp_t t0 = get_timestamp();
 	for (int i = 0; i < 100; i++) {
-		histogram (pix_data, bins, 100);
+		histogram (pix_plane, bins, 100);
 	}
 	timestamp_t t1 = get_timestamp();
 
