@@ -74,8 +74,6 @@ void test_bigmat() {
 	pixData pix_plane = (randomMat.array() + 1.0) * ((pow(2,16) - 1) / 2.0);
 	printf ("mat: %p, dat: %p, min: %lf, max: %lf\n", (void *)&(pix_plane), (void *)(pix_plane.data()), pix_plane.minCoeff(), pix_plane.maxCoeff());
 	
-	   m_filteredResult = (columnSums < theQualityFilterThreshold ).select(0.0f, m_filteredResult);
-
 	timestamp_t t0 = get_timestamp();
 	for (int i = 0; i < 100; i++) {
 		histogram (pix_plane, bins, 100);
@@ -88,6 +86,14 @@ void test_bigmat() {
 // 	for (int i = 0; i < 100; i++) {
 // 		printf ("bin [%3d]: %lf\n", i, bins[i]);
 // 	}
+}
+
+void test_scalar () {
+	Eigen::MatrixXd randomMat = Eigen::MatrixXd::Random(10,10);
+	Eigen::MatrixXi testmat = ((randomMat.array() + 1.0) * ((pow(2,16) - 1) / 2.0)).cast<int>();
+
+	std::cout << "Here is the testmat coefficient-wise scalars:\n" << testmat << std::endl;
+
 }
 
 
@@ -106,7 +112,8 @@ HSVcolor hsv, hsv2, *hsv3;
 	hsv.v = 30;
 	
 	// this should be the 6th element in a RowMajor row,col matrix
-	mymat (1,2) = hsv;
+//	mymat (1,2) = hsv;
+	(mymat.array())(6) = hsv;
 	hsv2 = mymat (1,2);
 	std::cout << "Here is the hsv:\n" << (int)hsv2.h << "," << (int)hsv2.s << "," << (int)hsv2.v << std::endl;
 	printf ("hsv is (%d,%d,%d)\n",(int)hsv.h, (int)hsv.s, (int)hsv.v);
@@ -119,6 +126,7 @@ HSVcolor hsv, hsv2, *hsv3;
 }
 
 int main (int argc, char **argv) {
-//	test_access();
-	test_bigmat();
+	test_access();
+//	test_bigmat();
+//	test_scalar ();
 }

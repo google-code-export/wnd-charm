@@ -146,22 +146,20 @@ int bwlabel(ImageMatrix *Im, int level) {
 }
 
 /* the input should be a binary image */
-void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid, double *z_centroid) {
+void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
 	long x,y,z=0;
-	double x_mass=0,y_mass=0,z_mass=0,mass=0;
+	double x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
 		for (x=0;x<Im->width;x++)
 			if (Im->pix_plane(y,x) > 0) {
 				x_mass=x_mass+x+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				y_mass=y_mass+y+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-				z_mass=z_mass+z+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */						
 				mass++;
 			}
 	if (mass) {
 		*x_centroid=x_mass/mass;
 		*y_centroid=y_mass/mass;
-		if (z_centroid) *z_centroid=z_mass/mass;
 	} else *x_centroid=*y_centroid=0;
 }
 
@@ -169,21 +167,19 @@ void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid, dou
    the input image should be a bwlabel transform of a binary image
    the retruned value is the area of the feature
 */
-int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid, double *z_centroid) {
+int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid) {
 	long x,y,z=0;
-	int x_mass=0,y_mass=0,z_mass=0,mass=0;
+	int x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
 		for (x=0;x<Im->width;x++)
 			if (Im->pix_plane(y,x)==object_index) {
 				x_mass=x_mass+x+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				y_mass=y_mass+y+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-				z_mass=z_mass+z+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */			
 				mass++;
 			}
 	if (x_centroid) *x_centroid=(double)x_mass/(double)mass;
 	if (y_centroid) *y_centroid=(double)y_mass/(double)mass;
-	if (z_centroid) *z_centroid=(double)z_mass/(double)mass;   
 	return(mass);
 
 

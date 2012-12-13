@@ -35,8 +35,8 @@
 #include "../cmatrix.h"
 
 int bwlabel(ImageMatrix *Im, int level);
-void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid, double *z_cenroid);
-int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid, double *z_centroid);
+void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid);
+int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid);
 int area(ImageMatrix *Im);
 int EulerNumber(ImageMatrix *Im, int FeatureNumber);
 

@@ -63,41 +63,138 @@ enum ColorMode { cmRGB, cmHSV, cmGRAY };
 
 
 typedef Eigen::Matrix< double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > pixData;
-
 typedef struct {
 	int x,y,w,h;
 } rect;
 
-int compare_doubles (const void *a, const void *b);
+// global functions
+#define MIN(a,b) (a<b?a:b)
+#define MAX(a,b) (a>b?a:b)
+
+int compare_doubles (const void *a, const void *b)
+{
+  if (*((double *)a) > *((double*)b)) return(1);
+  if (*((double*)a) == *((double*)b)) return(0);
+  return(-1);
+}
+HSVcolor RGB2HSV(RGBcolor rgb) {
+	float r,g,b,h,max,min,delta;
+	HSVcolor hsv;
+
+	r = (float)(rgb.r) / 255;
+	g = (float)(rgb.g) / 255;
+	b = (float)(rgb.b) / 255;
+
+	max = MAX (r, MAX (g, b)), min = MIN (r, MIN (g, b));
+	delta = max - min;
+
+	hsv.v = (byte)(max*240.0);
+	if (max != 0.0)
+		hsv.s = (byte)((delta / max)*240.0);
+	else
+		hsv.s = 0;
+	if (hsv.s == 0) hsv.h = 0; //-1;
+	else {
+		h = 0;
+		if (r == max)
+		h = (g - b) / delta;
+		else if (g == max)
+		h = 2 + (b - r) / delta;
+		else if (b == max)
+		h = 4 + (r - g) / delta;
+		h *= 60.0;
+		if (h >= 360) h -= 360.0;
+		if (h < 0.0) h += 360.0;
+		hsv.h = (byte)(h *(240.0/360.0));
+	}
+	return(hsv);
+}
+inline RGBcolor HSV2RGB(HSVcolor hsv) {
+	RGBcolor rgb;
+	float R=0, G=0, B=0;
+	float H, S, V;
+	float i, f, p, q, t;
+
+	H = hsv.h;
+	S = (float)(hsv.s)/240;
+	V = (float)(hsv.v)/240;
+	if(S == 0 && H == 0) {R=G=B=V;}  /*if S=0 and H is undefined*/
+	H = H*(360.0/240.0);
+	if(H == 360) H=0;
+	H = H/60;
+	i = floor(H);
+	f = H-i;
+	p = V*(1-S);
+	q = V*(1-(S*f));
+	t = V*(1-(S*(1-f)));
+
+	if(i==0) {R=V;  G=t;  B=p;}
+	if(i==1) {R=q;  G=V;  B=p;}
+	if(i==2) {R=p;  G=V;  B=t;}
+	if(i==3) {R=p;  G=q;  B=V;}
+	if(i==4) {R=t;  G=p;  B=V;}
+	if(i==5) {R=V;  G=p;  B=q;}
+
+	rgb.r = (byte)(R*255);
+	rgb.g = (byte)(G*255);
+	rgb.b = (byte)(B*255);
+	return rgb;
+}
+inline double RGB2GRAY(RGBcolor rgb) {
+	return((0.2989*rgb.r+0.5870*rgb.g+0.1140*rgb.b));
+}
 
 class ImageMatrix {
 public:
-	pixData pix_plane;                                 /* pixel plane data */  
-	clrData clr_plane;                                 /* 3-channel color data */  
-	//std::string what_am_i;                          // informative label
-	enum ColorMode ColorMode;                                  /* can be cmRGB or cmHSV                */
-	unsigned short bits;                            /* the number of intensity bits (8,16, etc) */
-	int width,height;                         /* width and height of the picture      */
-	double _min, _max, _mean, _std, _median;        /* min, max, mean, std computed in single pass, median in separate pass */
-	bool has_stats, has_median;                     /* has_stats applies to min, max, mean, std. has_median only to median */
-	int LoadTIFF(char *filename);                   /* load from TIFF file                  */
-	int SaveTiff(char *filename);                   /* save a matrix in TIF format          */
-	int LoadPPM(char *filename, int ColorMode);     /* load from a PPM file                 */
-	int OpenImage(char *image_file_name, int downsample, rect *bounding_rect, double mean, double stddev); /* load an image of any supported format */
-	//void CmatrixMessage();
-	ImageMatrix();                                  /* basic constructor                    */
-	ImageMatrix(int width,int height);    /* construct a new empty matrix         */
-	ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2, int z1, int z2);  /* create a new matrix which is part of the original one */
-	~ImageMatrix();                                 /* destructor */
-	ImageMatrix *duplicate();                       /* create a new identical matrix        */
-	//void dump();                                    // dump the pixel intensities to a file for inspection
-	void diff(ImageMatrix *matrix);                 /* compute the difference from another image */
-	void normalize(double min, double max, long range, double mean, double stddev); /* normalized an image to either min/max or mean/stddev */
+	pixData pix_plane;                              // pixel plane data  
+	clrData clr_plane;                              // 3-channel color data  
+	//std::string what_am_i;                        // informative label
+	enum ColorMode ColorMode;                       // can be cmRGB, cmHSV or cmGRAY
+	unsigned short bits;                            // the number of intensity bits (8,16, etc)
+	int width,height;                               // width and height of the picture
+	double _min, _max, _mean, _std, _median;        // min, max, mean, std computed in single pass, median in separate pass
+	bool has_stats, has_median;                     // has_stats applies to min, max, mean, std. has_median only to median
+	int LoadTIFF(char *filename);                   // load from TIFF file
+	int SaveTiff(char *filename);                   // save a matrix in TIF format
+	int LoadPPM(char *filename, int ColorMode);     // load from a PPM file
+	int OpenImage(char *image_file_name,            // load an image of any supported format
+		int downsample, rect *bounding_rect,
+		double mean, double stddev);
+	// constructor helpers
+	void 	init();
+	void 	allocate (int w, int h);
+	void 	copy(ImageMatrix *copy);
+	ImageMatrix();                                  // basic constructor
+	ImageMatrix(ImageMatrix *matrix);               // copy constructor
+
+	ImageMatrix(int width,int height);              // construct a new empty, allocated matrix
+	ImageMatrix(ImageMatrix *matrix,                // create a new matrix which is part of the original one
+		int x1, int y1, int x2, int y2);
+	~ImageMatrix();                                 // destructor
+
+// set pixel value based on passed-in parameter type
+	inline void set (int x, int y, RGBcolor val) {
+		pix_plane (y,x) = RGB2GRAY (val);
+		if (ColorMode == cmHSV) {
+			HSVcolor hsv = RGB2HSV(val);
+			clr_plane(y,x) = hsv;
+		} else if (ColorMode == cmRGB) {
+			HSVcolor hsv = {val.r, val.g, val.b};
+			clr_plane(y,x) = hsv;
+		}
+	}
+	inline void set (int x, int y, double val) {
+		pix_plane (y,x) = val;
+	}
+
+	void diff(ImageMatrix *matrix);                 // compute the difference from another image
+	void normalize(double min, double max, long range, double mean, double stddev); // normalized an image to either min/max or mean/stddev
 	void to8bits();
-	void flip();                                    /* flip an image horizonatally          */
-	void invert();                                  /* invert the intensity of an image     */
-	void Downsample(double x_ratio, double y_ratio);/* down sample an image                 */
-	ImageMatrix *Rotate(double angle);              /* rotate an image by 90,180,270 degrees*/
+	void flipV();                                   // flip an image around a vertical axis (left to right)
+	void flipH();                                   // flip an image around a horizontal axis (upside down)
+	void invert();                                  // invert the intensity of an image
+	void Downsample(double x_ratio, double y_ratio);// down sample an image
+	ImageMatrix *Rotate(double angle);              // rotate an image by 90,180,270 degrees
 	void convolve(ImageMatrix *filter);
 	void BasicStatistics(double *mean, double *median, double *std, double *min, double *max, double *histogram, int bins);
 	inline double min() {
@@ -138,10 +235,10 @@ public:
 	void GetColorStatistics(double *hue_avg, double *hue_std, double *sat_avg, double *sat_std, double *val_avg, double *val_std, double *max_color, double *colors);
 	void ColorTransform(double *color_hist, int use_hue);
 	void histogram(double *bins,unsigned short bins_num, int imhist);
-	double Otsu();                                  /* Otsu gray threshold                  */
+	double Otsu();                                  // Otsu gray threshold
 	void MultiScaleHistogram(double *out);
 	//   double AverageEdge();
-	void EdgeTransform();                           /* gradient binarized using otsu threshold */
+	void EdgeTransform();                           // gradient binarized using otsu threshold
 	double fft2();
 	void ChebyshevTransform(int N);
 	void ChebyshevFourierTransform2D(double *coeff);
@@ -156,7 +253,7 @@ public:
 	void RadonTransform2D(double *vec);
 	double OtsuBinaryMaskTransform();
 	int BWlabel(int level);
-	void centroid(double *x_centroid, double *y_centroid, double *z_centroid);
+	void centroid(double *x_centroid, double *y_centroid);
 	void FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, int *AreaMin, int *AreaMax,
 		double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
 		double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins);
@@ -165,11 +262,5 @@ public:
 	void TamuraTexture2D(double *vec);
 	void zernike2D(double *zvalues, long *output_size);
 };
-
-
-/* global functions */
-HSVcolor RGB2HSV(RGBcolor rgb);
-RGBcolor HSV2RGB(HSVcolor hsv);
-double RGB2GRAY (RGBcolor rgb);
 
 #endif
