@@ -144,22 +144,6 @@ double RGB2GRAY(RGBcolor rgb) {
 }
 
 
-int ImageMatrix::allocate (w, h) {
-	width  = 0;
-	height = 0;
-	// These throw exceptions, which we don't catch (catch in main?)
-	// N.B. Eigen matrix parameter order is typically rows, cols, not X, Y
-	pix_plane = pixData (h, w);
-	if (ColorMode != cmGRAY) {
-		clr_plane = clrPlane (h, w);
-	}
-
-	width  = w;
-	height = h;
-	return (1);
-}
-
-
 
 /* LoadTIFF
    filename -char *- full path to the image file
@@ -284,6 +268,20 @@ ImageMatrix::init() {
 	ColorMode=cmHSV;     /* set a default color mode */
 	bits=8; /* set some default value */
 }
+int ImageMatrix::allocate (w, h) {
+	width  = 0;
+	height = 0;
+	// These throw exceptions, which we don't catch (catch in main?)
+	// N.B. Eigen matrix parameter order is rows, cols, not X, Y
+	pix_plane = pixData (h, w);
+	if (ColorMode != cmGRAY) {
+		clr_plane = clrPlane (h, w);
+	}
+
+	width  = w;
+	height = h;
+	return (1);
+}
 
 ImageMatrix::copy(ImageMatrix *copy) {
 	width = copy->width;
@@ -332,7 +330,7 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2) {
 	height=y2-y1+1;
 	allocate (width, height);
 	// Copy the Eigen matrixes
-	// N.B. Eigen matrix parameter order is typically rows, cols, not X, Y
+	// N.B. Eigen matrix parameter order is rows, cols, not X, Y
 	pix_plane = matrix->pix_plane.block(y1,x1,height,width);
 	if (ColorMode != cmGRAY) {
 		clr_plane = matrix->clr_plane.block(y1,x1,height,width);
@@ -887,7 +885,6 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 	long a;
 	double min=INF,max=-INF;
-	double *data;
 	/* find the minimum and maximum */
 	if (imhist == 1) {    /* similar to the Matlab imhist */
 		min = 0;
@@ -901,10 +898,10 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 		bins[a] = 0;
 
 	/* build the histogram */
-	data = pix_plane.data();
 	for (a = 0; a < width*height; a++) {
-		if (data[a] == max) bins[bins_num-1]++;
-		else bins[(int)(((data[a] - min)/(max - min)) * bins_num)]++;
+		if (pix_plane.array().coeff(a) >= max) bins[bins_num-1]++;
+		else if (pix_plane.array().coeff(a) <= min) bins[0]++;
+		else bins[(int)(((pix_plane.array().coeff(a) - min)/(max - min)) * bins_num)]++;
 	}
 
 	return;
@@ -912,60 +909,40 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
-double ImageMatrix::fft2()
-{  fftw_complex *out;
-   double *in;
-   fftw_plan p;
-   long x,y,z;
+double ImageMatrix::fft2() {
+	fftw_complex *out;
+	double *in;
+	fftw_plan p;
+	long x,y,z;
 
-   in = (double*) fftw_malloc(sizeof(double) * width*height*depth);
-   out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height*depth);
+	in = (double*) fftw_malloc(sizeof(double) * width*height);
+	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
 
-   if (depth==1) p=fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE /* FFTW_ESTIMATE */);
-   else p=fftw_plan_dft_r2c_3d(width,height,depth,in,out, FFTW_MEASURE /* FFTW_ESTIMATE */);
+	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE /* FFTW_ESTIMATE */);
 
-   for (x=0;x<width;x++)
-     for (y=0;y<height;y++)
-       for (z=0;z<depth;z++)	   
-         in[depth*height*x+y*depth+z]=pixel(x,y,z).intensity;
+	for (x=0;x<width;x++)
+		for (y=0;y<height;y++)
+			in[height*x+y]=pix_plane.coeff(y,x);
 
-   fftw_execute(p); /* execute the transformation (repeat as needed) */
+	fftw_execute(p); /* execute the transformation (repeat as needed) */
 
-   if (depth==1)
-   {  long half_height=height/2+1;   /* (to 56 including 56 ) */
-      /* find the abs and angle */
-      for (x=0;x<width;x++)
-        for (y=0;y<half_height;y++)
-          SetInt(x,y,0,sqrt(pow(out[half_height*x+y][0],2)+pow(out[half_height*x+y][1],2)));    /* sqrt(real(X).^2 + imag(X).^2) */
-   
-     /* complete the first column */
-     for (y=half_height;y<height;y++)
-       SetInt(0,y,0,pixel(0,height-y,0).intensity);
+	unsigned long half_height=height/2+1, idx;
+	/* find the abs and angle */
+	for (x=0;x<width;x++) {
+		for (y=0;y<half_height;y++) {
+			idx = half_height*x+y;
+			pix_plane (y,x) = sqrt( pow( out[idx][0],2)+pow(out[idx][1],2));    /* sqrt(real(X).^2 + imag(X).^2) */
+		}
+	}
 
-     /* complete the rows */
-     for (y=half_height;y<height;y++)
-       for (x=1;x<width;x++)   /* 1 because the first column is already completed */
-         SetInt(x,y,0,pixel(width-x,height-y,0).intensity);
-   }
-   else
-   {  long half_depth=depth/2+1; 
-      /* find the abs and angle */
-      for (x=0;x<width;x++)
-        for (y=0;y<height;y++)
-          for (z=0;z<half_depth;z++)		
-            SetInt(x,y,z,sqrt(pow(out[height*half_depth*x+half_depth*y+z][0],2)+pow(out[height*half_depth*x+half_depth*y+z][1],2)));    /* sqrt(real(X).^2 + imag(X).^2) */
-   
-      /* compute the first z */
-      for (z=half_depth;z<depth;z++)
-        for (y=0;y<height;y++)
-          SetInt(0,y,z,pixel(0,y,depth-z).intensity);
+	/* complete the first column */
+	for (y=half_height;y<height;y++)
+		pix_plane (y,x) = pix_plane (height - y, 0);
 
-      /* complete the rows */
-	  for (z=half_depth;z<depth;z++)
-        for (y=1;y<height;y++)   /* 1 because the first column is already completed */
-          for (x=0;x<width;x++)   
-            SetInt(x,y,z,pixel(width-x,height-y,depth-z).intensity);	  
-   }
+	/* complete the rows */
+	for (y=half_height;y<height;y++)
+		for (x=1;x<width;x++)   /* 1 because the first column is already completed */
+			pix_plane (y,x) = pix_plane (height - y, width - x);
    
    fftw_destroy_plan(p);
    fftw_free(in);
@@ -977,75 +954,60 @@ double ImageMatrix::fft2()
 }
 
 /* chebyshev transform */
-void ImageMatrix::ChebyshevTransform(int N)
-{  double *out;
-   int x,y,old_width;
+void ImageMatrix::ChebyshevTransform(int N) {
+	double *out;
+	int x,y;
 
-   if (N<2)
-		 N = MIN( width, height );
-   out=new double[height*N];
-   Chebyshev2D(this, out,N);
+	if (N<2)
+		N = MIN( width, height );
+	out=new double[height*N];
+	Chebyshev2D(this, out,N);
 
-   old_width=width;  /* keep the old width to free the memory */
-   width=N;
-   height = MIN( height, N );   /* prevent error */
+	width=N;
+	height = MIN( height, N );   /* prevent error */
 
-   for(y=0;y<height;y++)
-     for(x=0;x<width;x++)
-       SetInt(x,y,0,out[y*width+x]);
-   delete [] out;
+	for(y=0;y<height;y++)
+		for(x=0;x<width;x++)
+			pix_plane (y,x) = out[y * width + x];
+	delete [] out;
 }
 
 /* chebyshev transform
    coeff -array of double- a pre-allocated array of 32 doubles
 */
-void ImageMatrix::ChebyshevFourierTransform2D(double *coeff)
-{  ImageMatrix *matrix;
-   matrix = new ImageMatrix (this);
-   if( (width * height) > (300 * 300) )
-		 matrix->Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
-   ChebyshevFourier2D(matrix, 0, coeff,32);
-   delete matrix;
+void ImageMatrix::ChebyshevFourierTransform2D(double *coeff) {
+	ImageMatrix *matrix;
+	matrix = new ImageMatrix (this);
+	if( (width * height) > (300 * 300) )
+		matrix->Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
+	ChebyshevFourier2D(matrix, 0, coeff,32);
+	delete matrix;
 }
 
 
 /* Symlet5 transform */
-void ImageMatrix::Symlet5Transform()
-{  long x,y,z;
-   DataGrid2D *grid2d=NULL;
-   DataGrid3D *grid3d=NULL;
-   DataGrid *grid;
-   Symlet5 *Sym5;
+void ImageMatrix::Symlet5Transform() {
+	long x,y,z;
+	DataGrid2D *grid2d=NULL;
+	DataGrid *grid;
+	Symlet5 *Sym5;
 
-   if (depth==1) grid2d = new DataGrid2D(width,height,-1);
-   else grid3d=new DataGrid3D(width,height,depth);
-   if (grid2d) grid=grid2d;
-   else grid=grid3d;
-   
-   for (z=0;z<depth;z++)   
-     for (y=0;y<height;y++)
-       for(x=0;x<width;x++)
-         grid->setData(x,y,z-(depth==1),pixel(x,y,z).intensity);
-   Sym5=new Symlet5(0,1);
-   if (depth==1) Sym5->transform2D(grid);
-   else Sym5->transform3D(grid);
-
-   delete [] data; /* free the old memory of the matrix */
-
-   /* allocate new memory (new dimensions) and copy the values */
-   width=grid->getX();
-   height=grid->getY();
-   if (depth>1) depth=grid->getZ();
-   
-   data=new pix_plane[width*height*depth];
-   for (z=0;z<depth;z++)   
-     for (y=0;y<height;y++)
-       for(x=0;x<width;x++)
-         SetInt(x,y,z,grid->getData(x,y,z-(depth==1)));
+	grid = new DataGrid2D(width,height,-1);
+	grid=grid2d;
+  
+	for (y=0;y<height;y++)
+		for(x=0;x<width;x++)
+			grid->setData(x,y,-1,pix_plane(y,x));
+	Sym5=new Symlet5(0,1);
+	Sym5->transform2D(grid);
+	
+	allocate (grid->getX(), grid->getY());
+	for (y=0;y<height;y++)
+		for(x=0;x<width;x++)
+			pix_plane (y,x) = grid->getData(x,y,-1);
 		 
-   delete Sym5;
-   if (grid2d) delete grid2d;
-   if (grid3d) delete grid3d;   
+	delete Sym5;
+	delete grid2d;
 }
 
 /* chebyshev statistics
@@ -1078,85 +1040,72 @@ int ImageMatrix::CombFirstFourMoments2D(double *vec) {
 }
 
 /* Edge Transform */
-void ImageMatrix::EdgeTransform()
-{  long x,y,z;
-   ImageMatrix *TempMatrix;
-   TempMatrix = new ImageMatrix (this);
-   for (y=0;y<TempMatrix->height;y++)
-     for (x=0;x<TempMatrix->width;x++)
-       for (z=0;z<TempMatrix->depth;z++)	 
-       {  double max_x=0,max_y=0,max_z=0;
-          if (y>0 && y<height-1) max_y=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y-1,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y+1,z).intensity));
-          if (x>0 && x<width-1) max_x=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x-1,y,z).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x+1,y,z).intensity));
-          if (z>0 && z<depth-1) max_z=MAX(fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z-1).intensity),fabs(TempMatrix->pixel(x,y,z).intensity-TempMatrix->pixel(x,y,z+1).intensity));
-          SetInt(x,y,z,MAX(MAX(max_x,max_z),max_y));
-       }
-
-   /* use otsu global threshold to set edges to 0 or 1 */
-/*   
-   double OtsuGlobalThreshold,max_val;
-   max_val=pow(2,bits)-1;
-   OtsuGlobalThreshold=Otsu();
-   for (y=0;y<height;y++)
-     for (x=0;x<width;x++)
-       if (data[x][y].intensity>OtsuGlobalThreshold*max_val) data[x][y].intensity=max_val;
-       else data[x][y].intensity=0;
-*/
+void ImageMatrix::EdgeTransform() {
+	long x,y,z;
+	ImageMatrix *TempMatrix;
+	TempMatrix = new ImageMatrix (this);
+	for (y=0;y<TempMatrix->height;y++)
+		for (x=0;x<TempMatrix->width;x++) {
+			double max_x=0,max_y=0,max_z=0;
+			if (y>0 && y < height-1) max_y=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y-1,x)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y+1,x)));
+			if (x>0 && x < width-1)  max_x=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x-1)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x+1)));
+			pix_plane(y,x) = MAX(max_x,max_y);
+		}
    delete TempMatrix;
 }
 
 /* transform by gradient magnitude */
-void ImageMatrix::GradientMagnitude(int span)
-{  long x,y,z;
-   //double sum;
-   if (span==0) span=2;  /* make sure 0 is not a default */
-   for (x=0;x<width-span;x++)
-     for (y=0;y<height-span;y++)
-       for (z=0;z<depth;z++)
-       {  double sum=pow(pixel(x+span,y,z).intensity-pixel(x,y,z).intensity,2)+pow(pixel(x,y+span,z).intensity-pixel(x,y,z).intensity,2);
-          if (z<depth-span) sum+=pow(pixel(x,y,z+span).intensity-pixel(x,y,z).intensity,2);
-         SetInt(x,y,z,sqrt(sum));
-       }
+void ImageMatrix::GradientMagnitude(int span) {
+	long x,y,z;
+	//double sum;
+	if (span==0) span=2;  /* make sure 0 is not a default */
+	for (x=0;x<width-span;x++)
+		for (y=0;y<height-span;y++) {
+			double sum = pow(pix_plane(y,x+span) - pix_plane(y,x),2) + pow(pix_plane(y+span,x) - pix_plane(y,x),2);
+			pix_plane(y,x) = sqrt(sum); // FIXME: is aliasing supposed to be happening here?
+		}
 }
 
 /* transform by gradient direction */
-void ImageMatrix::GradientDirection2D(int span)
-{  long x,y;
-   if (span==0) span=2;  /* make sure 0 is not a default */
-   for (x=0;x<width-span;x++)
-     for (y=0;y<height-span;y++)
-     {  if (pixel(x,y+span,0).intensity-pixel(x,y,0).intensity==0)
-          SetInt(x,y,0,0);
-          else SetInt(x,y,0,atan2(pixel(x+span,y,0).intensity-pixel(x,y,0).intensity,pixel(x,y+span,0).intensity-pixel(x,y,0).intensity));
-     }
+void ImageMatrix::GradientDirection2D(int span) {
+	long x,y;
+	if (span==0) span=2;  /* make sure 0 is not a default */
+	for (x=0;x<width-span;x++)
+		for (y=0;y<height-span;y++) {
+			if (pix_plane(y+span,x) - pix_plane(y,x) == 0)
+				pix_plane(y,x) = 0;
+			else
+				pix_plane(y,x) = atan2(
+					pix_plane(y,x+span) - pix_plane(y,x), pix_plane(y+span,x) - pix_plane(y,x)
+				);
+		}
 }
 
 /* Perwitt gradient magnitude
    output - a pre-allocated matrix that will hold the output (the input matrix is not changed)
             output should be of the same size as the input matrix
 */
-void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output)
-{  long x,y,z,i,j;
-   double sumx,sumy;
-   for (x=0;x<width;x++)
-     for (y=0;y<height;y++)
-       for (z=0;z<depth;z++)
-       {  sumx=0;
-          sumy=0;		  
-          for (j=y-1;j<=y+1;j++)
-            if (j>=0 && j<height && x-1>=0)
-               sumx+=pixel(x-1,j,z).intensity*1;//0.3333;
-          for (j=y-1;j<=y+1;j++)
-            if (j>=0 && j<height && x+1<width)
-              sumx+=pixel(x+1,j,z).intensity*-1;//-0.3333;
-          for (i=x-1;i<=x+1;i++)
-            if (i>=0 && i<width && y-1>=0)
-              sumy+=pixel(i,y-1,z).intensity*1;//-0.3333;
-          for (i=x-1;i<=x+1;i++)
-            if (i>=0 && i<width && y+1<height)
-              sumy+=pixel(i,y+1,z).intensity*-1;//0.3333;
-          output->SetInt(x,y,z,sqrt(sumx*sumx+sumy*sumy));
-       }
+void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
+	long x,y,z,i,j;
+	double sumx,sumy;
+	for (x=0;x<width;x++)
+		for (y=0;y<height;y++) {
+			sumx=0;
+			sumy=0;		  
+			for (j = y-1; j <= y+1; j++)
+				if (j >= 0 && j < height && x-1 >= 0)
+					sumx += pix_plane(j,x-1)*1;//0.3333;
+			for (j = y-1; j <= y+1; j++)
+				if (j >= 0 && j < height && x+1 < width)
+					sumx += pix_plane(j,x+1)*-1;//-0.3333;
+			for (i = x-1; i <= x+1; i++)
+				if (i >= 0 && i < width && y-1 >= 0)
+					sumy += pix_plane(y-1,i)*1;//-0.3333;
+			for (i = x-1; i <= x+1; i++)
+				if (i >= 0 && i < width && y+1 < height)
+					sumy += pix_plane(y+1,i)*-1;//0.3333;
+			output->pix_plane (y,x) = sqrt(sumx*sumx+sumy*sumy);
+		}
 }
 
 /* Perwitt gradient direction
