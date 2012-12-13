@@ -98,7 +98,7 @@ void getChCoeff1D(double *f,double *out,double *x,int N,int width) {
 		}
 		out[jj] = 0;
 		for (a = 0; a < width; a++)
-		out[jj]+ = f[a]*tj[a]/2;
+		out[jj] += f[a]*tj[a]/2;
 	}
 	delete [] tj;
 	delete [] Tj;
