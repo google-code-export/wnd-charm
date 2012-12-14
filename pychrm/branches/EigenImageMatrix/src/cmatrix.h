@@ -35,7 +35,7 @@
 
 #include <vector>
 #include <string> // for what_am_i definition
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include "colors/FuzzyCalc.h"
 //#define min(a,b) (((a) < (b)) ? (a) : (b))
 //#define max(a,b) (((a) < (b)) ? (b) : (a))
@@ -67,23 +67,24 @@ typedef struct {
 	int x,y,w,h;
 } rect;
 
+//---------------------------------------------------------------------------
 // global functions
 #define MIN(a,b) (a<b?a:b)
 #define MAX(a,b) (a>b?a:b)
 
-int compare_doubles (const void *a, const void *b)
+static inline int compare_doubles (const void *a, const void *b)
 {
   if (*((double *)a) > *((double*)b)) return(1);
   if (*((double*)a) == *((double*)b)) return(0);
   return(-1);
 }
-HSVcolor RGB2HSV(RGBcolor rgb) {
-	float r,g,b,h,max,min,delta;
+static inline HSVcolor RGB2HSV(RGBcolor rgb) {
+	double r,g,b,h,max,min,delta;
 	HSVcolor hsv;
 
-	r = (float)(rgb.r) / 255;
-	g = (float)(rgb.g) / 255;
-	b = (float)(rgb.b) / 255;
+	r = (double)(rgb.r) / 255;
+	g = (double)(rgb.g) / 255;
+	b = (double)(rgb.b) / 255;
 
 	max = MAX (r, MAX (g, b)), min = MIN (r, MIN (g, b));
 	delta = max - min;
@@ -109,15 +110,15 @@ HSVcolor RGB2HSV(RGBcolor rgb) {
 	}
 	return(hsv);
 }
-inline RGBcolor HSV2RGB(HSVcolor hsv) {
+static inline RGBcolor HSV2RGB(HSVcolor hsv) {
 	RGBcolor rgb;
-	float R=0, G=0, B=0;
-	float H, S, V;
-	float i, f, p, q, t;
+	double R=0, G=0, B=0;
+	double H, S, V;
+	double i, f, p, q, t;
 
 	H = hsv.h;
-	S = (float)(hsv.s)/240;
-	V = (float)(hsv.v)/240;
+	S = (double)(hsv.s)/240;
+	V = (double)(hsv.v)/240;
 	if(S == 0 && H == 0) {R=G=B=V;}  /*if S=0 and H is undefined*/
 	H = H*(360.0/240.0);
 	if(H == 360) H=0;
@@ -140,9 +141,10 @@ inline RGBcolor HSV2RGB(HSVcolor hsv) {
 	rgb.b = (byte)(B*255);
 	return rgb;
 }
-inline double RGB2GRAY(RGBcolor rgb) {
+static inline double RGB2GRAY(RGBcolor rgb) {
 	return((0.2989*rgb.r+0.5870*rgb.g+0.1140*rgb.b));
 }
+//---------------------------------------------------------------------------
 
 class ImageMatrix {
 public:
@@ -151,7 +153,7 @@ public:
 	//std::string what_am_i;                        // informative label
 	enum ColorMode ColorMode;                       // can be cmRGB, cmHSV or cmGRAY
 	unsigned short bits;                            // the number of intensity bits (8,16, etc)
-	int width,height;                               // width and height of the picture
+	unsigned int width,height;                               // width and height of the picture
 	double _min, _max, _mean, _std, _median;        // min, max, mean, std computed in single pass, median in separate pass
 	bool has_stats, has_median;                     // has_stats applies to min, max, mean, std. has_median only to median
 	int LoadTIFF(char *filename);                   // load from TIFF file
@@ -162,18 +164,18 @@ public:
 		double mean, double stddev);
 	// constructor helpers
 	void 	init();
-	void 	allocate (int w, int h);
+	void 	allocate (unsigned int w, unsigned int h);
 	void 	copy(ImageMatrix *copy);
 	ImageMatrix();                                  // basic constructor
 	ImageMatrix(ImageMatrix *matrix);               // copy constructor
 
-	ImageMatrix(int width,int height);              // construct a new empty, allocated matrix
+	ImageMatrix(unsigned int width,unsigned int height);              // construct a new empty, allocated matrix
 	ImageMatrix(ImageMatrix *matrix,                // create a new matrix which is part of the original one
-		int x1, int y1, int x2, int y2);
+		unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 	~ImageMatrix();                                 // destructor
 
 // set pixel value based on passed-in parameter type
-	inline void set (int x, int y, RGBcolor val) {
+	inline void set (unsigned int x, unsigned int y, RGBcolor val) {
 		pix_plane (y,x) = RGB2GRAY (val);
 		if (ColorMode == cmHSV) {
 			HSVcolor hsv = RGB2HSV(val);
@@ -183,7 +185,7 @@ public:
 			clr_plane(y,x) = hsv;
 		}
 	}
-	inline void set (int x, int y, double val) {
+	inline void set (unsigned int x, unsigned int y, double val) {
 		pix_plane (y,x) = val;
 	}
 
@@ -240,23 +242,24 @@ public:
 	//   double AverageEdge();
 	void EdgeTransform();                           // gradient binarized using otsu threshold
 	double fft2();
-	void ChebyshevTransform(int N);
+	void ChebyshevTransform(unsigned int N);
 	void ChebyshevFourierTransform2D(double *coeff);
 	void Symlet5Transform();
 	void GradientMagnitude(int span);
 	void GradientDirection2D(int span);
 	void PerwittMagnitude2D(ImageMatrix *output);
 	void PerwittDirection2D(ImageMatrix *output);
-	void ChebyshevStatistics2D(double *coeff, int N, int bins_num);
+	void ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned int bins_num);
 	int CombFirstFourMoments2D(double *vec);
-	void EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins);
+	void EdgeStatistics(unsigned long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, unsigned int num_bins);
 	void RadonTransform2D(double *vec);
 	double OtsuBinaryMaskTransform();
-	int BWlabel(int level);
+	unsigned long BWlabel(int level);
 	void centroid(double *x_centroid, double *y_centroid);
-	void FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, int *AreaMin, int *AreaMax,
-		double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
-		double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins);
+	void FeatureStatistics(unsigned long *count, unsigned long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
+		double *AreaMean, unsigned int *AreaMedian, double *AreaVar, unsigned int *area_histogram,double *DistMin, double *DistMax,
+		double *DistMean, double *DistMedian, double *DistVar, unsigned int *dist_histogram, unsigned int num_bins
+	);
 	void GaborFilters2D(double *ratios);
 	void HaarlickTexture2D(double distance, double *out);
 	void TamuraTexture2D(double *vec);

@@ -142,8 +142,8 @@ int matr4moments_to_hist(double matr4moments[4][21], double *vec, int vec_start)
 int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 	double **I,**J,**J1,*tmp,z[4],z4[4]={0,0,0,0};
 	double matr4moments[4][21];
-	int m,n,n2,m2;
-	int a,x,y,ii;
+	unsigned int m,n,n2,m2;
+	unsigned int a,x,y,ii;
 	int matr4moments_index;
 	int vec_count=0;
 
@@ -186,7 +186,6 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 			for (a = 0; a < 4; a++)
 				matr4moments[a][matr4moments_index] = z4[a];
 		} else {
-			double z[4];
 			get4scalMoments(tmp,count,z);
 			for (a = 0; a < 4; a++)
 				matr4moments[a][matr4moments_index] = z[a];

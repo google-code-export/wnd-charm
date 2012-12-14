@@ -1,6 +1,6 @@
 
 #include <math.h>
-#include "../cmatrix.h"
+#include "cmatrix.h"
 #include "gabor.h"
 
 
@@ -165,7 +165,7 @@ double *Gabor(double f0, double sig2lam, double gamma, double theta, double fi, 
 double *GaborEnergy(ImageMatrix *Im, double f0, double sig2lam, double gamma, double theta, int n) {
 	double *Gexp, *image, *c,*out;
 	double fi = 0;
-	int a,b,x,y;
+	unsigned int a,b,x,y;
 	Gexp = Gabor(f0,sig2lam,gamma,theta,fi,n);
 
 	c = new double[(Im->width+n-1)*(Im->height+n-1)*2];
@@ -208,7 +208,7 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios) {
 	double theta = 3.14159265/2;
 	double *e2LP;
 	double max;
-	int x,y,ii;
+	unsigned int x,y,ii;
 	int originalScore = 0;
 
 	/* compute the original score befroe Gabor */

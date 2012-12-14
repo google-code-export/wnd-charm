@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../cmatrix.h"
+#include "cmatrix.h"
 #include "chebyshev.h"
 
 //---------------------------------------------------------------------------
@@ -128,10 +128,10 @@ N - coefficient
 width - width of the image
 height - height of the image
 */
-void Chebyshev2D(ImageMatrix *Im, double *out, int N) {
+void Chebyshev2D(ImageMatrix *Im, double *out, unsigned int N) {
 	double *x,*y;
 	double *in;
-	int a,i,j;
+	unsigned int a,i,j;
 
 // Make a default value for coeficient order if it was not given as an input
 //   if (N< = 0)

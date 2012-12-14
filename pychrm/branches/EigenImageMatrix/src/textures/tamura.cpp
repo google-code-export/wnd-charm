@@ -8,7 +8,7 @@
 
 double contrast(ImageMatrix *image) {
 	double *vec;
-	int x,y;
+	unsigned int x,y;
 	double avg,std,k;
 
 	vec = new double[image->width*image->height];

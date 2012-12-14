@@ -36,8 +36,8 @@
 #define min(a, b)  (((a) < (b)) ? (a) : (b))
 //---------------------------------------------------------------------------
 
-double *ChebPol(double x,int N, double *out) {
-	int a;
+double *ChebPol(double x,unsigned long N, double *out) {
+	unsigned long a;
 	if (x < -1) x = -1;      /* protect the acos function */
 	if (x > 1) x = 1;
 	for (a = 0; a < N; a++)
@@ -54,8 +54,8 @@ double *ChebPol(double x,int N, double *out) {
 ChebyshevFourier - Chebyshev Fourier transform
 "coeff_packed" -array of doubles- a pre-allocated array of 32 doubles
 */
-void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packingOrder) {
-	long a,b,m,n,x,y,nLast,NN,Nmax,ind;
+void ChebyshevFourier2D(ImageMatrix *Im, unsigned long N, double *coeff_packed, unsigned int packingOrder) {
+	unsigned long a,b,m,n,x,y,nLast,NN,Nmax,ind;
 	double *xx,*yy,*f,*r,*tmp,*img,*Tn,*c,*coeff;
 	float **C;
 	double min,max;
@@ -101,14 +101,14 @@ void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packi
 	}  
 	delete [] xx;
 	delete [] yy;
-	Nmax=(int)((min(m,n)-1)/2);
+	Nmax=(unsigned long)((min(m,n)-1)/2);
 	if (N>Nmax) N=Nmax;
 	NN = 2*N + 1;
 	C=new float*[nLast];
 	for (a=0;a<nLast;a++) {
 		C[a]=new float[NN*NN*2];  /* *2 because of the complex numbers */
 		for (b=0;b<NN*NN*2;b++)   /* *2 because of the complex numbers */
-			C[a][b]=0.0;          /* initialize */
+			C[a][b]=0;          /* initialize */
 	}
 
 	c=new double[NN*NN*2];         /* *2 because of the complex numbers */
@@ -116,7 +116,7 @@ void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packi
 	tmp=new double[NN*2];  /* *2 for the complex numbers */
 	for (ind=0;ind<nLast;ind++) {
 		double ri,fi;
-		int im,c_ind;
+		unsigned long im,c_ind;
 		c_ind=0;
 		ri=r[kk[ind]];
 		fi=f[kk[ind]];
@@ -124,7 +124,7 @@ void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packi
 		ChebPol(ri*2-1,NN,Tn);
 		for (im=1;im<=NN;im++) {
 			double Ftrm;
-			int mf;
+			long mf;
 			mf=im-1-N;
 			if (!mf) Ftrm=0.5;
 			else Ftrm=1.0;
@@ -138,7 +138,7 @@ void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packi
 			c_ind=c_ind+NN*2;                               /* *2 because of the complex numbers */
 		}
 		for (a=0;a<NN*NN*2;a++)                             /* *2 because of the complex numbers */
-			C[ind][a]=c[a];  /* can optimize this by moving it 4 lines upwards */
+			C[ind][a]=(float)c[a];  /* can optimize this by moving it 4 lines upwards */
 	}
 	delete [] tmp;
 	delete [] c;

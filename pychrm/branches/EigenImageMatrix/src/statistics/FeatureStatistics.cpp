@@ -41,9 +41,9 @@ typedef struct POINT1
     label groups of 4-connected pixels.
     This is an implementation of the Matlab function bwlabel
 */
-int bwlabel(ImageMatrix *Im, int level) {
-	long x,y,z,base_x,base_y,base_z,group_counter=1;
-	int stack_count;
+unsigned long bwlabel(ImageMatrix *Im, int level) {
+	unsigned long x,y,z,base_x,base_y,base_z,group_counter=1;
+	unsigned int stack_count;
 	point *stack=new point[Im->width*Im->height];
 
 	for (y = 0; y < Im->height; y++) {
@@ -147,7 +147,7 @@ int bwlabel(ImageMatrix *Im, int level) {
 
 /* the input should be a binary image */
 void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
-	long x,y;
+	unsigned long x,y;
 	double x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
@@ -167,9 +167,9 @@ void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
    the input image should be a bwlabel transform of a binary image
    the retruned value is the area of the feature
 */
-int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid) {
-	long x,y;
-	int x_mass=0,y_mass=0,mass=0;
+unsigned long FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid) {
+	unsigned long x,y;
+	unsigned long x_mass=0,y_mass=0,mass=0;
 
 	for (y=0;y<Im->height;y++)
 		for (x=0;x<Im->width;x++)
@@ -215,8 +215,8 @@ int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, dou
 /* the number of pixels that are above the threshold
    the input image is a binary image
 */
-int area(ImageMatrix *Im) {
-	long x,y,sum=0;
+unsigned long area(ImageMatrix *Im) {
+	unsigned long x,y,sum=0;
 	for (y=0;y<Im->height;y++)
 		for (x=0;x<Im->width;x++)
 			sum=sum+(Im->pix_plane(y,x) > 0);
@@ -226,8 +226,8 @@ int area(ImageMatrix *Im) {
 /* EulerNumber
    The input image should be a binary image
 */
-int EulerNumber(ImageMatrix *Im, int FeatureNumber) {
-	long x,y,HolesNumber;
+unsigned long EulerNumber(ImageMatrix *Im, unsigned long FeatureNumber) {
+	unsigned long x,y,HolesNumber;
 	ImageMatrix *cp;
 	cp = new ImageMatrix (Im);
 

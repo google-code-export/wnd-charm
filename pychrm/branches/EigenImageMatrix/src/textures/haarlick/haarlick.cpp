@@ -10,10 +10,10 @@
 */
 
 void haarlick2D(ImageMatrix *Im, double distance, double *out) {
-	int a,x,y;
+	unsigned int a,x,y;
 	unsigned char **p_gray;
 	TEXTURE *features;
-	long angle;
+	int angle;
 	double min[14],max[14],sum[14];
 	double min_value = INF,max_value = -INF; //max_value = pow(2,Im->bits)-1;
 
@@ -37,7 +37,7 @@ void haarlick2D(ImageMatrix *Im, double distance, double *out) {
 	}
 
    for (angle = 0; angle <= 135; angle = angle+45) {
-		features = Extract_Texture_Features((int)distance, angle, p_gray,Im->height,Im->width, (int)max_value);
+		features = Extract_Texture_Features((int)distance, angle, p_gray, Im->height,Im->width);
 		/*  (1) Angular Second Moment */
 		sum[0] += features->ASM;
 		if (features->ASM < min[0]) min[0] = features->ASM;

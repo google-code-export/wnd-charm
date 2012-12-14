@@ -77,14 +77,13 @@ using namespace std;
    filename -char *- full path to the image file
 */
 int ImageMatrix::LoadTIFF(char *filename) {
-	unsigned long h,w,x,y,z;
+	unsigned int h,w,x,y;
 	unsigned short int spp,bps;
 	TIFF *tif = NULL;
 	unsigned char *buf8;
 	unsigned short *buf16;
 	double max_range = pow((double)2,bits)-1;
 	RGBcolor rgb;
-	HSVcolor hsv;
 	TIFFSetWarningHandler(NULL);
 	if( (tif = TIFFOpen(filename, "r")) ) {
 		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
@@ -103,7 +102,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
 
 		/* read TIFF header and determine image size */
 		buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
-		buf16 = (unsigned short *)_TIFFmalloc(TIFFScanlineSize(tif)*sizeof(unsigned short)*spp);
+		buf16 = (unsigned short *)_TIFFmalloc( (tsize_t)sizeof(unsigned short)*TIFFScanlineSize(tif)*spp );
 		for (y = 0; y < height; y++) {
 			int col;
 			if (bits==8) TIFFReadScanline(tif, buf8, y);
@@ -143,7 +142,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
     Save a matrix in TIFF format (16 bits per pixel)
 */
 int ImageMatrix::SaveTiff(char *filename) {
-	int x,y;
+	unsigned int x,y;
 	TIFF* tif = TIFFOpen(filename, "w");
 	if (!tif) return(0);
 	unsigned short *BufImage16 = new unsigned short[width*height];
@@ -196,7 +195,7 @@ void ImageMatrix::init() {
 	bits=8; /* set some default value */
 }
 
-void ImageMatrix::allocate (int w, int h) {
+void ImageMatrix::allocate (unsigned int w, unsigned int h) {
 	width  = 0;
 	height = 0;
 	// These throw exceptions, which we don't catch (catch in main?)
@@ -228,7 +227,7 @@ ImageMatrix::ImageMatrix() {
 	init();
 }
 
-ImageMatrix::ImageMatrix(int width, int height) {  
+ImageMatrix::ImageMatrix(unsigned int width, unsigned int height) {  
 	init();
 	allocate (width, height);
 }
@@ -241,8 +240,7 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix) {
    (x1,y1) - top left
    (x2,y2) - bottom right
 */
-ImageMatrix::ImageMatrix(ImageMatrix *matrix,int x1, int y1, int x2, int y2) {
-	int x,y;
+ImageMatrix::ImageMatrix(ImageMatrix *matrix, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
 
 	init();
 	bits=matrix->bits;
@@ -313,7 +311,7 @@ void ImageMatrix::invert() {
 */
 void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 	double x,y,dx,dy,frac;
-	int new_x,new_y,a;
+	unsigned int new_x,new_y,a;
 
 	if (x_ratio>1) x_ratio=1;
 	if (y_ratio>1) y_ratio=1;
@@ -442,7 +440,7 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 */
 ImageMatrix* ImageMatrix::Rotate(double angle) {
 	ImageMatrix *new_matrix;
-	int new_x,new_y,new_width,new_height;
+	unsigned int new_width,new_height;
 
 	// Only deal with right angles
 	if (! ( (angle == 90) || (angle == 180) || (angle == 270) ) ) return (this);
@@ -497,10 +495,11 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
    if one of the pointers is NULL, the corresponding value is not computed.
 */
 void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_p, double *min_p, double *max_p, double *hist_p, int bins) {
-	long pixel_index,num_pixels;
+	unsigned long pixel_index,num_pixels;
 	double *pixels=NULL, *pix_ptr;
-	double min = INF, max = -INF, mean = 0, median = 0, delta = 0, M2 = 0, val = 0, val_m = 0, var = 0, std = 0;
+	double min = INF, max = -INF, mean = 0, median = 0, delta = 0, M2 = 0, val = 0, var = 0, std = 0;
 	bool calc_stats, calc_median, calc_hist;
+	unsigned int x, y;
 
 	calc_stats = (mean_p || std_p || min_p || max_p);
 	calc_median = (median_p);
@@ -538,8 +537,8 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 		/* compute the average, min and max */
 		pixel_index = 0;
 		pix_ptr = pixels;
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
 				val = pix_plane (y, x);
 				if (pixels) *pix_ptr++ = val;
 				if (val > max) max = val;
@@ -587,7 +586,7 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
    n_std -double- the stddev of the normalized image (ignored if <0)
 */
 void ImageMatrix::normalize(double n_min, double n_max, long n_range, double n_mean, double n_std) {
-	long x,y;
+	unsigned int x,y;
 	double val;
 	/* normalized to n_min and n_max */
 	if (n_min >= 0 && n_max > 0 && n_range > 0) {
@@ -623,22 +622,22 @@ void ImageMatrix::normalize(double n_min, double n_max, long n_range, double n_m
 /* convolve
 */
 void ImageMatrix::convolve(ImageMatrix *filter) {
-	int x,y,z;
+	unsigned int x, y, i, j, xx, yy;
+	unsigned int height2=filter->height/2;
+	unsigned int width2=filter->width/2;
 	ImageMatrix *copy;
-	int height2=filter->height/2;
-	int width2=filter->width/2;
 	double tmp;
 
 	copy = new ImageMatrix (this);
-	for(x=0;x<width;++x) {
-		for(y=0;y<height;++y) {
+	for (x = 0; x < width; ++x) {
+		for (y = 0; y < height; ++y) {
 			tmp=0.0;
-			for(int i=-width2;i<=width2;++i) {
-				int xx=x+i;
-				if(xx<width && xx >= 0) {
-					for(int j=-height2;j<=height2;++j) {
-						int yy=y+j;
-						if(int(yy)>=0 && yy < height) {
+			for (i = -width2; i <= width2; ++i) {
+				xx=x+i;
+				if (xx < width && xx >= 0) {
+					for(j = -height2; j <= height2; ++j) {
+						yy=y+j;
+						if (yy >= 0 && yy < height) {
 							tmp += filter->pix_plane (j+height2, i+width2) * copy->pix_plane(yy,xx);
 						}
 					}
@@ -663,12 +662,12 @@ void ImageMatrix::convolve(ImageMatrix *filter) {
 */
 
 void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, double *sat_avg_p, double *sat_std_p, double *val_avg_p, double *val_std_p, double *max_color_p, double *colors) {
-	double hue_avg=0, hue_std=0, sat_avg=0, sat_std=0, val_avg=0, val_std=0, max_color=0;
+	double hue_avg=0, hue_std=0, sat_avg=0, sat_std=0, val_avg=0, val_std=0;
 	double delta, M2h=0, M2s=0, M2v=0;
-	long a, x, y,color_index,pixel_index=0;
-	HSVcolor hsv;
+	unsigned int a, x, y, pixel_index=0;
+	unsigned long color_index=0;
 	double max,pixel_num;
-	float certainties[COLORS_NUM+1];
+	double certainties[COLORS_NUM+1];
 	byte h, s, v;
 
 	pixel_num=height*width;
@@ -739,13 +738,13 @@ void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, doubl
    grey level represents a different color
 */
 void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {  
-	long x,y,z; //,base_color;
+	unsigned int x,y; //,base_color;
 	double cb_intensity;
 	double max_range = pow((double)2,bits)-1;
 	HSVcolor hsv_pixel;
-	int color_index=0;   
+	unsigned long color_index=0;   
 	RGBcolor rgb;
-	float certainties[COLORS_NUM+1];
+	double certainties[COLORS_NUM+1];
 
 	// initialize the color histogram
 	if( color_hist ) 
@@ -777,7 +776,7 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 
 /* get image histogram */
 void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
-	long a;
+	unsigned long a;
 	double h_min=INF,h_max=-INF;
 	/* find the minimum and maximum */
 	if (imhist == 1) {    /* similar to the Matlab imhist */
@@ -808,7 +807,7 @@ double ImageMatrix::fft2() {
 	fftw_complex *out;
 	double *in;
 	fftw_plan p;
-	long x,y,z;
+	unsigned int x,y;
 
 	in = (double*) fftw_malloc(sizeof(double) * width*height);
 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
@@ -821,7 +820,7 @@ double ImageMatrix::fft2() {
 
 	fftw_execute(p); /* execute the transformation (repeat as needed) */
 
-	unsigned long half_height=height/2+1, idx;
+	unsigned int half_height=height/2+1, idx;
 	/* find the abs and angle */
 	for (x=0;x<width;x++) {
 		for (y=0;y<half_height;y++) {
@@ -849,9 +848,9 @@ double ImageMatrix::fft2() {
 }
 
 /* chebyshev transform */
-void ImageMatrix::ChebyshevTransform(int N) {
+void ImageMatrix::ChebyshevTransform(unsigned int N) {
 	double *out;
-	int x,y;
+	unsigned int x,y;
 
 	if (N<2)
 		N = MIN( width, height );
@@ -882,7 +881,7 @@ void ImageMatrix::ChebyshevFourierTransform2D(double *coeff) {
 
 /* Symlet5 transform */
 void ImageMatrix::Symlet5Transform() {
-	long x,y,z;
+	unsigned int x,y;
 	DataGrid2D *grid2d=NULL;
 	DataGrid *grid;
 	Symlet5 *Sym5;
@@ -909,7 +908,7 @@ void ImageMatrix::Symlet5Transform() {
    coeff -array of double- pre-allocated memory of 20 doubles
    nibs_num - (32 is normal)
 */
-void ImageMatrix::ChebyshevStatistics2D(double *coeff, int N, int bins_num)
+void ImageMatrix::ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned int bins_num)
 {
    if (N<2) N=20;
    if (N>MIN(width,height)) N=MIN(width,height);   
@@ -936,12 +935,13 @@ int ImageMatrix::CombFirstFourMoments2D(double *vec) {
 
 /* Edge Transform */
 void ImageMatrix::EdgeTransform() {
-	long x,y,z;
+	unsigned int x,y;
+	double max_x=0,max_y=0;
+
 	ImageMatrix *TempMatrix;
 	TempMatrix = new ImageMatrix (this);
 	for (y = 0; y < TempMatrix->height; y++)
 		for (x = 0; x < TempMatrix->width; x++) {
-			double max_x=0,max_y=0,max_z=0;
 			if (y > 0 && y < height-1) max_y=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y-1,x)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y+1,x)));
 			if (x > 0 && x < width-1)  max_x=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x-1)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x+1)));
 			pix_plane(y,x) = MAX(max_x,max_y);
@@ -954,10 +954,10 @@ void ImageMatrix::EdgeTransform() {
             output should be of the same size as the input matrix
 */
 void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
-	long x,y,z,i,j;
+	unsigned int x,y,i,j;
 	double sumx,sumy;
-	for (x=0;x<width;x++)
-		for (y=0;y<height;y++) {
+	for (x = 0; x < width; x++)
+		for (y = 0; y < height; y++) {
 			sumx=0;
 			sumy=0;		  
 			for (j = y-1; j <= y+1; j++)
@@ -981,10 +981,10 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
             output should be of the same size as the input matrix
 */
 void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
-	long x,y,z,i,j;
+	unsigned int x,y,i,j;
 	double sumx,sumy;
-	for (x=0;x<width;x++)
-		for (y=0;y<height;y++) {
+	for (x = 0; x < width; x++)
+		for (y = 0;y < height; y++) {
 			sumx=0;
 			sumy=0;
 			for (j = y-1; j <= y+1; j++)
@@ -1021,9 +1021,9 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
    DiffDirecHist -array of double- array of size num_bins/2 should be allocated
 */
 
-void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, int num_bins) {
+void ImageMatrix::EdgeStatistics(unsigned long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, unsigned int num_bins) {
 	ImageMatrix *GradientMagnitude,*GradientDirection;
-	long a,bin_index;
+	unsigned int a,bin_index;
 	double min,max,sum, max_range = pow((double)2,bits)-1;
 
 	GradientMagnitude = new ImageMatrix (this);
@@ -1050,10 +1050,10 @@ void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMed
 	/* Calculate statistics about edge difference direction
 	   Histogram created by computing differences amongst histogram bins at angle and angle+pi
 	*/
-	for (bin_index = 0; bin_index < (int)(num_bins/2); bin_index++)
+	for (bin_index = 0; bin_index < (num_bins/2); bin_index++)
 		DiffDirecHist[bin_index] = fabs(DirecHist[bin_index]-DirecHist[bin_index+(int)(num_bins/2)]);
 	sum=0;
-	for (bin_index = 0; bin_index < (int)(num_bins/2); bin_index++) {
+	for (bin_index = 0; bin_index < (num_bins/2); bin_index++) {
 		if (DirecHist[bin_index] + DirecHist[bin_index+(int)(num_bins/2)] != 0)  /* protect from a numeric flaw */
 			DiffDirecHist[bin_index] = DiffDirecHist[bin_index]/(DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
 		sum += (DirecHist[bin_index]+DirecHist[bin_index+(int)(num_bins/2)]);
@@ -1070,7 +1070,7 @@ void ImageMatrix::EdgeStatistics(long *EdgeArea, double *MagMean, double *MagMed
    vec -array of double- output column. a pre-allocated vector of the size 3*4=12
 */
 void ImageMatrix::RadonTransform2D(double *vec) {
-	int x,y,val_index,output_size,vec_index,bin_index;
+	unsigned int x,y,val_index,output_size,vec_index,bin_index;
 	double *pixels,*ptr,bins[3];
 	int angle,num_angles=4;
 	double theta[4]={0,45,90,135};
@@ -1160,7 +1160,7 @@ double ImageMatrix::OtsuBinaryMaskTransform() {
 	OtsuGlobalThreshold=Otsu();
 
 	/* classify the pixels by the threshold */
-	for (long a = 0; a < width*height; a++)
+	for (unsigned int a = 0; a < width*height; a++)
 		if (pix_plane.array().coeff(a) > OtsuGlobalThreshold*max_range) (pix_plane.array())(a) = 1;
 		else (pix_plane.array())(a) = 0;
 	 
@@ -1173,7 +1173,7 @@ double ImageMatrix::OtsuBinaryMaskTransform() {
     returned value -int- the number of objects found
 */
 //--------------------------------------------------------
-int ImageMatrix::BWlabel(int level) {
+unsigned long ImageMatrix::BWlabel(int level) {
 	return(bwlabel(this,level));
 }
 
@@ -1213,14 +1213,14 @@ int compare_ints (const void *a, const void *b) {
 	return(-1);
 }
 
-void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, double *centroid_y, int *AreaMin, int *AreaMax,
-	double *AreaMean, int *AreaMedian, double *AreaVar, int *area_histogram,double *DistMin, double *DistMax,
-	double *DistMean, double *DistMedian, double *DistVar, int *dist_histogram, int num_bins
+void ImageMatrix::FeatureStatistics(unsigned long *count, unsigned long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
+	double *AreaMean, unsigned int *AreaMedian, double *AreaVar, unsigned int *area_histogram,double *DistMin, double *DistMax,
+	double *DistMean, double *DistMedian, double *DistVar, unsigned int *dist_histogram, unsigned int num_bins
 ) {
-	int object_index,inv_count;
+	unsigned long object_index,inv_count;
 	double sum_areas,sum_dists;
 	ImageMatrix *BWImage,*BWInvert,*temp;
-	int *object_areas;
+	unsigned long *object_areas;
 	double *centroid_dists,sum_dist;
 
 	BWInvert=new ImageMatrix (this);   // check if the background is brighter or dimmer
@@ -1246,7 +1246,7 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
 	// calculate the areas 
 	sum_areas = 0;
 	sum_dists = 0;
-	object_areas = new int[*count];
+	object_areas = new unsigned long[*count];
 	centroid_dists = new double[*count];
 	for (object_index = 1; object_index <= *count; object_index++) {
 		double x_centroid,y_centroid;
@@ -1256,12 +1256,12 @@ void ImageMatrix::FeatureStatistics(int *count, int *Euler, double *centroid_x, 
 		sum_dists += centroid_dists[object_index-1];
 	}
 	/* compute area statistics */
-	qsort(object_areas,*count,sizeof(int),compare_ints);
+	qsort(object_areas,*count,sizeof(unsigned int),compare_ints);
 	*AreaMin = object_areas[0];
 	*AreaMax = object_areas[*count-1];
 	if (*count > 0) *AreaMean = sum_areas/(*count);
-	else *AreaMean = 0;
-	*AreaMedian = object_areas[(*count)/2];
+	else *AreaMean = 0.0;
+	*AreaMedian = (unsigned int)object_areas[(*count)/2];
 	for (object_index = 0; object_index < num_bins; object_index++)
 		area_histogram[object_index] = 0;
 	/* compute the variance and the histogram */

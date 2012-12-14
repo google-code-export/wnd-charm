@@ -81,8 +81,8 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 			for (l = 0; l <= n; l++) {
 				if ( (n-l) % 2 == 0 ) {
 					for (m = 0; m <= (n-l)/2; m++) {
-						LUT[theLUT] = pow((double)-1.0,(double)m) * ( (long double) gsl_sf_fact(n-m) / ( (long double)gsl_sf_fact(m) * (long double)gsl_sf_fact((n - 2.0*m + l) / 2.0) *
-							(long double)gsl_sf_fact((n - 2.0*m - l) / 2.0) ) );
+						LUT[theLUT] = pow((double)-1.0,(double)m) * ( (long double) gsl_sf_fact(n-m) / ( (long double)gsl_sf_fact(m) * (long double)gsl_sf_fact((n - 2*m + l) / 2) *
+							(long double)gsl_sf_fact((n - 2*m - l) / 2) ) );
 						theLUT++;
 					}
 					n_s[theZ] = n;
@@ -208,12 +208,12 @@ void mb_zernike2D_2 (ImageMatrix *I, double order, double rad, double *zvalues, 
 
 // N is the smaller of I->width and I->height
 	N = I->width < I->height ? I->width : I->height;
-	if (order > 0) L = order;
+	if (order > 0) L = (int)order;
 	else L = 15;
 	assert (L < MAX_L);
 
 	if (! rad > 0.0) rad = N;
-	D = rad * 2;
+	D = (int)(rad * 2);
 
 	static double H1[MAX_L][MAX_L];
 	static double H2[MAX_L][MAX_L];
