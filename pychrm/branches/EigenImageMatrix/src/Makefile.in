@@ -99,7 +99,7 @@ libchrm_la_DEPENDENCIES =
 am_libchrm_la_OBJECTS = libchrm_la-FuzzyCalc.lo \
 	libchrm_la-CombFirst4Moments.lo \
 	libchrm_la-FeatureStatistics.lo libchrm_la-gabor.lo \
-	libchrm_la-CVIPtexture.lo libchrm_la-haarlick.lo \
+	libchrm_la-CVIPtexture.lo libchrm_la-haralick.lo \
 	libchrm_la-tamura.lo libchrm_la-complex.lo \
 	libchrm_la-zernike.lo libchrm_la-ChebyshevFourier.lo \
 	libchrm_la-chebyshev.lo libchrm_la-radon.lo \
@@ -298,10 +298,10 @@ libchrm_la_SOURCES = colors/FuzzyCalc.cpp \
 	statistics/FeatureStatistics.h \
 	textures/gabor.cpp \
 	textures/gabor.h \
-	textures/haarlick/CVIPtexture.cpp \
-	textures/haarlick/CVIPtexture.h \
-	textures/haarlick/haarlick.cpp \
-	textures/haarlick/haarlick.h \
+	textures/haralick/CVIPtexture.cpp \
+	textures/haralick/CVIPtexture.h \
+	textures/haralick/haralick.cpp \
+	textures/haralick/haralick.h \
 	textures/tamura.cpp \
 	textures/tamura.h \
 	textures/zernike/complex.cpp \
@@ -453,7 +453,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-convolution.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-gabor.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-haarlick.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-haralick.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-radon.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-specfunc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_la-tamura.Plo@am__quote@
@@ -510,19 +510,19 @@ libchrm_la-gabor.lo: textures/gabor.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_la-gabor.lo `test -f 'textures/gabor.cpp' || echo '$(srcdir)/'`textures/gabor.cpp
 
-libchrm_la-CVIPtexture.lo: textures/haarlick/CVIPtexture.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -MT libchrm_la-CVIPtexture.lo -MD -MP -MF $(DEPDIR)/libchrm_la-CVIPtexture.Tpo -c -o libchrm_la-CVIPtexture.lo `test -f 'textures/haarlick/CVIPtexture.cpp' || echo '$(srcdir)/'`textures/haarlick/CVIPtexture.cpp
+libchrm_la-CVIPtexture.lo: textures/haralick/CVIPtexture.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -MT libchrm_la-CVIPtexture.lo -MD -MP -MF $(DEPDIR)/libchrm_la-CVIPtexture.Tpo -c -o libchrm_la-CVIPtexture.lo `test -f 'textures/haralick/CVIPtexture.cpp' || echo '$(srcdir)/'`textures/haralick/CVIPtexture.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libchrm_la-CVIPtexture.Tpo $(DEPDIR)/libchrm_la-CVIPtexture.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/haarlick/CVIPtexture.cpp' object='libchrm_la-CVIPtexture.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/haralick/CVIPtexture.cpp' object='libchrm_la-CVIPtexture.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_la-CVIPtexture.lo `test -f 'textures/haarlick/CVIPtexture.cpp' || echo '$(srcdir)/'`textures/haarlick/CVIPtexture.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_la-CVIPtexture.lo `test -f 'textures/haralick/CVIPtexture.cpp' || echo '$(srcdir)/'`textures/haralick/CVIPtexture.cpp
 
-libchrm_la-haarlick.lo: textures/haarlick/haarlick.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -MT libchrm_la-haarlick.lo -MD -MP -MF $(DEPDIR)/libchrm_la-haarlick.Tpo -c -o libchrm_la-haarlick.lo `test -f 'textures/haarlick/haarlick.cpp' || echo '$(srcdir)/'`textures/haarlick/haarlick.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libchrm_la-haarlick.Tpo $(DEPDIR)/libchrm_la-haarlick.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/haarlick/haarlick.cpp' object='libchrm_la-haarlick.lo' libtool=yes @AMDEPBACKSLASH@
+libchrm_la-haralick.lo: textures/haralick/haralick.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -MT libchrm_la-haralick.lo -MD -MP -MF $(DEPDIR)/libchrm_la-haralick.Tpo -c -o libchrm_la-haralick.lo `test -f 'textures/haralick/haralick.cpp' || echo '$(srcdir)/'`textures/haralick/haralick.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libchrm_la-haralick.Tpo $(DEPDIR)/libchrm_la-haralick.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/haralick/haralick.cpp' object='libchrm_la-haralick.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_la-haarlick.lo `test -f 'textures/haarlick/haarlick.cpp' || echo '$(srcdir)/'`textures/haarlick/haarlick.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_la-haralick.lo `test -f 'textures/haralick/haralick.cpp' || echo '$(srcdir)/'`textures/haralick/haralick.cpp
 
 libchrm_la-tamura.lo: textures/tamura.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_la_CXXFLAGS) $(CXXFLAGS) -MT libchrm_la-tamura.lo -MD -MP -MF $(DEPDIR)/libchrm_la-tamura.Tpo -c -o libchrm_la-tamura.lo `test -f 'textures/tamura.cpp' || echo '$(srcdir)/'`textures/tamura.cpp

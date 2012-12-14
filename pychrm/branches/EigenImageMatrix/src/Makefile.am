@@ -14,10 +14,10 @@ libchrm_la_SOURCES = colors/FuzzyCalc.cpp \
 	statistics/FeatureStatistics.h \
 	textures/gabor.cpp \
 	textures/gabor.h \
-	textures/haarlick/CVIPtexture.cpp \
-	textures/haarlick/CVIPtexture.h \
-	textures/haarlick/haarlick.cpp \
-	textures/haarlick/haarlick.h \
+	textures/haralick/CVIPtexture.cpp \
+	textures/haralick/CVIPtexture.h \
+	textures/haralick/haralick.cpp \
+	textures/haralick/haralick.h \
 	textures/tamura.cpp \
 	textures/tamura.h \
 	textures/zernike/complex.cpp \

@@ -44,7 +44,7 @@
 #include "statistics/FeatureStatistics.h"
 #include "textures/gabor.h"
 #include "textures/tamura.h"
-#include "textures/haarlick/haarlick.h"
+#include "textures/haralick/haralick.h"
 #include "textures/zernike/zernike.h"
 
 #include <iostream>
@@ -1308,12 +1308,12 @@ void ImageMatrix::GaborFilters2D(double *ratios) {
 }
 
 
-/* haarlick
+/* haralick
    output -array of double- a pre-allocated array of 28 doubles
 */
-void ImageMatrix::HaarlickTexture2D(double distance, double *out) {
+void ImageMatrix::HaralickTexture2D(double distance, double *out) {
 	if (distance<=0) distance=1;
-	haarlick2D(this,distance,out);
+	haralick2D(this,distance,out);
 }
 
 /* MultiScaleHistogram

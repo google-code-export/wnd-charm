@@ -261,7 +261,7 @@ public:
 		double *DistMean, double *DistMedian, double *DistVar, unsigned int *dist_histogram, unsigned int num_bins
 	);
 	void GaborFilters2D(double *ratios);
-	void HaarlickTexture2D(double distance, double *out);
+	void HaralickTexture2D(double distance, double *out);
 	void TamuraTexture2D(double *vec);
 	void zernike2D(double *zvalues, long *output_size);
 };
