@@ -183,6 +183,32 @@ int ImageMatrix::SaveTiff(char *filename) {
 	return(1);
 }
 
+int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding_rect, double mean, double stddev) {  
+	int res=0;
+	if (strstr(image_file_name,".tif") || strstr(image_file_name,".TIF")) {  
+		res=LoadTIFF(image_file_name);
+	}
+	
+	// add the image only if it was loaded properly
+	if (res) {
+		// compute features only from an area of the image
+		if (bounding_rect && bounding_rect->x>=0) { 
+			ImageMatrix *temp;
+			temp = new ImageMatrix(this,
+				bounding_rect->x, bounding_rect->y,
+				bounding_rect->x+bounding_rect->w-1, bounding_rect->y+bounding_rect->h-1
+			);
+			copy (temp);
+			delete temp;
+		}
+		if (downsample>0 && downsample<100)  /* downsample by a given factor */
+			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
+		if (mean>0)  /* normalize to a given mean and standard deviation */
+			normalize(-1,-1,-1,mean,stddev);
+	}
+	return(res);
+}
+
 /* simple constructors */
 
 // This sets default values for the different constructors

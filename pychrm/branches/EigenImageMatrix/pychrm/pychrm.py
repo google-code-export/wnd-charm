@@ -209,7 +209,6 @@ class ImageMatrix(_object):
     if _newclass:has_median = _swig_property(_pychrm.ImageMatrix_has_median_get, _pychrm.ImageMatrix_has_median_set)
     def LoadTIFF(self, *args): return _pychrm.ImageMatrix_LoadTIFF(self, *args)
     def SaveTiff(self, *args): return _pychrm.ImageMatrix_SaveTiff(self, *args)
-    def LoadPPM(self, *args): return _pychrm.ImageMatrix_LoadPPM(self, *args)
     def OpenImage(self, *args): return _pychrm.ImageMatrix_OpenImage(self, *args)
     def init(self): return _pychrm.ImageMatrix_init(self)
     def allocate(self, *args): return _pychrm.ImageMatrix_allocate(self, *args)
@@ -221,7 +220,6 @@ class ImageMatrix(_object):
     __swig_destroy__ = _pychrm.delete_ImageMatrix
     __del__ = lambda self : None;
     def set(self, *args): return _pychrm.ImageMatrix_set(self, *args)
-    def diff(self, *args): return _pychrm.ImageMatrix_diff(self, *args)
     def normalize(self, *args): return _pychrm.ImageMatrix_normalize(self, *args)
     def to8bits(self): return _pychrm.ImageMatrix_to8bits(self)
     def flipV(self): return _pychrm.ImageMatrix_flipV(self)
@@ -246,8 +244,6 @@ class ImageMatrix(_object):
     def ChebyshevTransform(self, *args): return _pychrm.ImageMatrix_ChebyshevTransform(self, *args)
     def ChebyshevFourierTransform2D(self, *args): return _pychrm.ImageMatrix_ChebyshevFourierTransform2D(self, *args)
     def Symlet5Transform(self): return _pychrm.ImageMatrix_Symlet5Transform(self)
-    def GradientMagnitude(self, *args): return _pychrm.ImageMatrix_GradientMagnitude(self, *args)
-    def GradientDirection2D(self, *args): return _pychrm.ImageMatrix_GradientDirection2D(self, *args)
     def PerwittMagnitude2D(self, *args): return _pychrm.ImageMatrix_PerwittMagnitude2D(self, *args)
     def PerwittDirection2D(self, *args): return _pychrm.ImageMatrix_PerwittDirection2D(self, *args)
     def ChebyshevStatistics2D(self, *args): return _pychrm.ImageMatrix_ChebyshevStatistics2D(self, *args)

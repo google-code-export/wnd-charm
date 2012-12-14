@@ -47,6 +47,6 @@ typedef struct  {
 	} TEXTURE;
 
 TEXTURE * Extract_Texture_Features(int distance, int angle,
-		 		register u_int8_t **grays, int rows, int cols);
+		 		register u_int8_t **grays, unsigned int rows, unsigned int cols);
 
 #endif

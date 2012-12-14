@@ -6541,49 +6541,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_ImageMatrix_LoadPPM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ImageMatrix *arg1 = (ImageMatrix *) 0 ;
-  char *arg2 = (char *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int res2 ;
-  char *buf2 = 0 ;
-  int alloc2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:ImageMatrix_LoadPPM",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_LoadPPM" "', argument " "1"" of type '" "ImageMatrix *""'"); 
-  }
-  arg1 = reinterpret_cast< ImageMatrix * >(argp1);
-  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ImageMatrix_LoadPPM" "', argument " "2"" of type '" "char *""'");
-  }
-  arg2 = reinterpret_cast< char * >(buf2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ImageMatrix_LoadPPM" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  result = (int)(arg1)->LoadPPM(arg2,arg3);
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return resultobj;
-fail:
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_ImageMatrix_OpenImage(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   ImageMatrix *arg1 = (ImageMatrix *) 0 ;
@@ -7145,36 +7102,6 @@ fail:
     "    ImageMatrix::set(unsigned int,unsigned int,RGBcolor)\n"
     "    ImageMatrix::set(unsigned int,unsigned int,double)\n");
   return 0;
-}
-
-
-SWIGINTERN PyObject *_wrap_ImageMatrix_diff(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ImageMatrix *arg1 = (ImageMatrix *) 0 ;
-  ImageMatrix *arg2 = (ImageMatrix *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:ImageMatrix_diff",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_diff" "', argument " "1"" of type '" "ImageMatrix *""'"); 
-  }
-  arg1 = reinterpret_cast< ImageMatrix * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ImageMatrix_diff" "', argument " "2"" of type '" "ImageMatrix *""'"); 
-  }
-  arg2 = reinterpret_cast< ImageMatrix * >(argp2);
-  (arg1)->diff(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
 }
 
 
@@ -7971,66 +7898,6 @@ SWIGINTERN PyObject *_wrap_ImageMatrix_Symlet5Transform(PyObject *SWIGUNUSEDPARM
   }
   arg1 = reinterpret_cast< ImageMatrix * >(argp1);
   (arg1)->Symlet5Transform();
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ImageMatrix_GradientMagnitude(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ImageMatrix *arg1 = (ImageMatrix *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:ImageMatrix_GradientMagnitude",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_GradientMagnitude" "', argument " "1"" of type '" "ImageMatrix *""'"); 
-  }
-  arg1 = reinterpret_cast< ImageMatrix * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ImageMatrix_GradientMagnitude" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->GradientMagnitude(arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ImageMatrix_GradientDirection2D(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ImageMatrix *arg1 = (ImageMatrix *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:ImageMatrix_GradientDirection2D",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ImageMatrix, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ImageMatrix_GradientDirection2D" "', argument " "1"" of type '" "ImageMatrix *""'"); 
-  }
-  arg1 = reinterpret_cast< ImageMatrix * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ImageMatrix_GradientDirection2D" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  (arg1)->GradientDirection2D(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -13850,7 +13717,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"ImageMatrix_has_median_get", _wrap_ImageMatrix_has_median_get, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_LoadTIFF", _wrap_ImageMatrix_LoadTIFF, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_SaveTiff", _wrap_ImageMatrix_SaveTiff, METH_VARARGS, NULL},
-	 { (char *)"ImageMatrix_LoadPPM", _wrap_ImageMatrix_LoadPPM, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_OpenImage", _wrap_ImageMatrix_OpenImage, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_init", _wrap_ImageMatrix_init, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_allocate", _wrap_ImageMatrix_allocate, METH_VARARGS, NULL},
@@ -13858,7 +13724,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_ImageMatrix", _wrap_new_ImageMatrix, METH_VARARGS, NULL},
 	 { (char *)"delete_ImageMatrix", _wrap_delete_ImageMatrix, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_set", _wrap_ImageMatrix_set, METH_VARARGS, NULL},
-	 { (char *)"ImageMatrix_diff", _wrap_ImageMatrix_diff, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_normalize", _wrap_ImageMatrix_normalize, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_to8bits", _wrap_ImageMatrix_to8bits, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_flipV", _wrap_ImageMatrix_flipV, METH_VARARGS, NULL},
@@ -13883,8 +13748,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"ImageMatrix_ChebyshevTransform", _wrap_ImageMatrix_ChebyshevTransform, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_ChebyshevFourierTransform2D", _wrap_ImageMatrix_ChebyshevFourierTransform2D, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_Symlet5Transform", _wrap_ImageMatrix_Symlet5Transform, METH_VARARGS, NULL},
-	 { (char *)"ImageMatrix_GradientMagnitude", _wrap_ImageMatrix_GradientMagnitude, METH_VARARGS, NULL},
-	 { (char *)"ImageMatrix_GradientDirection2D", _wrap_ImageMatrix_GradientDirection2D, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_PerwittMagnitude2D", _wrap_ImageMatrix_PerwittMagnitude2D, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_PerwittDirection2D", _wrap_ImageMatrix_PerwittDirection2D, METH_VARARGS, NULL},
 	 { (char *)"ImageMatrix_ChebyshevStatistics2D", _wrap_ImageMatrix_ChebyshevStatistics2D, METH_VARARGS, NULL},

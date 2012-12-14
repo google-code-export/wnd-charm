@@ -158,7 +158,6 @@ public:
 	bool has_stats, has_median;                     // has_stats applies to min, max, mean, std. has_median only to median
 	int LoadTIFF(char *filename);                   // load from TIFF file
 	int SaveTiff(char *filename);                   // save a matrix in TIF format
-	int LoadPPM(char *filename, int ColorMode);     // load from a PPM file
 	int OpenImage(char *image_file_name,            // load an image of any supported format
 		int downsample, rect *bounding_rect,
 		double mean, double stddev);
@@ -189,7 +188,6 @@ public:
 		pix_plane (y,x) = val;
 	}
 
-	void diff(ImageMatrix *matrix);                 // compute the difference from another image
 	void normalize(double min, double max, long range, double mean, double stddev); // normalized an image to either min/max or mean/stddev
 	void to8bits();
 	void flipV();                                   // flip an image around a vertical axis (left to right)
@@ -245,8 +243,6 @@ public:
 	void ChebyshevTransform(unsigned int N);
 	void ChebyshevFourierTransform2D(double *coeff);
 	void Symlet5Transform();
-	void GradientMagnitude(int span);
-	void GradientDirection2D(int span);
 	void PerwittMagnitude2D(ImageMatrix *output);
 	void PerwittDirection2D(ImageMatrix *output);
 	void ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned int bins_num);
