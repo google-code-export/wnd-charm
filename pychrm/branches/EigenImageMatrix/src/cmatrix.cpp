@@ -980,26 +980,27 @@ void ImageMatrix::EdgeTransform() {
             output should be of the same size as the input matrix
 */
 void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
-	unsigned int x,y,i,j;
+	long x,y,i,j,w=width,h=height;
 	double sumx,sumy;
-	for (x = 0; x < width; x++)
-		for (y = 0; y < height; y++) {
+	for (x = 0; x < w; x++) {
+		for (y = 0; y < h; y++) {
 			sumx=0;
 			sumy=0;		  
 			for (j = y-1; j <= y+1; j++)
-				if (j >= 0 && j < height && x-1 >= 0)
+				if (j >= 0 && j < h && x-1 >= 0)
 					sumx += pix_plane(j,x-1)*1;//0.3333;
 			for (j = y-1; j <= y+1; j++)
-				if (j >= 0 && j < height && x+1 < width)
+				if (j >= 0 && j < h && x+1 < w)
 					sumx += pix_plane(j,x+1)*-1;//-0.3333;
 			for (i = x-1; i <= x+1; i++)
-				if (i >= 0 && i < width && y-1 >= 0)
+				if (i >= 0 && i < w && y-1 >= 0)
 					sumy += pix_plane(y-1,i)*1;//-0.3333;
 			for (i = x-1; i <= x+1; i++)
-				if (i >= 0 && i < width && y+1 < height)
+				if (i >= 0 && i < w && y+1 < h)
 					sumy += pix_plane(y+1,i)*-1;//0.3333;
 			output->pix_plane(y,x) = sqrt(sumx*sumx+sumy*sumy);
 		}
+	}
 }
 
 /* Perwitt gradient direction
@@ -1007,23 +1008,23 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
             output should be of the same size as the input matrix
 */
 void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
-	unsigned int x,y,i,j;
+	long x,y,i,j,w=width,h=height;
 	double sumx,sumy;
-	for (x = 0; x < width; x++)
-		for (y = 0;y < height; y++) {
+	for (x = 0; x < w; x++)
+		for (y = 0;y < h; y++) {
 			sumx=0;
 			sumy=0;
 			for (j = y-1; j <= y+1; j++)
-				if (j >= 0 && j < height && x-1 >= 0)
+				if (j >= 0 && j < h && x-1 >= 0)
 					sumx += pix_plane(j,x-1)*1;//0.3333;
 			for (j = y-1; j <= y+1; j++)
-				if (j >= 0 && j < height && x+1 < width)
+				if (j >= 0 && j < h && x+1 < w)
 					sumx += pix_plane(j,x+1)*-1;//-0.3333;
 			for (i = x-1; i <= x+1; i++)
-				if (i >= 0 && i < width && y-1 >= 0)
+				if (i >= 0 && i < w && y-1 >= 0)
 					sumy += pix_plane(y-1,i)*1;//-0.3333;
 			for (i = x-1; i <= x+1; i++)
-				if (i >= 0 && i < width && y+1 < height)
+				if (i >= 0 && i < w && y+1 < h)
 					sumy += pix_plane(y+1,i)*-1;//0.3333;
 			if (sumy == 0 || fabs(sumy)<1/INF) output->pix_plane(y,x) = 3.1415926 * (sumx < 0 ? 1 : 0);
 			else output->pix_plane(y,x) = atan2(sumy,sumx);
