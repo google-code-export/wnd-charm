@@ -62,13 +62,13 @@
 0.002365 Feature DistMin
 343.971724 Feature DistVar
 -75.000000 Feature Euler
-0.929344 Gabor Filters bin 0
-0.866677 Gabor Filters bin 1
-0.730613 Gabor Filters bin 2
-1.000235 Gabor Filters bin 3
-1.000235 Gabor Filters bin 4
-1.000235 Gabor Filters bin 5
-1.000235 Gabor Filters bin 6
+0.069246 Gabor Filters bin 0
+0.036190 Gabor Filters bin 1
+0.017703 Gabor Filters bin 2
+0.017390 Gabor Filters bin 3
+0.620006 Gabor Filters bin 4
+0.608256 Gabor Filters bin 5
+0.632226 Gabor Filters bin 6
 465.000000 Chebishev Fourier Transform bin 0 ()
 49.000000 Chebishev Fourier Transform bin 1 ()
 9.000000 Chebishev Fourier Transform bin 2 ()
