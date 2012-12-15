@@ -27,7 +27,7 @@ if (length (@res) < 2) {
 	print "Passed - No differences found\n";
 	unlink ("$path/test-images-sigs-l.fit");
 } else {
-	print "Failed - differences found:\n".join ("\n",@res);
+	print "Failed - differences found in sigs:\ndiff $path/test-images-sigs-l.fit $path/unbalanced.fit\n";
 }
 
 sub do_entry {
