@@ -1,5 +1,5 @@
 0
-t1_s01_c05_ij.tif
+../tests/t1_s01_c05_ij.tif
 9152.000000 Edge Area
 0.023567 Edge DiffDirecHist bin 0
 0.022870 Edge DiffDirecHist bin 1
@@ -61,7 +61,7 @@ t1_s01_c05_ij.tif
 26.231041 Feature DistMedian
 0.002365 Feature DistMin
 343.971724 Feature DistVar
-1.000000 Feature Euler
+-75.000000 Feature Euler
 0.929344 Gabor Filters bin 0
 0.866677 Gabor Filters bin 1
 0.730613 Gabor Filters bin 2
