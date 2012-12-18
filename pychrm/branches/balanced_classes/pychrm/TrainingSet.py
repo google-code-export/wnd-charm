@@ -167,25 +167,6 @@ def output_railroad_switch( method_that_prints_output ):
 
 	return print_method_wrapper
 
-def balance_classes( method_that_returns_a_feature_set ):
-	"""This is a decorator that optionally lets the user specify a if they want the returned
-	feature set to have balanced classes. This is done by limiting the size of the numpy
-	"view" created against the self.data_matrix features."""
-
-	def wrapper( *args, **kwargs ):
-
-		if "balanced" in kwargs:
-			balance = True
-			del kwargs[ "balanced" ]
-		returned_feat_set = method_that_returns_a_feature_set( *args, **kwargs )
-
-		if balance:
-			returned_feat_set._RegenerateClassViews( returned_feat_set.NumberOfSamplesForBalancedTrainingSet() )
-		return returned_feat_set
-
-	return wrapper
-
-
 def normalize_by_columns ( full_stack, mins = None, maxs = None ):
 	"""This is a global function to normalize a matrix by columns.
 	If numpy 1D arrays of mins and maxs are provided, the matrix will be normalized against these ranges
@@ -2007,7 +1988,6 @@ class FeatureSet_Discrete( FeatureSet ):
 			class_id += 1
 
 	#==============================================================
-	@balance_classes
 	def FeatureReduce( self, requested_features ):
 		"""Returns a new FeatureSet that contains a subset of the features
 		arg requested_features is a tuple of features.
@@ -2177,7 +2157,7 @@ class FeatureSet_Discrete( FeatureSet ):
 		return new_ts
 
 	#==============================================================
-	def Split( self, randomize = True, balanced_classes = False, training_set_fraction = 0.75,\
+	def Split( self, randomize = True, balanced_classes = False, training_set_fraction = None,\
 	           i = None, j = None, training_set_only = False, quiet = False ):
 		"""
 Used for dividing the current FeatureSet into two subsets used for classifier
@@ -2208,8 +2188,6 @@ R 	R 	Y 	R 	Y 	balanced training set only, num samples specified by i
 Y 	N 	N 	N 	N 	balanced training and test sets, i=0.75*smallest class, j=0.25*smallest class
 Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default replaced
 
-		
-		
 		"""
 
 		# FIXME: use np.random.shuffle(arr) - shuffles first dimension (rows) of multi-D numpy, so images in our case.
@@ -2226,46 +2204,88 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 		#	p = numpy.random.permuation(len(a))
 		#	return a[p], b[p]
 
+		# Shuffle in unison perhaps not the best way since it may not be necessary to shuffle
+		# all samples in a class? Also how is p = numpy.random.permuation(len(a)) different from
+		# currently used p = random.shuffle(range(a))? - CEC
 
-		smallest_class = self.NumSamplesInSmallestClass()
 
-		if i and j:
-			if (i + j) > smallest_class:
-				raise ValueError( 'Values for i and j cannot add up to more than total number of images in smallest class ({0})'.format( smallest_class ) )
+		# Step 0: General Dummyproofing
+		smallest_class_size = self.NumSamplesInSmallestClass()
 
+		if i and( i <= 0 or i > smallest_class ):
+			raise ValueError( 'i must be greater than zero and less than total number of images'\
+			    + ' in smallest class ({0})'.format( smallest_class ) )
+
+		if j and( j <= 0 or j > smallest_class ):
+			raise ValueError( 'j must be greater than zero and less than total number of images'\
+			    + ' in smallest class ({0})'.format( smallest_class ) )
+
+		if ( i and j ) and ( ( i + j ) > smallest_class ):
+			raise ValueError( 'Values for i and j cannot add up to more than total number of images in smallest class ({0})'.format( smallest_class ) )
+		
+		if training_set_fraction and ( training_set_fraction < 0 or training_set_fraction > 1 ):
+			raise ValueError( "Training set fraction must be a number between 0 and 1" )
+
+		if j and ( j <= 0 ) and not training_set_only == True:
+			raise UserWarning( "j value of 0 implies only training set is desired" )
+			training_set_only = True
+
+		if training_set_fraction and ( training_set_fraction == 1.0 ) and not training_set_only == True:
+			raise UserWarning( "training set fraction value of 1 implies only training set is desired" )
+			training_set_only = True
+
+		if i and j and training_set_fraction:
+			raise ValueError( 'Conflicting input: You specified i, j and training_set fraction, which is redundant.' )
+
+		if j and ( j > 0 ):
+			raise ValueError( 'Conflicting input: You specified both a non-zero value for j, but also training_set_only set to true.')
+
+		# Specify defaults here instead of in method argument for the purpose of dummyproofing
+		if not training_set_fraction:
+			training_set_fraction = 0.75
+
+		# Step 1: Number of samples in training set
+		num_samples_in_training_set = None
 		if i:
-			if i <= 0 or i > smallest_class:
-				raise ValueError( 'i must be greater than zero and less than total number of images'\
-				    + ' in smallest class ({0})'.format( smallest_class ) )
-				num_images_in_training_set = i
+			num_samples_in_training_set = [ i ] * self.num_classes
+		elif balanced_classes and j:
+			num_samples_in_training_set = [ smallest_class_size - j ] * self.num_classes
+		elif balanced_classes and training_set_fraction:
+			num_samples_in_training_set = \
+			       [ int( training_set_fraction * smallest_class_size ) ] * self.num_classes
+		elif j:
+			# you want detritus to go into training set
+			num_samples_in_training_set = [ ( num - j ) for num in self.classsizes_list ]
 		else:
-			if training_set_fraction <= 0 or training_set_fraction >= 1:
-				raise ValueError( "Training set fraction must be a number between 0 and 1" )
-			num_images_in_training_set = int( training_set_fraction * self.num_images )
+			# unbalanced
+			num_samples_in_training_set = [ int( training_set_fraction * num ) for num in self.classsizes_list ]
 
-		if j:
-			if j <= 0:
-				training_set_only = True
-			elif j > ( smallest_class - num_images_in_training_set ):
-				raise ValueError( 'j must be less than number of images in the smallest class ({0}) minus # images in training set ({1})'.format( smallest_class, num_images_in_training_set ) )
-			training_set_only = False
-			num_images_in_test_set = j
-		else:
-			num_images_in_test_set = self.num_images - num_images_in_training_set
+		# Step 2: Number of samples in test set
+		if not training_set_only:
+			num_samples_in_test_set = None
+			if j:
+				num_samples_in_test_set = [ j ] * self.num_classes
+			elif balanced_classes and i:
+				num_samples_in_test_set = [ smallest_class_size - i ] * self.num_classes
+			elif balanced_classes and training_set_fraction:
+				num_samples_in_training_set = \
+				      [ smallest_class_size - num_samples_in_training_set ] * self.num_classes
+			elif i:
+				# you want detritus to go into test set
+				num_samples_in_training_set = [ ( num - i ) for num in self.classsizes_list ]
+			else:
+				# you want an unbalanced test set
+				num_samples_in_test_set = [ int( 1.0-training_set_fraction * num ) for num in self.classsizes_list ]
+
 
 		# Say what we're gonna do:
 		if not quiet:
-			out_str = ''
-			if randomize:
-				out_str += 'Randomly splitting '
-			else:
-				out_str += 'Splitting '
-			out_str += '{0} "{1}" ({2} images) into '.format( type( self ).__name__, \
-				 self.source_path, self.num_images )
-			out_str += "training set ({0} images)".format( num_images_in_training_set )
+			print "\t" + "\t".join( self.classnames_list ) + "\ttotal:"
+			print "Train Set\t" + "\t".join( [ str(num) for num in num_samples_in_training_set ] ) + "\t{0}".format( sum( num_samples_in_training_set ) )
 			if not training_set_only:
-				out_str += " and test set ({0} images)".format( num_images_in_test_set )
-			print out_str
+				print "Test Set\t" + "\t".join( [ str(num) for num in num_samples_in_test_set ] ) + "\t{0}".format( sum( num_samples_in_test_set ) )
+			if randomize:
+				print "Sample membership chosen at random."
 
 		if randomize:
 			import random
@@ -2278,7 +2298,7 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 		training_set.num_images = 0
 		training_set.num_classes = self.num_classes
 		training_set.classnames_list = self.classnames_list
-		training_set.classsizes_list = [ 0 ] * self.num_classes
+		training_set.classsizes_list = num_samples_in_training_set
 		training_set.featurenames_list = self.featurenames_list
 		training_set.num_features = len( self.featurenames_list )
 		training_set.imagenames_list = [ [] for j in range( self.num_classes ) ]
@@ -2292,7 +2312,7 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 			test_set.num_images = 0
 			test_set.num_classes = self.num_classes
 			test_set.classnames_list = self.classnames_list
-			test_set.classsizes_list = [ 0 ] * self.num_classes
+			test_set.classsizes_list = num_samples_in_test_set
 			test_set.featurenames_list = self.featurenames_list
 			test_set.num_features = len( self.featurenames_list )
 			test_set.imagenames_list = [ [] for j in range( self.num_classes ) ]
@@ -2303,67 +2323,50 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 		# assemble training and test sets
 		for class_index in range( self.num_classes ):
 
-			num_images = len( self.imagenames_list[ class_index ] )
-			image_lottery = range( num_images )
+			num_images = self.classsizes_list[ class_index ]
+			sample_lottery = range( num_images )
 			if randomize:
 				random.shuffle( image_lottery )
 
-			num_images_in_training_set = int( training_set_fraction * num_images )
-			training_set.classsizes_list[ class_index ] = num_images_in_training_set
-			if test_set:
-				test_set.classsizes_list[ class_index ] = num_images - num_images_in_training_set
-
-			training_matrix = None
-			test_matrix = None
-
-			class_image_count = 0
-			for image_index in image_lottery:
-
-				image_name = self.imagenames_list[ class_index ][ image_index ]
-
-				if class_image_count < num_images_in_training_set:
-					# fill out training_set:
-					if training_matrix == None:
-						training_matrix = np.array( self.data_list[ class_index ][ image_index ] )
-					else:
-						training_matrix = np.vstack( ( training_matrix, \
-						    self.data_list[ class_index ][ image_index ] ) )
-					training_set.imagenames_list[ class_index ].append( image_name )
-					training_set.num_images += 1
-				elif not training_set_only:
-					# fill out test set:
-					if test_matrix == None:
-						test_matrix = np.array( self.data_list[ class_index ][ image_index ] )
-					else:
-						test_matrix = np.vstack( ( test_matrix, \
-						    self.data_list[ class_index ][ image_index ] ) )
-					test_set.imagenames_list[ class_index ].append( image_name )
-					test_set.num_images += 1
-
-				class_image_count += 1
-
+			# training set:
+			train_samp_count = 0
+			training_matrix = np.empty( [ training_set.classsizes_list[ class_index ], self.num_features ], dtype='double' )
+			while train_samp_count < training_set.classsizes_list[ class_index ]:
+				sample_index = sample_lottery[ train_samp_count ]
+				sample_name = self.imagenames_list[ class_index ][ sample_index ]
+				training_matrix[ train_samp_count,: ] = self.data_list[ class_index ][ sample_index ]
+				training_set.imagenames_list[ class_index ].append( sample_name )
+				training_set.num_images += 1
+				train_samp_count += 1
 			training_set.data_list[ class_index ] = training_matrix
-			test_set.data_list[ class_index ] = test_matrix
+
+			# test set:
+			if not training_set_only:
+				test_samp_count = 0
+				test_matrix = np.empty( [ test_set.classsizes_list[ class_index ], self.num_features ], dtype='double' )
+				while test_samp_count < test_set.classsizes_list[ class_index ]:
+					sample_index = sample_lottery[ test_samp_count + train_samp_count ]
+					sample_name = self.imagenames_list[ class_index ][ sample_index ]
+					test_matrix[ test_samp_count,: ] = self.data_list[ class_index ][ sample_index ]
+					test_set.imagenames_list[ class_index ].append( sample_name )
+					test_set.num_images += 1
+					train_samp_count += 1
+				test_set.data_list[ class_index ] = test_matrix
 
 		return training_set, test_set
 	#==============================================================
 	def NumSamplesInSmallestClass( self ):
 		"""Method name says it all."""
-		return np.amin( np.array( [ len(samplenames) for samplenames in self.imagenames_list ] )
+		return np.amin( np.array( [ len(samplenames) for samplenames in self.imagenames_list ] ) )
 	#==============================================================
-	def _RegenerateClassViews( self, max_samples_per_class = None ):
+	def _RegenerateClassViews( self ):
 		"""Rebuild the views in self.data_list for convenient access."""
-
-		if max_samples_per_class:
-			self.class_sizes_list = [ max_samples_per_class ] * self.num_classes
-		else:
-			self.class_sizes_list = [ len(samplenames) for samplenames in self.imagenames_list ]
 
 		sample_row = 0
 		self.data_list = [0] * self.num_classes
 		for class_index in range( self.num_classes ):
-			nrows = reduced_ts.classsizes_list[class_index]
-			reduced_ts.data_list[class_index] = reduced_ts.data_matrix[sample_row : sample_row + nrows]
+			nrows = self.classsizes_list[ class_index ]
+			self.data_list[class_index] = self.data_matrix[sample_row : sample_row + nrows]
 			sample_row += nrows
 
 # END FeatureSet_Discrete class definition
@@ -4006,4 +4009,22 @@ class Dendrogram( object ):
 #================================================================
 
 initialize_module()
+
+if __name__ == '__main__':
+	full_ts = FeatureSet_Discrete.NewFromFitFile( '/Users/chris/projects/eckley_pychrm_confirmation/TimeCourseFacing.fit' )
+	full_ts.featurenames_list = FeatureNameMap.TranslateToNewStyle( full_ts.featurenames_list )
+	balanced_ts, trash = full_ts.Split( randomize = False, balanced_classes = True,
+	                             training_set_only = True, training_set_fraction = 1.0 )
+
+	balanced_ts.Normalize()
+	balanced_ts.Print()
+	full_ts.Normalize( balanced_ts )
+	fisher_weights = FisherFeatureWeights.NewFromFeatureSet( balanced_ts )
+	fisher_weights = fisher_weights.Threshold( 431 )
+	reduced_bal_ts = balanced_ts.FeatureReduce( fisher_weights.names )
+	reduced_full_ts = full_ts.FeatureReduce( fisher_weights.names )
+	fisher_weights.Print( output_filepath='/Users/chris/projects/eckley_pychrm_confirmation/Pychrm_balanced_classes_fisher_weights.txt' )
+	batch_result = DiscreteBatchClassificationResult.New( reduced_bal_ts, full_ts, fisher_weights, output_filepath='/Users/chris/projects/eckley_pychrm_confirmation/Pychrm_balanced_classification_results.txt' )
+
+
 
