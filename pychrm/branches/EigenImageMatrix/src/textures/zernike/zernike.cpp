@@ -155,13 +155,14 @@ void mb_zernike2D(ImageMatrix *I, double D, double R, double *zvalues, long *out
 	X=new double[rows*cols];
 	P=new double[rows*cols];
 
+	readOnlyPixels I_pix_plane = I->ReadablePixels();
    /* Find all non-zero pixel coordinates and values */
 	size=0;
 	psum=0;
 	double moment10 = 0.0, moment00 = 0.0, moment01 = 0.0;
 	for (y=0;y<rows;y++)
 		for (x=0;x<cols;x++) {
-			intensity = I->pix_plane(y,x);
+			intensity = I_pix_plane(y,x);
 			if (intensity != 0) {
 				Y[size] = y+1;
 				X[size] = x+1;
@@ -231,13 +232,14 @@ void mb_zernike2D_2 (ImageMatrix *I, double order, double rad, double *zvalues, 
 	double sum = 0;
 	int cols = I->width;
 	int rows = I->height;
+	readOnlyPixels I_pix_plane = I->ReadablePixels();
 
 // compute x/0, y/0 and 0/0 moments to center the unit circle on the centroid
 	double moment10 = 0.0, moment00 = 0.0, moment01 = 0.0;
 	double intensity;
 	for (i = 0; i < cols; i++)
 		for (j = 0; j < rows; j++) {
-			intensity = I->pix_plane(j,i);
+			intensity = I_pix_plane(j,i);
 			sum += intensity;
 			moment10 += (i+1) * intensity;
 			moment00 += intensity;
@@ -294,7 +296,7 @@ void mb_zernike2D_2 (ImageMatrix *I, double order, double rad, double *zvalues, 
 		// compute contribution to Zernike moments for all 
 		// orders and repetitions by the pixel at (i,j)
 		// In the paper, the intensity was the raw image intensity
-			f = I->pix_plane(j,i) / sum;
+			f = I_pix_plane(j,i) / sum;
 
 			Rnmp2 = Rnm2 = 0;
 			for (n = 0; n <= L; n++) {

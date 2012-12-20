@@ -32,9 +32,9 @@
 
 #include "FeatureStatistics.h"
 
-typedef struct POINT1
-{  long x,y,z;
-}point;
+typedef struct POINT1 {
+	long x,y;
+} point;
 
 //---------------------------------------------------------------------------
 /*  BWlabel
@@ -42,117 +42,110 @@ typedef struct POINT1
     This is an implementation of the Matlab function bwlabel
 */
 unsigned long bwlabel(ImageMatrix *Im, int level) {
-	unsigned long x,y,z,base_x,base_y,base_z,group_counter=1;
-	unsigned int stack_count;
-	point *stack=new point[Im->width*Im->height];
+	long x, y, base_x,base_y,stack_count, w = Im->width, h = Im->height;
+	unsigned long group_counter = 1;
+	point *stack=new point[w*h];
+	pixData &pix_plane = Im->WriteablePixels();
 
-	for (y = 0; y < Im->height; y++) {
-		for (x = 0; x < Im->width; x++) {
-			if (Im->pix_plane(y,x) == 1) {
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			if ( pix_plane(y,x) == 1) {
 				/* start a new group */
 				group_counter++;
-				Im->pix_plane(y,x) = group_counter;
+				pix_plane(y,x) = group_counter;
 				stack[0].x=x;
 				stack[0].y=y;
-				stack[0].z=z;		   
 				stack_count=1;
 				while (stack_count > 0) {
 					base_x=stack[0].x;
 					base_y=stack[0].y;
-					base_z=stack[0].z;
 
-					if (base_x > 0 && Im->pix_plane(base_y,base_x-1) == 1) {
-						Im->pix_plane(base_y,base_x-1) = group_counter;
+					if (base_x > 0 && pix_plane(base_y,base_x-1) == 1) {
+						pix_plane(base_y,base_x-1) = group_counter;
 						stack[stack_count].x=base_x-1;
 						stack[stack_count].y=base_y;
-						stack[stack_count].z=base_z;				 
 						stack_count++;
 					}
 
-					if (base_x<Im->width-1 && Im->pix_plane(base_y,base_x+1) == 1) {
-						Im->pix_plane(base_y,base_x+1) = group_counter;
+					if (base_x < w-1 && pix_plane(base_y,base_x+1) == 1) {
+						pix_plane(base_y,base_x+1) = group_counter;
 						stack[stack_count].x=base_x+1;
 						stack[stack_count].y=base_y;
-						stack[stack_count].z=base_z;				 				 
 						stack_count++;
 					}
 
-					if (base_y>0 && Im->pix_plane(base_y-1,base_x) == 1) {
-						Im->pix_plane(base_y-1,base_x) = group_counter;
+					if (base_y > 0 && pix_plane(base_y-1,base_x) == 1) {
+						pix_plane(base_y-1,base_x) = group_counter;
 						stack[stack_count].x=base_x;
 						stack[stack_count].y=base_y-1;
-						stack[stack_count].z=base_z;				 				 
 						stack_count++;
 					}
 
-					if (base_y<Im->height-1 && Im->pix_plane(base_y+1,base_x) == 1) {
-						Im->pix_plane(base_y+1,base_x) = group_counter;
+					if (base_y < h-1 && pix_plane(base_y+1,base_x) == 1) {
+						pix_plane(base_y+1,base_x) = group_counter;
 						stack[stack_count].x=base_x;
 						stack[stack_count].y=base_y+1;
-						stack[stack_count].z=base_z;				 				 
 						stack_count++;
 					}
 
 					/* look for 8 connected pixels */
 					if (level==8) {
-						if (base_x > 0 && base_y > 0 && Im->pix_plane(base_y-1,base_x-1) == 1) {
-							Im->pix_plane(base_y-1,base_x-1) = group_counter;
+						if (base_x > 0 && base_y > 0 && pix_plane(base_y-1,base_x-1) == 1) {
+							pix_plane(base_y-1,base_x-1) = group_counter;
 							stack[stack_count].x=base_x-1;
 							stack[stack_count].y=base_y-1;
-							stack[stack_count].z=base_z;				 					
 							stack_count++;
 						}
 
-						if (base_x < Im->width-1 && base_y > 0 && Im->pix_plane(base_y-1,base_x+1) == 1) {
-							Im->pix_plane(base_y-1,base_x+1) = group_counter;
+						if (base_x < w-1 && base_y > 0 && pix_plane(base_y-1,base_x+1) == 1) {
+							pix_plane(base_y-1,base_x+1) = group_counter;
 							stack[stack_count].x=base_x+1;
 							stack[stack_count].y=base_y-1;
-							stack[stack_count].z=base_z;				 				   
 							stack_count++;
 						}
 
-						if (base_x > 0 && base_y < Im->height-1 && Im->pix_plane(base_y+1,base_x-1) == 1) {
-							Im->pix_plane(base_y+1,base_x-1) = group_counter;
+						if (base_x > 0 && base_y < h-1 && pix_plane(base_y+1,base_x-1) == 1) {
+							pix_plane(base_y+1,base_x-1) = group_counter;
 							stack[stack_count].x=base_x-1;
 							stack[stack_count].y=base_y+1;
-							stack[stack_count].z=base_z;				 				   
 							stack_count++;
 						}
 
-						if (base_x < Im->width-1 && base_y < Im->height-1 && Im->pix_plane(base_y+1,base_x+1) == 1) {
-							Im->pix_plane(base_y+1,base_x+1) = group_counter;
+						if (base_x < w-1 && base_y < h-1 && pix_plane(base_y+1,base_x+1) == 1) {
+							pix_plane(base_y+1,base_x+1) = group_counter;
 							stack[stack_count].x=base_x+1;
 							stack[stack_count].y=base_y+1;
-							stack[stack_count].z=base_z;				 				   
 							stack_count++;
 						}
 					}
 			  
 					stack_count-=1;
-					memcpy(stack,&(stack[1]),sizeof(point)*stack_count);
+					memmove(stack,&(stack[1]),sizeof(point)*stack_count);
 				}
 			}
 		}
 	}
 
 	/* now decrease every non-zero pixel by one because the first group was "2" */
-	for (y=0;y<Im->height;y++)
-		for (x=0;x<Im->width;x++)
-			if (Im->pix_plane(y,x) != 0)
-				Im->pix_plane(y,x)--;
+	for (y=0;y<h;y++)
+		for (x=0;x<w;x++)
+			if (pix_plane(y,x) != 0)
+				pix_plane(y,x) -= 1;
 
 	delete [] stack;
+	Im->WriteablePixelsFinish();
 	return(group_counter-1);
 }
 
 /* the input should be a binary image */
 void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
-	unsigned long x,y;
+	unsigned int x,y,w = Im->width, h = Im->height;
 	double x_mass=0,y_mass=0,mass=0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 
-	for (y=0;y<Im->height;y++)
-		for (x=0;x<Im->width;x++)
-			if (Im->pix_plane(y,x) > 0) {
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			if (pix_plane(y,x) > 0) {
 				x_mass=x_mass+x+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				y_mass=y_mass+y+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				mass++;
@@ -168,12 +161,13 @@ void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid) {
    the retruned value is the area of the feature
 */
 unsigned long FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid) {
-	unsigned long x,y;
+	unsigned int x,y,w = Im->width, h = Im->height;
 	unsigned long x_mass=0,y_mass=0,mass=0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 
-	for (y=0;y<Im->height;y++)
-		for (x=0;x<Im->width;x++)
-			if (Im->pix_plane(y,x)==object_index) {
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			if (pix_plane(y,x) == object_index) {
 				x_mass=x_mass+x+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				y_mass=y_mass+y+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
 				mass++;
@@ -181,64 +175,37 @@ unsigned long FeatureCentroid(ImageMatrix *Im, double object_index,double *x_cen
 	if (x_centroid) *x_centroid=(double)x_mass/(double)mass;
 	if (y_centroid) *y_centroid=(double)y_mass/(double)mass;
 	return(mass);
-
-
-
-//   for (y=0;y<Im->height;y++)
-//     for (x=0;x<Im->width;x++)
-//       if (Im->data[x][y].intensity==object_index) mass++;
-
-   /* find the x coordinate of the centroid */
-//   for (x=0;x<Im->width;x++)
-//   {  for (y=0;y<Im->height;y++)
-//        if (Im->data[x][y].intensity==object_index)
-//          x_mass++;
-//        if (x_mass>=mass/2)
-//        {  *x_centroid=x;
-//            break;
-//        }
-//   }
-
-   /* find the y coordinate of the centroid */
-//   for (y=0;y<Im->height;y++)
-//   {  for (x=0;x<Im->width;x++)
-//        if (Im->data[x][y].intensity==object_index)
-//          y_mass++;
-//        if (y_mass>=mass/2)
-//        {  *y_centroid=y;
-//           break;
-//        }
-//   }
-//   return(mass);
 }
 
 /* the number of pixels that are above the threshold
    the input image is a binary image
 */
 unsigned long area(ImageMatrix *Im) {
-	unsigned long x,y,sum=0;
-	for (y=0;y<Im->height;y++)
-		for (x=0;x<Im->width;x++)
-			sum=sum+(Im->pix_plane(y,x) > 0);
+	unsigned int x,y,w = Im->width, h = Im->height;
+	unsigned long sum=0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			sum += (pix_plane(y,x) > 0 ? 1 : 0);
 	return(sum);
 }
 
 /* EulerNumber
    The input image should be a binary image
 */
-unsigned long EulerNumber(ImageMatrix *Im, unsigned long FeatureNumber) {
-	unsigned long x,y,HolesNumber;
-	ImageMatrix *cp;
-	cp = new ImageMatrix (Im);
+long EulerNumber(ImageMatrix *Im, unsigned long FeatureNumber) {
+	unsigned int x,y;
+	unsigned long HolesNumber;
+	ImageMatrix cp (*Im);
+	pixData &cp_pix_plane = cp.WriteablePixels();
 
 	/* inverse the image */
-	for (y=0;y<cp->height;y++)
-		for (x=0;x<cp->width;x++)
-			if (cp->pix_plane(y,x) > 0)
-				cp->pix_plane(y,x) = 0;
-			else cp->pix_plane(y,x) = 1;
-	HolesNumber=cp->BWlabel(8);
+	for (y = 0; y < cp.height; y++)
+		for (x = 0; x < cp.width; x++)
+			if (cp_pix_plane(y,x) > 0.0)
+				cp_pix_plane(y,x) = 0.0;
+			else cp_pix_plane(y,x) = 1.0;
 
-	delete cp;
+	HolesNumber=cp.BWlabel(8);
 	return(FeatureNumber-HolesNumber-1);
 }

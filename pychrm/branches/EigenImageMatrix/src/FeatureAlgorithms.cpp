@@ -60,10 +60,9 @@ std::vector<double> ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix )
 	coeffs.reserve(n_features-1);
 	double temp_vec [32];
 
-	ImageMatrix *temp = new ImageMatrix (IN_matrix);
+	ImageMatrix temp (*IN_matrix);
 	for( int i = 0; i < n_features; i++ ) temp_vec[i] = 0;
-	temp->ChebyshevStatistics2D(temp_vec, 0, 32);
-	delete temp;
+	temp.ChebyshevStatistics2D(temp_vec, 0, 32);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 
 	return coeffs;
@@ -120,7 +119,7 @@ std::vector<double> HaralickTextures::calculate( ImageMatrix * IN_matrix )
 	int i;
 
 	for( i = 0; i < n_features; i++ ) temp_vec[i] = 0;
-	IN_matrix->HaralickTexture2D(0,temp_vec); // Note the misspelling
+	IN_matrix->HaralickTexture2D(0,temp_vec);
 	coeffs.assign( temp_vec, temp_vec + n_features);
 	return coeffs;
 }
@@ -265,6 +264,7 @@ std::vector<double> FractalFeatures::calculate( ImageMatrix * IN_matrix )
 	int bins = n_features;
 	int width = IN_matrix->width;
 	int height = IN_matrix->height;
+	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadOnlyPixels();
 	int x, y, k, bin = 0;
 	int K = ( ( width > height ) ? height : width) / 5; // MIN
 	int step = (int) floor ( K / bins );
@@ -275,10 +275,10 @@ std::vector<double> FractalFeatures::calculate( ImageMatrix * IN_matrix )
 		double sum = 0.0;
 		for( x = 0; x < width; x++ )
 			for( y = 0; y < height - k; y++ )
-				sum += fabs( IN_matrix->pix_plane(y,x) - IN_matrix->pix_plane(y+k,x) );
+				sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y+k,x) );
 		for( x = 0; x < width - k; x++ )
 			for( y = 0; y < height; y++ )
-				sum += fabs( IN_matrix->pix_plane(y,x) - IN_matrix->pix_plane(y,x + k) );
+				sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y,x + k) );
 		if( bin < bins )
 			temp_vec[ bin++ ] = sum / ( width * ( width - k ) + height * ( height - k ) );    
 	}
@@ -337,7 +337,6 @@ std::vector<double> EdgeFeatures::calculate( ImageMatrix * IN_matrix )
 
 	unsigned long EdgeArea = 0;
 	double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
-std::cout << "calling IN_matrix->EdgeStatistics " << std::endl;
 	IN_matrix->EdgeStatistics(&EdgeArea, &MagMean, &MagMedian, &MagVar, MagHist, &DirecMean, &DirecMedian, &DirecVar, DirecHist, &DirecHomogeneity, DiffDirecHist, 8);
 
 	int j;
@@ -391,7 +390,8 @@ std::vector<double> ObjectFeatures::calculate( ImageMatrix * IN_matrix )
 	}
 	coeffs.reserve(n_features-1);
 
-	unsigned long feature_count=0, Euler=0, AreaMin=0, AreaMax=0;
+	unsigned long feature_count=0, AreaMin=0, AreaMax=0;
+	long Euler=0;
 	unsigned int AreaMedian=0,
 			area_histogram[10]={0,0,0,0,0,0,0,0,0,0},
 			dist_histogram[10]={0,0,0,0,0,0,0,0,0,0};
@@ -503,8 +503,9 @@ std::vector<double> GiniCoefficient::calculate( ImageMatrix * IN_matrix ) {
 	num_pixels = IN_matrix->height * IN_matrix->width;
 	pixels = new double[ num_pixels ];
 
+	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadOnlyPixels();
 	for( pixel_index = 0; pixel_index < num_pixels; pixel_index++ ) {
-		val = IN_matrix->pix_plane.array().coeff(pixel_index);
+		val = IN_matrix_pix_plane.array().coeff(pixel_index);
 		if( val > 0 ) {
 			pixels[ count ] = val;
 			mean += val;

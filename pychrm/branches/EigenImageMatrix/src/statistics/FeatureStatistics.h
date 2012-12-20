@@ -38,6 +38,6 @@ unsigned long bwlabel(ImageMatrix *Im, int level);
 void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid);
 unsigned long FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid);
 unsigned long area(ImageMatrix *Im);
-unsigned long EulerNumber(ImageMatrix *Im, unsigned long FeatureNumber);
+long EulerNumber(ImageMatrix *Im, unsigned long FeatureNumber);
 
 #endif

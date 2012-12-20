@@ -146,10 +146,13 @@ void Chebyshev2D(ImageMatrix *Im, double *out, unsigned int N) {
 		y[a] = 2*(double)(a+1) / (double)Im->height -1;
 
 	in = new double[Im->width*Im->height];
+	readOnlyPixels Im_pix_plane = Im->ReadablePixels();
+
 	for (j = 0; j < Im->height; j++)
 		for (i = 0; i < Im->width; i++)
-			in[j*Im->width+i] = (double)Im->pix_plane(j,i);
+			in[j*Im->width+i] = Im_pix_plane(j,i);
 	getChCoeff(in,out,x,N,Im->width,Im->height);
+
 	/* transpose the matrix "out" into "in" */
 	for (j = 0; j < N; j++)
 		for (i = 0; i < Im->height/*Im->width*/; i++)

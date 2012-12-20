@@ -142,10 +142,11 @@ int matr4moments_to_hist(double matr4moments[4][21], double *vec, int vec_start)
 int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 	double **I,**J,**J1,*tmp,z[4],z4[4]={0,0,0,0};
 	double matr4moments[4][21];
-	unsigned int m,n,n2,m2;
-	unsigned int a,x,y,ii;
+	long m,n,n2,m2;
+	long x,y,a,ii;
 	int matr4moments_index;
 	int vec_count=0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 
 	for (a = 0; a < 4; a++)    /* initialize */
 		for (matr4moments_index = 0; matr4moments_index < 21; matr4moments_index++)
@@ -163,8 +164,8 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		J1[a] = new double[m];
 	}
 
-	for (y = 0; y < Im->height; y++)
-		for (x = 0; x < Im->width; x++) {
+	for (y = 0; y < m; y++)
+		for (x = 0; x < n; x++) {
 			I[x][y] = y+1;
 			J[x][y] = x+1;
 		}
@@ -179,7 +180,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y]+ii-J[x][y])<1)
-					tmp[count++] = Im->pix_plane(y,x);
+					tmp[count++] = pix_plane(y,x);
 			}
 		}
 		if (count==0) {
@@ -207,7 +208,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y]+ii-J1[x][y]) < 1)
-					tmp[count++] = Im->pix_plane(y,x);
+					tmp[count++] = pix_plane(y,x);
 			}
 		}
 		if (count == 0) {
@@ -231,7 +232,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(J[x][y]+ii-n2) < 1)
-					tmp[count++] = Im->pix_plane(y,x);
+					tmp[count++] = pix_plane(y,x);
 			}
 		}
 		if (count==0) {
@@ -254,7 +255,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y]+ii-m2) < 1)
-				tmp[count++] = Im->pix_plane(y,x);
+				tmp[count++] = pix_plane(y,x);
 			}
 		}
 		if (count == 0) {

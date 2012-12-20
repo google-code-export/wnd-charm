@@ -34,7 +34,8 @@ ImageMatrix* FourierTransform::transform( ImageMatrix * matrix_IN ) {
 		return NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
+	matrix_OUT->fft2();
 	return matrix_OUT;
 }
 
@@ -53,7 +54,7 @@ ImageMatrix* ChebyshevTransform::transform( ImageMatrix * matrix_IN ) {
 	if( !matrix_IN )
 		return NULL;	
 	std::cout << "Performing transform " << name << std::endl;
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
 
 	matrix_OUT->ChebyshevTransform(0);
 	return matrix_OUT;
@@ -73,7 +74,7 @@ ImageMatrix* WaveletTransform::transform( ImageMatrix * matrix_IN ) {
 		return NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
 	matrix_OUT->Symlet5Transform();
 	return matrix_OUT;
 }
@@ -92,7 +93,7 @@ ImageMatrix* EdgeTransform::transform( ImageMatrix * matrix_IN ) {
 		return NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
 	matrix_OUT->EdgeTransform();
 	return matrix_OUT;
 }
@@ -113,7 +114,7 @@ ImageMatrix* ColorTransform::transform( ImageMatrix * matrix_IN ) {
 	std::cout << "Performing transform " << name << std::endl;
 	double temp_vec [COLORS_NUM+1];
 
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
 	matrix_OUT->ColorTransform(temp_vec, 0);
 	histogram_vals.assign(temp_vec, temp_vec+COLORS_NUM+1);
 	return matrix_OUT;
@@ -133,7 +134,7 @@ ImageMatrix* HueTransform::transform( ImageMatrix * matrix_IN ) {
 		return NULL;
 	
 	std::cout << "Performing transform " << name << std::endl;
-	ImageMatrix* matrix_OUT = new ImageMatrix(matrix_IN);
+	ImageMatrix* matrix_OUT = new ImageMatrix(*matrix_IN);
 	matrix_OUT->ColorTransform(NULL,1);
 	return matrix_OUT;
 }

@@ -23,18 +23,60 @@ if not (test_dir):
 	print "{0} tests".format (sys.argv[0])
 	sys.exit(0)
 from pychrm import __version__ as pychrm_version
+def roundToSigFigs(num, n):
+	from math import log10, ceil, pow, fabs
+	if(num == 0):
+		return 0;
+	d = ceil(log10(fabs(num)));
+	power = n - int(d);
+	magnitude = pow(10, power);
+	shifted = round(num*magnitude);
+	return shifted/magnitude;
+
 # -------- END preamble to get the test data --------------------
 
 test_name = "Feature calculation"
-max_diff_pass = 0.000001
-max_mean_pass = 0.000001
+max_diff_pass = 0.002
+max_mean_pass = 0.00001
 sig_file = os.path.join (test_dir,'t1_s01_c05_ij-l_precalculated.sig')
 test_tif = os.path.join (test_dir,'t1_s01_c05_ij.tif')
 
 test_sigs = Signatures.NewFromSigFile( sig_file, image_path = test_tif )
-calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, test_sigs.names )
+calc_sig_names = FeatureNameMap.TranslateToNewStyle( test_sigs.names )
+calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, calc_sig_names )
+# calc_sig_names = []
+# for i in range(20):
+# 	calc_sig_names.append ('Fractal Features (Chebyshev (Wavelet ())) [{0}]'.format (i))
+# for i in range(28):
+# 	calc_sig_names.append ('Haralick Textures (Fourier ()) [{0}]'.format (i))
+# for i in range(24):
+# 	calc_sig_names.append ('Multiscale Histograms () [{0}]'.format (i))
+# for i in range(5):
+# 	calc_sig_names.append ('Pixel Intensity Statistics (Fourier ()) [{0}]'.format (i))
+# for i in range(5):
+# 	calc_sig_names.append ('Pixel Intensity Statistics () [{0}]'.format (i))
+# for i in range(5):
+# 	calc_sig_names.append ('Pixel Intensity Statistics (Chebyshev ()) [{0}]'.format (i))
+# for i in range(5):
+# 	calc_sig_names.append ('Pixel Intensity Statistics (Wavelet ()) [{0}]'.format (i))
+# for i in range(5):
+# 	calc_sig_names.append ('Pixel Intensity Statistics (Edge ()) [{0}]'.format (i))
+# for i in range(12):
+# 	calc_sig_names.append ('Radon Coefficients (Fourier ()) [{0}]'.format (i))
+# for i in range(6):
+# 	calc_sig_names.append ('Tamura Textures (Fourier ()) [{0}]'.format (i))
+# for i in range(48):
+# 	calc_sig_names.append ('Comb Moments (Fourier ()) [{0}]'.format (i))
+# for i in range(20):
+# 	calc_sig_names.append ('Fractal Features (Fourier ()) [{0}]'.format (i))
+# for i in range(32):
+# 	calc_sig_names.append ('Chebyshev Coefficients (Fourier ()) [{0}]'.format (i))
+# 
+# calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, calc_sig_names )
+test_sigs = test_sigs.FeatureReduce( calc_sig_names )
 
-epsilon = 0.00001
+epsilon = 0.002
+sig_figs = 6
 max_diff = 0.
 sum_diff = 0.
 num_diffs = 0.
@@ -43,6 +85,7 @@ for idx in range (len(calc_sigs.names)):
 	test_val = test_sigs.values[idx]
 	calc_val = calc_sigs.values[idx]
 	diff = abs(calc_val - test_val)
+# 	diff = abs(roundToSigFigs (calc_val,sig_figs) - roundToSigFigs (test_val,sig_figs))
 	sum_diff += diff
 	num_diffs += 1.0
 	if diff > max_diff:

@@ -16,6 +16,7 @@ void haralick2D(ImageMatrix *Im, double distance, double *out) {
 	int angle;
 	double min[14],max[14],sum[14];
 	double min_value = INF,max_value = -INF; //max_value = pow(2,Im->bits)-1;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 
 	if (distance <= 0) distance = 1;
 
@@ -27,16 +28,15 @@ void haralick2D(ImageMatrix *Im, double distance, double *out) {
 	Im->BasicStatistics(NULL, NULL, NULL, &min_value, &max_value, NULL, 0);
 	for (y = 0; y < Im->height; y++)
 		for (x = 0; x < Im->width; x++)
-			if (Im->bits > 8) p_gray[y][x] = (unsigned char)((Im->pix_plane(y,x) - min_value)*(255.0/(max_value-min_value)));
-			else p_gray[y][x] = (unsigned char)(Im->pix_plane(y,x));
+			if (Im->bits > 8) p_gray[y][x] = (unsigned char)((pix_plane(y,x) - min_value)*(255.0/(max_value-min_value)));
+			else p_gray[y][x] = (unsigned char)(pix_plane(y,x));
 
 	for (a = 0; a < 14; a++) {
 		min[a] = INF;
 		max[a] = -INF;
 		sum[a] = 0;
 	}
-
-   for (angle = 0; angle <= 135; angle = angle+45) {
+	for (angle = 0; angle <= 135; angle = angle+45) {
 		features = Extract_Texture_Features((int)distance, angle, p_gray, Im->height,Im->width);
 		/*  (1) Angular Second Moment */
 		sum[0] += features->ASM;

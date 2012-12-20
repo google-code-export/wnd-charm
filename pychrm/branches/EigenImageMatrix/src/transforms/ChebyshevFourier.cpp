@@ -86,9 +86,10 @@ void ChebyshevFourier2D(ImageMatrix *Im, unsigned long N, double *coeff_packed, 
 		for (y=0;y<m;y++)
 			yy[x*m+y] = -1+(double)y*(2/((double)m-1));
 
+	readOnlyPixels Im_pix_plane = Im->ReadablePixels();
 	for (y=0;y<m;y++)
 		for (x=0;x<n;x++)
-			img[x*m+y]=Im->pix_plane(y,x);
+			img[x*m+y]=Im_pix_plane(y,x);
 
 	/* convert cartesian to polar */
 	nLast=0;

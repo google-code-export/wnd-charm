@@ -33,6 +33,8 @@
 #define cmatrixH
 //---------------------------------------------------------------------------
 
+#include <assert.h>
+#undef NDEBUG
 #include <vector>
 #include <string> // for what_am_i definition
 #include <Eigen/Dense>
@@ -42,6 +44,7 @@
 
 
 #define INF 10E200
+#define EPSILON 10E-20
 
 using namespace std;
 
@@ -63,8 +66,12 @@ enum ColorMode { cmRGB, cmHSV, cmGRAY };
 
 
 typedef Eigen::Matrix< double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > pixData;
+typedef const pixData &readOnlyPixels;
+typedef const clrData &readOnlyColors;
+typedef pixData &writeablePixels;
+typedef clrData &writeableColors;
 typedef struct {
-	int x,y,w,h;
+	unsigned int x,y,w,h;
 } rect;
 
 //---------------------------------------------------------------------------
@@ -72,13 +79,14 @@ typedef struct {
 #define MIN(a,b) (a<b?a:b)
 #define MAX(a,b) (a>b?a:b)
 
-static inline int compare_doubles (const void *a, const void *b)
-{
-  if (*((double *)a) > *((double*)b)) return(1);
-  if (*((double*)a) == *((double*)b)) return(0);
-  return(-1);
+static inline int compare_doubles (const void *a, const void *b) {
+	double ret = *((double *)a) - *((double*)b);
+	if (ret > 0) return 1;
+	else if (ret < 0) return -1;
+	else return 0;
 }
-static inline HSVcolor RGB2HSV(RGBcolor rgb) {
+
+static inline HSVcolor RGB2HSV(const RGBcolor rgb) {
 	double r,g,b,h,max,min,delta;
 	HSVcolor hsv;
 
@@ -110,7 +118,7 @@ static inline HSVcolor RGB2HSV(RGBcolor rgb) {
 	}
 	return(hsv);
 }
-static inline RGBcolor HSV2RGB(HSVcolor hsv) {
+static inline RGBcolor HSV2RGB(const HSVcolor hsv) {
 	RGBcolor rgb;
 	double R=0, G=0, B=0;
 	double H, S, V;
@@ -141,21 +149,52 @@ static inline RGBcolor HSV2RGB(HSVcolor hsv) {
 	rgb.b = (byte)(B*255);
 	return rgb;
 }
-static inline double RGB2GRAY(RGBcolor rgb) {
+static inline double RGB2GRAY(const RGBcolor rgb) {
 	return((0.2989*rgb.r+0.5870*rgb.g+0.1140*rgb.b));
 }
 //---------------------------------------------------------------------------
 
 class ImageMatrix {
 public:
-	pixData pix_plane;                              // pixel plane data  
-	clrData clr_plane;                              // 3-channel color data  
+	pixData _pix_plane;                              // pixel plane data  
+	clrData _clr_plane;                              // 3-channel color data
+	bool _is_pix_writeable;
+	bool _is_clr_writeable;
 	//std::string what_am_i;                        // informative label
 	enum ColorMode ColorMode;                       // can be cmRGB, cmHSV or cmGRAY
 	unsigned short bits;                            // the number of intensity bits (8,16, etc)
 	unsigned int width,height;                               // width and height of the picture
 	double _min, _max, _mean, _std, _median;        // min, max, mean, std computed in single pass, median in separate pass
 	bool has_stats, has_median;                     // has_stats applies to min, max, mean, std. has_median only to median
+	inline writeablePixels WriteablePixels() {
+		assert(_is_pix_writeable && "Attempt to write to read-only pixels");
+		has_stats = has_median = false;
+		return _pix_plane;
+	}
+	inline writeableColors WriteableColors() {
+		assert(_is_pix_writeable && "Attempt to write to read-only pixels");
+		return _clr_plane;
+	}
+	inline readOnlyPixels ReadablePixels() const {
+		return _pix_plane;
+	}
+	inline readOnlyColors ReadableColors() const {
+		return _clr_plane;
+	}
+	inline readOnlyPixels ReadOnlyPixels() const {
+		assert(!_is_pix_writeable && "Attempt to read from write-only pixels");
+		return _pix_plane;
+	}
+	inline readOnlyColors ReadOnlyColors() const {
+		assert(!_is_pix_writeable && "Attempt to read from write-only pixels");
+		return _clr_plane;
+	}
+	void WriteablePixelsFinish () {
+		_is_pix_writeable = false;
+	}
+	void WriteableColorsFinish () {
+		_is_clr_writeable = false;
+	}
 	int LoadTIFF(char *filename);                   // load from TIFF file
 	int SaveTiff(char *filename);                   // save a matrix in TIF format
 	int OpenImage(char *image_file_name,            // load an image of any supported format
@@ -164,29 +203,14 @@ public:
 	// constructor helpers
 	void 	init();
 	void 	allocate (unsigned int w, unsigned int h);
-	void 	copy(ImageMatrix *copy);
+	void 	copy(const ImageMatrix &copy);
 	ImageMatrix();                                  // basic constructor
-	ImageMatrix(ImageMatrix *matrix);               // copy constructor
+	ImageMatrix(const ImageMatrix &matrix);               // copy constructor
 
-	ImageMatrix(unsigned int width,unsigned int height);              // construct a new empty, allocated matrix
-	ImageMatrix(ImageMatrix *matrix,                // create a new matrix which is part of the original one
+	ImageMatrix(const unsigned int width,const unsigned int height);              // construct a new empty, allocated matrix
+	ImageMatrix(const ImageMatrix &matrix,                // create a new matrix which is part of the original one
 		unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 	~ImageMatrix();                                 // destructor
-
-// set pixel value based on passed-in parameter type
-	inline void set (unsigned int x, unsigned int y, RGBcolor val) {
-		pix_plane (y,x) = RGB2GRAY (val);
-		if (ColorMode == cmHSV) {
-			HSVcolor hsv = RGB2HSV(val);
-			clr_plane(y,x) = hsv;
-		} else if (ColorMode == cmRGB) {
-			HSVcolor hsv = {val.r, val.g, val.b};
-			clr_plane(y,x) = hsv;
-		}
-	}
-	inline void set (unsigned int x, unsigned int y, double val) {
-		pix_plane (y,x) = val;
-	}
 
 	void normalize(double min, double max, long range, double mean, double stddev); // normalized an image to either min/max or mean/stddev
 	void to8bits();
@@ -195,7 +219,7 @@ public:
 	void invert();                                  // invert the intensity of an image
 	void Downsample(double x_ratio, double y_ratio);// down sample an image
 	ImageMatrix *Rotate(double angle);              // rotate an image by 90,180,270 degrees
-	void convolve(ImageMatrix *filter);
+	void convolve(const ImageMatrix &filter);
 	void BasicStatistics(double *mean, double *median, double *std, double *min, double *max, double *histogram, int bins);
 	inline double min() {
 		if (!has_stats) {
@@ -252,7 +276,7 @@ public:
 	double OtsuBinaryMaskTransform();
 	unsigned long BWlabel(int level);
 	void centroid(double *x_centroid, double *y_centroid);
-	void FeatureStatistics(unsigned long *count, unsigned long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
+	void FeatureStatistics(unsigned long *count, long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
 		double *AreaMean, unsigned int *AreaMedian, double *AreaVar, unsigned int *area_histogram,double *DistMin, double *DistMax,
 		double *DistMean, double *DistMedian, double *DistVar, unsigned int *dist_histogram, unsigned int num_bins
 	);

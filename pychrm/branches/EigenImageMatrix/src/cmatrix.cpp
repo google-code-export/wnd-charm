@@ -55,13 +55,9 @@
 #include <time.h>
 #include <sys/time.h>
 
-#ifndef WIN32
 #include <stdlib.h>
 #include <string.h>
 #include <tiffio.h>
-#else
-#include "libtiff32/tiffio.h"
-#endif
 
 
 using namespace std;
@@ -78,12 +74,14 @@ using namespace std;
 */
 int ImageMatrix::LoadTIFF(char *filename) {
 	unsigned int h,w,x,y;
-	unsigned short int spp,bps;
+	unsigned short int spp=0,bps=0;
 	TIFF *tif = NULL;
 	unsigned char *buf8;
 	unsigned short *buf16;
-	double max_range = pow((double)2,bits)-1;
 	RGBcolor rgb;
+	HSVcolor hsv;
+
+
 	TIFFSetWarningHandler(NULL);
 	if( (tif = TIFFOpen(filename, "r")) ) {
 		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
@@ -92,13 +90,19 @@ int ImageMatrix::LoadTIFF(char *filename) {
 		height = h;
 		TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
 		bits=bps;
+		double max_range = pow((double)2,bits)-1;
 		if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
 		TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
 		if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
+		// regardless of how the image comes in, the stored mode is HSV
+		if (spp == 3) ColorMode = cmHSV;
+		else ColorMode = cmGRAY;
 		if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
 
 		/* allocate the data */
 		allocate (width, height);
+		writeablePixels pix_plane = WriteablePixels();
+		writeableColors clr_plane = WriteableColors();
 
 		/* read TIFF header and determine image size */
 		buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
@@ -124,16 +128,31 @@ int ImageMatrix::LoadTIFF(char *filename) {
 						if (sample_index==2) rgb.b=(unsigned char)(255*(val/max_range));
 					}
 				}
-				if (spp==3) set (x, y, rgb);
-				else set (x, y, val);
-			x++;
-			col+=spp;
+				if (spp==3) {
+					hsv = RGB2HSV(rgb);
+					clr_plane (y, x) = hsv;
+					pix_plane (y, x) = RGB2GRAY (rgb);
+				} else pix_plane (y, x) = val;
+				x++;
+				col+=spp;
 			}
 		}
 		_TIFFfree(buf8);
 		_TIFFfree(buf16);
 		TIFFClose(tif);
+		WriteableColorsFinish();
+		WriteablePixelsFinish();
 	} else return(0);
+// {
+// ImageMatrix *dump_IM = this;
+// unsigned long dump_npix = dump_IM->width*dump_IM->height;
+// double *dump_data = new double [dump_npix];
+// FILE *dump = fopen ("tif-out-eigen","w+");
+// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->_pix_plane.array().coeff(dump_idx);
+// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
+// fclose (dump);
+// delete [] dump_data;
+// }
 
 	return(1);
 }
@@ -142,6 +161,8 @@ int ImageMatrix::LoadTIFF(char *filename) {
     Save a matrix in TIFF format (16 bits per pixel)
 */
 int ImageMatrix::SaveTiff(char *filename) {
+	readOnlyPixels pix_plane = ReadablePixels();
+
 	unsigned int x,y;
 	TIFF* tif = TIFFOpen(filename, "w");
 	if (!tif) return(0);
@@ -192,33 +213,38 @@ int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding
 	// add the image only if it was loaded properly
 	if (res) {
 		// compute features only from an area of the image
-		if (bounding_rect && bounding_rect->x>=0) { 
-			ImageMatrix *temp;
-			temp = new ImageMatrix(this,
+		if (bounding_rect && bounding_rect->x >= 0) { 
+			ImageMatrix temp (*this,
 				bounding_rect->x, bounding_rect->y,
 				bounding_rect->x+bounding_rect->w-1, bounding_rect->y+bounding_rect->h-1
 			);
 			copy (temp);
-			delete temp;
 		}
 		if (downsample>0 && downsample<100)  /* downsample by a given factor */
 			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
 		if (mean>0)  /* normalize to a given mean and standard deviation */
 			normalize(-1,-1,-1,mean,stddev);
 	}
+	WriteablePixelsFinish();
+	WriteableColorsFinish();
 	return(res);
 }
 
-/* simple constructors */
+// constructor helpers
 
 // This sets default values for the different constructors
 void ImageMatrix::init() {
-	width=0;
-	height=0;
-	has_stats = false;
-	has_median = false;
-	ColorMode=cmHSV;     /* set a default color mode */
-	bits=8; /* set some default value */
+	width      = 0;
+	height     = 0;
+	_min       = 0;
+	_max       = 0;
+	_mean      = 0;
+	_std       = 0;
+	_median    = 0;
+	has_stats  = has_median = false;
+	ColorMode  = cmHSV;
+	bits       = 8;
+	_is_pix_writeable = _is_clr_writeable = false;
 }
 
 void ImageMatrix::allocate (unsigned int w, unsigned int h) {
@@ -226,39 +252,47 @@ void ImageMatrix::allocate (unsigned int w, unsigned int h) {
 	height = 0;
 	// These throw exceptions, which we don't catch (catch in main?)
 	// N.B. Eigen matrix parameter order is rows, cols, not X, Y
-	pix_plane = pixData (h, w);
+	_pix_plane = pixData (h, w);
+	_is_pix_writeable = true;
 	if (ColorMode != cmGRAY) {
-		clr_plane = clrData (h, w);
+		_clr_plane = clrData (h, w);
+		_is_clr_writeable = true;
 	}
 
 	width  = w;
 	height = h;
 }
 
-void ImageMatrix::copy(ImageMatrix *copy) {
-	width = copy->width;
-	height = copy->height;
-	has_stats = copy->has_stats;
-	has_median = copy->has_median;
-	ColorMode = copy->ColorMode;
-	bits = copy->bits;
+void ImageMatrix::copy(const ImageMatrix &copy) {
+	init();
+	width     = copy.width;
+	height    = copy.height;
+	ColorMode = copy.ColorMode;
+	bits      = copy.bits;
 	allocate(width, height);
-	pix_plane = copy->pix_plane;
+	WriteablePixels() = copy.ReadablePixels();
 	if (ColorMode != cmGRAY) {
-		clr_plane = copy->clr_plane;
+		WriteableColors() = copy.ReadableColors();
 	}
+	has_stats  = copy.has_stats;
+	has_median = copy.has_median;
+	_min       = copy._min;
+	_max       = copy._max;
+	_mean      = copy._mean;
+	_std       = copy._std;
+	_median    = copy._median;
 }
 
 ImageMatrix::ImageMatrix() {
 	init();
 }
 
-ImageMatrix::ImageMatrix(unsigned int width, unsigned int height) {  
+ImageMatrix::ImageMatrix(const unsigned int width, const unsigned int height) {  
 	init();
 	allocate (width, height);
 }
 
-ImageMatrix::ImageMatrix(ImageMatrix *matrix) {  
+ImageMatrix::ImageMatrix(const ImageMatrix &matrix) {  
 	copy (matrix);
 }
 
@@ -266,31 +300,32 @@ ImageMatrix::ImageMatrix(ImageMatrix *matrix) {
    (x1,y1) - top left
    (x2,y2) - bottom right
 */
-ImageMatrix::ImageMatrix(ImageMatrix *matrix, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
+ImageMatrix::ImageMatrix(const ImageMatrix &matrix, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
 
 	init();
-	bits=matrix->bits;
-	ColorMode=matrix->ColorMode;
+	bits = matrix.bits;
+	ColorMode = matrix.ColorMode;
 	/* verify that the image size is OK */
-	if (x1<0) x1=0;
-	if (y1<0) y1=0;
-	if (x2>=matrix->width) x2=matrix->width-1;
-	if (y2>=matrix->height) y2=matrix->height-1;
+	if (x1 < 0) x1 = 0;
+	if (y1 < 0) y1 = 0;
+	if (x2 >= matrix.width) x2 = matrix.width-1;
+	if (y2 >= matrix.height) y2 = matrix.height-1;
 
-	width=x2-x1+1;
-	height=y2-y1+1;
+	width  = x2-x1+1;
+	height = y2-y1+1;
 	allocate (width, height);
 	// Copy the Eigen matrixes
 	// N.B. Eigen matrix parameter order is rows, cols, not X, Y
-	pix_plane = matrix->pix_plane.block(y1,x1,height,width);
+	WriteablePixels() = matrix.ReadablePixels().block(y1,x1,height,width);
 	if (ColorMode != cmGRAY) {
-		clr_plane = matrix->clr_plane.block(y1,x1,height,width);
+		WriteableColors() = matrix.ReadableColors().block(y1,x1,height,width);
 	}
 }
 
 /* free the memory allocated in "ImageMatrix::LoadImage" */
-ImageMatrix::~ImageMatrix()
-{
+ImageMatrix::~ImageMatrix() {
+	if (_is_pix_writeable) WriteablePixelsFinish();
+	if (_is_clr_writeable) WriteableColorsFinish();
 }
 
 
@@ -299,9 +334,10 @@ ImageMatrix::~ImageMatrix()
    N.B.: This assumes that the data takes up the entire 16-bit range, which is almost certainly wrong
 */
 void ImageMatrix::to8bits() {
-	double max_range = pow((double)2,bits)-1;
-	if (bits==8) return;
-	bits=8;
+	double max_range = pow((double)2, bits)-1;
+	if (bits == 8) return;
+	bits = 8;
+	writeablePixels pix_plane = WriteablePixels();
 	pix_plane = 255.0 * (pix_plane / max_range);
 }
 
@@ -310,24 +346,32 @@ void ImageMatrix::to8bits() {
 */
 
 void ImageMatrix::flipV() {
-	pix_plane = pix_plane.rowwise().reverse();
+	bool old_has_stats = has_stats, old_has_median = has_median;
+	WriteablePixels() = ReadablePixels().rowwise().reverse();
 	if (ColorMode != cmGRAY) {
-		clr_plane.rowwise().reverse();
+		WriteableColors() = ReadableColors().rowwise().reverse();
 	}
+	// on its own, this operation doesn't affect the stats
+	has_stats = old_has_stats;
+	has_median = old_has_median;
 }
 /* flipH
    flip an image horizontally
 */
 void ImageMatrix::flipH() {
-	pix_plane = pix_plane.colwise().reverse();
+	bool old_has_stats = has_stats, old_has_median = has_median;
+	WriteablePixels() = ReadablePixels().colwise().reverse();
 	if (ColorMode != cmGRAY) {
-		clr_plane.colwise().reverse();
+		WriteableColors() = ReadableColors().colwise().reverse();
 	}
+	// on its own, this operation doesn't affect the stats
+	has_stats = old_has_stats;
+	has_median = old_has_median;
 }
 
 void ImageMatrix::invert() {
 	double max_range = pow((double)2,bits)-1;
-	pix_plane = max_range - pix_plane.array();
+	WriteablePixels() = max_range - WriteablePixels().array();
 }
 
 /* Downsample
@@ -338,6 +382,8 @@ void ImageMatrix::invert() {
 void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 	double x,y,dx,dy,frac;
 	unsigned int new_x,new_y,a;
+	writeablePixels pix_plane = WriteablePixels();
+	writeableColors clr_plane = WriteableColors();
 
 	if (x_ratio>1) x_ratio=1;
 	if (y_ratio>1) y_ratio=1;
@@ -481,7 +527,7 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
 	}
 
 	// Make a new image matrix
-	new_matrix=new ImageMatrix (new_width, new_height);
+	new_matrix = new ImageMatrix (new_width, new_height);
 	new_matrix->bits=bits;
 	new_matrix->ColorMode=ColorMode;
 
@@ -490,15 +536,15 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
 	// a 270 is m.transpose()
 	switch ((int)angle) {
 		case 90:
-			new_matrix->pix_plane = pix_plane.transpose().rowwise().reverse();
+			new_matrix->WriteablePixels() = ReadablePixels().transpose().rowwise().reverse();
 		break;
 
 		case 180:
-			new_matrix->pix_plane = pix_plane.reverse();
+			new_matrix->WriteablePixels() = ReadablePixels().reverse();
 		break;
 
 		case 270:
-			new_matrix->pix_plane = pix_plane.transpose();
+			new_matrix->WriteablePixels() = ReadablePixels().transpose();
 		break;
 	}
 	return(new_matrix);
@@ -521,11 +567,12 @@ ImageMatrix* ImageMatrix::Rotate(double angle) {
    if one of the pointers is NULL, the corresponding value is not computed.
 */
 void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_p, double *min_p, double *max_p, double *hist_p, int bins) {
-	unsigned long pixel_index,num_pixels;
+	unsigned long pixel_index,num_pixels=height*width;
 	double *pixels=NULL, *pix_ptr;
 	double min = INF, max = -INF, mean = 0, median = 0, delta = 0, M2 = 0, val = 0, var = 0, std = 0;
 	bool calc_stats, calc_median, calc_hist;
 	unsigned int x, y;
+	readOnlyPixels pix_plane = ReadablePixels();
 
 	calc_stats = (mean_p || std_p || min_p || max_p);
 	calc_median = (median_p);
@@ -542,25 +589,23 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 		*median_p = _median;
 		calc_median = false;
 	}
-	
+		
 	if (! (calc_stats || calc_median || calc_hist) ) return;
 
 	if (calc_stats) {
-
 		// zero-out any pointers passed in
 		if (mean_p) *mean_p = 0;
 		if (std_p) *std_p = 0;
 		if (min_p) *min_p = 0;
 		if (max_p) *max_p = 0;	 
 
-		num_pixels=height*width;
-		// only need this for the median and histogram
+		// only need this for the median
 		if (calc_median) {
 			pixels = new double[num_pixels];
 			if (!pixels) return;
 		}
 
-		/* compute the average, min and max */
+		// compute the average, min and max
 		pixel_index = 0;
 		pix_ptr = pixels;
 		for (y = 0; y < height; y++) {
@@ -590,7 +635,12 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 	
 	}
 	
-	if (calc_median && pixels) {
+	if (calc_median) {
+		if (!pixels) {
+			pixels = new double[num_pixels];
+			if (!pixels) return;
+			memcpy(pixels, pix_plane.data(), num_pixels * sizeof (double));
+		}
 		qsort(pixels,num_pixels,sizeof(double),compare_doubles);
 		median=pixels[num_pixels/2];
 		*median_p = median;
@@ -614,6 +664,8 @@ void ImageMatrix::BasicStatistics(double *mean_p, double *median_p, double *std_
 void ImageMatrix::normalize(double n_min, double n_max, long n_range, double n_mean, double n_std) {
 	unsigned int x,y;
 	double val;
+	writeablePixels pix_plane = WriteablePixels();
+
 	/* normalized to n_min and n_max */
 	if (n_min >= 0 && n_max > 0 && n_range > 0) {
 		double norm_fact = n_range / (n_max-n_min);
@@ -647,14 +699,18 @@ void ImageMatrix::normalize(double n_min, double n_max, long n_range, double n_m
 
 /* convolve
 */
-void ImageMatrix::convolve(ImageMatrix *filter) {
-	unsigned int x, y, i, j, xx, yy;
-	unsigned int height2=filter->height/2;
-	unsigned int width2=filter->width/2;
-	ImageMatrix *copy;
+void ImageMatrix::convolve(const ImageMatrix &filter) {
+	unsigned long x, y, xx, yy;
+	long i, j;
+	long height2=filter.height/2;
+	long width2=filter.width/2;
 	double tmp;
 
-	copy = new ImageMatrix (this);
+	ImageMatrix copy (*this);
+	copy.WriteablePixelsFinish();
+	readOnlyPixels copy_pix_plane = copy.ReadablePixels();
+	readOnlyPixels filt_pix_plane = filter.ReadablePixels();
+	writeablePixels pix_plane = WriteablePixels();
 	for (x = 0; x < width; ++x) {
 		for (y = 0; y < height; ++y) {
 			tmp=0.0;
@@ -664,15 +720,14 @@ void ImageMatrix::convolve(ImageMatrix *filter) {
 					for(j = -height2; j <= height2; ++j) {
 						yy=y+j;
 						if (yy >= 0 && yy < height) {
-							tmp += filter->pix_plane (j+height2, i+width2) * copy->pix_plane(yy,xx);
+							tmp += filt_pix_plane (j+height2, i+width2) * copy_pix_plane(yy,xx);
 						}
 					}
 				}
 			}
-			set(x,y,tmp);
+			pix_plane (y,x) = tmp;
 		}
 	}
-	delete copy;
 }
 
 /* find the basic color statistics
@@ -695,6 +750,7 @@ void ImageMatrix::GetColorStatistics(double *hue_avg_p, double *hue_std_p, doubl
 	double max,pixel_num;
 	double certainties[COLORS_NUM+1];
 	byte h, s, v;
+	readOnlyColors clr_plane = ReadableColors();
 
 	pixel_num=height*width;
 
@@ -772,6 +828,9 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 	RGBcolor rgb;
 	double certainties[COLORS_NUM+1];
 
+	writeablePixels pix_plane = WriteablePixels();
+	writeableColors clr_plane = WriteableColors();
+
 	// initialize the color histogram
 	if( color_hist ) 
 		for( color_index = 0; color_index <= COLORS_NUM; color_index++ )
@@ -804,11 +863,12 @@ void ImageMatrix::ColorTransform(double *color_hist, int use_hue) {
 void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 	unsigned long a;
 	double h_min=INF,h_max=-INF;
+	readOnlyPixels pix_plane = ReadablePixels();
+
 	/* find the minimum and maximum */
 	if (imhist == 1) {    /* similar to the Matlab imhist */
 		h_min = 0;
 		h_max = pow((double)2,bits)-1;
-
 	} else {
 		h_min = min();
 		h_max = max();
@@ -816,12 +876,11 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 	/* initialize the bins */
 	for (a = 0; a < bins_num; a++)
 		bins[a] = 0;
-
 	/* build the histogram */
 	for (a = 0; a < width*height; a++) {
-		if (pix_plane.array().coeff(a) >= h_max) bins[bins_num-1]++;
-		else if (pix_plane.array().coeff(a) <= h_min) bins[0]++;
-		else bins[(int)(((pix_plane.array().coeff(a) - h_min)/(h_max - h_min)) * bins_num)]++;
+		if (pix_plane.array().coeff(a) >= h_max) bins[bins_num-1] += 1;
+		else if (pix_plane.array().coeff(a) <= h_min) bins[0] += 1;
+		else bins[(int)(((pix_plane.array().coeff(a) - h_min)/(h_max - h_min)) * bins_num)] += 1;
 	}
 
 	return;
@@ -830,47 +889,81 @@ void ImageMatrix::histogram(double *bins,unsigned short bins_num, int imhist) {
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
 double ImageMatrix::fft2() {
-	fftw_complex *out;
-	double *in;
 	fftw_plan p;
+	unsigned int half_height=height/2+1;
+	writeablePixels pix_plane = WriteablePixels();
+
+	double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+ 	fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
 	unsigned int x,y;
+ 	for (x=0;x<width;x++)
+ 		for (y=0;y<height;y++)
+ 			in[height*x+y]=pix_plane.coeff(y,x);
+ 
+ 	fftw_execute(p);
 
-	in = (double*) fftw_malloc(sizeof(double) * width*height);
-	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+	// The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+	unsigned long idx;
+ 	for (x=0;x<width;x++) {
+ 		for (y=0;y<half_height;y++) {
+ 			idx = half_height*x+y;
+ 			pix_plane (y,x) = sqrt( pow( out[idx][0],2)+pow(out[idx][1],2));    // sqrt(real(X).^2 + imag(X).^2)
+ 		}
+ 	}
 
-	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE /* FFTW_ESTIMATE */);
+	// complete the first column
+ 	for (y=half_height;y<height;y++)
+ 		pix_plane (y,0) = pix_plane (height - y, 0);
 
-	for (x=0;x<width;x++)
-		for (y=0;y<height;y++)
-			in[height*x+y]=pix_plane.coeff(y,x);
+	// complete the rest of the columns
+ 	for (y=half_height;y<height;y++)
+ 		for (x=1;x<width;x++)   // 1 because the first column is already completed
+ 			pix_plane (y,x) = pix_plane (height - y, width - x);
 
-	fftw_execute(p); /* execute the transformation (repeat as needed) */
+	// clean up
+	fftw_destroy_plan(p);
+	fftw_free(in);
+	fftw_free(out);
 
-	unsigned int half_height=height/2+1, idx;
-	/* find the abs and angle */
-	for (x=0;x<width;x++) {
-		for (y=0;y<half_height;y++) {
-			idx = half_height*x+y;
-			pix_plane (y,x) = sqrt( pow( out[idx][0],2)+pow(out[idx][1],2));    /* sqrt(real(X).^2 + imag(X).^2) */
-		}
-	}
+// 
+// 	// Doing this using the Eigen library
+// 	// FIXME: This doesn't quite work - causes indirect segfault when reading the output into pix_plane
+// 	using namespace Eigen; // just for this function
+// 	double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+// 	fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+// 	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+// 	// Eigen takes care of converting the input from row major (pix_plane) to column major (Eigen and FFTW's default)
+// 	Map<Array< double, Dynamic, Dynamic, ColMajor >, Aligned > in_m (&in[0],height,width);
+// 	in_m = pix_plane;
+// 
+// 	fftw_execute(p);
+// 
+// 	// The resultant image uses the modulus (sqrt(norm)) of the complex numbers for pixel values
+// 	// Map an Eigen matrix onto what was returned by FFTW.
+// 	// Tricky bits specific to FFTW output:
+// 	//  We are making two matrixes out the single output - one for the real component and one for complex.
+// 	//  We are using strides to skip every other element of the output, starting at 0 for real, and 1 for complex.
+// 	//  We are not using the bottom half, making it symmetrical around the horizontal midline instead, but we still stride over twice the height b/c its complex
+// 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_r (&out[0][0],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+// 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_i (&out[0][1],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+// 	pix_plane.topRows(0,0,half_height,width) = (out_r.pow(2)+out_i.pow(2)).sqrt();
+// 
+// 	// complete the first column
+// 	unsigned int  odd_pad = (height % 2 == 0 ? 0 : 1);
+// 	pix_plane.block (half_height,0,half_height-odd_pad,1) = pix_plane.block (odd_pad,0,half_height-odd_pad,1).reverse();
+// 
+// 	// complete the rest of the columns
+// 	pix_plane.block (half_height,1,half_height-odd_pad,width-1) = pix_plane.block (odd_pad,1,half_height-odd_pad,width-1).reverse();
+// 	has_stats = has_median = false;
+// 
+// 	// clean up
+// 	fftw_destroy_plan(p);
+// 	fftw_free(in);
+// 	fftw_free(out);
 
-	/* complete the first column */
-	for (y=half_height;y<height;y++)
-		pix_plane (y,x) = pix_plane (height - y, 0);
-
-	/* complete the rows */
-	for (y=half_height;y<height;y++)
-		for (x=1;x<width;x++)   /* 1 because the first column is already completed */
-			pix_plane (y,x) = pix_plane (height - y, width - x);
-   
-   fftw_destroy_plan(p);
-   fftw_free(in);
-   fftw_free(out);
-
-   /* calculate the magnitude and angle */
-
-   return(0);
+	WriteablePixelsFinish();
+	return(0);
 }
 
 /* chebyshev transform */
@@ -882,26 +975,40 @@ void ImageMatrix::ChebyshevTransform(unsigned int N) {
 		N = MIN( width, height );
 	out=new double[height*N];
 	Chebyshev2D(this, out,N);
-
+// {
+// FILE *dump = fopen ("Cheb-out1-eigen","w+");
+// fwrite (out, height*N * sizeof (double), 1, dump);
+// fclose (dump);
+// }
 	width=N;
 	height = MIN( height, N );   /* prevent error */
-
+	allocate (width,height);
+	writeablePixels pix_plane = WriteablePixels();
 	for(y=0;y<height;y++)
 		for(x=0;x<width;x++)
 			pix_plane (y,x) = out[y * width + x];
+// {
+// ImageMatrix *dump_IM = this;
+// unsigned long dump_npix = dump_IM->width*dump_IM->height;
+// double *dump_data = new double [dump_npix];
+// FILE *dump = fopen ("Cheb-out2-eigen","w+");
+// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->pix_plane.array().coeff(dump_idx);
+// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
+// fclose (dump);
+// delete [] dump_data;
+// }
 	delete [] out;
+	WriteablePixelsFinish();
 }
 
 /* chebyshev transform
    coeff -array of double- a pre-allocated array of 32 doubles
 */
 void ImageMatrix::ChebyshevFourierTransform2D(double *coeff) {
-	ImageMatrix *matrix;
-	matrix = new ImageMatrix (this);
+	ImageMatrix matrix (*this);
 	if( (width * height) > (300 * 300) )
-		matrix->Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
-	ChebyshevFourier2D(matrix, 0, coeff,32);
-	delete matrix;
+		matrix.Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
+	ChebyshevFourier2D(&matrix, 0, coeff,32);
 }
 
 
@@ -911,9 +1018,10 @@ void ImageMatrix::Symlet5Transform() {
 	DataGrid2D *grid2d=NULL;
 	DataGrid *grid;
 	Symlet5 *Sym5;
+	writeablePixels pix_plane = WriteablePixels();
+
 
 	grid = new DataGrid2D(width,height,-1);
-	grid=grid2d;
   
 	for (y=0;y<height;y++)
 		for(x=0;x<width;x++)
@@ -928,18 +1036,30 @@ void ImageMatrix::Symlet5Transform() {
 		 
 	delete Sym5;
 	delete grid2d;
+	WriteablePixelsFinish();
 }
 
 /* chebyshev statistics
    coeff -array of double- pre-allocated memory of 20 doubles
    nibs_num - (32 is normal)
 */
-void ImageMatrix::ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned int bins_num)
-{
-   if (N<2) N=20;
-   if (N>MIN(width,height)) N=MIN(width,height);   
-   ChebyshevTransform(N);
-   histogram(coeff,bins_num,0);
+void ImageMatrix::ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned int bins_num) {
+	if (N<2) N=20;
+	if (N>MIN(width,height)) N=MIN(width,height);   
+	ChebyshevTransform(N);
+// {
+// ImageMatrix *dump_IM = this;
+// unsigned long dump_npix = dump_IM->width*dump_IM->height;
+// double *dump_data = new double [dump_npix];
+// FILE *dump = fopen ("Cheb-eigen","w+");
+// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->pix_plane.array().coeff(dump_idx);
+// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
+// fclose (dump);
+// delete [] dump_data;
+// }
+// exit(0);
+
+	histogram(coeff,bins_num,0);
 }
 
 /* CombFirstFourMoments
@@ -949,13 +1069,14 @@ int ImageMatrix::CombFirstFourMoments2D(double *vec) {
 	int count;
 	ImageMatrix *matrix;
 	if (bits==16) {
-		matrix = new ImageMatrix (this);
+		matrix = new ImageMatrix (*this);
 		matrix->to8bits();
+		matrix->WriteablePixelsFinish();
 	} else matrix = this;
 	
 	count = CombFirst4Moments2D (matrix, vec);   
 	vd_Comb4Moments (vec);   
-	if (bits == 16) delete matrix;
+	if (matrix != this) delete matrix;
 	return (count);
 }
 
@@ -964,15 +1085,19 @@ void ImageMatrix::EdgeTransform() {
 	unsigned int x,y;
 	double max_x=0,max_y=0;
 
-	ImageMatrix *TempMatrix;
-	TempMatrix = new ImageMatrix (this);
-	for (y = 0; y < TempMatrix->height; y++)
-		for (x = 0; x < TempMatrix->width; x++) {
-			if (y > 0 && y < height-1) max_y=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y-1,x)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y+1,x)));
-			if (x > 0 && x < width-1)  max_x=MAX(fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x-1)), fabs(TempMatrix->pix_plane(y,x) - TempMatrix->pix_plane(y,x+1)));
+	ImageMatrix TempMatrix (*this);
+	TempMatrix.WriteablePixelsFinish();
+	readOnlyPixels tmp_pix_plane = TempMatrix.ReadablePixels();
+	writeablePixels pix_plane = WriteablePixels();
+
+	for (y = 0; y < TempMatrix.height; y++)
+		for (x = 0; x < TempMatrix.width; x++) {
+			max_x = max_y = 0;
+			if (y > 0 && y < height-1) max_y=MAX(fabs(tmp_pix_plane(y,x) - tmp_pix_plane(y-1,x)), fabs(tmp_pix_plane(y,x) - tmp_pix_plane(y+1,x)));
+			if (x > 0 && x < width-1)  max_x=MAX(fabs(tmp_pix_plane(y,x) - tmp_pix_plane(y,x-1)), fabs(tmp_pix_plane(y,x) - tmp_pix_plane(y,x+1)));
 			pix_plane(y,x) = MAX(max_x,max_y);
 		}
-   delete TempMatrix;
+	WriteablePixelsFinish();
 }
 
 /* Perwitt gradient magnitude
@@ -982,6 +1107,9 @@ void ImageMatrix::EdgeTransform() {
 void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
 	long x,y,i,j,w=width,h=height;
 	double sumx,sumy;
+	writeablePixels out_pix_plane = output->WriteablePixels();
+	readOnlyPixels pix_plane = ReadablePixels();
+
 	for (x = 0; x < w; x++) {
 		for (y = 0; y < h; y++) {
 			sumx=0;
@@ -998,9 +1126,10 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
 			for (i = x-1; i <= x+1; i++)
 				if (i >= 0 && i < w && y+1 < h)
 					sumy += pix_plane(y+1,i)*-1;//0.3333;
-			output->pix_plane(y,x) = sqrt(sumx*sumx+sumy*sumy);
+			out_pix_plane(y,x) = sqrt(sumx*sumx+sumy*sumy);
 		}
 	}
+	output->WriteablePixelsFinish();
 }
 
 /* Perwitt gradient direction
@@ -1010,6 +1139,9 @@ void ImageMatrix::PerwittMagnitude2D(ImageMatrix *output) {
 void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
 	long x,y,i,j,w=width,h=height;
 	double sumx,sumy;
+	writeablePixels out_pix_plane = output->WriteablePixels();
+	readOnlyPixels pix_plane = ReadablePixels();
+
 	for (x = 0; x < w; x++)
 		for (y = 0;y < h; y++) {
 			sumx=0;
@@ -1026,11 +1158,11 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
 			for (i = x-1; i <= x+1; i++)
 				if (i >= 0 && i < w && y+1 < h)
 					sumy += pix_plane(y+1,i)*-1;//0.3333;
-			if (sumy == 0 || fabs(sumy)<1/INF) output->pix_plane(y,x) = 3.1415926 * (sumx < 0 ? 1 : 0);
-			else output->pix_plane(y,x) = atan2(sumy,sumx);
+			if (sumy == 0 || fabs(sumy)<1/INF) out_pix_plane(y,x) = 3.1415926 * (sumx < 0 ? 1 : 0);
+			else out_pix_plane(y,x) = atan2(sumy,sumx);
 		}
+	output->WriteablePixelsFinish();
 }
-
 
 /* edge statistics */
 //#define NUM_BINS 8
@@ -1049,29 +1181,29 @@ void ImageMatrix::PerwittDirection2D(ImageMatrix *output) {
 */
 
 void ImageMatrix::EdgeStatistics(unsigned long *EdgeArea, double *MagMean, double *MagMedian, double *MagVar, double *MagHist, double *DirecMean, double *DirecMedian, double *DirecVar, double *DirecHist, double *DirecHomogeneity, double *DiffDirecHist, unsigned int num_bins) {
-	ImageMatrix *GradientMagnitude,*GradientDirection;
 	unsigned int a,bin_index;
-	double min,max,sum, max_range = pow((double)2,bits)-1;
+	double min,max,sum, max_range = pow((double)bits,2)-1;
 
-	GradientMagnitude = new ImageMatrix (this);
-	PerwittMagnitude2D(GradientMagnitude);
-	GradientDirection = new ImageMatrix (this);
-	PerwittDirection2D(GradientDirection);
+	ImageMatrix GradientMagnitude (*this);
+	PerwittMagnitude2D (&GradientMagnitude);
+	readOnlyPixels GM_pix_plane = GradientMagnitude.ReadablePixels();
+	ImageMatrix GradientDirection (*this);
+	PerwittDirection2D (&GradientDirection);
 
 	/* find gradient statistics */
-	GradientMagnitude->BasicStatistics(MagMean, MagMedian, MagVar, &min, &max, MagHist, num_bins);
+	GradientMagnitude.BasicStatistics(MagMean, MagMedian, MagVar, &min, &max, MagHist, num_bins);
 	*MagVar = pow(*MagVar,2);
 
 	/* find the edge area (number of edge pixels) */
 	*EdgeArea = 0;
 //	level = min+(max-min)/2;   // level=duplicate->OtsuBinaryMaskTransform()   // level=MagMean
 
-	for (a = 0; a < GradientMagnitude->height*GradientMagnitude->width; a++)
-		if (GradientMagnitude->pix_plane.array().coeff(a) > max_range*0.5) (*EdgeArea)+=1; /* find the edge area */
+	for (a = 0; a < GradientMagnitude.height*GradientMagnitude.width; a++)
+		if (GM_pix_plane.array().coeff(a) > max_range*0.5) (*EdgeArea)+=1; /* find the edge area */
 //   GradientMagnitude->OtsuBinaryMaskTransform();
 
 	/* find direction statistics */
-	GradientDirection->BasicStatistics(DirecMean, DirecMedian, DirecVar, &min, &max, DirecHist, num_bins);
+	GradientDirection.BasicStatistics(DirecMean, DirecMedian, DirecVar, &min, &max, DirecHist, num_bins);
 	*DirecVar=pow(*DirecVar,2);
 
 	/* Calculate statistics about edge difference direction
@@ -1089,8 +1221,6 @@ void ImageMatrix::EdgeStatistics(unsigned long *EdgeArea, double *MagMean, doubl
 	/* The fraction of edge pixels that are in the first two bins of the histogram measure edge homogeneity */
 	if (sum > 0) *DirecHomogeneity = (DirecHist[0]+DirecHist[1])/sum;
 
-	delete GradientMagnitude;
-	delete GradientDirection;
 }
 
 /* radon transform
@@ -1106,6 +1236,7 @@ void ImageMatrix::RadonTransform2D(double *vec) {
 	rLast = (int) ceil(sqrt(pow( (double)(width-1-(width-1)/2),2)+pow( (double)(height-1-(height-1)/2),2))) + 1;
 	rFirst = -rLast;
 	output_size=rLast-rFirst+1;
+	readOnlyPixels pix_plane = ReadablePixels();
 
 	ptr = new double[output_size*num_angles];
 	for (val_index = 0; val_index < output_size*num_angles; val_index++)
@@ -1183,6 +1314,7 @@ double ImageMatrix::Otsu() {
 double ImageMatrix::OtsuBinaryMaskTransform() {
 	double OtsuGlobalThreshold;
 	double max_range = pow((double)2,bits)-1;
+	writeablePixels pix_plane = WriteablePixels();
 
 	OtsuGlobalThreshold=Otsu();
 
@@ -1190,7 +1322,7 @@ double ImageMatrix::OtsuBinaryMaskTransform() {
 	for (unsigned int a = 0; a < width*height; a++)
 		if (pix_plane.array().coeff(a) > OtsuGlobalThreshold*max_range) (pix_plane.array())(a) = 1;
 		else (pix_plane.array())(a) = 0;
-	 
+
 	return(OtsuGlobalThreshold);
 }
 
@@ -1234,13 +1366,13 @@ void ImageMatrix::centroid(double *x_centroid, double *y_centroid) {
 
 */
 
-int compare_ints (const void *a, const void *b) {
-	if (*((int *)a) > *((int *)b)) return(1);
-	if (*((int *)a) == *((int *)b)) return(0);
+int compare_ulongs (const void *a, const void *b) {
+	if (*((unsigned long *)a) > *((unsigned long *)b)) return(1);
+	if (*((unsigned long *)a) == *((unsigned long *)b)) return(0);
 	return(-1);
 }
 
-void ImageMatrix::FeatureStatistics(unsigned long *count, unsigned long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
+void ImageMatrix::FeatureStatistics(unsigned long *count, long *Euler, double *centroid_x, double *centroid_y, unsigned long *AreaMin, unsigned long *AreaMax,
 	double *AreaMean, unsigned int *AreaMedian, double *AreaVar, unsigned int *area_histogram,double *DistMin, double *DistMax,
 	double *DistMean, double *DistMedian, double *DistVar, unsigned int *dist_histogram, unsigned int num_bins
 ) {
@@ -1250,13 +1382,12 @@ void ImageMatrix::FeatureStatistics(unsigned long *count, unsigned long *Euler, 
 	unsigned long *object_areas;
 	double *centroid_dists,sum_dist;
 
-	BWInvert=new ImageMatrix (this);   // check if the background is brighter or dimmer
+	BWInvert=new ImageMatrix (*this);   // check if the background is brighter or dimmer
 	BWInvert->invert();
 	BWInvert->OtsuBinaryMaskTransform();
 	inv_count=BWInvert->BWlabel(8);
 
-
-	BWImage=new ImageMatrix (this);
+	BWImage=new ImageMatrix (*this);
 	BWImage->OtsuBinaryMaskTransform();
 	BWImage->centroid(centroid_x,centroid_y);
 	*count = BWImage->BWlabel(8);
@@ -1283,7 +1414,7 @@ void ImageMatrix::FeatureStatistics(unsigned long *count, unsigned long *Euler, 
 		sum_dists += centroid_dists[object_index-1];
 	}
 	/* compute area statistics */
-	qsort(object_areas,*count,sizeof(unsigned int),compare_ints);
+	qsort(object_areas,*count,sizeof(unsigned long),compare_ulongs);
 	*AreaMin = object_areas[0];
 	*AreaMax = object_areas[*count-1];
 	if (*count > 0) *AreaMean = sum_areas/(*count);

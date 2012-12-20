@@ -18,6 +18,7 @@ support using a shared mmap for pixel data
 		im.clr_data
 
 -- shared memory
+	the pixel data needs to have managed state (writeable -> read-only)
 	shared IM objects need to have names that reflect the series of transforms performed on the pixels
 		fstat(), resolve symlinks, dev_id = S_ISREG(fstat.st_mode) ? fstat.st_dev : fstat.st_rdev
 		<dev_id>.<fstat.st_ino>.pix: original pixels
@@ -28,7 +29,20 @@ support using a shared mmap for pixel data
 		-N<mean>.<std>: normalize to specified mean and std. dev. (?)
 		-others?  Do we need to share anything other than transforms?
 			-share only things needed to compute more features in parallel (= transforms only).
-		
+-- testing
+	ReadTIFF identical for t1_s01_c05_ij.tif (16 bits/sample, 12-bit data, 113x113)
+	Edge Features () identical
+	Otsu() identical
+	centroid (x,y) identical
+	Object Features () [33] differs (Euler): bug in C-chrm (issue 55)
+	Gabor textures differ: 	 bug in C-chrm (issue 55)
+	CombFirst4Moments are identical
+	All feature algorithms on raw image identical
+	Fourier identical
+	Chebyshev identical
+	All features now identical to > 5 sig figs.
+	
+	
 
 ---- In python, mmap of shared memory
 memory = posix_ipc.SharedMemory(shmem_name, posix_ipc.O_CREX, size=params["SHM_SIZE"])

@@ -68,6 +68,7 @@ except AttributeError:
 
 
 INF = _pychrm.INF
+EPSILON = _pychrm.EPSILON
 class RGBcolor(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, RGBcolor, name, value)
@@ -168,12 +169,18 @@ class ImageMatrix(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, ImageMatrix, name)
     __repr__ = _swig_repr
-    __swig_setmethods__["pix_plane"] = _pychrm.ImageMatrix_pix_plane_set
-    __swig_getmethods__["pix_plane"] = _pychrm.ImageMatrix_pix_plane_get
-    if _newclass:pix_plane = _swig_property(_pychrm.ImageMatrix_pix_plane_get, _pychrm.ImageMatrix_pix_plane_set)
-    __swig_setmethods__["clr_plane"] = _pychrm.ImageMatrix_clr_plane_set
-    __swig_getmethods__["clr_plane"] = _pychrm.ImageMatrix_clr_plane_get
-    if _newclass:clr_plane = _swig_property(_pychrm.ImageMatrix_clr_plane_get, _pychrm.ImageMatrix_clr_plane_set)
+    __swig_setmethods__["_pix_plane"] = _pychrm.ImageMatrix__pix_plane_set
+    __swig_getmethods__["_pix_plane"] = _pychrm.ImageMatrix__pix_plane_get
+    if _newclass:_pix_plane = _swig_property(_pychrm.ImageMatrix__pix_plane_get, _pychrm.ImageMatrix__pix_plane_set)
+    __swig_setmethods__["_clr_plane"] = _pychrm.ImageMatrix__clr_plane_set
+    __swig_getmethods__["_clr_plane"] = _pychrm.ImageMatrix__clr_plane_get
+    if _newclass:_clr_plane = _swig_property(_pychrm.ImageMatrix__clr_plane_get, _pychrm.ImageMatrix__clr_plane_set)
+    __swig_setmethods__["_is_pix_writeable"] = _pychrm.ImageMatrix__is_pix_writeable_set
+    __swig_getmethods__["_is_pix_writeable"] = _pychrm.ImageMatrix__is_pix_writeable_get
+    if _newclass:_is_pix_writeable = _swig_property(_pychrm.ImageMatrix__is_pix_writeable_get, _pychrm.ImageMatrix__is_pix_writeable_set)
+    __swig_setmethods__["_is_clr_writeable"] = _pychrm.ImageMatrix__is_clr_writeable_set
+    __swig_getmethods__["_is_clr_writeable"] = _pychrm.ImageMatrix__is_clr_writeable_get
+    if _newclass:_is_clr_writeable = _swig_property(_pychrm.ImageMatrix__is_clr_writeable_get, _pychrm.ImageMatrix__is_clr_writeable_set)
     __swig_setmethods__["ColorMode"] = _pychrm.ImageMatrix_ColorMode_set
     __swig_getmethods__["ColorMode"] = _pychrm.ImageMatrix_ColorMode_get
     if _newclass:ColorMode = _swig_property(_pychrm.ImageMatrix_ColorMode_get, _pychrm.ImageMatrix_ColorMode_set)
@@ -207,6 +214,14 @@ class ImageMatrix(_object):
     __swig_setmethods__["has_median"] = _pychrm.ImageMatrix_has_median_set
     __swig_getmethods__["has_median"] = _pychrm.ImageMatrix_has_median_get
     if _newclass:has_median = _swig_property(_pychrm.ImageMatrix_has_median_get, _pychrm.ImageMatrix_has_median_set)
+    def WriteablePixels(self): return _pychrm.ImageMatrix_WriteablePixels(self)
+    def WriteableColors(self): return _pychrm.ImageMatrix_WriteableColors(self)
+    def ReadablePixels(self): return _pychrm.ImageMatrix_ReadablePixels(self)
+    def ReadableColors(self): return _pychrm.ImageMatrix_ReadableColors(self)
+    def ReadOnlyPixels(self): return _pychrm.ImageMatrix_ReadOnlyPixels(self)
+    def ReadOnlyColors(self): return _pychrm.ImageMatrix_ReadOnlyColors(self)
+    def WriteablePixelsFinish(self): return _pychrm.ImageMatrix_WriteablePixelsFinish(self)
+    def WriteableColorsFinish(self): return _pychrm.ImageMatrix_WriteableColorsFinish(self)
     def LoadTIFF(self, *args): return _pychrm.ImageMatrix_LoadTIFF(self, *args)
     def SaveTiff(self, *args): return _pychrm.ImageMatrix_SaveTiff(self, *args)
     def OpenImage(self, *args): return _pychrm.ImageMatrix_OpenImage(self, *args)
@@ -219,7 +234,6 @@ class ImageMatrix(_object):
         except: self.this = this
     __swig_destroy__ = _pychrm.delete_ImageMatrix
     __del__ = lambda self : None;
-    def set(self, *args): return _pychrm.ImageMatrix_set(self, *args)
     def normalize(self, *args): return _pychrm.ImageMatrix_normalize(self, *args)
     def to8bits(self): return _pychrm.ImageMatrix_to8bits(self)
     def flipV(self): return _pychrm.ImageMatrix_flipV(self)

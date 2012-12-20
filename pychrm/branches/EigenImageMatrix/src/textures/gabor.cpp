@@ -167,12 +167,14 @@ double *GaborEnergy(ImageMatrix *Im, double f0, double sig2lam, double gamma, do
 	double fi = 0;
 	unsigned int a,b,x,y;
 	Gexp = Gabor(f0,sig2lam,gamma,theta,fi,n);
+	readOnlyPixels pix_plane = Im->ReadablePixels();
+
 
 	c = new double[(Im->width+n-1)*(Im->height+n-1)*2];
 	image = new double[Im->width*Im->height];
 	for (y = 0; y < Im->height; y++)
 		for (x = 0; x < Im->width; x++)
-			image[y*Im->width+x] = Im->pix_plane(y,x);
+			image[y*Im->width+x] = pix_plane(y,x);
 
 	conv2comp(c, image, Gexp, Im->width, Im->height, n, n);
 
@@ -198,7 +200,6 @@ double *GaborEnergy(ImageMatrix *Im, double f0, double sig2lam, double gamma, do
 the output value is in "ratios" which is an array of 7 doubles
 */
 void GaborTextureFilters2D(ImageMatrix *Im, double *ratios) {
-	ImageMatrix *bw;
 	double GRAYthr = 0.60;  // Gray level; could be customized/automized
 	/* parameters set up in complience with the paper */
 	double gamma = 0.5, sig2lam = 0.56;
@@ -209,7 +210,8 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios) {
 	double *e2LP;
 	double max;
 	unsigned int x,y,ii;
-	int originalScore = 0;
+	unsigned long originalScore = 0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 
 	/* compute the original score befroe Gabor */
 	e2LP = GaborEnergy(Im,f0LP,sig2lam,gamma,theta,n);
@@ -231,24 +233,25 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios) {
 			if (max > 0) e2[x] = e2[x]/max;
 			else e2[x] = 0;
 
-		bw = new ImageMatrix (Im);
-		for (y = 0; y < bw->height; y++)
-			for (x = 0; x < bw->width; x++)
-				bw->pix_plane(y,x) = e2[y*bw->width+x]*(pow((double)2,Im->bits)-1);
+		ImageMatrix bw (*Im);
+		pixData &bw_pix_plane = bw.WriteablePixels();
+		for (y = 0; y < bw.height; y++)
+			for (x = 0; x < bw.width; x++)
+				bw_pix_plane(y,x) = e2[y*bw.width+x]*(pow((double)2,Im->bits)-1);
+		bw.WriteablePixelsFinish();
+		GRAYthr = bw.Otsu();
 
-		GRAYthr = bw->Otsu();
 		for (x = 0; x < Im->width*Im->height; x++)
 			if (e2[x] < GRAYthr) e2[x] = 0;
 		for (x = 0; x < Im->width; x++) {
 			for (y = 0; y < Im->height; y++) {
-				e2[y*Im->width+x] = Im->pix_plane(y,x) * e2[y*Im->width+x];
+				e2[y*Im->width+x] = pix_plane(y,x) * e2[y*Im->width+x];
 				if (e2[y*Im->width+x] < GRAYthr) e2[y*Im->width+x] = 0;
 				else afterGaborScore++;
 			}
 		}
 		ratios[ii] = (double)afterGaborScore/(double)originalScore;
 
-		delete bw;
 		delete [] e2;
 		}
 }
