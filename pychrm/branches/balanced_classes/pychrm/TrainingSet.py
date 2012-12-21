@@ -146,6 +146,7 @@ def output_railroad_switch( method_that_prints_output ):
 
 	def print_method_wrapper( *args, **kwargs ):
 		
+		retval = None
 		if "output_filepath" in kwargs:
 			output_filepath = kwargs[ "output_filepath" ]
 			del kwargs[ "output_filepath" ]
@@ -159,11 +160,12 @@ def output_railroad_switch( method_that_prints_output ):
 			import sys
 			backup = sys.stdout
 			sys.stdout = open( output_filepath, mode )
-			method_that_prints_output( *args, **kwargs )
+			retval = method_that_prints_output( *args, **kwargs )
 			sys.stdout.close()
 			sys.stdout = backup
 		else:
-			method_that_prints_output( *args, **kwargs )
+			retval = method_that_prints_output( *args, **kwargs )
+		return retval
 
 	return print_method_wrapper
 
@@ -2252,13 +2254,13 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 			num_samples_in_training_set = [ smallest_class_size - j ] * self.num_classes
 		elif balanced_classes and training_set_fraction:
 			num_samples_in_training_set = \
-			       [ int( training_set_fraction * smallest_class_size ) ] * self.num_classes
+			       [ int(round( training_set_fraction * smallest_class_size )) ] * self.num_classes
 		elif j:
 			# you want detritus to go into training set
 			num_samples_in_training_set = [ ( num - j ) for num in self.classsizes_list ]
 		else:
 			# unbalanced
-			num_samples_in_training_set = [ int( training_set_fraction * num ) for num in self.classsizes_list ]
+			num_samples_in_training_set = [ int(round( training_set_fraction * num )) for num in self.classsizes_list ]
 
 		# Step 2: Number of samples in test set
 		if not training_set_only:
@@ -2268,14 +2270,13 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 			elif balanced_classes and i:
 				num_samples_in_test_set = [ smallest_class_size - i ] * self.num_classes
 			elif balanced_classes and training_set_fraction:
-				num_samples_in_training_set = \
-				      [ smallest_class_size - num_samples_in_training_set ] * self.num_classes
+				num_samples_in_test_set = [ (smallest_class_size - num) for num in num_samples_in_training_set ]
 			elif i:
 				# you want detritus to go into test set
-				num_samples_in_training_set = [ ( num - i ) for num in self.classsizes_list ]
+				num_samples_in_test_set = [ ( num - i ) for num in self.classsizes_list ]
 			else:
 				# you want an unbalanced test set
-				num_samples_in_test_set = [ int( 1.0-training_set_fraction * num ) for num in self.classsizes_list ]
+				num_samples_in_test_set = [ int(round( (1.0-training_set_fraction) * num )) for num in self.classsizes_list ]
 
 
 		# Say what we're gonna do:
@@ -2319,20 +2320,27 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 			test_set.source_path = self.source_path + " (subset)"
 			if self.interpolation_coefficients:
 				test_set.interpolation_coefficients = self.interpolation_coefficients
-	
+
 		# assemble training and test sets
 		for class_index in range( self.num_classes ):
+
+			# If randomize, choose samples at random, but once they're chosen, pack them into
+			# the FeatureSets in alphanumeric order.
+			sort_func = lambda A, B: cmp( self.imagenames_list[ class_index ][ A ], self.imagenames_list[ class_index ][ B ] )
 
 			num_images = self.classsizes_list[ class_index ]
 			sample_lottery = range( num_images )
 			if randomize:
-				random.shuffle( image_lottery )
+				random.shuffle( sample_lottery )
 
 			# training set:
-			train_samp_count = 0
 			training_matrix = np.empty( [ training_set.classsizes_list[ class_index ], self.num_features ], dtype='double' )
-			while train_samp_count < training_set.classsizes_list[ class_index ]:
-				sample_index = sample_lottery[ train_samp_count ]
+
+			training_samples = sample_lottery[ 0 : training_set.classsizes_list[ class_index ] ]
+			training_samples = sorted( training_samples, sort_func )
+
+			train_samp_count = 0
+			for sample_index in training_samples:
 				sample_name = self.imagenames_list[ class_index ][ sample_index ]
 				training_matrix[ train_samp_count,: ] = self.data_list[ class_index ][ sample_index ]
 				training_set.imagenames_list[ class_index ].append( sample_name )
@@ -2344,16 +2352,24 @@ Y 	Y 	R 	R 	N 	balanced training and test sets, as above but with 75-25 default 
 			if not training_set_only:
 				test_samp_count = 0
 				test_matrix = np.empty( [ test_set.classsizes_list[ class_index ], self.num_features ], dtype='double' )
-				while test_samp_count < test_set.classsizes_list[ class_index ]:
-					sample_index = sample_lottery[ test_samp_count + train_samp_count ]
+
+				test_samples = sample_lottery[ training_set.classsizes_list[ class_index ] : \
+				   training_set.classsizes_list[ class_index ] + test_set.classsizes_list[ class_index ] ]
+				test_samples = sorted( test_samples, sort_func )
+
+				for sample_index in test_samples:
 					sample_name = self.imagenames_list[ class_index ][ sample_index ]
 					test_matrix[ test_samp_count,: ] = self.data_list[ class_index ][ sample_index ]
 					test_set.imagenames_list[ class_index ].append( sample_name )
 					test_set.num_images += 1
-					train_samp_count += 1
+					test_samp_count += 1
 				test_set.data_list[ class_index ] = test_matrix
 
+		if training_set_only:
+			return training_set
+
 		return training_set, test_set
+
 	#==============================================================
 	def NumSamplesInSmallestClass( self ):
 		"""Method name says it all."""
@@ -2641,7 +2657,7 @@ class FeatureSet_Continuous( FeatureSet ):
 		else:
 			if training_set_fraction <= 0 or training_set_fraction >= 1:
 				raise ValueError( "Training set fraction must be a number between 0 and 1" )
-			num_images_in_training_set = int( training_set_fraction * self.num_images )
+			num_images_in_training_set = round( training_set_fraction * self.num_images )
 
 		if j:
 			if j <= 0:
@@ -3531,6 +3547,8 @@ class ClassificationExperimentResult( BatchClassificationResult ):
 	#: A dictionary where the name is the key, and the value is a list of individual results
 	accumulated_individual_results = None
 
+	feature_weight_statistics = None
+
 	#: keep track of stats related to predicted values for reporting purposes
 	individual_stats = None
 	#=====================================================================
@@ -3544,13 +3562,32 @@ class ClassificationExperimentResult( BatchClassificationResult ):
 		4. Hybrid test sets (discrete test sets loaded into a continuous test set)
 		   have "pseudo-classes," i.e., easily binnable ground truth values."""
 
-		#Step 1: aggregate all results across splits for individual images
-		raise NotImplementedError
+		# Step 1: feature weight statistics:
+
+		feature_weight_lists = {}
+		for batch_result in self.individual_results:
+			weight_names_and_values = zip( batch_result.feature_weights.names, batch_result.feature_weights.values)
+			for name, weight in weight_names_and_values:
+				if not name in feature_weight_lists:
+					feature_weight_lists[ name ] = []
+				feature_weight_lists[ name ].append( weight )
+
+		for feature_name in feature_weight_lists:
+			feature_weight_lists[ feature_name ] = np.array( feature_weight_lists[ feature_name ] )
+
+		fwl = feature_weight_lists
+		feature_weight_stats = [ (np.mean(fwl[fname]), len(fwl[fname]), np.std(fwl[fname]), np.min(fwl[fname]), np.max(fwl[fname]), fname) for fname in fwl ]
+		# Sort on mean values, i.e. index 0 of tuple created above
+		sort_func = lambda A, B: cmp( A[0], B[0] )
+		self.feature_weight_statistics = sorted( feature_weight_stats, sort_func, reverse = True )
+
+		#Step 2: aggregate all results across splits for individual images
+		# FIXME: Do it!
 
 
 	#=====================================================================
 	@output_railroad_switch
-	def PredictedValueAnalysis( self ):
+	def PredictedValueAnalysis( self, line_item = False ):
 		"""For use in only those classification experiments where predicted values are generated
 		as part of the classification.
 		
@@ -3594,9 +3631,9 @@ class ClassificationExperimentResult( BatchClassificationResult ):
 		sort_func = lambda A, B: cmp( A, B ) if res_dict[A][0].ground_truth_value == res_dict[B][0].ground_truth_value else cmp( res_dict[A][0].ground_truth_value, res_dict[B][0].ground_truth_value  ) 
 		sorted_images = sorted( self.accumulated_individual_results.iterkeys(), sort_func )
 
-		for filename in sorted_images:
-			print 'File "' + filename + '"'
-			for result in self.accumulated_individual_results[ filename ]:
+		for samplename in sorted_images:
+			print 'File "' + samplename + '"'
+			for result in self.accumulated_individual_results[ samplename ]:
 
 				if isinstance( result, DiscreteImageClassificationResult ):
 					marg_probs = [ "{0:0.3f}".format( num ) for num in result.marginal_probabilities ]
@@ -3614,7 +3651,7 @@ class ClassificationExperimentResult( BatchClassificationResult ):
 				else:
 					raise ValueError( 'expected an ImageClassification result but got a {0} class'.\
 				  	       format( type( result ).__name__ ) ) 
-			print outstr.format( *self.individual_stats[ filename ] )
+			print outstr.format( *self.individual_stats[ samplename ] )
 
 	#=====================================================================
 	@output_railroad_switch
@@ -3692,6 +3729,9 @@ class DiscreteClassificationExperimentResult( ClassificationExperimentResult ):
 		"""Not fully implemented yet. Need to implement generation of confusion, similarity, and
 		average class probability matrices from constituent batches."""
 
+		# Base class does feature weight analysis
+		super( DiscreteClassificationExperimentResult, self ).GenerateStats()
+		
 		self.num_correct_classifications = 0
 		for batch_result in self.individual_results:
 			for indiv_result in batch_result.individual_results:
@@ -3731,6 +3771,17 @@ class DiscreteClassificationExperimentResult( ClassificationExperimentResult ):
 				batch_result.GenerateStats()
 			print "{0}\t\"{1}\"\t{2:0.4f}".format( count, batch_result.name, batch_result.classification_accuracy )
 			count += 1
+
+		outstr = "{0}\t{1:0.3f}\t{2}\t{3:0.3f}\t{4:0.3f}\t{5:0.3f}\t{6}"
+		print "Feature Weight Analysis:"
+		print "Rank\tmean\tcount\tStdDev\tMin\tMax\tName"
+		print "----\t----\t-----\t------\t---\t---\t----"
+		count = 1
+		for fw_stat in self.feature_weight_statistics:
+			print outstr.format( count, *fw_stat )
+			count += 1
+
+
 
 #============================================================================
 class ContinuousClassificationExperimentResult( ClassificationExperimentResult ):
@@ -4013,18 +4064,32 @@ initialize_module()
 if __name__ == '__main__':
 	full_ts = FeatureSet_Discrete.NewFromFitFile( '/Users/chris/projects/eckley_pychrm_confirmation/TimeCourseFacing.fit' )
 	full_ts.featurenames_list = FeatureNameMap.TranslateToNewStyle( full_ts.featurenames_list )
-	balanced_ts, trash = full_ts.Split( randomize = False, balanced_classes = True,
-	                             training_set_only = True, training_set_fraction = 1.0 )
 
-	balanced_ts.Normalize()
-	balanced_ts.Print()
-	full_ts.Normalize( balanced_ts )
-	fisher_weights = FisherFeatureWeights.NewFromFeatureSet( balanced_ts )
-	fisher_weights = fisher_weights.Threshold( 431 )
-	reduced_bal_ts = balanced_ts.FeatureReduce( fisher_weights.names )
-	reduced_full_ts = full_ts.FeatureReduce( fisher_weights.names )
-	fisher_weights.Print( output_filepath='/Users/chris/projects/eckley_pychrm_confirmation/Pychrm_balanced_classes_fisher_weights.txt' )
-	batch_result = DiscreteBatchClassificationResult.New( reduced_bal_ts, full_ts, fisher_weights, output_filepath='/Users/chris/projects/eckley_pychrm_confirmation/Pychrm_balanced_classification_results.txt' )
+	experiment = DiscreteClassificationExperimentResult()
+	experiment.test_set = full_ts
+
+	for i in range( 10 ):
+
+		training_set, test_set = full_ts.Split( balanced_classes = True )
+
+		training_set.Normalize()
+		training_set.Print()
+
+		test_set.Normalize( training_set )
+		fisher_weights = FisherFeatureWeights.NewFromFeatureSet( training_set )
+		reduced_fisher_weights = fisher_weights.Threshold( 431 )
+		reduced_training_set = training_set.FeatureReduce( reduced_fisher_weights.names )
+		reduced_test_set = test_set.FeatureReduce( reduced_fisher_weights.names )
+		batch_result = DiscreteBatchClassificationResult.New( reduced_training_set, reduced_test_set, reduced_fisher_weights, batch_number=i)
+
+		experiment.individual_results.append( batch_result )
+
+	experiment.Print( output_filepath='Pychrm_aggregated_10_splits.txt' )
+	experiment.PredictedValueAnalysis( output_filepath='Pychrm_aggregated_10_splits.txt', mode='a' )
+
+	#full_ts.Normalize()
+	#full_fw = FisherFeatureWeights.NewFromFeatureSet( full_ts )
+	#batch_result = DiscreteBatchClassificationResult.New( full_ts, full_ts, full_fw, output_filepath='Pychrm_fit_ont_fit_unbalanced.txt')
 
 
-
+	
