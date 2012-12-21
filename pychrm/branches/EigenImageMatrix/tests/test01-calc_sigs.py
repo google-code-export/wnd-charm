@@ -36,47 +36,15 @@ def roundToSigFigs(num, n):
 # -------- END preamble to get the test data --------------------
 
 test_name = "Feature calculation"
-max_diff_pass = 0.002
+max_diff_pass = 0.0015
 max_mean_pass = 0.00001
 sig_file = os.path.join (test_dir,'t1_s01_c05_ij-l_precalculated.sig')
 test_tif = os.path.join (test_dir,'t1_s01_c05_ij.tif')
 
 test_sigs = Signatures.NewFromSigFile( sig_file, image_path = test_tif )
-calc_sig_names = FeatureNameMap.TranslateToNewStyle( test_sigs.names )
-calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, calc_sig_names )
-# calc_sig_names = []
-# for i in range(20):
-# 	calc_sig_names.append ('Fractal Features (Chebyshev (Wavelet ())) [{0}]'.format (i))
-# for i in range(28):
-# 	calc_sig_names.append ('Haralick Textures (Fourier ()) [{0}]'.format (i))
-# for i in range(24):
-# 	calc_sig_names.append ('Multiscale Histograms () [{0}]'.format (i))
-# for i in range(5):
-# 	calc_sig_names.append ('Pixel Intensity Statistics (Fourier ()) [{0}]'.format (i))
-# for i in range(5):
-# 	calc_sig_names.append ('Pixel Intensity Statistics () [{0}]'.format (i))
-# for i in range(5):
-# 	calc_sig_names.append ('Pixel Intensity Statistics (Chebyshev ()) [{0}]'.format (i))
-# for i in range(5):
-# 	calc_sig_names.append ('Pixel Intensity Statistics (Wavelet ()) [{0}]'.format (i))
-# for i in range(5):
-# 	calc_sig_names.append ('Pixel Intensity Statistics (Edge ()) [{0}]'.format (i))
-# for i in range(12):
-# 	calc_sig_names.append ('Radon Coefficients (Fourier ()) [{0}]'.format (i))
-# for i in range(6):
-# 	calc_sig_names.append ('Tamura Textures (Fourier ()) [{0}]'.format (i))
-# for i in range(48):
-# 	calc_sig_names.append ('Comb Moments (Fourier ()) [{0}]'.format (i))
-# for i in range(20):
-# 	calc_sig_names.append ('Fractal Features (Fourier ()) [{0}]'.format (i))
-# for i in range(32):
-# 	calc_sig_names.append ('Chebyshev Coefficients (Fourier ()) [{0}]'.format (i))
-# 
-# calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, calc_sig_names )
-test_sigs = test_sigs.FeatureReduce( calc_sig_names )
+calc_sigs = Signatures.NewFromFeatureNameList ( test_tif, test_sigs.names )
 
-epsilon = 0.002
-sig_figs = 6
+epsilon = max_diff_pass / 10.
 max_diff = 0.
 sum_diff = 0.
 num_diffs = 0.

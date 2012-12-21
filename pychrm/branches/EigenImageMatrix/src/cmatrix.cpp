@@ -143,16 +143,6 @@ int ImageMatrix::LoadTIFF(char *filename) {
 		WriteableColorsFinish();
 		WriteablePixelsFinish();
 	} else return(0);
-// {
-// ImageMatrix *dump_IM = this;
-// unsigned long dump_npix = dump_IM->width*dump_IM->height;
-// double *dump_data = new double [dump_npix];
-// FILE *dump = fopen ("tif-out-eigen","w+");
-// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->_pix_plane.array().coeff(dump_idx);
-// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
-// fclose (dump);
-// delete [] dump_data;
-// }
 
 	return(1);
 }
@@ -975,11 +965,6 @@ void ImageMatrix::ChebyshevTransform(unsigned int N) {
 		N = MIN( width, height );
 	out=new double[height*N];
 	Chebyshev2D(this, out,N);
-// {
-// FILE *dump = fopen ("Cheb-out1-eigen","w+");
-// fwrite (out, height*N * sizeof (double), 1, dump);
-// fclose (dump);
-// }
 	width=N;
 	height = MIN( height, N );   /* prevent error */
 	allocate (width,height);
@@ -987,16 +972,6 @@ void ImageMatrix::ChebyshevTransform(unsigned int N) {
 	for(y=0;y<height;y++)
 		for(x=0;x<width;x++)
 			pix_plane (y,x) = out[y * width + x];
-// {
-// ImageMatrix *dump_IM = this;
-// unsigned long dump_npix = dump_IM->width*dump_IM->height;
-// double *dump_data = new double [dump_npix];
-// FILE *dump = fopen ("Cheb-out2-eigen","w+");
-// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->pix_plane.array().coeff(dump_idx);
-// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
-// fclose (dump);
-// delete [] dump_data;
-// }
 	delete [] out;
 	WriteablePixelsFinish();
 }
@@ -1047,18 +1022,6 @@ void ImageMatrix::ChebyshevStatistics2D(double *coeff, unsigned int N, unsigned 
 	if (N<2) N=20;
 	if (N>MIN(width,height)) N=MIN(width,height);   
 	ChebyshevTransform(N);
-// {
-// ImageMatrix *dump_IM = this;
-// unsigned long dump_npix = dump_IM->width*dump_IM->height;
-// double *dump_data = new double [dump_npix];
-// FILE *dump = fopen ("Cheb-eigen","w+");
-// for (int dump_idx = 0; dump_idx < dump_npix; dump_idx++) dump_data[dump_idx] = dump_IM->pix_plane.array().coeff(dump_idx);
-// fwrite (dump_data, dump_npix * sizeof (double), 1, dump);
-// fclose (dump);
-// delete [] dump_data;
-// }
-// exit(0);
-
 	histogram(coeff,bins_num,0);
 }
 
