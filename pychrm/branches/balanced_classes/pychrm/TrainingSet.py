@@ -2657,7 +2657,7 @@ class FeatureSet_Continuous( FeatureSet ):
 		else:
 			if training_set_fraction <= 0 or training_set_fraction >= 1:
 				raise ValueError( "Training set fraction must be a number between 0 and 1" )
-			num_images_in_training_set = round( training_set_fraction * self.num_images )
+			num_images_in_training_set = int( round( training_set_fraction * self.num_images ) )
 
 		if j:
 			if j <= 0:
@@ -4056,40 +4056,7 @@ class Dendrogram( object ):
 	native python tools."""
 	pass
 
-
 #================================================================
 
 initialize_module()
 
-if __name__ == '__main__':
-	full_ts = FeatureSet_Discrete.NewFromFitFile( '/Users/chris/projects/eckley_pychrm_confirmation/TimeCourseFacing.fit' )
-	full_ts.featurenames_list = FeatureNameMap.TranslateToNewStyle( full_ts.featurenames_list )
-
-	experiment = DiscreteClassificationExperimentResult()
-	experiment.test_set = full_ts
-
-	for i in range( 10 ):
-
-		training_set, test_set = full_ts.Split( balanced_classes = True )
-
-		training_set.Normalize()
-		training_set.Print()
-
-		test_set.Normalize( training_set )
-		fisher_weights = FisherFeatureWeights.NewFromFeatureSet( training_set )
-		reduced_fisher_weights = fisher_weights.Threshold( 431 )
-		reduced_training_set = training_set.FeatureReduce( reduced_fisher_weights.names )
-		reduced_test_set = test_set.FeatureReduce( reduced_fisher_weights.names )
-		batch_result = DiscreteBatchClassificationResult.New( reduced_training_set, reduced_test_set, reduced_fisher_weights, batch_number=i)
-
-		experiment.individual_results.append( batch_result )
-
-	experiment.Print( output_filepath='Pychrm_aggregated_10_splits.txt' )
-	experiment.PredictedValueAnalysis( output_filepath='Pychrm_aggregated_10_splits.txt', mode='a' )
-
-	#full_ts.Normalize()
-	#full_fw = FisherFeatureWeights.NewFromFeatureSet( full_ts )
-	#batch_result = DiscreteBatchClassificationResult.New( full_ts, full_ts, full_fw, output_filepath='Pychrm_fit_ont_fit_unbalanced.txt')
-
-
-	
