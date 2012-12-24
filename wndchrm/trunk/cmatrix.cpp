@@ -622,7 +622,7 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio)
    dy=1/y_ratio;
 
    if (dx==1 && dy==1) return;   /* nothing to scale */
-   
+
    for (int z=0;z<depth;z++)
    {  /* first downsample x */
       for (new_y=0;new_y<height;new_y++)
@@ -716,8 +716,22 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio)
       }
    }
 
-   width=(int)(x_ratio*width);
-   height=(int)(y_ratio*height);
+	// crop the result to the new width/height
+	unsigned int old_width = width;
+	width=(int)(x_ratio*width);
+	height=(int)(y_ratio*height);
+
+	pix_data *new_data = new pix_data[width*height];
+	if (!new_data) return; // memory allocation failed
+	unsigned long idx = 0, old_idx;
+	for (y = 0; y < height; y++) {
+		old_idx = y*old_width;
+		for (x = 0; x < width; x++) {
+			new_data[idx++] = data[old_idx++];
+		}
+	}
+	delete [] data;
+	data = new_data;	
 }
 
 
@@ -1121,22 +1135,23 @@ double ImageMatrix::fft2()
 }
 
 /* chebyshev transform */
-void ImageMatrix::ChebyshevTransform(int N)
-{  double *out;
-   int x,y,old_width;
+void ImageMatrix::ChebyshevTransform(int N) {
+	double *out;
+	int x,y;
 
-   if (N<2) N=MIN(width,height);
-   out=new double[height*N];
-   Chebyshev2D(this, out,N);
+	if (N<2) N=MIN(width,height);
+	out=new double[height*N];
+	Chebyshev2D(this, out,N);
 
-   old_width=width;  /* keep the old width to free the memory */
-   width=N;
-   height=MIN(height,N);   /* prevent error */
+	width=N;
+	height=MIN(height,N);   /* prevent error */
 
-   for(y=0;y<height;y++)
-     for(x=0;x<width;x++)
-       SetInt(x,y,0,out[y*width+x]);
-   delete out;
+	delete [] data; // free the old data
+	data = new pix_data[width*height];
+	for(y=0;y<height;y++)
+		for(x=0;x<width;x++)
+			SetInt(x,y,0,out[y*N+x]);
+	delete [] out;
 }
 
 /* chebyshev transform
