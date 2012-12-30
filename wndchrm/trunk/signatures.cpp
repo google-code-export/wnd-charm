@@ -192,7 +192,7 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    WaveletFourierSelector->Symlet5Transform();
    if (verbosity>3) printf("start computing features\n");
    count=0;      /* start counting signatures from 0 */
-   /* chebichev fourier transform (signatures 0 - 63) */
+   /* chebyshev fourier transform (signatures 0 - 63) */
    for (a=0;a<32;a++) vec[a]=0;
    if (verbosity>3) printf("...ChebyshevFourierCoefficientHistogram\n");
    matrix->ChebyshevFourierTransform2D(vec);
@@ -338,46 +338,46 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    }
 
    /* haralick textures (signatures 485 - 652) */
-   char haarlick_names[80][80]={"CoOcMat_AngularSecondMoment","ASM","CoOcMat_Contrast","Contrast","CoOcMat_Correlation","Correlation","CoOcMat_Variance","Variance","CoOcMat_InverseDifferenceMoment","IDM","CoOcMat_SumAverage" ,"SumAvg",
+   char haralick_names[80][80]={"CoOcMat_AngularSecondMoment","ASM","CoOcMat_Contrast","Contrast","CoOcMat_Correlation","Correlation","CoOcMat_Variance","Variance","CoOcMat_InverseDifferenceMoment","IDM","CoOcMat_SumAverage" ,"SumAvg",
            "CoOcMat_SumVariance","SumVar","CoOcMat_SumEntropy", "SumEntropy","CoOcMat_Entropy" ,"Entropy","CoOcMat_DifferenceEntropy","DiffEntropy","CoOcMat_DifferenceVariance","DiffVar","CoOcMat_FirstMeasureOfCorrelation","MeasCorr1",
 		   "CoOcMat_SecondMeasureOfCorrelation","MeasCorr2","CoOcMat_MaximalCorrelationCoefficient" ,"MaxCorrCoef","CoOcMat_AngularSecondMomentDif", "ASM","CoOcMat_ContrastDif" ,"Contrast","CoOcMat_CorrelationDif","Correlation","CoOcMat_VarianceDif","Variance",
 		   "CoOcMat_InverseDifferenceMomentDif","IDM","CoOcMat_SumAverageDif","SumAvg","CoOcMat_SumVarianceDif","SumVar","CoOcMat_SumEntropyDif" ,"SumEntropy","CoOcMat_EntropyDif","Entropy","CoOcMat_DifferenceEntropyDif","DiffEntropy","CoOcMat_DifferenceVarianceDif","DiffVar",
 		   "CoOcMat_FirstMeasureOfCorrelationDif","MeasCorr1","CoOcMat_SecondMeasureOfCorrelationDif","MeasCorr2","CoOcMat_MaximalCorrelationCoefficientDif","MaxCorrCoef"};
 
    if (verbosity>3) printf("...HaralickTextures\n");
-   matrix->HaarlickTexture2D(0,vec);
+   matrix->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    if (verbosity>3) printf("...HaralickTextures_Chebyshev\n");
-   ChebyshevTransform->HaarlickTexture2D(0,vec);
+   ChebyshevTransform->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_Chebyshev %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s_Chebyshev %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    if (verbosity>3) printf("...HaralickTextures_ChebyshevFFT\n");
-   ChebyshevFourierTransform->HaarlickTexture2D(0,vec);
+   ChebyshevFourierTransform->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_ChebyshevFFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s_ChebyshevFFT %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    if (verbosity>3) printf("...HaralickTextures_FFT\n");
-   FourierTransform->HaarlickTexture2D(0,vec);
+   FourierTransform->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_FFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s_FFT %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    if (verbosity>3) printf("...HaralickTextures_Wavelet\n");
-   WaveletSelector->HaarlickTexture2D(0,vec);
+   WaveletSelector->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_Wavelet %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s_Wavelet %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    if (verbosity>3) printf("...HaralickTextures_WaveletFFT\n");
-   WaveletFourierSelector->HaarlickTexture2D(0,vec);
+   WaveletFourierSelector->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_WaveletFFT %s",haarlick_names[a*2],haarlick_names[a*2+1]);
+   {  sprintf(buffer,"%s_WaveletFFT %s",haralick_names[a*2],haralick_names[a*2+1]);
       Add(buffer,vec[a]);
    }
    /* multiple histogram (signatures 653 - 796) */
@@ -734,12 +734,12 @@ void signatures::CompGroupB(ImageMatrix *matrix, const char *transform_label)
    char buffer[80];
    ImageMatrix *TempMatrix;
 
-   /* chebichev fourier transform (signatures 0 - 63) */
+   /* chebyshev fourier transform (signatures 0 - 63) */
    for (a=0;a<72;a++) vec[a]=0;
    if (IsNeeded(count,32))
      matrix->ChebyshevFourierTransform2D(vec);
    for (a=0;a<32;a++)
-   {  sprintf(buffer,"Chebishev Fourier Transform bin %d (%s)",a,transform_label);
+   {  sprintf(buffer,"Chebyshev Fourier Transform bin %d (%s)",a,transform_label);
       Add(buffer,vec[a]);
    }
 
@@ -748,7 +748,7 @@ void signatures::CompGroupB(ImageMatrix *matrix, const char *transform_label)
    if (IsNeeded(count,32))
      TempMatrix->ChebyshevStatistics2D(vec,0,32);
    for (a=0;a<32;a++)
-   {  sprintf(buffer,"Chebishev Statistics bin %d (%s)",a,transform_label);
+   {  sprintf(buffer,"Chebyshev Statistics bin %d (%s)",a,transform_label);
       Add(buffer,vec[a]);
    }
    delete TempMatrix;
@@ -784,11 +784,11 @@ void signatures::CompGroupC(ImageMatrix *matrix, const char *transform_label)
       Add(buffer,vec[a]);
    }
 
-   /* haarlick textures */
+   /* haralick textures */
    if (IsNeeded(count,28))
-     matrix->HaarlickTexture2D(0,vec);
+     matrix->HaralickTexture2D(0,vec);
    for (a=0;a<28;a++)
-   {  sprintf(buffer,"Haarlick Texture %d (%s)",a,transform_label);
+   {  sprintf(buffer,"Haralick Texture %d (%s)",a,transform_label);
       Add(buffer,vec[a]);
    }
 
@@ -1431,14 +1431,14 @@ int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_
 	if (verbosity>=2) printf ("fractal2D match\n");
 	
 	// 28 features long: 253-280, standard: 485-512
-	matrix->HaarlickTexture2D(0,vec);
+	matrix->HaralickTexture2D(0,vec);
 	if (large_set) file_index = 253;
 	else file_index = 485;
 	for (i = 0; i < 28; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-		if (verbosity>=2) printf ("HaarlickTexture2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+		if (verbosity>=2) printf ("HaralickTexture2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 		return (0);
 	}
-	if (verbosity>=2) printf ("HaarlickTexture2D match\n");
+	if (verbosity>=2) printf ("HaralickTexture2D match\n");
 	
 	// 72 features long: 133-204, standard: 881-952
 // 	long output_size;   /* output size is normally 72 */

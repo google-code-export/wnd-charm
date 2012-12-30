@@ -37,24 +37,20 @@ libimfit_a_SOURCES = \
 	statistics/FeatureStatistics.h \
 	textures/gabor.cpp \
 	textures/gabor.h \
-	textures/haarlick/CVIPtexture.cpp \
-	textures/haarlick/CVIPtexture.h \
-	textures/haarlick/haarlick.cpp \
-	textures/haarlick/haarlick.h \
-	textures/haarlick/mapkit.cpp \
-	textures/haarlick/mapkit.h \
-	textures/haarlick/mapkit_generic.cpp \
-	textures/haarlick/mapkit_generic.h \
+	textures/haralick/CVIPtexture.cpp \
+	textures/haralick/CVIPtexture.h \
+	textures/haralick/haralick.cpp \
+	textures/haralick/haralick.h \
 	textures/tamura.cpp \
 	textures/tamura.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
 	TrainingSet.cpp \
 	TrainingSet.h \
-	transforms/ChebishevFourier.cpp \
-	transforms/ChebishevFourier.h \
-	transforms/chevishev.cpp \
-	transforms/chevishev.h \
+	transforms/ChebyshevFourier.cpp \
+	transforms/ChebyshevFourier.h \
+	transforms/chebyshev.cpp \
+	transforms/chebyshev.h \
 	transforms/fft/bcb_fftw3/fftw3.h \
 	transforms/fft/fftw3.h \
 	transforms/radon.cpp \

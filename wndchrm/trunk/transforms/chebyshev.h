@@ -28,12 +28,11 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-#ifndef ChebishevFourierH
-#define ChebishevFourierH
+
+#ifndef chebishevH
+#define chebishevH
 //---------------------------------------------------------------------------
 
-#include "../cmatrix.h"
-
-void ChebyshevFourier2D(ImageMatrix *Im, long N, double *coeff_packed, int packingOrder);
+void Chebyshev2D(ImageMatrix *Im, double *out, int N);
 
 #endif

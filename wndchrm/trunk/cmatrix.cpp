@@ -38,8 +38,8 @@
 #include "cmatrix.h"
 #include "colors/FuzzyCalc.h"
 #include "transforms/fft/bcb_fftw3/fftw3.h"
-#include "transforms/chevishev.h"
-#include "transforms/ChebishevFourier.h"
+#include "transforms/chebyshev.h"
+#include "transforms/ChebyshevFourier.h"
 #include "transforms/wavelet/Symlet5.h"
 #include "transforms/wavelet/DataGrid2D.h"
 #include "transforms/wavelet/DataGrid3D.h"
@@ -48,7 +48,7 @@
 #include "statistics/FeatureStatistics.h"
 #include "textures/gabor.h"
 #include "textures/tamura.h"
-#include "textures/haarlick/haarlick.h"
+#include "textures/haralick/haralick.h"
 #include "textures/zernike/zernike.h"
 
 #include <iomanip>
@@ -1648,12 +1648,12 @@ void ImageMatrix::GaborFilters2D(double *ratios)
 }
 
 
-/* haarlick
+/* haralick
    output -array of double- a pre-allocated array of 28 doubles
 */
-void ImageMatrix::HaarlickTexture2D(double distance, double *out)
+void ImageMatrix::HaralickTexture2D(double distance, double *out)
 {  if (distance<=0) distance=1;
-   haarlick2D(this,distance,out);
+   haralick2D(this,distance,out);
 }
 
 /* MultiScaleHistogram

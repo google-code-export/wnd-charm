@@ -36,7 +36,7 @@
 #ifndef WIN32
 #include <stdio.h>
 #endif
-#include "ChebishevFourier.h"
+#include "ChebyshevFourier.h"
 
 #define min(a, b)  (((a) < (b)) ? (a) : (b))
 //---------------------------------------------------------------------------

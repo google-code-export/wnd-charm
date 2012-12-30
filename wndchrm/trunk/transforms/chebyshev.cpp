@@ -33,8 +33,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../cmatrix.h"
-#include "chevishev.h"
+#include "cmatrix.h"
+#include "chebyshev.h"
 
 //---------------------------------------------------------------------------
 
