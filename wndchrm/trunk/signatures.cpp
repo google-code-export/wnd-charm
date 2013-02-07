@@ -65,7 +65,7 @@ long signatures::max_sigs = NUM_DEF_FEATURES;
 */
 signatures::signatures() {
 	data = NULL;
-	version = CURRENT_FEATURE_VERSION;
+	version = 0;
 	feature_vec_type = fv_unknown;
 	count=0;
 	allocated = 0;
@@ -142,6 +142,28 @@ void signatures::Add(const char *name,double value) {
 	data[count].value=value;
 	count++;
 	if (count > max_sigs) max_sigs = count;
+}
+
+
+void signatures::SetFeatureVectorType () {
+	if (feature_vec_type == fv_unknown) {
+		switch (count) {
+			case NUM_LC_FEATURES:
+				feature_vec_type = fv_long_color;
+			break;
+			case NUM_L_FEATURES:
+				feature_vec_type = fv_long;
+			break;
+			case NUM_C_FEATURES:
+				feature_vec_type = fv_short_color;
+			break;
+			case NUM_DEF_FEATURES:
+				feature_vec_type = fv_short;
+			break;
+			default:
+			break;
+		}
+	}
 }
 
 /* Clear
@@ -1341,24 +1363,7 @@ void signatures::LoadFromFilep (FILE *value_file) {
 	}
 
 	// FIXME: There is opportunity here to check for inconsistent number of features if minor version is specified.
-	if (feature_vec_type == fv_unknown) {
-		switch (count) {
-			case NUM_LC_FEATURES:
-				feature_vec_type = fv_long_color;
-			break;
-			case NUM_L_FEATURES:
-				feature_vec_type = fv_long;
-			break;
-			case NUM_C_FEATURES:
-				feature_vec_type = fv_short_color;
-			break;
-			case NUM_DEF_FEATURES:
-				feature_vec_type = fv_short;
-			break;
-			default:
-			break;
-		}
-	}
+	SetFeatureVectorType();
 }
 
 

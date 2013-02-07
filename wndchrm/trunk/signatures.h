@@ -65,7 +65,7 @@ class signatures
   public:
     signature *data;
     enum feature_vec_types {
-    	fv_unknown = 0,
+    	fv_unknown = 0,  // this must evaluate to false
     	fv_short = 1,
     	fv_long = 2,
     	fv_short_color = 3,
@@ -90,6 +90,7 @@ class signatures
     signatures *duplicate();            // create an identical signature vector object */
     void Allocate(size_t nsigs);        // call before adding sigs
     void Add(const char *name, double value);
+	void SetFeatureVectorType();
     void Clear();
     void compute(ImageMatrix *matrix, int compute_colors);
     void CompGroupA(ImageMatrix *matrix, const char *transform_label);

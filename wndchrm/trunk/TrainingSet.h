@@ -67,6 +67,7 @@
 #define CONTINUOUS_DATASET_WITH_CLASSES    -7
 #define ADDING_SAMPLE_TO_UNDEFINED_CLASS   -8
 #define INCONSISTENT_FEATURE_COUNT         -9
+#define INCONSISTENT_FEATURE_VECTORS       -10
 
 typedef struct {
 	char bounding_rect_base[16];
@@ -174,6 +175,7 @@ public:
 /* properties */
 	char name[256];                       /* Name of dataset - source_path from last '/' to last '.'    */
 	char source_path[256];                       /* Path we read this set from     */
+	int feature_vec_version, feature_vec_type; // from the signatures class
    signatures **samples;                                           /* samples data                              */
    char SignatureNames[MAX_SIGNATURE_NUM][SIGNATURE_NAME_LENGTH];  /* names of the signatures (e.g. "MultiScale Histogram bin 3) */
    double SignatureWeights[MAX_SIGNATURE_NUM];                     /* weights of the samples                    */
