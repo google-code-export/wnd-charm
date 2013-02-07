@@ -1,36 +1,26 @@
 EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
 
-noinst_LIBRARIES = libimfit.a libFeatureNames.a
-
-# This is set up as a separate target because g++ barfs compiling this with optimization.
-# gcc 4.2.1 tries to allocate several gigs of RAM, and fails with an out-of-memory error
-# Apparently fixed in 4.3 or 4.4, but have not checked.
-libFeatureNames_a_SOURCES = \
-	FeatureNames.cpp \
-	FeatureNames.hpp
-
-# Our special optimization flags, which over-ride AM_CXXFLAGS.
-# Note that the user's CXXFLAGS always go at the end, which
-# get set to "-g -O2" if they are not set, which blows up.
-# I thought they were strictly for the user, so why are they set to a default?
-# configure.ac has some checks to not stomp on the user's CXXFLAGS, but also
-# not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
-# The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
-# The result is that it only blows up if the user has -O set in their CXXFLAGS.
-libFeatureNames_a_CXXFLAGS = -Wall -g -O0
+noinst_LIBRARIES = libimfit.a
 
 libimfit_a_SOURCES = \
-	gsl/specfunc.cpp \
-	gsl/specfunc.h \
-	wndchrm_error.cpp \
-	wndchrm_error.h \
 	cmatrix.cpp \
 	cmatrix.h \
-	colors/FuzzyCalc.cpp \
-	colors/FuzzyCalc.h \
+	TrainingSet.cpp \
+	TrainingSet.h \
 	signatures.cpp \
 	signatures.h \
+	FeatureNames.cpp \
+	FeatureNames.hpp \
+	OldFeatureNamesFileStr.h \
+	WORMfile.cpp \
+	WORMfile.h \
+	wndchrm_error.cpp \
+	wndchrm_error.h \
+	gsl/specfunc.cpp \
+	gsl/specfunc.h \
+	colors/FuzzyCalc.cpp \
+	colors/FuzzyCalc.h \
 	statistics/CombFirst4Moments.cpp \
 	statistics/CombFirst4Moments.h \
 	statistics/FeatureStatistics.cpp \
@@ -45,8 +35,6 @@ libimfit_a_SOURCES = \
 	textures/tamura.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
-	TrainingSet.cpp \
-	TrainingSet.h \
 	transforms/ChebyshevFourier.cpp \
 	transforms/ChebyshevFourier.h \
 	transforms/chebyshev.cpp \
@@ -79,18 +67,16 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.cpp \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
-	transforms/wavelet/wt.h \
-	WORMfile.cpp \
-	WORMfile.h
+	transforms/wavelet/wt.h
 
 AM_CPPFLAGS = -fPIC
-libimfit_a_CXXFLAGS = -Wall -g -O2 -fpermissive
+libimfit_a_CXXFLAGS = -Wall -g -Os -fpermissive
 
 bin_PROGRAMS=wndchrm util/color_deconvolution
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -lFeatureNames -limfit -lfftw3
+wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
 
 util_color_deconvolution_SOURCES = 	\
 	util/readTiffData.c \

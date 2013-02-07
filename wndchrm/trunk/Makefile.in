@@ -68,22 +68,20 @@ CONFIG_CLEAN_VPATH_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
-libFeatureNames_a_AR = $(AR) $(ARFLAGS)
-libFeatureNames_a_LIBADD =
-am_libFeatureNames_a_OBJECTS =  \
-	libFeatureNames_a-FeatureNames.$(OBJEXT)
-libFeatureNames_a_OBJECTS = $(am_libFeatureNames_a_OBJECTS)
 libimfit_a_AR = $(AR) $(ARFLAGS)
 libimfit_a_LIBADD =
-am_libimfit_a_OBJECTS = libimfit_a-specfunc.$(OBJEXT) \
-	libimfit_a-wndchrm_error.$(OBJEXT) \
-	libimfit_a-cmatrix.$(OBJEXT) libimfit_a-FuzzyCalc.$(OBJEXT) \
+am_libimfit_a_OBJECTS = libimfit_a-cmatrix.$(OBJEXT) \
+	libimfit_a-TrainingSet.$(OBJEXT) \
 	libimfit_a-signatures.$(OBJEXT) \
+	libimfit_a-FeatureNames.$(OBJEXT) \
+	libimfit_a-WORMfile.$(OBJEXT) \
+	libimfit_a-wndchrm_error.$(OBJEXT) \
+	libimfit_a-specfunc.$(OBJEXT) libimfit_a-FuzzyCalc.$(OBJEXT) \
 	libimfit_a-CombFirst4Moments.$(OBJEXT) \
 	libimfit_a-FeatureStatistics.$(OBJEXT) \
 	libimfit_a-gabor.$(OBJEXT) libimfit_a-CVIPtexture.$(OBJEXT) \
 	libimfit_a-haralick.$(OBJEXT) libimfit_a-tamura.$(OBJEXT) \
-	libimfit_a-zernike.$(OBJEXT) libimfit_a-TrainingSet.$(OBJEXT) \
+	libimfit_a-zernike.$(OBJEXT) \
 	libimfit_a-ChebyshevFourier.$(OBJEXT) \
 	libimfit_a-chebyshev.$(OBJEXT) libimfit_a-radon.$(OBJEXT) \
 	libimfit_a-Common.$(OBJEXT) libimfit_a-convolution.$(OBJEXT) \
@@ -92,8 +90,7 @@ am_libimfit_a_OBJECTS = libimfit_a-specfunc.$(OBJEXT) \
 	libimfit_a-FilterSet.$(OBJEXT) libimfit_a-Symlet5.$(OBJEXT) \
 	libimfit_a-Wavelet.$(OBJEXT) libimfit_a-WaveletHigh.$(OBJEXT) \
 	libimfit_a-WaveletLow.$(OBJEXT) \
-	libimfit_a-WaveletMedium.$(OBJEXT) libimfit_a-wt.$(OBJEXT) \
-	libimfit_a-WORMfile.$(OBJEXT)
+	libimfit_a-WaveletMedium.$(OBJEXT) libimfit_a-wt.$(OBJEXT)
 libimfit_a_OBJECTS = $(am_libimfit_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
@@ -105,7 +102,7 @@ util_color_deconvolution_DEPENDENCIES =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_wndchrm_OBJECTS = wndchrm.$(OBJEXT)
 wndchrm_OBJECTS = $(am_wndchrm_OBJECTS)
-wndchrm_DEPENDENCIES = libFeatureNames.a libimfit.a
+wndchrm_DEPENDENCIES = libimfit.a
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -119,9 +116,9 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(libFeatureNames_a_SOURCES) $(libimfit_a_SOURCES) \
-	$(util_color_deconvolution_SOURCES) $(wndchrm_SOURCES)
-DIST_SOURCES = $(libFeatureNames_a_SOURCES) $(libimfit_a_SOURCES) \
+SOURCES = $(libimfit_a_SOURCES) $(util_color_deconvolution_SOURCES) \
+	$(wndchrm_SOURCES)
+DIST_SOURCES = $(libimfit_a_SOURCES) \
 	$(util_color_deconvolution_SOURCES) $(wndchrm_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -243,36 +240,25 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
-noinst_LIBRARIES = libimfit.a libFeatureNames.a
-
-# This is set up as a separate target because g++ barfs compiling this with optimization.
-# gcc 4.2.1 tries to allocate several gigs of RAM, and fails with an out-of-memory error
-# Apparently fixed in 4.3 or 4.4, but have not checked.
-libFeatureNames_a_SOURCES = \
-	FeatureNames.cpp \
-	FeatureNames.hpp
-
-
-# Our special optimization flags, which over-ride AM_CXXFLAGS.
-# Note that the user's CXXFLAGS always go at the end, which
-# get set to "-g -O2" if they are not set, which blows up.
-# I thought they were strictly for the user, so why are they set to a default?
-# configure.ac has some checks to not stomp on the user's CXXFLAGS, but also
-# not use the defaults provided by AC_PROG_CXX (which is where -g -O2 comes from).
-# The default options -g -O2 are set in AM_CXXFLAGS, which is as it should be.
-# The result is that it only blows up if the user has -O set in their CXXFLAGS.
-libFeatureNames_a_CXXFLAGS = -Wall -g -O0
+noinst_LIBRARIES = libimfit.a
 libimfit_a_SOURCES = \
-	gsl/specfunc.cpp \
-	gsl/specfunc.h \
-	wndchrm_error.cpp \
-	wndchrm_error.h \
 	cmatrix.cpp \
 	cmatrix.h \
-	colors/FuzzyCalc.cpp \
-	colors/FuzzyCalc.h \
+	TrainingSet.cpp \
+	TrainingSet.h \
 	signatures.cpp \
 	signatures.h \
+	FeatureNames.cpp \
+	FeatureNames.hpp \
+	OldFeatureNamesFileStr.h \
+	WORMfile.cpp \
+	WORMfile.h \
+	wndchrm_error.cpp \
+	wndchrm_error.h \
+	gsl/specfunc.cpp \
+	gsl/specfunc.h \
+	colors/FuzzyCalc.cpp \
+	colors/FuzzyCalc.h \
 	statistics/CombFirst4Moments.cpp \
 	statistics/CombFirst4Moments.h \
 	statistics/FeatureStatistics.cpp \
@@ -287,8 +273,6 @@ libimfit_a_SOURCES = \
 	textures/tamura.h \
 	textures/zernike/zernike.cpp \
 	textures/zernike/zernike.h \
-	TrainingSet.cpp \
-	TrainingSet.h \
 	transforms/ChebyshevFourier.cpp \
 	transforms/ChebyshevFourier.h \
 	transforms/chebyshev.cpp \
@@ -321,14 +305,12 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/WaveletMedium.cpp \
 	transforms/wavelet/WaveletMedium.h \
 	transforms/wavelet/wt.cpp \
-	transforms/wavelet/wt.h \
-	WORMfile.cpp \
-	WORMfile.h
+	transforms/wavelet/wt.h
 
 AM_CPPFLAGS = -fPIC
-libimfit_a_CXXFLAGS = -Wall -g -O2 -fpermissive
+libimfit_a_CXXFLAGS = -Wall -g -Os -fpermissive
 wndchrm_SOURCES = wndchrm.cpp
-wndchrm_LDADD = libFeatureNames.a libimfit.a -lm -ltiff -L. -lFeatureNames -limfit -lfftw3
+wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
 util_color_deconvolution_SOURCES = \
 	util/readTiffData.c \
 	util/readTIFF.h \
@@ -392,10 +374,6 @@ distclean-hdr:
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libFeatureNames.a: $(libFeatureNames_a_OBJECTS) $(libFeatureNames_a_DEPENDENCIES) $(EXTRA_libFeatureNames_a_DEPENDENCIES) 
-	-rm -f libFeatureNames.a
-	$(libFeatureNames_a_AR) libFeatureNames.a $(libFeatureNames_a_OBJECTS) $(libFeatureNames_a_LIBADD)
-	$(RANLIB) libFeatureNames.a
 libimfit.a: $(libimfit_a_OBJECTS) $(libimfit_a_DEPENDENCIES) $(EXTRA_libimfit_a_DEPENDENCIES) 
 	-rm -f libimfit.a
 	$(libimfit_a_AR) libimfit.a $(libimfit_a_OBJECTS) $(libimfit_a_LIBADD)
@@ -457,13 +435,13 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_deconvolution.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libFeatureNames_a-FeatureNames.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-CVIPtexture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-ChebyshevFourier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-CombFirst4Moments.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-Common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-DataGrid2D.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-DataGrid3D.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-FeatureNames.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-FeatureStatistics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-Filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-FilterSet.Po@am__quote@
@@ -546,33 +524,75 @@ color_deconvolution.obj: util/color_deconvolution.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-libFeatureNames_a-FeatureNames.o: FeatureNames.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -MT libFeatureNames_a-FeatureNames.o -MD -MP -MF $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo -c -o libFeatureNames_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo $(DEPDIR)/libFeatureNames_a-FeatureNames.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.o' libtool=no @AMDEPBACKSLASH@
+libimfit_a-cmatrix.o: cmatrix.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-cmatrix.o -MD -MP -MF $(DEPDIR)/libimfit_a-cmatrix.Tpo -c -o libimfit_a-cmatrix.o `test -f 'cmatrix.cpp' || echo '$(srcdir)/'`cmatrix.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-cmatrix.Tpo $(DEPDIR)/libimfit_a-cmatrix.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cmatrix.cpp' object='libimfit_a-cmatrix.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-cmatrix.o `test -f 'cmatrix.cpp' || echo '$(srcdir)/'`cmatrix.cpp
 
-libFeatureNames_a-FeatureNames.obj: FeatureNames.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -MT libFeatureNames_a-FeatureNames.obj -MD -MP -MF $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libFeatureNames_a-FeatureNames.Tpo $(DEPDIR)/libFeatureNames_a-FeatureNames.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libFeatureNames_a-FeatureNames.obj' libtool=no @AMDEPBACKSLASH@
+libimfit_a-cmatrix.obj: cmatrix.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-cmatrix.obj -MD -MP -MF $(DEPDIR)/libimfit_a-cmatrix.Tpo -c -o libimfit_a-cmatrix.obj `if test -f 'cmatrix.cpp'; then $(CYGPATH_W) 'cmatrix.cpp'; else $(CYGPATH_W) '$(srcdir)/cmatrix.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-cmatrix.Tpo $(DEPDIR)/libimfit_a-cmatrix.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cmatrix.cpp' object='libimfit_a-cmatrix.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libFeatureNames_a_CXXFLAGS) $(CXXFLAGS) -c -o libFeatureNames_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-cmatrix.obj `if test -f 'cmatrix.cpp'; then $(CYGPATH_W) 'cmatrix.cpp'; else $(CYGPATH_W) '$(srcdir)/cmatrix.cpp'; fi`
 
-libimfit_a-specfunc.o: gsl/specfunc.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-specfunc.o -MD -MP -MF $(DEPDIR)/libimfit_a-specfunc.Tpo -c -o libimfit_a-specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-specfunc.Tpo $(DEPDIR)/libimfit_a-specfunc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='libimfit_a-specfunc.o' libtool=no @AMDEPBACKSLASH@
+libimfit_a-TrainingSet.o: TrainingSet.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-TrainingSet.o -MD -MP -MF $(DEPDIR)/libimfit_a-TrainingSet.Tpo -c -o libimfit_a-TrainingSet.o `test -f 'TrainingSet.cpp' || echo '$(srcdir)/'`TrainingSet.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-TrainingSet.Tpo $(DEPDIR)/libimfit_a-TrainingSet.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TrainingSet.cpp' object='libimfit_a-TrainingSet.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-TrainingSet.o `test -f 'TrainingSet.cpp' || echo '$(srcdir)/'`TrainingSet.cpp
 
-libimfit_a-specfunc.obj: gsl/specfunc.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-specfunc.obj -MD -MP -MF $(DEPDIR)/libimfit_a-specfunc.Tpo -c -o libimfit_a-specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-specfunc.Tpo $(DEPDIR)/libimfit_a-specfunc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='libimfit_a-specfunc.obj' libtool=no @AMDEPBACKSLASH@
+libimfit_a-TrainingSet.obj: TrainingSet.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-TrainingSet.obj -MD -MP -MF $(DEPDIR)/libimfit_a-TrainingSet.Tpo -c -o libimfit_a-TrainingSet.obj `if test -f 'TrainingSet.cpp'; then $(CYGPATH_W) 'TrainingSet.cpp'; else $(CYGPATH_W) '$(srcdir)/TrainingSet.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-TrainingSet.Tpo $(DEPDIR)/libimfit_a-TrainingSet.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TrainingSet.cpp' object='libimfit_a-TrainingSet.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-TrainingSet.obj `if test -f 'TrainingSet.cpp'; then $(CYGPATH_W) 'TrainingSet.cpp'; else $(CYGPATH_W) '$(srcdir)/TrainingSet.cpp'; fi`
+
+libimfit_a-signatures.o: signatures.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-signatures.o -MD -MP -MF $(DEPDIR)/libimfit_a-signatures.Tpo -c -o libimfit_a-signatures.o `test -f 'signatures.cpp' || echo '$(srcdir)/'`signatures.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-signatures.Tpo $(DEPDIR)/libimfit_a-signatures.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='signatures.cpp' object='libimfit_a-signatures.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-signatures.o `test -f 'signatures.cpp' || echo '$(srcdir)/'`signatures.cpp
+
+libimfit_a-signatures.obj: signatures.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-signatures.obj -MD -MP -MF $(DEPDIR)/libimfit_a-signatures.Tpo -c -o libimfit_a-signatures.obj `if test -f 'signatures.cpp'; then $(CYGPATH_W) 'signatures.cpp'; else $(CYGPATH_W) '$(srcdir)/signatures.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-signatures.Tpo $(DEPDIR)/libimfit_a-signatures.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='signatures.cpp' object='libimfit_a-signatures.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-signatures.obj `if test -f 'signatures.cpp'; then $(CYGPATH_W) 'signatures.cpp'; else $(CYGPATH_W) '$(srcdir)/signatures.cpp'; fi`
+
+libimfit_a-FeatureNames.o: FeatureNames.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-FeatureNames.o -MD -MP -MF $(DEPDIR)/libimfit_a-FeatureNames.Tpo -c -o libimfit_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-FeatureNames.Tpo $(DEPDIR)/libimfit_a-FeatureNames.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libimfit_a-FeatureNames.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-FeatureNames.o `test -f 'FeatureNames.cpp' || echo '$(srcdir)/'`FeatureNames.cpp
+
+libimfit_a-FeatureNames.obj: FeatureNames.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-FeatureNames.obj -MD -MP -MF $(DEPDIR)/libimfit_a-FeatureNames.Tpo -c -o libimfit_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-FeatureNames.Tpo $(DEPDIR)/libimfit_a-FeatureNames.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureNames.cpp' object='libimfit_a-FeatureNames.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-FeatureNames.obj `if test -f 'FeatureNames.cpp'; then $(CYGPATH_W) 'FeatureNames.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureNames.cpp'; fi`
+
+libimfit_a-WORMfile.o: WORMfile.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-WORMfile.o -MD -MP -MF $(DEPDIR)/libimfit_a-WORMfile.Tpo -c -o libimfit_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-WORMfile.Tpo $(DEPDIR)/libimfit_a-WORMfile.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='WORMfile.cpp' object='libimfit_a-WORMfile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp
+
+libimfit_a-WORMfile.obj: WORMfile.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-WORMfile.obj -MD -MP -MF $(DEPDIR)/libimfit_a-WORMfile.Tpo -c -o libimfit_a-WORMfile.obj `if test -f 'WORMfile.cpp'; then $(CYGPATH_W) 'WORMfile.cpp'; else $(CYGPATH_W) '$(srcdir)/WORMfile.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-WORMfile.Tpo $(DEPDIR)/libimfit_a-WORMfile.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='WORMfile.cpp' object='libimfit_a-WORMfile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-WORMfile.obj `if test -f 'WORMfile.cpp'; then $(CYGPATH_W) 'WORMfile.cpp'; else $(CYGPATH_W) '$(srcdir)/WORMfile.cpp'; fi`
 
 libimfit_a-wndchrm_error.o: wndchrm_error.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-wndchrm_error.o -MD -MP -MF $(DEPDIR)/libimfit_a-wndchrm_error.Tpo -c -o libimfit_a-wndchrm_error.o `test -f 'wndchrm_error.cpp' || echo '$(srcdir)/'`wndchrm_error.cpp
@@ -588,19 +608,19 @@ libimfit_a-wndchrm_error.obj: wndchrm_error.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-wndchrm_error.obj `if test -f 'wndchrm_error.cpp'; then $(CYGPATH_W) 'wndchrm_error.cpp'; else $(CYGPATH_W) '$(srcdir)/wndchrm_error.cpp'; fi`
 
-libimfit_a-cmatrix.o: cmatrix.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-cmatrix.o -MD -MP -MF $(DEPDIR)/libimfit_a-cmatrix.Tpo -c -o libimfit_a-cmatrix.o `test -f 'cmatrix.cpp' || echo '$(srcdir)/'`cmatrix.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-cmatrix.Tpo $(DEPDIR)/libimfit_a-cmatrix.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cmatrix.cpp' object='libimfit_a-cmatrix.o' libtool=no @AMDEPBACKSLASH@
+libimfit_a-specfunc.o: gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-specfunc.o -MD -MP -MF $(DEPDIR)/libimfit_a-specfunc.Tpo -c -o libimfit_a-specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-specfunc.Tpo $(DEPDIR)/libimfit_a-specfunc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='libimfit_a-specfunc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-cmatrix.o `test -f 'cmatrix.cpp' || echo '$(srcdir)/'`cmatrix.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-specfunc.o `test -f 'gsl/specfunc.cpp' || echo '$(srcdir)/'`gsl/specfunc.cpp
 
-libimfit_a-cmatrix.obj: cmatrix.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-cmatrix.obj -MD -MP -MF $(DEPDIR)/libimfit_a-cmatrix.Tpo -c -o libimfit_a-cmatrix.obj `if test -f 'cmatrix.cpp'; then $(CYGPATH_W) 'cmatrix.cpp'; else $(CYGPATH_W) '$(srcdir)/cmatrix.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-cmatrix.Tpo $(DEPDIR)/libimfit_a-cmatrix.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cmatrix.cpp' object='libimfit_a-cmatrix.obj' libtool=no @AMDEPBACKSLASH@
+libimfit_a-specfunc.obj: gsl/specfunc.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-specfunc.obj -MD -MP -MF $(DEPDIR)/libimfit_a-specfunc.Tpo -c -o libimfit_a-specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-specfunc.Tpo $(DEPDIR)/libimfit_a-specfunc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gsl/specfunc.cpp' object='libimfit_a-specfunc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-cmatrix.obj `if test -f 'cmatrix.cpp'; then $(CYGPATH_W) 'cmatrix.cpp'; else $(CYGPATH_W) '$(srcdir)/cmatrix.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-specfunc.obj `if test -f 'gsl/specfunc.cpp'; then $(CYGPATH_W) 'gsl/specfunc.cpp'; else $(CYGPATH_W) '$(srcdir)/gsl/specfunc.cpp'; fi`
 
 libimfit_a-FuzzyCalc.o: colors/FuzzyCalc.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-FuzzyCalc.o -MD -MP -MF $(DEPDIR)/libimfit_a-FuzzyCalc.Tpo -c -o libimfit_a-FuzzyCalc.o `test -f 'colors/FuzzyCalc.cpp' || echo '$(srcdir)/'`colors/FuzzyCalc.cpp
@@ -615,20 +635,6 @@ libimfit_a-FuzzyCalc.obj: colors/FuzzyCalc.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='colors/FuzzyCalc.cpp' object='libimfit_a-FuzzyCalc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-FuzzyCalc.obj `if test -f 'colors/FuzzyCalc.cpp'; then $(CYGPATH_W) 'colors/FuzzyCalc.cpp'; else $(CYGPATH_W) '$(srcdir)/colors/FuzzyCalc.cpp'; fi`
-
-libimfit_a-signatures.o: signatures.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-signatures.o -MD -MP -MF $(DEPDIR)/libimfit_a-signatures.Tpo -c -o libimfit_a-signatures.o `test -f 'signatures.cpp' || echo '$(srcdir)/'`signatures.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-signatures.Tpo $(DEPDIR)/libimfit_a-signatures.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='signatures.cpp' object='libimfit_a-signatures.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-signatures.o `test -f 'signatures.cpp' || echo '$(srcdir)/'`signatures.cpp
-
-libimfit_a-signatures.obj: signatures.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-signatures.obj -MD -MP -MF $(DEPDIR)/libimfit_a-signatures.Tpo -c -o libimfit_a-signatures.obj `if test -f 'signatures.cpp'; then $(CYGPATH_W) 'signatures.cpp'; else $(CYGPATH_W) '$(srcdir)/signatures.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-signatures.Tpo $(DEPDIR)/libimfit_a-signatures.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='signatures.cpp' object='libimfit_a-signatures.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-signatures.obj `if test -f 'signatures.cpp'; then $(CYGPATH_W) 'signatures.cpp'; else $(CYGPATH_W) '$(srcdir)/signatures.cpp'; fi`
 
 libimfit_a-CombFirst4Moments.o: statistics/CombFirst4Moments.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-CombFirst4Moments.o -MD -MP -MF $(DEPDIR)/libimfit_a-CombFirst4Moments.Tpo -c -o libimfit_a-CombFirst4Moments.o `test -f 'statistics/CombFirst4Moments.cpp' || echo '$(srcdir)/'`statistics/CombFirst4Moments.cpp
@@ -727,20 +733,6 @@ libimfit_a-zernike.obj: textures/zernike/zernike.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='textures/zernike/zernike.cpp' object='libimfit_a-zernike.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-zernike.obj `if test -f 'textures/zernike/zernike.cpp'; then $(CYGPATH_W) 'textures/zernike/zernike.cpp'; else $(CYGPATH_W) '$(srcdir)/textures/zernike/zernike.cpp'; fi`
-
-libimfit_a-TrainingSet.o: TrainingSet.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-TrainingSet.o -MD -MP -MF $(DEPDIR)/libimfit_a-TrainingSet.Tpo -c -o libimfit_a-TrainingSet.o `test -f 'TrainingSet.cpp' || echo '$(srcdir)/'`TrainingSet.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-TrainingSet.Tpo $(DEPDIR)/libimfit_a-TrainingSet.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TrainingSet.cpp' object='libimfit_a-TrainingSet.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-TrainingSet.o `test -f 'TrainingSet.cpp' || echo '$(srcdir)/'`TrainingSet.cpp
-
-libimfit_a-TrainingSet.obj: TrainingSet.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-TrainingSet.obj -MD -MP -MF $(DEPDIR)/libimfit_a-TrainingSet.Tpo -c -o libimfit_a-TrainingSet.obj `if test -f 'TrainingSet.cpp'; then $(CYGPATH_W) 'TrainingSet.cpp'; else $(CYGPATH_W) '$(srcdir)/TrainingSet.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-TrainingSet.Tpo $(DEPDIR)/libimfit_a-TrainingSet.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TrainingSet.cpp' object='libimfit_a-TrainingSet.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-TrainingSet.obj `if test -f 'TrainingSet.cpp'; then $(CYGPATH_W) 'TrainingSet.cpp'; else $(CYGPATH_W) '$(srcdir)/TrainingSet.cpp'; fi`
 
 libimfit_a-ChebyshevFourier.o: transforms/ChebyshevFourier.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-ChebyshevFourier.o -MD -MP -MF $(DEPDIR)/libimfit_a-ChebyshevFourier.Tpo -c -o libimfit_a-ChebyshevFourier.o `test -f 'transforms/ChebyshevFourier.cpp' || echo '$(srcdir)/'`transforms/ChebyshevFourier.cpp
@@ -951,20 +943,6 @@ libimfit_a-wt.obj: transforms/wavelet/wt.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='transforms/wavelet/wt.cpp' object='libimfit_a-wt.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-wt.obj `if test -f 'transforms/wavelet/wt.cpp'; then $(CYGPATH_W) 'transforms/wavelet/wt.cpp'; else $(CYGPATH_W) '$(srcdir)/transforms/wavelet/wt.cpp'; fi`
-
-libimfit_a-WORMfile.o: WORMfile.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-WORMfile.o -MD -MP -MF $(DEPDIR)/libimfit_a-WORMfile.Tpo -c -o libimfit_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-WORMfile.Tpo $(DEPDIR)/libimfit_a-WORMfile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='WORMfile.cpp' object='libimfit_a-WORMfile.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp
-
-libimfit_a-WORMfile.obj: WORMfile.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-WORMfile.obj -MD -MP -MF $(DEPDIR)/libimfit_a-WORMfile.Tpo -c -o libimfit_a-WORMfile.obj `if test -f 'WORMfile.cpp'; then $(CYGPATH_W) 'WORMfile.cpp'; else $(CYGPATH_W) '$(srcdir)/WORMfile.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-WORMfile.Tpo $(DEPDIR)/libimfit_a-WORMfile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='WORMfile.cpp' object='libimfit_a-WORMfile.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-WORMfile.obj `if test -f 'WORMfile.cpp'; then $(CYGPATH_W) 'WORMfile.cpp'; else $(CYGPATH_W) '$(srcdir)/WORMfile.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
