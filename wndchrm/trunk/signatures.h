@@ -48,6 +48,7 @@
 #define NUM_L_FEATURES   2873
 #define NUM_C_FEATURES   2160
 #define NUM_DEF_FEATURES 1025
+#define CURRENT_FEATURE_VERSION 2
 
 #define NO_SIGS_IN_FILE -2
 
@@ -63,6 +64,16 @@ class signatures
     int IsNeeded(long start_index, long group_length);  /* check if the group of signatures is needed */
   public:
     signature *data;
+    enum feature_vec_types {
+    	fv_unknown = 0,
+    	fv_short = 1,
+    	fv_long = 2,
+    	fv_short_color = 3,
+    	fv_long_color = 4
+    };
+    int feature_vec_type;              // stores the integer value of the feature_vec_types enum.
+    int version;                       // The major version of the sig file (1 for wndchrm versions prior to 1.33 , 2 for wndchrm versions > 1.33).
+                                       // The full version designation is version.feature_vec_type
     unsigned short sample_class;        /* the class of the sample             */
     double sample_value;                /* a continous value (if TrainingSet->is_continuous is true, sample_value = 1 for known samples, and 0 for unknown samples */      
 	double interpolated_value;          /* a predicted continous value if class_num==1, or an interploated class value if class labels are all numerical */

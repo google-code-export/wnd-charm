@@ -65,6 +65,8 @@ long signatures::max_sigs = NUM_DEF_FEATURES;
 */
 signatures::signatures() {
 	data = NULL;
+	version = CURRENT_FEATURE_VERSION;
+	feature_vec_type = fv_unknown;
 	count=0;
 	allocated = 0;
 	sample_class=0;
@@ -98,6 +100,8 @@ signatures *signatures::duplicate() {
 	new_samp->Allocate (count);
 	memcpy (new_samp->data, data, sizeof (signature) * count );
 	wf = NULL;
+	new_samp->version = version;
+	new_samp->feature_vec_type = feature_vec_type;
 	return(new_samp);
 }
 
@@ -148,6 +152,7 @@ void signatures::Clear() {
 	data = NULL;
 	allocated = 0;
 	count = 0;
+	feature_vec_type = fv_unknown;
 }
 
 int signatures::IsNeeded(long start_index, long group_length)
@@ -173,6 +178,9 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
    double mean, median, std, min, max, histogram[10];
    ImageMatrix *TempMatrix;
    ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*WaveletFourierSelector;
+
+	version = CURRENT_FEATURE_VERSION;
+
    if (verbosity>=2) printf("start processing image...\n");   
    if (verbosity>3) printf("transforms...\n");
    if (verbosity>3) printf("...fft2\n");
@@ -527,6 +535,9 @@ void signatures::compute(ImageMatrix *matrix, int compute_colors)
 	if (compute_colors) {
 		if (verbosity>3) printf("...ColorFeatures\n");
 		CompGroupD(matrix,"");
+		feature_vec_type = fv_short_color;
+	} else {
+		feature_vec_type = fv_short;
 	}
 
    delete FourierTransform;
@@ -924,6 +935,9 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   ImageMatrix *FourierTransform,*ChebyshevTransform,*ChebyshevFourierTransform,*WaveletSelector,*FourierWaveletSelector;
   ImageMatrix *FourierChebyshev,*WaveletFourier,*ChebyshevWavelet, *EdgeTransform, *EdgeFourier, *EdgeWavelet;
 
+	// Set the feature version
+	version = CURRENT_FEATURE_VERSION;
+
   count=0;      /* start counting signatures from 0 */
 
 
@@ -1116,7 +1130,12 @@ void signatures::ComputeGroups(ImageMatrix *matrix, int compute_colors)
   CompGroupA(matrix,"");
   CompGroupB(matrix,"");
   CompGroupC(matrix,"");
-  if (compute_colors) CompGroupD(matrix,"");
+	if (compute_colors) {
+		CompGroupD(matrix,"");
+		feature_vec_type = fv_long_color;
+	} else {
+		feature_vec_type = fv_long;
+	}
 
   CompGroupB(FourierTransform,"Fourier");
   CompGroupC(FourierTransform,"Fourier");
@@ -1248,9 +1267,9 @@ int signatures::SaveToFile (int save_feature_names) {
 	FILE *wf_fp = wf->fp();
 
 	if ( NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous ) {
-		fprintf(wf_fp,"%f\n",sample_value);  /* save the continouos value */
+		fprintf(wf_fp,"%f\t%d.%d\n",sample_value,version,feature_vec_type);  /* save the continouos value */
 	} else {
-		fprintf(wf_fp,"%d\n",sample_class);  /* save the class index */
+		fprintf(wf_fp,"%d\t%d.%d\n",sample_class,version,feature_vec_type);  /* save the class index */
 	}
 	fprintf(wf_fp,"%s\n",full_path);
 	for (sig_index=0; sig_index < count; sig_index++) {
@@ -1283,14 +1302,24 @@ int signatures::LoadFromFile(char *filename) {
 
 void signatures::LoadFromFilep (FILE *value_file) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer;
+	int version_maj = 0, version_min = 0;
 
-	/* read the class or value */
-	fgets(buffer,sizeof(buffer),value_file);   
+	/* read the class or value and version */
+	fgets(buffer,sizeof(buffer),value_file);
 	if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
-		sample_value=atof(buffer);   /* continouos value */
+		sscanf (buffer, "%lf%*[\t ]%d.%d", &sample_value, &version_maj, &version_min);
 		sample_class = 1;
-	} else sample_class=atoi(buffer);                /* class index      */
-	
+	} else {
+		sscanf (buffer, "%hu%*[\t ]%d.%d", &sample_class, &version_maj, &version_min);
+	}
+	// If we did not read a version, then it is 1.0
+	if (version_maj == 0) {
+		version = 1;
+		feature_vec_type = fv_unknown;
+	} else {
+		version = version_maj;
+		feature_vec_type = version_min;
+	}
 	/* read the path */
 	fgets(buffer,sizeof(buffer),value_file);
 	chomp (buffer);
@@ -1309,6 +1338,26 @@ void signatures::LoadFromFilep (FILE *value_file) {
 		Add(p_name,atof(buffer));
 		p_buffer=fgets(buffer,sizeof(buffer),value_file);
 		chomp (p_buffer);
+	}
+
+	// FIXME: There is opportunity here to check for inconsistent number of features if minor version is specified.
+	if (feature_vec_type == fv_unknown) {
+		switch (count) {
+			case NUM_LC_FEATURES:
+				feature_vec_type = fv_long_color;
+			break;
+			case NUM_L_FEATURES:
+				feature_vec_type = fv_long;
+			break;
+			case NUM_C_FEATURES:
+				feature_vec_type = fv_short_color;
+			break;
+			case NUM_DEF_FEATURES:
+				feature_vec_type = fv_short;
+			break;
+			default:
+			break;
+		}
 	}
 }
 
