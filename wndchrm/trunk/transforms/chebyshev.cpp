@@ -118,7 +118,8 @@ height - height of the image
 void Chebyshev2D(ImageMatrix *Im, double *out, unsigned int N) {
 	double *TjIn,*Tj;
 	double *in;
-	unsigned int a,i,j;
+	int a,i,j;
+	unsigned int jN;
 
 // Make a default value for coeficient order if it was not given as an input
 //   if (N< = 0)
@@ -140,9 +141,9 @@ void Chebyshev2D(ImageMatrix *Im, double *out, unsigned int N) {
 	getChCoeff(in,out,Tj,N,Im->width,Im->height);
 
 	/* transpose the matrix "out" into "in" */
-	for (j = 0; j < N; j++)
+	for (jN = 0; jN < N; jN++)
 		for (i = 0; i < Im->height/*Im->width*/; i++)
-			in[j*Im->height+i] = out[i*N+j];
+			in[jN*Im->height+i] = out[i*N+jN];
 
 // If the height is different, re-compute Tj
 	if (Im->height != Im->width) {

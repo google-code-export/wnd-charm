@@ -1,8 +1,6 @@
 
-#pragma hdrstop
-
 #include <math.h>
-#include "../cmatrix.h"
+#include "cmatrix.h"
 #include "gabor.h"
 
 
@@ -256,5 +254,3 @@ void GaborTextureFilters2D(ImageMatrix *Im, double *ratios)
       delete [] e2;
    }
 }
-
-#pragma package(smart_init)

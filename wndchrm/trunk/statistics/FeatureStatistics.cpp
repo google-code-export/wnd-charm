@@ -30,8 +30,6 @@
 
 
 
-#pragma hdrstop
-
 #ifndef WIN32
 #include <string.h>
 #endif
@@ -281,4 +279,3 @@ int EulerNumber(ImageMatrix *Im, int FeatureNumber)
    return(FeatureNumber-HolesNumber-1);
 }
 
-#pragma package(smart_init)

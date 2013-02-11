@@ -186,7 +186,7 @@ void reduction (double **a, int n)
     {
       for (i = m + 1; i <= n; i++)
       {
-	if (y = a[i][m - 1])
+	if ( (y = a[i][m - 1]) )
 	{
 	  y /= x;
 	  a[i][m - 1] = y;
@@ -306,14 +306,14 @@ int hessenberg (double **a, int n, double wr[], double wi[])
 	      r = 0.0;
 	      if (k != (nn - 1))
 		r = a[k + 2][k - 1];
-	      if (x = fabs (p) + fabs (q) + fabs (r))
+	      if ( (x = fabs (p) + fabs (q) + fabs (r)) )
 	      {
 		p /= x;
 		q /= x;
 		r /= x;
 	      }
 	    }
-	    if (s = SIGN (sqrt (p * p + q * q + r * r), p)) 
+	    if ( (s = SIGN (sqrt (p * p + q * q + r * r), p)) ) 
 	    {
 	      if (k == m)
 	      {
@@ -370,7 +370,7 @@ TEXTURE * Extract_Texture_Features(int distance, int angle,
 	int tone_LUT[PGM_MAXMAXVAL+1]; /* LUT mapping gray tone(0-255) to matrix indicies */
 	int tone_count=0; /* number of tones actually in the img. atleast 1 less than 255 */
 	int itone;
-	int row, col, i;
+	int row, col;
 	double **P_matrix;
 	double sum_entropy;
 	TEXTURE *Texture;

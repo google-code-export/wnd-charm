@@ -1,7 +1,5 @@
 //---------------------------------------------------------------------------
 
-#pragma hdrstop
-
 #include <math.h>
 #include "../statistics/CombFirst4Moments.h"
 #include "tamura.h"
@@ -269,5 +267,3 @@ void Tamura3Sigs2D(ImageMatrix *Im, double *vec)
 }
 
 //---------------------------------------------------------------------------
-
-#pragma package(smart_init)

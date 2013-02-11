@@ -252,6 +252,7 @@ delete tempGrid4;
 delete approx;
 delete detail;
 return;
+*/
 /* added here (end) **********************************************************************/
 
 
@@ -714,7 +715,6 @@ void Wavelet::transform3D(DataGrid * data) {
 	int oldx = indexx;
 	int oldy = indexy;
 	int oldz = indexz;
-	int count = 0;
 
 	// we need some fancy footwork here to store
 	// the data properly in a recursive manner and

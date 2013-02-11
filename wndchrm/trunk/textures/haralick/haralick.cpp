@@ -1,7 +1,5 @@
 //---------------------------------------------------------------------------
 
-#pragma hdrstop
-
 #ifndef WIN32
 #include <stdlib.h>
 #endif
@@ -142,5 +140,3 @@ void haralick2D(ImageMatrix *Im, double distance, double *out)
    out[27]=temp[17];
 }
 
-
-#pragma package(smart_init)
