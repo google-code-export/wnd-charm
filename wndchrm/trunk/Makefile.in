@@ -308,7 +308,7 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/wt.h
 
 AM_CPPFLAGS = -fPIC
-libimfit_a_CXXFLAGS = -Wall -g -Os -fpermissive
+libimfit_a_CXXFLAGS = -Wall -g -Os
 wndchrm_SOURCES = wndchrm.cpp
 wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
 util_color_deconvolution_SOURCES = \
