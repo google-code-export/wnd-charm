@@ -33,7 +33,6 @@
 //---------------------------------------------------------------------------
 
 #include <stdio.h>
-#include <float.h>
 
 #include "cmatrix.h"
 #include "WORMfile.h"

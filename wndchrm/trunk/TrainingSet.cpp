@@ -89,7 +89,7 @@ int comp_strings(const void *s1, const void *s2)
 
 
 // Usable AlmostEqual function
-
+/*
 bool AlmostEqual(float A, float B, int maxUlps)
 {
 	assert(sizeof(float) == sizeof(int));
@@ -111,6 +111,7 @@ bool AlmostEqual(float A, float B, int maxUlps)
 			return true;
 	return false;
 }
+*/
 
 /* check if the file format is supported */
 int IsSupportedFormat(char *filename) {

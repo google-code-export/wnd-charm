@@ -28,6 +28,10 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
+#include "signatures.h"
+
+#include <cmath>
+#include <cfloat> // Has definition of DBL_EPSILON, FLT_EPSILON
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -35,12 +39,9 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h> // apparently, for close() only?
-#include <math.h>
-#include <cfloat> // Has definition of DBL_EPSILON, FLT_EPSILON
 #define OUR_EPSILON FLT_EPSILON*6
 #define FLOAT_EQ(x,v) (((v - FLT_EPSILON) < x) && (x <( v + FLT_EPSILON)))
 #define OUR_EQ(x,v) (((v - OUR_EPSILON) < x) && (x <( v + OUR_EPSILON)))
-#include "signatures.h"
 #include "cmatrix.h"
 #include "TrainingSet.h"
 #include "colors/FuzzyCalc.h"
@@ -1214,7 +1215,7 @@ void signatures::normalize(void *TrainSet)
 		sig_min = ts->SignatureMins[ sig_index ];
 		sig_max = ts->SignatureMaxes[ sig_index ];
 
-		if (std::isnan (sig_val) || sig_val < sig_min || (sig_max - sig_min) < DBL_EPSILON) sig_val = 0; 
+		if (std::isnan(sig_val) || sig_val < sig_min || (sig_max - sig_min) < DBL_EPSILON) sig_val = 0; 
 		else if( sig_val > sig_max )
 			sig_val = 100;
 		else
@@ -1426,6 +1427,7 @@ char *signatures::GetFileName (char *buffer) {
 // http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
 // returns the ulps (floating point representations) b/w the two inputs
 // uses a union for punning to avoid strict aliasing rules
+/*
 int diffUlps(float A, float B)
 {
 	union fi_union {
@@ -1447,7 +1449,7 @@ int diffUlps(float A, float B)
     int intDiff = abs(aInt - bInt);
     return (intDiff);
 }
-
+*/
 
 /*
   This function is used to determine (somewhat quickly) if the features stored in a file match those
