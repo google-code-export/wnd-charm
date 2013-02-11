@@ -45,11 +45,6 @@
 //#include <limits>
 
 
-#include "TrainingSet.h"
-
-#include "gsl/specfunc.h"
-//#include "cmatrix.h"
-
 #ifndef WIN32
 #include <stdlib.h>
 #else
@@ -65,6 +60,11 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <unistd.h> // unlink
+#include <math.h>
+
+#include "TrainingSet.h"
+
+#include "gsl/specfunc.h"
 
 #define FLOAT_EQ(x,v,y) (((v - FLT_EPSILON * y) < x) && (x < ( v + FLT_EPSILON * y)))
 
@@ -2002,72 +2002,42 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
    normalize the signature in the training set to the interval [0,100]
 */
 
-void TrainingSet::normalize()
-{  
-  int sig_index, samp_index;
-  double *sig_data;
+void TrainingSet::normalize() {  
+	int sig_index, samp_index;
 
-  sig_data = new double[ count ];
+	double sig_val, sig_min, sig_max;
 
-  for( sig_index = 0; sig_index < signature_count; sig_index++ )
-  {  
-		double min_value = INF, max_value = -INF;
+	for( sig_index = 0; sig_index < signature_count; sig_index++ ) {  
     // Get the values for this particular feature across entire training set
-    for( samp_index = 0; samp_index < count; samp_index++ ) 
-		{
-      sig_data[ samp_index ] = samples[ samp_index ]->data[ sig_index ].value;
-			if( sig_data[ samp_index ] > max_value )
-			{
-				if( sig_data[ samp_index ] != INF )
-					max_value = sig_data[ samp_index ];
-			}
-			else if( sig_data[ samp_index ] < min_value )
-			{
-				min_value = sig_data[ samp_index ];
+    	sig_min = MAX_SIG_VAL;
+    	sig_max = MIN_SIG_VAL;
+		for( samp_index = 0; samp_index < count; samp_index++ ) {
+			sig_val = samples[ samp_index ]->data[ sig_index ].value;
+			// ignore out of bounds sig values for determining minimum and maximum: They will be clipped later
+			if (std::isnan (sig_val) || sig_val > MAX_SIG_VAL || sig_val < MIN_SIG_VAL) continue;
+
+			if( sig_val > sig_max ) {
+				sig_max = sig_val;
+			} else if ( sig_val < sig_min ) {
+				sig_min = sig_val;
 			}
 		}
 
-    /* these values of min and max can be used for normalizing a test vector */
-    SignatureMaxes[ sig_index ] = max_value;
-    SignatureMins[ sig_index ] = min_value;
+		/* these values of min and max can be used for normalizing a test vector */
+		SignatureMaxes[ sig_index ] = sig_max;
+		SignatureMins[ sig_index ] = sig_min;
+		
+		for( samp_index = 0; samp_index < count; samp_index++ ) {
+			sig_val = samples[ samp_index ]->data[ sig_index ].value;
 
-    for( samp_index = 0; samp_index < count; samp_index++ )
-    { 
-      if( samples[ samp_index ]->data[ sig_index ].value >= INF )
-        samples[ samp_index ]->data[ sig_index ].value = 0;
-      else if( samples[ samp_index ]->data[ sig_index ].value < min_value )
-        samples[ samp_index ]->data[ sig_index ].value = 0;
-      else if( samples[ samp_index ]->data[ sig_index ].value > max_value )
-        samples[ samp_index ]->data[ sig_index ].value = 100;
-      else if( min_value >= max_value )
-        samples[ samp_index ]->data[ sig_index ].value = 0; /* prevent possible division by zero */
-      else
-        samples[ samp_index ]->data[ sig_index ].value = 
-          100 * ( samples[ samp_index ]->data[ sig_index ].value - min_value ) / ( max_value-min_value );
-    }
-    //      if (class_num<=1)  /* normalize by the values */
-    //      {  double mean_ground=0,stddev_ground=0,mean=0,stddev=0;
-    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the interpolated values */
-    //           mean_ground+=(samples[samp_index]->interpolated_value/((double)count));
-    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the interpolated values */
-    //           stddev_ground+=pow(samples[samp_index]->interpolated_value-mean_ground,2);
-    //         stddev_ground=sqrt(stddev_ground/count);
-
-    //         for (samp_index=0;samp_index<count;samp_index++) 
-    //            if (samples[samp_index]->data[sig_index].value>=INF) samples[samp_index]->data[sig_index].value=0;		 
-
-    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the mean of the original signature values */
-    //           mean+=(samples[samp_index]->data[sig_index].value/((double)count));
-    //         for (samp_index=0;samp_index<count;samp_index++)  /* compute the stddev of the original signature values */
-    //           stddev+=pow(samples[samp_index]->data[sig_index].value-mean,2);
-    //         stddev=sqrt(stddev/count);		   
-    //         for (samp_index=0;samp_index<count;samp_index++)
-    //         {  samples[samp_index]->data[sig_index].value-=(mean-mean_ground);
-    //			if (stddev>0) samples[samp_index]->data[sig_index].value=mean_ground+(samples[samp_index]->data[sig_index].value-mean_ground)*(stddev_ground/stddev);	  
-    //         }		 
-    //      }
-  }
-  delete sig_data;
+			if (std::isnan (sig_val) || sig_val < sig_min || (sig_max - sig_min) < DBL_EPSILON) sig_val = 0; 
+			else if( sig_val > sig_max )
+				sig_val = 100;
+			else
+				sig_val = 100 * ( (sig_val - sig_min) / (sig_max - sig_min) );
+			samples[ samp_index ]->data[ sig_index ].value = sig_val;
+		}
+	}
 }
 
 

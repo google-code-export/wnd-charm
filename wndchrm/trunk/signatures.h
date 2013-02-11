@@ -33,6 +33,7 @@
 //---------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <float.h>
 
 #include "cmatrix.h"
 #include "WORMfile.h"
@@ -51,6 +52,9 @@
 #define CURRENT_FEATURE_VERSION 2
 
 #define NO_SIGS_IN_FILE -2
+
+#define MIN_SIG_VAL -FLT_MAX
+#define MAX_SIG_VAL FLT_MAX
 
 struct signature
 {

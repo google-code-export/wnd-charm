@@ -28,10 +28,6 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-#ifdef WIN32
-#pragma hdrstop
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -126,9 +122,6 @@ void signatures::Allocate(size_t nsigs) {
 void signatures::Add(const char *name,double value) {
 	if (name && NamesTrainingSet) strcpy(((TrainingSet *)(NamesTrainingSet))->SignatureNames[count],name);
 	
-	if (value>INF) value=INF;        /* prevent error */
-	if (value<-INF) value=-INF;      /* prevent error */
-	if (value<1/INF && value>-1/INF) value=0;  /* prevent a numerical error */
 	
 	if (count == 0 && allocated == 0) {
 		Allocate (max_sigs);
@@ -1215,18 +1208,19 @@ void signatures::normalize(void *TrainSet)
 	int sig_index;
 	TrainingSet *ts;
 	ts=(TrainingSet *)TrainSet;
-	for( sig_index = 0; sig_index < count; sig_index++ )
-	{
-		if( data[ sig_index ].value >= INF )
-			data[sig_index].value=0;
-		else if( data[ sig_index ].value < ts->SignatureMins[ sig_index ] )
-			data[ sig_index ].value = ts->SignatureMins[ sig_index ];
-		else if( data[ sig_index ].value > ts->SignatureMaxes[ sig_index ] )
-			data[ sig_index ].value = ts->SignatureMaxes[ sig_index ];
-		if( ts->SignatureMins[ sig_index ] >= ts->SignatureMaxes[ sig_index ] )
-			data[ sig_index ].value = 0; /* prevent possible division by zero */
+	double sig_val, sig_min, sig_max;
+	for( sig_index = 0; sig_index < count; sig_index++ ) {
+		sig_val = data[ sig_index ].value;
+		sig_min = ts->SignatureMins[ sig_index ];
+		sig_max = ts->SignatureMaxes[ sig_index ];
+
+		if (std::isnan (sig_val) || sig_val < sig_min || (sig_max - sig_min) < DBL_EPSILON) sig_val = 0; 
+		else if( sig_val > sig_max )
+			sig_val = 100;
 		else
-			data[ sig_index ].value=100*(data[sig_index].value-ts->SignatureMins[sig_index])/(ts->SignatureMaxes[sig_index]-ts->SignatureMins[sig_index]);
+			sig_val = 100 * ( (sig_val - sig_min) / (sig_max - sig_min) );
+
+		data[ sig_index ].value = sig_val;
 	}
 }
 
@@ -1509,8 +1503,4 @@ int signatures::CompareToFile (ImageMatrix *matrix, char *filename, int compute_
 	return (1);
 }
 
-
-#ifdef WIN32
-#pragma package(smart_init)
-#endif
 
