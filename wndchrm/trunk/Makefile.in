@@ -204,7 +204,7 @@ ac_ct_CXX = @ac_ct_CXX@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
-am__tar = @am__tar@
+am__tar = COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 ${AMTAR} cof - "$$tardir"
 am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
