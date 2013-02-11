@@ -289,8 +289,8 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	}
 
 // Check that the train and test sets have the same feature versions
-	if (testset && (testset->feature_vec_version != ts->feature_vec_version) ||
-		(testset->feature_vec_type != ts->feature_vec_type) ) {
+	if (testset && (testset->feature_vec_version != ts->feature_vec_version ||
+		testset->feature_vec_type != ts->feature_vec_type) ) {
 			catError ("ERROR: The feature versions in the train set '%s' (%d.%d) is inconsistent with test set '%s' (%d.%d).\n",
 				ts->source_path, ts->feature_vec_version, ts->feature_vec_type,
 				testset->source_path, testset->feature_vec_version, testset->feature_vec_type
