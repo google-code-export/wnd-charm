@@ -82,7 +82,7 @@ size_t found;
 
 
 // Append any system error string
-	if (errno != 0) {
+	if (errno != 0 && error_messages.str().size()) {
 		found = error_messages.str().find_last_not_of("\n\r");
 		if (found != std::string::npos) {
 			error_messages.seekp(found+1);
