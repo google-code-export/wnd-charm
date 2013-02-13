@@ -31,6 +31,7 @@
 #include <math.h>
 #include <cfloat> // DBL_MAX
 #include "CombFirst4Moments.h"
+#include "Moments.h"
 
 #define N_COMB_SAMPLES 20
 
@@ -43,39 +44,6 @@
 
 //---------------------------------------------------------------------------
 
-void get4scalMoments(double *data, unsigned long lngth, double *z) {
-	unsigned long idx;
-	double n = 0.0, n1;
-	double mean = 0.0, M2 = 0.0, M3 = 0.0, M4 = 0.0;
-	double x, delta, delta_n, delta_n2, term1;
-
-	for (idx = 0; idx < lngth; idx++) {
-		x = data[idx];
-		n1 = n;
-		n = n + 1;
-		delta = x - mean;
-		delta_n = delta / n;
-		delta_n2 = delta_n * delta_n;
-		term1 = delta * delta_n * n1;
-		mean = mean + delta_n;
-		M4 = M4 + term1 * delta_n2 * (n*n - 3*n + 3) + 6 * delta_n2 * M2 - 4 * delta_n * M3;
-		M3 = M3 + term1 * delta_n * (n - 2) - 3 * delta_n * M2;
-		M2 = M2 + term1;
-	}
- 
- 	z[0] = mean;
-    z[1] = (lngth > 2 ? sqrt ( M2/(lngth - 1) ) : 0.0);
-	if (z[1] != 0) {
-		z[2] = (lngth > 3 ? (sqrt (n) * M3) / pow (M2, 1.5) : 0.0);
-	//	z[3] = (lngth > 4 ? (n*M4) / (M2*M2) - 3 : 0.0);
-		z[3] = (lngth > 4 ? (n*M4) / (M2*M2) : 0.0) ; // matlab does not subtract 3
-	} else {
-		z[2] = z[3] = 0.0;
-	}
-}
-
-//---------------------------------------------------------------------------
-
 int matr4moments_to_hist(double matr4moments[4][N_COMB_SAMPLES], double *vec, int vec_start) {
 	int a,b,vec_index,bin_index;
 	int nbins = 3;
@@ -85,104 +53,103 @@ int matr4moments_to_hist(double matr4moments[4][N_COMB_SAMPLES], double *vec, in
 		double min=DBL_MAX,max=-DBL_MAX;
 		for (b=0;b<nbins;b++) bins[b]=0;
 		/* find min and max (for the bins) */
-		for (b=0;b<N_COMB_SAMPLES;b++) {
-			if (matr4moments[a][b]>max) max=matr4moments[a][b];
-			if (matr4moments[a][b]<min) min=matr4moments[a][b];
+		for (b = 0; b < N_COMB_SAMPLES; b++) {
+			if (matr4moments[a][b] > max) max = matr4moments[a][b];
+			if (matr4moments[a][b] < min) min = matr4moments[a][b];
 		}
 		/* find the bins */
-		for (b=0;b<N_COMB_SAMPLES;b++) {
-			if (matr4moments[a][b]==max) bin_index=nbins-1;
-			else bin_index=(int)(nbins*(matr4moments[a][b]-min)/(max-min));
-			if (bin_index>nbins-1) bin_index=nbins-1;  /* make sure to prevent an error */
+		for (b = 0; b < N_COMB_SAMPLES; b++) {
+			if (matr4moments[a][b] == max) bin_index=nbins-1;
+			else bin_index = (int)(nbins*(matr4moments[a][b]-min)/(max-min));
+			if (bin_index > nbins-1) bin_index=nbins-1;  /* make sure to prevent an error */
 			bins[bin_index]++;
 		}	   
 		/* add the bins to the vector */
-		for (bin_index=0;bin_index<nbins;bin_index++)
-			vec[vec_index++]=bins[bin_index];
+		for (bin_index = 0; bin_index < nbins; bin_index++)
+			vec[vec_index++] = bins[bin_index];
 	}
 	return(vec_index);
 }
 
-
 //---------------------------------------------------------------------------
 int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
-	double **I,**J,**J1,*tmp,z4[4]={0,0,0,0},z[4];
+	double **I,**J,**J1,z4[4]={0,0,0,0},z[4];
 	double matr4moments[4][N_COMB_SAMPLES];
-	int m,n,n2,m2;
-	int a,x,y,ii;
+	long m,n,n2,m2;
+	long a,x,y,ii;
 	int matr4moments_index;
 	int vec_count=0;
-	int step;
+	long step;
+	Moments tmpMoments;
 
-	for (a=0;a<4;a++)    /* initialize */
-		for (matr4moments_index=0;matr4moments_index<N_COMB_SAMPLES;matr4moments_index++)
-			matr4moments[a][matr4moments_index]=0;
+	for (a = 0; a < 4; a++)    /* initialize */
+		for (matr4moments_index = 0; matr4moments_index < N_COMB_SAMPLES; matr4moments_index++)
+			matr4moments[a][matr4moments_index] = 0;
 
 	m=Im->height;
 	n=Im->width;
 	I=new double*[n];
 	J=new double*[n];
 	J1=new double*[n];
-	tmp=new double[m*n];
-	for (a=0;a<n;a++) {
-		I[a]=new double[m];
-		J[a]=new double[m];
-		J1[a]=new double[m];
+	for (a = 0; a < n; a++) {
+		I[a] = new double[m];
+		J[a] = new double[m];
+		J1[a] = new double[m];
 	}
 
-	for (y=0;y<Im->height;y++) {
-		for (x=0;x<Im->width;x++) {
-			I[x][y]=y+1;
-			J[x][y]=x+1;
+	for (y = 0; y < m; y++) {
+		for (x = 0; x < n; x++) {
+			I[x][y] = y+1;
+			J[x][y] = x+1;
 		}
 	}
 
-	n2=(int)(round(n/2));
-	m2=(int)(round(m/2));
+   n2 = (int)(round(n/2));
+   m2 = (int)(round(m/2));
 
 	/* major diag -45 degrees */
 	matr4moments_index=0;
 	step = (int)(round((double)m/10));
 	if (step < 1) step = 1;
 	for (ii = 1-m; ii <= m; ii = ii+step) {
-		int count=0;
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
+		tmpMoments.reset();
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - J[x][y]) < 1)
-					tmp[count++] = Im->pixel(x,y,0).intensity;
+					tmpMoments.add (Im->pixel(x,y,0).intensity);
 			}
-        }
+		}
 
-		get4scalMoments(tmp,count,z);
-		for (a=0;a<4;a++) matr4moments[a][matr4moments_index]=z[a];
+		tmpMoments.momentVector(z);
+		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z[a];
 		matr4moments_index++;
 	}
 	vec_count=matr4moments_to_hist(matr4moments,vec,vec_count);
 
 	/* major diag +45 degrees */
 	/* fliplr J */
-	for (y=0;y<m;y++)
-		for (x=0;x<n;x++)
-			J1[x][y]=J[n-1-x][y];
+	for (y = 0; y < m; y++)
+		for (x = 0; x < n; x++)
+			J1[x][y] = J[n-1-x][y];
 
 	matr4moments_index=0;
 	step = (int)(round((double)m/10));
 	if (step < 1) step = 1;
 	for (ii = 1-m; ii <= m; ii = ii+step) {
-		int count=0;
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
+		tmpMoments.reset();
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - J1[x][y]) < 1)
-					tmp[count++] = Im->pixel(x,y,0).intensity;
+					tmpMoments.add (Im->pixel(x,y,0).intensity);
 			}
         }
 
-		get4scalMoments(tmp,count,z);
-		for (a=0;a<4;a++) matr4moments[a][matr4moments_index]=z[a];
+		tmpMoments.momentVector(z);
+		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z[a];
 		matr4moments_index++;
 	}
 	vec_count=matr4moments_to_hist(matr4moments,vec,vec_count);
@@ -192,18 +159,18 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 	step = (int)(round((double)n/10));
 	if (step < 1) step = 1;
 	for (ii = 1-n; ii <= n; ii = ii+step) {
-		int count=0;
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
+		tmpMoments.reset();
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(J[x][y] + ii - n2) < 1)
-					tmp[count++] = Im->pixel(x,y,0).intensity;
+					tmpMoments.add (Im->pixel(x,y,0).intensity);
 			}
-        }
+		}
 
-		get4scalMoments(tmp,count,z);
-		for (a=0;a<4;a++) matr4moments[a][matr4moments_index]=z[a];
+		tmpMoments.momentVector(z);
+		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z[a];
 		matr4moments_index++;
 	}
 	vec_count=matr4moments_to_hist(matr4moments,vec,vec_count);
@@ -213,31 +180,31 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 	step = (int)(round((double)m/10));
 	if (step < 1) step = 1;
 	for (ii = 1-m; ii <= m; ii = ii+step) {
-		int count=0;
-		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
+		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z4[a];
 
+		tmpMoments.reset();
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - m2) < 1)
-					tmp[count++] = Im->pixel(x,y,0).intensity;
+					tmpMoments.add (Im->pixel(x,y,0).intensity);
 			}
         }
 
-		get4scalMoments(tmp,count,z);
-		for (a=0;a<4;a++) matr4moments[a][matr4moments_index]=z[a];
+		tmpMoments.momentVector(z);
+		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z[a];
 		matr4moments_index++;
 	}
 	vec_count=matr4moments_to_hist(matr4moments,vec,vec_count);
 
 	/* free the memory used by the function */
 	for (a=0;a<n;a++) {
-		delete I[a];
-		delete J[a];
-		delete J1[a];
+		delete [] I[a];
+		delete [] J[a];
+		delete [] J1[a];
 	}
-	delete I;
-	delete J;
-	delete tmp;
+	delete [] I;
+	delete [] J;
+	delete [] J1;
 
 	return(vec_count);
 }
@@ -247,8 +214,8 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 void vd_Comb4Moments(double *in) {
 	double temp[48];
 	int a;
-	for (a=0;a<48;a++)
-		temp[a]=in[a];
+	for (a = 0; a < 48; a++)
+		temp[a] = in[a];
 
 	in[0]  = temp[45];
 	in[1]  = temp[46];

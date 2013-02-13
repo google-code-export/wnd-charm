@@ -1,87 +1,42 @@
 //---------------------------------------------------------------------------
 
-#include <math.h>
-#include "../statistics/CombFirst4Moments.h"
+#include <cmath>
+#include <cfloat> // DBL_MAX
+#include "../statistics/Moments.h"
 #include "tamura.h"
 
 
 #include <stdio.h>
 
-double kurtosis(double *vec, double avg, double std, int length)
-{  int a;
-   double s2,m4;
-   m4=0.0;
-   s2=0.0;
-
-  if (length==0) return(0);
-
-  for (a=0;a<length;a++)
-  {  m4=m4+pow(vec[a]-avg,4);
-     s2=s2+pow(vec[a]-avg,2);
-  }
-  m4=m4/length;
-  s2=s2/length;
-
-  if (s2==0) return(0);
-  else return(m4/(s2*s2));
-
-/*
-   for (int a = 0; a < length; a++)
-       sum += pow((vec[a] - avg) / std, 4.0);
-
-   double coefficientOne = (length * (length + 1)) / ((length - 1) * (length - 2) * (length - 3));
-   double termTwo = ((3 * pow(length - 1, 2.0)) / ((length - 2) * (length - 3)));
-   // Calculate kurtosis
-   kurtosis = (coefficientOne * accum) - termTwo;
-
-   return kurtosis;
-*/
-}
-
 double contrast(ImageMatrix *image) {
-	double *vec, val, max_val;
+	double max_val;
 	int x,y;
-	double avg,std,k, z[4];
+	double z[4];
+	Moments statMoments;
 
-	vec=new double[image->width*image->height];
-	avg=0;
-	max_val = pow (2,image->bits) - 1;
-	for (x=0;x<image->width;x++) {
-		for (y=0;y<image->height;y++) {  
-			val = image->pixel(x,y,0).intensity / max_val;
-//			val = image->pixel(x,y,0).intensity;
-			vec[x*image->height+y]=val;
-			avg+=val;
+	max_val = pow ((double)2,(double)image->bits) - 1;
+	for (x = 0; x < image->width; x++) {
+		for (y = 0; y < image->height; y++) {
+			statMoments.add (image->pixel(x,y,0).intensity / max_val);
 		}
 	}
-	avg=avg/(image->width*image->height);
-	std=0;
-	for (x=0;x<image->width;x++) {
-		for (y=0;y<image->height;y++) {
-			val = vec[x*image->height+y];
-			std+=(val-avg)*(val-avg);
-		}
-	}
-	std=sqrt(std/(image->width*image->height));
-	k=kurtosis(vec, avg, std, image->width*image->height);
-	get4scalMoments (vec, image->width*image->height, z);
+	statMoments.momentVector(z);
 	
-printf ("Tamura kurt: %lf, kurt2: %lf, std: %lf, std2: %lf, contrast: %lf, contrast2: %lf, bits: %d\n",k,z[3],std,z[1],
-std/pow(k/pow(std,4),0.25), 	z[1] / pow (z[3] / pow (z[1], 4), 0.25),
+printf ("Tamura kurt: %lf, std: %lf, contrast: %lf, bits: %d\n",z[3],z[1],
+z[1] / pow (z[3] / pow (z[1], 4), 0.25),
 (int)(image->bits) );
-	delete vec;
-	if (std<0.0000000001) return(0);
-	else return(std/  pow(k/pow(std,4),0.25)  );
+	if (z[1] < DBL_EPSILON) return(0);
+	else return(z[1] / pow (z[3] / pow (z[1], 4), 0.25));
 }
 
 
+#define  NBINS 125
 double directionality(ImageMatrix *image)
 { ImageMatrix *deltaH,*deltaV,*matrixH,*matrixV,*phi;
   double sum,sum_r;
   int a,x,y;
   unsigned int xdim=image->width;
   unsigned int ydim=image->height;
-#define  NBINS 125
   double Hd[NBINS];
 
   deltaH=image->duplicate();
