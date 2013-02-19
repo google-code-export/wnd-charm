@@ -32,10 +32,8 @@
 #define CombFirst4MomentsH
 //---------------------------------------------------------------------------
 
-#include "../cmatrix.h"
+#include "cmatrix.h"
 
-// n.b.: z is a pointer to an array of 4 doubles
-void get4scalMoments(double *data, unsigned long lngth, double *z);
 int CombFirst4Moments2D(ImageMatrix *Im, double *vec);
 void vd_Comb4Moments(double *in);
 

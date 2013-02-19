@@ -1439,9 +1439,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 				tile_x_size=(long)(rot_matrix->width/tiles_x);
 				tile_y_size=(long)(rot_matrix->height/tiles_y);
 			}
-			tile_matrix = new ImageMatrix(rot_matrix,
+			tile_matrix = new ImageMatrix();
+			tile_matrix->submatrix (*rot_matrix,
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
-				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1,0,0);
+				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1);
 		}
 
 	// last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
@@ -1451,7 +1452,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
 		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
+		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(*tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
 			ImageSignatures->LoadFromFile (old_sig_filename);
 			if (ImageSignatures->count < 1) {
 				catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));
@@ -1468,8 +1469,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	// all hope is lost - compute sigs.
 		if (!res) {
-			if (feature_opts->large_set) ImageSignatures->ComputeGroups(tile_matrix,feature_opts->compute_colors);
-			else ImageSignatures->compute(tile_matrix,feature_opts->compute_colors);
+			if (feature_opts->large_set) ImageSignatures->ComputeGroups(*tile_matrix,feature_opts->compute_colors);
+			else ImageSignatures->compute(*tile_matrix,feature_opts->compute_colors);
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
@@ -1971,7 +1972,8 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 		for (int correct = split->accurate_predictions; correct <= split->known_images; correct++)  /* find the P */
 		// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
 			if ( gsl_sf_choose (split->known_images,correct,&choose) == GSL_SUCCESS )
-				P+=pow((1/(double)class_num),correct)*pow(1-1/(double)class_num,split->known_images-correct)*choose;
+				P+=pow((1.0 / (double)class_num),(double)correct) *
+					pow(1.0 - (1.0/(double)class_num),(double)(split->known_images - correct))*choose;
 		split->classification_p_value = P;
 	}
 
@@ -3189,7 +3191,7 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 		for( unsigned long correct = total_correct; correct <= total_tested; correct++ ) {
 			// gsl_sf_choose (n,m) = n!/(m!(n-m)!)
 			if( gsl_sf_choose( total_tested, correct, &choose ) == GSL_SUCCESS ) {
-				avg_p2 += pow( (1/(double) class_num), correct) * pow( 1 - 1/(double)class_num, total_tested - correct ) * choose;
+				avg_p2 += pow( (1.0/(double) class_num), (double)correct) * pow( 1.0 - (1.0/(double)class_num), (double)(total_tested - correct) ) * choose;
 			}
 		}
 //printf("%i %i %f %i %i %f %f\n",class_num,count,splits_accuracy/split_num,(long)(count/featureset->n_samples),(long)((long)(count/featureset->n_samples)*(splits_accuracy/split_num)),0.0,avg_p2);

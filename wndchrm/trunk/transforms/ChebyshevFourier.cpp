@@ -71,6 +71,7 @@ void ChebyshevFourier2D(ImageMatrix *Im, unsigned long N, double *coeff_packed, 
 	r   = new double[m*n];
 	kk  = new long[m*n];  /* the required size of kk is equal to nLast */
 
+	readOnlyPixels Im_pix_plane = Im->ReadablePixels();
 	double x_ind,x_2, y_ind;
 	double two_over_n_minus_1 = (2.0/((double)n-1));
 	double two_over_m_minus_1 = (2.0/((double)m-1));
@@ -80,7 +81,7 @@ void ChebyshevFourier2D(ImageMatrix *Im, unsigned long N, double *coeff_packed, 
 		x_ind = -1.0 + (double)x * two_over_n_minus_1;
 		x_2 = pow (x_ind, 2);
 		for (y = 0; y < m; y++) {
-			img[ind]=Im->pixel(x,y,0).intensity;
+			img[ind]=Im_pix_plane(y,x);
 
 			// convert cartesian to polar
 			y_ind = -1.0 + (double)y * two_over_m_minus_1;

@@ -29,8 +29,8 @@
 
 
 
-#ifndef chebishevH
-#define chebishevH
+#ifndef chevishevH
+#define chevishevH
 //---------------------------------------------------------------------------
 
 void Chebyshev2D(ImageMatrix *Im, double *out, unsigned int N);

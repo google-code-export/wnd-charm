@@ -28,254 +28,226 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-
-
-#ifndef WIN32
 #include <string.h>
-#endif
 
 #include "FeatureStatistics.h"
 
-typedef struct POINT1
-{  long x,y,z;
-}point;
+typedef struct POINT1 {
+	long x,y;
+} point;
 
 //---------------------------------------------------------------------------
 /*  BWlabel
     label groups of 4-connected pixels.
     This is an implementation of the Matlab function bwlabel
 */
-int bwlabel(ImageMatrix *Im, int level)
-{  long x,y,z,base_x,base_y,base_z,group_counter=1;
-   int stack_count;
-   point *stack=new point[Im->width*Im->height*Im->depth];
+unsigned long bwlabel(ImageMatrix &Im, int level) {
+	long x, y, base_x,base_y,stack_count, w = Im.width, h = Im.height;
+	unsigned long group_counter = 1;
+	point *stack=new point[w*h];
+	pixData &pix_plane = Im.WriteablePixels();
 
-   for (z=0;z<Im->depth;z++)
-   for (y=0;y<Im->height;y++)
-     for (x=0;x<Im->width;x++)
-     {
-        if (Im->pixel(x,y,z).intensity==1)
-        {
-           /* start a new group */
-           group_counter++;
-           Im->SetInt(x,y,z,group_counter);
-           stack[0].x=x;
-           stack[0].y=y;
-           stack[0].z=z;		   
-           stack_count=1;
-           while (stack_count>0)
-           {  base_x=stack[0].x;
-			  base_y=stack[0].y;
-			  base_z=stack[0].z;
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			if ( pix_plane(y,x) == 1) {
+				/* start a new group */
+				group_counter++;
+				pix_plane(y,x) = group_counter;
+				stack[0].x=x;
+				stack[0].y=y;
+				stack_count=1;
+				while (stack_count > 0) {
+					base_x=stack[0].x;
+					base_y=stack[0].y;
 
-              if (base_x>0 && Im->pixel(base_x-1,base_y,base_z).intensity==1)
-              {  Im->SetInt(base_x-1,base_y,base_z,group_counter);
-                 stack[stack_count].x=base_x-1;
-                 stack[stack_count].y=base_y;
-                 stack[stack_count].z=base_z;				 
-                 stack_count++;
-              }
+					if (base_x > 0 && pix_plane(base_y,base_x-1) == 1) {
+						pix_plane(base_y,base_x-1) = group_counter;
+						stack[stack_count].x=base_x-1;
+						stack[stack_count].y=base_y;
+						stack_count++;
+					}
 
-              if (base_x<Im->width-1 && Im->pixel(base_x+1,base_y,base_z).intensity==1)
-              {  Im->SetInt(base_x+1,base_y,base_z,group_counter);
-                 stack[stack_count].x=base_x+1;
-                 stack[stack_count].y=base_y;
-                 stack[stack_count].z=base_z;				 				 
-                 stack_count++;
-              }
+					if (base_x < w-1 && pix_plane(base_y,base_x+1) == 1) {
+						pix_plane(base_y,base_x+1) = group_counter;
+						stack[stack_count].x=base_x+1;
+						stack[stack_count].y=base_y;
+						stack_count++;
+					}
 
-              if (base_y>0 && Im->pixel(base_x,base_y-1,base_z).intensity==1)
-              {  Im->SetInt(base_x,base_y-1,base_z,group_counter);
-                 stack[stack_count].x=base_x;
-                 stack[stack_count].y=base_y-1;
-                 stack[stack_count].z=base_z;				 				 
-                 stack_count++;
-              }
+					if (base_y > 0 && pix_plane(base_y-1,base_x) == 1) {
+						pix_plane(base_y-1,base_x) = group_counter;
+						stack[stack_count].x=base_x;
+						stack[stack_count].y=base_y-1;
+						stack_count++;
+					}
 
-              if (base_y<Im->height-1 && Im->pixel(base_x,base_y+1,base_z).intensity==1)
-              {  Im->SetInt(base_x,base_y+1,base_z,group_counter);
-                 stack[stack_count].x=base_x;
-                 stack[stack_count].y=base_y+1;
-                 stack[stack_count].z=base_z;				 				 
-                 stack_count++;
-              }
+					if (base_y < h-1 && pix_plane(base_y+1,base_x) == 1) {
+						pix_plane(base_y+1,base_x) = group_counter;
+						stack[stack_count].x=base_x;
+						stack[stack_count].y=base_y+1;
+						stack_count++;
+					}
 
-              /* look for 8 connected pixels */
-              if (level==8)
-              {  if (base_x>0 && base_y>0 && Im->pixel(base_x-1,base_y-1,base_z).intensity==1)
-                 {  Im->SetInt(base_x-1,base_y-1,base_z,group_counter);
-                    stack[stack_count].x=base_x-1;
-                    stack[stack_count].y=base_y-1;
-                    stack[stack_count].z=base_z;				 					
-                    stack_count++;
-                 }
+					/* look for 8 connected pixels */
+					if (level==8) {
+						if (base_x > 0 && base_y > 0 && pix_plane(base_y-1,base_x-1) == 1) {
+							pix_plane(base_y-1,base_x-1) = group_counter;
+							stack[stack_count].x=base_x-1;
+							stack[stack_count].y=base_y-1;
+							stack_count++;
+						}
 
-                if (base_x<Im->width-1 && base_y>0 && Im->pixel(base_x+1,base_y-1,base_z).intensity==1)
-                {  Im->SetInt(base_x+1,base_y-1,base_z,group_counter);
-                   stack[stack_count].x=base_x+1;
-                   stack[stack_count].y=base_y-1;
-                   stack[stack_count].z=base_z;				 				   
-                   stack_count++;
-                }
+						if (base_x < w-1 && base_y > 0 && pix_plane(base_y-1,base_x+1) == 1) {
+							pix_plane(base_y-1,base_x+1) = group_counter;
+							stack[stack_count].x=base_x+1;
+							stack[stack_count].y=base_y-1;
+							stack_count++;
+						}
 
-                if (base_x>0 && base_y<Im->height-1 && Im->pixel(base_x-1,base_y+1,base_z).intensity==1)
-                {  Im->SetInt(base_x-1,base_y+1,base_z,group_counter);
-                   stack[stack_count].x=base_x-1;
-                   stack[stack_count].y=base_y+1;
-                   stack[stack_count].z=base_z;				 				   
-                   stack_count++;
-                }
+						if (base_x > 0 && base_y < h-1 && pix_plane(base_y+1,base_x-1) == 1) {
+							pix_plane(base_y+1,base_x-1) = group_counter;
+							stack[stack_count].x=base_x-1;
+							stack[stack_count].y=base_y+1;
+							stack_count++;
+						}
 
-                if (base_x<Im->width-1 && base_y<Im->height-1 && Im->pixel(base_x+1,base_y+1,base_z).intensity==1)
-                {  Im->SetInt(base_x+1,base_y+1,base_z,group_counter);
-                   stack[stack_count].x=base_x+1;
-                   stack[stack_count].y=base_y+1;
-                   stack[stack_count].z=base_z;				 				   
-                   stack_count++;
-                }
-              }
+						if (base_x < w-1 && base_y < h-1 && pix_plane(base_y+1,base_x+1) == 1) {
+							pix_plane(base_y+1,base_x+1) = group_counter;
+							stack[stack_count].x=base_x+1;
+							stack[stack_count].y=base_y+1;
+							stack_count++;
+						}
+					}
 			  
-			  if (Im->depth>1)   /* find 3D features */
-			  {
-                if (base_z<Im->depth-1 && Im->pixel(base_x,base_y,base_z+1).intensity==1)
-                {  Im->SetInt(base_x,base_y,base_z+1,group_counter);
-                   stack[stack_count].x=base_x;
-                   stack[stack_count].y=base_y;
-                   stack[stack_count].z=base_z+1;				   
-                   stack_count++;
-                }			  
+					stack_count-=1;
+					memmove(stack,&(stack[1]),sizeof(point)*stack_count);
+				}
+			}
+		}
+	}
 
-                if (base_z>0 && Im->pixel(base_x,base_y,base_z-1).intensity==1)
-                {  Im->SetInt(base_x,base_y,base_z-1,group_counter);
-                   stack[stack_count].x=base_x;
-                   stack[stack_count].y=base_y;
-                   stack[stack_count].z=base_z-1;
-                   stack_count++;
-                }			  
-				
-			  }
-			  
-              stack_count-=1;
-              memmove(stack,&(stack[1]),sizeof(point)*stack_count);
-           }
-        }
-     }
+	/* now decrease every non-zero pixel by one because the first group was "2" */
+	for (y=0;y<h;y++)
+		for (x=0;x<w;x++)
+			if (pix_plane(y,x) != 0)
+				pix_plane(y,x) -= 1;
 
-   /* now decrease every non-zero pixel by one because the first group was "2" */
-   for (z=0;z<Im->depth;z++)   
-     for (y=0;y<Im->height;y++)
-       for (x=0;x<Im->width;x++)
-         if (Im->pixel(x,y,z).intensity!=0)
-           Im->SetInt(x,y,z,Im->pixel(x,y,z).intensity-1);
-
-   delete [] stack;
-   return(group_counter-1);
+	delete [] stack;
+	Im.WriteablePixelsFinish();
+	return(group_counter-1);
 }
 
 /* the input should be a binary image */
-void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid, double *z_centroid)
-{  long x,y,z;
-   double x_mass=0,y_mass=0,z_mass=0,mass=0;
+void GlobalCentroid(const ImageMatrix &Im, double *x_centroid, double *y_centroid) {
+	unsigned int x,y,w = Im.width, h = Im.height;
+	double x_mass=0,y_mass=0,mass=0;
+	readOnlyPixels pix_plane = Im.ReadablePixels();
 
-   for (z=0;z<Im->depth;z++)
-     for (y=0;y<Im->height;y++)
-       for (x=0;x<Im->width;x++)
-         if (Im->pixel(x,y,z).intensity>0)
-         {  x_mass=x_mass+x+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-            y_mass=y_mass+y+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-            z_mass=z_mass+z+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */						
-            mass++;
-         }
-   if (mass)
-   {  *x_centroid=x_mass/mass;
-      *y_centroid=y_mass/mass;
-      if (z_centroid) *z_centroid=z_mass/mass;
-   }
-   else *x_centroid=*y_centroid=0;
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			if (pix_plane(y,x) > 0) {
+				x_mass=x_mass+x+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+				y_mass=y_mass+y+1;    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+				mass++;
+			}
+	if (mass) {
+		*x_centroid=x_mass/mass;
+		*y_centroid=y_mass/mass;
+	} else *x_centroid=*y_centroid=0;
 }
 
 /* find the centroid of a certain feature
    the input image should be a bwlabel transform of a binary image
    the retruned value is the area of the feature
 */
-int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid, double *z_centroid)
-{  long x,y,z;
-   int x_mass=0,y_mass=0,z_mass=0,mass=0;
+unsigned long FeatureCentroid(const ImageMatrix &Im, double object_index,double *x_centroid, double *y_centroid) {
+	unsigned int x,y,w = Im.width, h = Im.height;
+	unsigned long x_mass=0,y_mass=0,mass=0;
+	readOnlyPixels pix_plane = Im.ReadablePixels();
 
-   for (z=0;z<Im->depth;z++)
-     for (y=0;y<Im->height;y++)
-       for (x=0;x<Im->width;x++)
-         if (Im->pixel(x,y,z).intensity==object_index)
-         {  x_mass=x_mass+x+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-            y_mass=y_mass+y+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-            z_mass=z_mass+z+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */			
-            mass++;
-         }
-   if (x_centroid) *x_centroid=(double)x_mass/(double)mass;
-   if (y_centroid) *y_centroid=(double)y_mass/(double)mass;
-   if (z_centroid) *z_centroid=(double)z_mass/(double)mass;   
-   return(mass);
-
-
-
-//   for (y=0;y<Im->height;y++)
-//     for (x=0;x<Im->width;x++)
-//       if (Im->data[x][y].intensity==object_index) mass++;
-
-   /* find the x coordinate of the centroid */
-//   for (x=0;x<Im->width;x++)
-//   {  for (y=0;y<Im->height;y++)
-//        if (Im->data[x][y].intensity==object_index)
-//          x_mass++;
-//        if (x_mass>=mass/2)
-//        {  *x_centroid=x;
-//            break;
-//        }
-//   }
-
-   /* find the y coordinate of the centroid */
-//   for (y=0;y<Im->height;y++)
-//   {  for (x=0;x<Im->width;x++)
-//        if (Im->data[x][y].intensity==object_index)
-//          y_mass++;
-//        if (y_mass>=mass/2)
-//        {  *y_centroid=y;
-//           break;
-//        }
-//   }
-//   return(mass);
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			if (pix_plane(y,x) == object_index) {
+				x_mass=x_mass+x+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+				y_mass=y_mass+y+1;      /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+				mass++;
+			}
+	if (x_centroid) *x_centroid=(double)x_mass/(double)mass;
+	if (y_centroid) *y_centroid=(double)y_mass/(double)mass;
+	return(mass);
 }
 
 /* the number of pixels that are above the threshold
    the input image is a binary image
 */
-int area(ImageMatrix *Im)
-{  long x,y,z,sum=0;
-   for (z=0;z<Im->depth;z++)
-     for (y=0;y<Im->height;y++)
-       for (x=0;x<Im->width;x++)
-         sum=sum+(Im->pixel(x,y,z).intensity>0);
-   return(sum);
+unsigned long area(const ImageMatrix &Im) {
+	unsigned int x,y,w = Im.width, h = Im.height;
+	unsigned long sum=0;
+	readOnlyPixels pix_plane = Im.ReadablePixels();
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			sum += (pix_plane(y,x) > 0 ? 1 : 0);
+	return(sum);
 }
 
 /* EulerNumber
    The input image should be a binary image
 */
-int EulerNumber(ImageMatrix *Im, int FeatureNumber)
-{  long x,y,z,HolesNumber;
-   ImageMatrix *cp;
-   cp=Im->duplicate();
+long EulerNumber(const ImageMatrix &Im, int mode) {  
+	unsigned long x, y;
+	size_t i;
+	// quad-pixel match patterns
+	unsigned char Px[] = {
+		// P1 - single pixel
+		(1 << 3) | (0 << 2) |
+		(0 << 1) | (0 << 0),
+		(0 << 3) | (1 << 2) |
+		(0 << 1) | (0 << 0),
+		(0 << 3) | (0 << 2) |
+		(1 << 1) | (0 << 0),
+		(0 << 3) | (0 << 2) |
+		(0 << 1) | (1 << 0),
+		// P3 - 3-pixel
+		(0 << 3) | (1 << 2) |
+		(1 << 1) | (1 << 0),
+		(1 << 3) | (0 << 2) |
+		(1 << 1) | (1 << 0),
+		(1 << 3) | (1 << 2) |
+		(0 << 1) | (1 << 0),
+		(1 << 3) | (1 << 2) |
+		(1 << 1) | (0 << 0),
+		// Pd - diagonals
+		(1 << 3) | (0 << 2) |
+		(0 << 1) | (1 << 0),
+		(0 << 3) | (1 << 2) |
+		(1 << 1) | (0 << 0)
+	};
+	unsigned char Imq;
+	// Pattern match counters
+	long C1 = 0, C3 = 0, Cd = 0;
+	readOnlyPixels pix_plane = Im.ReadablePixels();
+	
+	assert ( (mode == 4 || mode == 8) && "Calling EulerNumber with mode other than 4 or 8");
 
-   /* inverse the image */
-   for (z=0;z<cp->depth;z++)
-     for (y=0;y<cp->height;y++)
-       for (x=0;x<cp->width;x++)
-         if (cp->pixel(x,y,z).intensity>0)
-           cp->SetInt(x,y,z,0);
-         else cp->SetInt(x,y,z,1);
-   HolesNumber=cp->BWlabel(8);
-
-   delete cp;
-   return(FeatureNumber-HolesNumber-1);
+	// update pattern counters by scanning the image.
+	for (y = 1; y < Im.height; y++) {
+		for (x = 1; x < Im.width; x++) {
+			// Get the quad-pixel at this image location
+			Imq = 0;
+			if (pix_plane(y-1,x-1) > 0) Imq |=  (1 << 3);
+			if (pix_plane(y-1,x  ) > 0) Imq |=  (1 << 2);
+			if (pix_plane(y  ,x-1) > 0) Imq |=  (1 << 1);
+			if (pix_plane(y  ,x  ) > 0) Imq |=  (1 << 0);
+			// find the matching pattern
+			for (i = 0; i < 10; i++) if (Imq == Px[i]) break;
+			if      (i >= 0 && i <= 3) C1++;
+			else if (i >= 4 && i <= 7) C3++;
+			else if (i == 8 && i == 9) Cd++;
+		}
+	}
+	
+	if (mode == 4)
+		return ( (C1 - C3 + (2*Cd)) / 4);
+	else
+		return ( (C1 - C3 - (2*Cd)) / 4);
 }
-

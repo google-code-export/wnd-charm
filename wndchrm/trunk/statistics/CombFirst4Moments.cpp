@@ -79,6 +79,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 	long a,x,y,ii;
 	int matr4moments_index;
 	int vec_count=0;
+	readOnlyPixels pix_plane = Im->ReadablePixels();
 	long step;
 	Moments tmpMoments;
 
@@ -104,8 +105,8 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		}
 	}
 
-   n2 = (int)(round(n/2));
-   m2 = (int)(round(m/2));
+	n2 = (int)(round(n/2));
+	m2 = (int)(round(m/2));
 
 	/* major diag -45 degrees */
 	matr4moments_index=0;
@@ -118,7 +119,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - J[x][y]) < 1)
-					tmpMoments.add (Im->pixel(x,y,0).intensity);
+					tmpMoments.add (pix_plane(y,x));
 			}
 		}
 
@@ -144,7 +145,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - J1[x][y]) < 1)
-					tmpMoments.add (Im->pixel(x,y,0).intensity);
+					tmpMoments.add (pix_plane(y,x));
 			}
         }
 
@@ -165,7 +166,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(J[x][y] + ii - n2) < 1)
-					tmpMoments.add (Im->pixel(x,y,0).intensity);
+					tmpMoments.add (pix_plane(y,x));
 			}
 		}
 
@@ -186,7 +187,7 @@ int CombFirst4Moments2D(ImageMatrix *Im, double *vec) {
 		for (y = 0; y < m; y++) {
 			for (x = 0; x < n; x++) {
 				if (fabs(I[x][y] + ii - m2) < 1)
-					tmpMoments.add (Im->pixel(x,y,0).intensity);
+					tmpMoments.add (pix_plane(y,x));
 			}
         }
 

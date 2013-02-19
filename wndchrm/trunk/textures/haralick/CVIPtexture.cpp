@@ -365,12 +365,12 @@ return 1;
 
 
 TEXTURE * Extract_Texture_Features(int distance, int angle,
-		 		register u_int8_t **grays, int rows, int cols, int max_val)
+		 		register u_int8_t **grays, unsigned int nrows, unsigned int ncols)
 {
 	int tone_LUT[PGM_MAXMAXVAL+1]; /* LUT mapping gray tone(0-255) to matrix indicies */
 	int tone_count=0; /* number of tones actually in the img. atleast 1 less than 255 */
 	int itone;
-	int row, col;
+	int row, col, rows = nrows, cols = ncols;
 	double **P_matrix;
 	double sum_entropy;
 	TEXTURE *Texture;

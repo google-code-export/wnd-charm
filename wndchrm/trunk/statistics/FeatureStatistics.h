@@ -32,12 +32,12 @@
 #ifndef FeatureStatisticsH
 #define FeatureStatisticsH
 //---------------------------------------------------------------------------
-#include "../cmatrix.h"
+#include "cmatrix.h"
 
-int bwlabel(ImageMatrix *Im, int level);
-void GlobalCentroid(ImageMatrix *Im, double *x_centroid, double *y_centroid, double *z_cenroid);
-int FeatureCentroid(ImageMatrix *Im, double object_index,double *x_centroid, double *y_centroid, double *z_centroid);
-int area(ImageMatrix *Im);
-int EulerNumber(ImageMatrix *Im, int FeatureNumber);
+unsigned long bwlabel(ImageMatrix &Im, int level);
+void GlobalCentroid(const ImageMatrix &Im, double *x_centroid, double *y_centroid);
+unsigned long FeatureCentroid(const ImageMatrix &Im, double object_index,double *x_centroid, double *y_centroid);
+unsigned long area(const ImageMatrix &Im);
+long EulerNumber(const ImageMatrix &Im, int mode);
 
 #endif

@@ -44,10 +44,16 @@
 #define IMAGE_PATH_LENGTH 512
 #define SAMPLE_NAME_LENGTH 128
 
-#define NUM_LC_FEATURES  4008
-#define NUM_L_FEATURES   2873
-#define NUM_C_FEATURES   2160
-#define NUM_DEF_FEATURES 1025
+// #define NUM_LC_FEATURES  4008
+// #define NUM_L_FEATURES   2873
+// #define NUM_C_FEATURES   2160
+// #define NUM_DEF_FEATURES 1025
+
+#define NUM_LC_FEATURES  4042
+#define NUM_L_FEATURES   2907
+#define NUM_C_FEATURES   2194
+#define NUM_DEF_FEATURES 1059
+
 #define CURRENT_FEATURE_VERSION 2
 
 #define NO_SIGS_IN_FILE -2
@@ -95,21 +101,20 @@ class signatures
     void Add(const char *name, double value);
 	void SetFeatureVectorType();
     void Clear();
-    void compute(ImageMatrix *matrix, int compute_colors);
-    void CompGroupA(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupB(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupC(ImageMatrix *matrix, const char *transform_label);
-    void CompGroupD(ImageMatrix *matrix, const char *transform_label);
-    void ComputeGroups(ImageMatrix *matrix, int compute_colors);
+    void compute(ImageMatrix &matrix, int compute_colors);
+    void CompGroupA(ImageMatrix &matrix, const char *transform_label);
+    void CompGroupB(ImageMatrix &matrix, const char *transform_label);
+    void CompGroupC(ImageMatrix &matrix, const char *transform_label);
+    void CompGroupD(ImageMatrix &matrix, const char *transform_label);
+    void ComputeGroups(ImageMatrix &matrix, int compute_colors);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
-    void ComputeFromDouble(double *data, int width, int height, int depth, int compute_color);  /* compute the feature values from an array of doubles */
     void FileClose();
     int SaveToFile(int save_feature_names);
     int LoadFromFile(char *filename);
     void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
 	int ReadFromFile (bool wait); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
-	int CompareToFile (ImageMatrix *matrix, char *filename, int compute_colors, int large_set);
+	int CompareToFile (ImageMatrix &matrix, char *filename, int compute_colors, int large_set);
 };
 
 #endif

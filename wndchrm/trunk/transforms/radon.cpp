@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+
 #include <math.h>
 #include "radon.h"
 
@@ -83,10 +84,10 @@ void radon(double *pPtr, double *iPtr, double *thetaPtr, int M, int N,
     }
   }
 
-  delete yTable;
-  delete xTable;
-  delete xCosTable;
-  delete ySinTable;
+  delete [] yTable;
+  delete [] xTable;
+  delete [] xCosTable;
+  delete [] ySinTable;
 }
 
 /* vd_RadonTextures

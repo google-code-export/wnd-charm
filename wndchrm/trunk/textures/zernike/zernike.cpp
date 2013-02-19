@@ -104,6 +104,7 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		}
 	}
 
+// int nfoo=0;
 	for(i = 0 ; i < size ; i++) {
 		x = (X[i] - m10_m00)/R;
 		y = (Y[i] - m01_m00)/R;
@@ -111,6 +112,8 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		if (sqr_x2y2 > 1.0) continue;
 
 		p = P[i] / psum;
+// if (nfoo < 50) printf ("(%g,%g) = %g\n",x,y,p);
+// nfoo++;
 		double atan2yx = atan2(y,x);
 		theLUT = 0;
 		for (theZ = 0; theZ < numZ; theZ++) {
@@ -130,6 +133,7 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 		sum [theZ] *= ((n_s[theZ]+1)/PI);
 		preal = real ( sum [theZ] );
 		pimag = imag ( sum [theZ] );
+//printf ("[%d][%d] = (%g,%g)\n",n_s[theZ],l_s[theZ],real ( sum [theZ] ),imag ( sum [theZ] ));
 		zvalues[theZ] = fabs(sqrt(preal*preal+pimag*pimag));
 	}
 
@@ -137,7 +141,7 @@ void mb_Znl(double *X, double *Y, double *P, int size, double D, double m10_m00,
 }
 
 
-void mb_zernike2D_OLD (ImageMatrix *I, double D, double R, double *zvalues, long *output_size) {
+void mb_zernike2D_OLD(ImageMatrix *I, double D, double R, double *zvalues, long *output_size) {
 	double *Y,*X,*P,psum;
 	double intensity;
 	int x,y,size;
@@ -151,13 +155,14 @@ void mb_zernike2D_OLD (ImageMatrix *I, double D, double R, double *zvalues, long
 	X=new double[rows*cols];
 	P=new double[rows*cols];
 
+	readOnlyPixels I_pix_plane = I->ReadablePixels();
    /* Find all non-zero pixel coordinates and values */
 	size=0;
 	psum=0;
 	double moment10 = 0.0, moment00 = 0.0, moment01 = 0.0;
 	for (y=0;y<rows;y++)
 		for (x=0;x<cols;x++) {
-			intensity = I->pixel(x,y,0).intensity;
+			intensity = I_pix_plane(y,x);
 			if (intensity != 0) {
 				Y[size] = y+1;
 				X[size] = x+1;
@@ -169,6 +174,7 @@ void mb_zernike2D_OLD (ImageMatrix *I, double D, double R, double *zvalues, long
 			moment10 += (x+1) * intensity;
 			moment00 += intensity;
 			moment01 += (y+1) * intensity;
+// if (x < 10 && y < 10) printf ("(%d,%d) = %g\n",x,y,intensity);
 		}
 
    /* Normalize the coordinates to the center of mass and normalize
@@ -226,13 +232,14 @@ void mb_zernike2D (ImageMatrix *I, double order, double rad, double *zvalues, lo
 	double sum = 0;
 	int cols = I->width;
 	int rows = I->height;
+	readOnlyPixels I_pix_plane = I->ReadablePixels();
 
 // compute x/0, y/0 and 0/0 moments to center the unit circle on the centroid
 	double moment10 = 0.0, moment00 = 0.0, moment01 = 0.0;
 	double intensity;
 	for (i = 0; i < cols; i++)
 		for (j = 0; j < rows; j++) {
-			intensity = I->pixel(i,j,0).intensity;
+			intensity = I_pix_plane(j,i);
 			sum += intensity;
 			moment10 += (i+1) * intensity;
 			moment00 += intensity;
@@ -289,7 +296,7 @@ void mb_zernike2D (ImageMatrix *I, double order, double rad, double *zvalues, lo
 		// compute contribution to Zernike moments for all 
 		// orders and repetitions by the pixel at (i,j)
 		// In the paper, the intensity was the raw image intensity
-			f = I->pixel(i,j,0).intensity / sum;
+			f = I_pix_plane(j,i) / sum;
 
 			Rnmp2 = Rnm2 = 0;
 			for (n = 0; n <= L; n++) {
