@@ -37,7 +37,7 @@
 #include <cmath>
 #include <ctime>
 #include <assert.h>
-#include "FeatureNames.hpp"
+#include "FeatureNames.h"
 #include "wndchrm_error.h"
 #include "WORMfile.h"
 

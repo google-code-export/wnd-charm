@@ -738,6 +738,8 @@ int main(int argc, char *argv[])
 	int save_sigs=1;
 	int skip_sig_check = 0;
 
+	assert (FeatureAlgorithmInstances::initialized() && "Failed to initialize feature algorithms");
+
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));
 	preproc_opts_t *preproc_opts = &(featureset.preproc_opts);

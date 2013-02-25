@@ -4738,80 +4738,80 @@ MultiScale Histogram bin 22 (Wavelet Fourier)	Multiscale Histograms (Wavelet (Fo
 MultipleScaleHistograms_WaveletFFT TBins9_Bin07	Multiscale Histograms (Wavelet (Fourier ())) [22]\n\
 MultiScale Histogram bin 23 (Wavelet Fourier)	Multiscale Histograms (Wavelet (Fourier ())) [23]\n\
 MultipleScaleHistograms_WaveletFFT TBins9_Bin08	Multiscale Histograms (Wavelet (Fourier ())) [23]\n\
-Feature area histogram bin 0	Object Features () [0]\n\
-FeatureAreaHist Bin0	Object Features () [0]\n\
-Feature area histogram bin 1	Object Features () [1]\n\
-FeatureAreaHist Bin1	Object Features () [1]\n\
-Feature area histogram bin 2	Object Features () [2]\n\
-FeatureAreaHist Bin2	Object Features () [2]\n\
-Feature area histogram bin 3	Object Features () [3]\n\
-FeatureAreaHist Bin3	Object Features () [3]\n\
-Feature area histogram bin 4	Object Features () [4]\n\
-FeatureAreaHist Bin4	Object Features () [4]\n\
-Feature area histogram bin 5	Object Features () [5]\n\
-FeatureAreaHist Bin5	Object Features () [5]\n\
-Feature area histogram bin 6	Object Features () [6]\n\
-FeatureAreaHist Bin6	Object Features () [6]\n\
-Feature area histogram bin 7	Object Features () [7]\n\
-FeatureAreaHist Bin7	Object Features () [7]\n\
-Feature area histogram bin 8	Object Features () [8]\n\
-FeatureAreaHist Bin8	Object Features () [8]\n\
-Feature area histogram bin 9	Object Features () [9]\n\
-FeatureAreaHist Bin9	Object Features () [9]\n\
-Feature AreaMax	Object Features () [10]\n\
-FeatureAreaMax FeatureAreaMax	Object Features () [10]\n\
-Feature AreaMean	Object Features () [11]\n\
-FeatureAreaMean FeatureAreaMean	Object Features () [11]\n\
-Feature AreaMedian	Object Features () [12]\n\
-FeatureAreaMedian FeatureAreaMedian	Object Features () [12]\n\
-Feature AreaMin	Object Features () [13]\n\
-FeatureAreaMin FeatureAreaMin	Object Features () [13]\n\
-Feature AreaVar	Object Features () [14]\n\
-FeatureAreaVar FeatureAreaVar	Object Features () [14]\n\
-Feature X Centroid	Object Features () [15]\n\
-FeatureCentroid X	Object Features () [15]\n\
-Feature Y Centroid	Object Features () [16]\n\
-FeatureCentroid Y	Object Features () [16]\n\
-Feature Count	Object Features () [17]\n\
-FeatureCount FeatureCount	Object Features () [17]\n\
+FeatureAreaHist Bin0	Otsu Object Features () [0]\n\
+FeatureAreaHist Bin1	Otsu Object Features () [1]\n\
+FeatureAreaHist Bin2	Otsu Object Features () [2]\n\
+FeatureAreaHist Bin3	Otsu Object Features () [3]\n\
+FeatureAreaHist Bin4	Otsu Object Features () [4]\n\
+FeatureAreaHist Bin5	Otsu Object Features () [5]\n\
+FeatureAreaHist Bin6	Otsu Object Features () [6]\n\
+FeatureAreaHist Bin7	Otsu Object Features () [7]\n\
+FeatureAreaHist Bin8	Otsu Object Features () [8]\n\
+FeatureAreaHist Bin9	Otsu Object Features () [9]\n\
+FeatureAreaMax FeatureAreaMax	Otsu Object Features () [10]\n\
+FeatureAreaMean FeatureAreaMean	Otsu Object Features () [11]\n\
+FeatureAreaMedian FeatureAreaMedian	Otsu Object Features () [12]\n\
+FeatureAreaMin FeatureAreaMin	Otsu Object Features () [13]\n\
+FeatureAreaVar FeatureAreaVar	Otsu Object Features () [14]\n\
+FeatureCentroid X	Otsu Object Features () [15]\n\
+FeatureCentroid Y	Otsu Object Features () [16]\n\
+FeatureCount FeatureCount	Otsu Object Features () [17]\n\
+FeatureDistHist Bin0	Otsu Object Features () [18]\n\
+FeatureDistHist Bin1	Otsu Object Features () [19]\n\
+FeatureDistHist Bin2	Otsu Object Features () [20]\n\
+FeatureDistHist Bin3	Otsu Object Features () [21]\n\
+FeatureDistHist Bin4	Otsu Object Features () [22]\n\
+FeatureDistHist Bin5	Otsu Object Features () [23]\n\
+FeatureDistHist Bin6	Otsu Object Features () [24]\n\
+FeatureDistHist Bin7	Otsu Object Features () [25]\n\
+FeatureDistHist Bin8	Otsu Object Features () [26]\n\
+FeatureDistHist Bin9	Otsu Object Features () [27]\n\
+FeatureDistMax FeatureDistMax	Otsu Object Features () [28]\n\
+FeatureDistMean FeatureDistMean	Otsu Object Features () [29]\n\
+FeatureDistMedian FeatureDistMedian	Otsu Object Features () [30]\n\
+FeatureDistMin FeatureDistMin	Otsu Object Features () [31]\n\
+FeatureDistVar FeatureDistVar	Otsu Object Features () [32]\n\
+FeatureEuler FeatureEuler	Otsu Object Features () [33]\n\
+Feature area histogram bin 0	Otsu Object Features () [0]\n\
+Feature area histogram bin 1	Otsu Object Features () [1]\n\
+Feature area histogram bin 2	Otsu Object Features () [2]\n\
+Feature area histogram bin 3	Otsu Object Features () [3]\n\
+Feature area histogram bin 4	Otsu Object Features () [4]\n\
+Feature area histogram bin 5	Otsu Object Features () [5]\n\
+Feature area histogram bin 6	Otsu Object Features () [6]\n\
+Feature area histogram bin 7	Otsu Object Features () [7]\n\
+Feature area histogram bin 8	Otsu Object Features () [8]\n\
+Feature area histogram bin 9	Otsu Object Features () [9]\n\
+Feature AreaMax	Otsu Object Features () [10]\n\
+Feature AreaMean	Otsu Object Features () [11]\n\
+Feature AreaMedian	Otsu Object Features () [12]\n\
+Feature AreaMin	Otsu Object Features () [13]\n\
+Feature AreaVar	Otsu Object Features () [14]\n\
+Feature X Centroid	Otsu Object Features () [15]\n\
+Feature Y Centroid	Otsu Object Features () [16]\n\
+Feature Count	Otsu Object Features () [17]\n\
 // begin issue 35 fix\n\
 // previously the 'Feature dist histogram bin n' features were not represented here\n\
-FeatureDistHist Bin0	Object Features () [18]\n\
-Feature dist histogram bin 0	Object Features () [18]\n\
-FeatureDistHist Bin1	Object Features () [19]\n\
-Feature dist histogram bin 1	Object Features () [19]\n\
-FeatureDistHist Bin2	Object Features () [20]\n\
-Feature dist histogram bin 2	Object Features () [20]\n\
-FeatureDistHist Bin3	Object Features () [21]\n\
-Feature dist histogram bin 3	Object Features () [21]\n\
-FeatureDistHist Bin4	Object Features () [22]\n\
-Feature dist histogram bin 4	Object Features () [22]\n\
-FeatureDistHist Bin5	Object Features () [23]\n\
-Feature dist histogram bin 5	Object Features () [23]\n\
-FeatureDistHist Bin6	Object Features () [24]\n\
-Feature dist histogram bin 6	Object Features () [24]\n\
-FeatureDistHist Bin7	Object Features () [25]\n\
-Feature dist histogram bin 7	Object Features () [25]\n\
-FeatureDistHist Bin8	Object Features () [26]\n\
-Feature dist histogram bin 8	Object Features () [26]\n\
-FeatureDistHist Bin9	Object Features () [27]\n\
-Feature dist histogram bin 9	Object Features () [27]\n\
+Feature dist histogram bin 0	Otsu Object Features () [18]\n\
+Feature dist histogram bin 1	Otsu Object Features () [19]\n\
+Feature dist histogram bin 2	Otsu Object Features () [20]\n\
+Feature dist histogram bin 3	Otsu Object Features () [21]\n\
+Feature dist histogram bin 4	Otsu Object Features () [22]\n\
+Feature dist histogram bin 5	Otsu Object Features () [23]\n\
+Feature dist histogram bin 6	Otsu Object Features () [24]\n\
+Feature dist histogram bin 7	Otsu Object Features () [25]\n\
+Feature dist histogram bin 8	Otsu Object Features () [26]\n\
+Feature dist histogram bin 9	Otsu Object Features () [27]\n\
 // The following feature name has been used incorrectly for the past year\n\
 // Keep it for all the data already generated\n\
-Feature DistHist	Object Features () [27]\n\
+Feature DistHist	Otsu Object Features () [27]\n\
 //end issue 35 fix\n\
-Feature DistMax	Object Features () [28]\n\
-FeatureDistMax FeatureDistMax	Object Features () [28]\n\
-Feature DistMean	Object Features () [29]\n\
-FeatureDistMean FeatureDistMean	Object Features () [29]\n\
-Feature DistMedian	Object Features () [30]\n\
-FeatureDistMedian FeatureDistMedian	Object Features () [30]\n\
-Feature DistMin	Object Features () [31]\n\
-FeatureDistMin FeatureDistMin	Object Features () [31]\n\
-Feature DistVar	Object Features () [32]\n\
-FeatureDistVar FeatureDistVar	Object Features () [32]\n\
-Feature Euler	Object Features () [33]\n\
-FeatureEuler FeatureEuler	Object Features () [33]\n\
+Feature DistMax	Otsu Object Features () [28]\n\
+Feature DistMean	Otsu Object Features () [29]\n\
+Feature DistMedian	Otsu Object Features () [30]\n\
+Feature DistMin	Otsu Object Features () [31]\n\
+Feature DistVar	Otsu Object Features () [32]\n\
+Feature Euler	Otsu Object Features () [33]\n\
 mean ()	Pixel Intensity Statistics () [0]\n\
 median ()	Pixel Intensity Statistics () [1]\n\
 stddev ()	Pixel Intensity Statistics () [2]\n\

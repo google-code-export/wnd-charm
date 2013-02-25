@@ -35,6 +35,7 @@
 #include <stdio.h>
 
 #include "cmatrix.h"
+#include "FeatureNames.h"
 #include "WORMfile.h"
 
 #define MAX_SIGNATURE_NUM 5000
@@ -99,13 +100,14 @@ class signatures
     signatures *duplicate();            // create an identical signature vector object */
     void Allocate(size_t nsigs);        // call before adding sigs
     void Add(const char *name, double value);
+	void AddVector(const FeatureNames::FeatureGroup *fg, const std::vector<double> &vec);
 	void SetFeatureVectorType();
     void Clear();
     void compute(ImageMatrix &matrix, int compute_colors);
-    void CompGroupA(ImageMatrix &matrix, const char *transform_label);
-    void CompGroupB(ImageMatrix &matrix, const char *transform_label);
-    void CompGroupC(ImageMatrix &matrix, const char *transform_label);
-    void CompGroupD(ImageMatrix &matrix, const char *transform_label);
+    void CompGroupA(ImageMatrix &matrix, const std::string &transform_label);
+    void CompGroupB(ImageMatrix &matrix, const std::string &transform_label);
+    void CompGroupC(ImageMatrix &matrix, const std::string &transform_label);
+    void CompGroupD(ImageMatrix &matrix);
     void ComputeGroups(ImageMatrix &matrix, int compute_colors);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void FileClose();

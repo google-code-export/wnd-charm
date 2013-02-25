@@ -269,7 +269,8 @@ public:
 		return (_median);
 	}
 	void GetColorStatistics(double *hue_avg, double *hue_std, double *sat_avg, double *sat_std, double *val_avg, double *val_std, double *max_color, double *colors);
-	void ColorTransform(double *color_hist, int use_hue);
+	void ColorTransform();
+	void HueTransform();
 	void histogram(double *bins,unsigned short bins_num, int imhist);
    double Otsu(int dynamic_range=1);                                  /* Otsu grey threshold                  */
 	void MultiScaleHistogram(double *out);

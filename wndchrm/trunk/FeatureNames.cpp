@@ -2,29 +2,36 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "FeatureNames.hpp"
+// This defines a big C string constant (oldFeatureNamesFileStr) with tab-delimited old_feature new_feature lines.
+// Its defined this way because doing map declarations on the stack takes forever to compile,
+// blows up memory during compilation with optimization, and results in a monstrously huge object file 5x bigger than the rest of the library
+#include "OldFeatureNamesFileStr.h"
+#include "FeatureNames.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
 #include <algorithm>
 
-// Storage for class statics
-FeatureNames::cnm_t  FeatureNames::channels_;
-FeatureNames::tnm_t  FeatureNames::transforms_;
-FeatureNames::fam_t  FeatureNames::feature_algorithms_;
-FeatureNames::fgnm_t FeatureNames::feature_groups_;
-FeatureNames::fnm_t  FeatureNames::features_;
-FeatureNames::ofnm_t FeatureNames::old_features_;
-// initialization pre-main
-const bool initOldFeatureNameLookup_ = FeatureNames::initOldFeatureNameLookup ();
-const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
+// hopeful pre-main initialization of the featurename lookup map
+const bool FeatureNames::initialized() {
+	static cnm_t  &channels = channels_map ();
+	static tnm_t  &transforms = transforms_map ();
+	static fam_t  &feature_algorithms = feature_algorithms_map ();
+	static fgnm_t &feature_groups = feature_groups_map ();
+	static fnm_t  &feature_names = feature_names_map ();
+	static ofnm_t &old_features = old_features_map ();
 
-// This defines a big C string constant (oldFeatureNamesFileStr) with tab-delimited old_feature new_feature lines.
-// Its defined this way because doing map declarations on the stack takes forever to compile,
-// blows up memory during compilation with optimization, and results in a monstrously huge object file 5x bigger than the rest of the library
-#include "OldFeatureNamesFileStr.h"
-
+	return ( ! (
+		channels.empty() ||
+		transforms.empty() ||
+		feature_algorithms.empty() ||
+		feature_groups.empty() ||
+		feature_names.empty() ||
+		old_features.empty()
+	) );
+}
+const bool FeatureNames::init_maps_ = FeatureNames::initialized ();
 
 
 // testing only
@@ -44,9 +51,10 @@ const bool initFeatureAlgorithms_ = FeatureNames::initFeatureAlgorithms ();
 // 	int i,j,n_featnames;
 // 	FeatureNames::ofnm_t::const_iterator ofnm_it;
 // 	std::vector<std::string> featurenames;
+//	static ofnm_t &old_features = old_features_map();
 // 
-// 	featurenames.reserve(FeatureNames::old_features_.size());
-// 	for(ofnm_it = FeatureNames::old_features_.begin(); ofnm_it != FeatureNames::old_features_.end(); ++ofnm_it ) {
+// 	featurenames.reserve(FeatureNames::old_features.size());
+// 	for(ofnm_it = FeatureNames::old_features.begin(); ofnm_it != FeatureNames::old_features.end(); ++ofnm_it ) {
 // 		featurenames.push_back( ofnm_it->first );
 // 	}
 // 	n_featnames = featurenames.size();
@@ -142,15 +150,17 @@ The feature and group names reported in .name fields are normalized for whitespa
 */
 
 const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
-	if (! (featurename_in && *featurename_in) ) return (NULL);
-	fnm_t::const_iterator fnm_it = features_.find(featurename_in);
-	if (fnm_it != features_.end()) return (fnm_it->second);
+	static fnm_t &feature_names = FeatureNames::feature_names_map();
 
-	const std::string *featurename_old;
+	if (! (featurename_in && *featurename_in) ) return (NULL);
+
+	fnm_t::const_iterator fnm_it = feature_names.find(featurename_in);
+	if (fnm_it != feature_names.end()) return (fnm_it->second);
+
 	std::string featurename;
-	featurename_old = oldFeatureNameLookup (featurename_in);
-	if (featurename_old) featurename.assign (*featurename_old);
-	else featurename.assign (featurename_in);
+	const std::string &featurename_old = oldFeatureNameLookup (featurename_in);
+	if (featurename_old.empty()) featurename = featurename_old;
+	else featurename = featurename_in;
 
 // parse out the group index
 	int index = -1;
@@ -171,21 +181,18 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char 
 		groupname.erase(found+1);
 
 	const FeatureGroup *featuregroup = getGroupByName (groupname);
-	if (!featuregroup) return (NULL); // This should only fail for memory allocation failure
 
 	// For now, if we got an invalid (unknown) index, assume that its 0.
-	if (index < 0) index = 0;
-
 	// note that the feature name is normalized for whitespace
-	featurename = featuregroup->name;
-
-	if (index >= 0) {
+	if (index < 0) index = 0;
+	else if (index < featuregroup->algorithm->n_features) {
+		featurename = featuregroup->labels[index];
+	} else {
 		char buf[64];
-		sprintf(buf,"%d",index);
-		featurename += " [";
-		featurename += buf;
-		featurename += "]";
+		sprintf(buf," [%d]",index);
+		featurename = featuregroup->name + buf;
 	}
+
 	// For unknown featuregroups, make sure that n_features is always big enough to accomodate the index (if any)
 	if (index > featuregroup->algorithm->n_features) {
 	// bypass static constraint
@@ -193,64 +200,67 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char 
 		*index_p = index;
 	}
 
-	FeatureInfo *featureinfo = new FeatureInfo (featurename, featuregroup, index);
-
-	features_[featurename_in] = featureinfo;
-	return (featureinfo);
+	return (feature_names[featurename_in] = new FeatureInfo (featurename, featuregroup, index));
 }
 
 // This returns an iterator to the algorithm map by string lookup
-const FeatureNames::FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (std::string &name) {
-	fam_t::const_iterator fam_it = feature_algorithms_.find(name);
-	FeatureAlgorithm *algorithm = NULL;
-	
-	if (fam_it == feature_algorithms_.end()) {
-		algorithm = new FeatureAlgorithm (name,1);
-		feature_algorithms_[name] = algorithm;
+const FeatureAlgorithm *FeatureNames::getFeatureAlgorithmByName (const std::string &name) {
+	static fam_t  &feature_algorithms = feature_algorithms_map ();
+
+	fam_t::const_iterator fam_it = feature_algorithms.find(name);
+
+	if (fam_it == feature_algorithms.end()) {
+		return (NULL);
 	} else {
-		algorithm = fam_it->second;
+		return (fam_it->second);
 	}
-	
-	return (algorithm);
+}
+
+bool FeatureNames::registerFeatureAlgorithm (const FeatureAlgorithm *algorithm) {
+	static fam_t  &feature_algorithms = feature_algorithms_map ();
+	fam_t::const_iterator fam_it = feature_algorithms.find(algorithm->name);
+
+	if (fam_it != feature_algorithms.end())
+		return true;
+
+	feature_algorithms[algorithm->name] = algorithm;
+	return true;
 }
 
 
 // This should return a channel object by string lookup
-const FeatureNames::Channel *FeatureNames::getChannelByName (std::string &name) {
-	cnm_t::const_iterator cnm_it = channels_.find(name);
-	Channel *channel = NULL;
+const FeatureNames::Channel *FeatureNames::getChannelByName (const std::string &name) {
+	static cnm_t  &channels = channels_map ();
 
-	if (cnm_it == channels_.end()) {
-		channel = new Channel (name);
-		channels_[name] = channel;
+	cnm_t::const_iterator cnm_it = channels.find(name);
+
+	if (cnm_it == channels.end()) {
+		return (channels[name] = new Channel (name));
 	} else {
-		channel = cnm_it->second;
+		return (cnm_it->second);
 	}
-
-	return (channel);
 }
 
 // This should return a transform object by string lookup
-const FeatureNames::Transform *FeatureNames::getTransformByName (std::string &name) {
-	tnm_t::const_iterator tnm_it = transforms_.find(name);
-	Transform *transform = NULL;
+const FeatureNames::Transform *FeatureNames::getTransformByName (const std::string &name) {
+	static tnm_t  &transforms = transforms_map ();
 
-	if (tnm_it == transforms_.end()) {
-		transform = new Transform (name);
-		transforms_[name] = transform;
+	tnm_t::const_iterator tnm_it = transforms.find(name);
+
+	if (tnm_it == transforms.end()) {
+		return (transforms[name] = new Transform (name));
 	} else {
-		transform = tnm_it->second;
+		return (tnm_it->second);
 	}
-
-	return (transform);
 }
 
 
-const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &name) {
-	fgnm_t::const_iterator fgnm_it = feature_groups_.find(name);
-	if (fgnm_it != feature_groups_.end()) return (fgnm_it->second);
+const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (const std::string &name) {
+	static fgnm_t &feature_groups = feature_groups_map();
 
-	FeatureGroup *featuregroup=NULL;
+	fgnm_t::const_iterator fgnm_it = feature_groups.find(name);
+	if (fgnm_it != feature_groups.end()) return (fgnm_it->second);
+
 	size_t found;
 	
 //printf ("groupname cache miss\n");
@@ -266,8 +276,7 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &nam
 		algorithmname.erase(found+1);
 
 	algorithm = (FeatureAlgorithm *) getFeatureAlgorithmByName (algorithmname);
-	if (!algorithm) return (NULL); // This should only fail on memory allocation
-//printf ("ref string c_str: [%s]\n",featuregroup.name.c_str());
+	assert (algorithm != NULL && "algorithm not found when calling FeatureNames::getGroupByName");
 
 // parse out the transforms - separated by '('
 	size_t found_trans_s;
@@ -286,8 +295,7 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &nam
 		if (found != std::string::npos) {
 			transform_name.erase(found+1);
 			transform = getTransformByName(transform_name);
-			if (transform) transforms.push_back ( transform );
-			else return (NULL);
+			transforms.push_back ( transform );
 		}
 		found_trans_s = name.find_first_not_of(" ()",found_trans_e+1);
 		if (found_trans_s != std::string::npos) found_trans_e = name.find_first_of('(',found_trans_s+1);
@@ -328,57 +336,54 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (std::string &nam
 	for (i = 0; i < transforms.size(); i++) name_norm += ")";
 
 // end of validation checks
-	featuregroup = new FeatureGroup (name, algorithm, channel, transforms);
-	featuregroup->name = name_norm;
-	featuregroup->algorithm = algorithm;
-	featuregroup->channel = channel;
-// These need to go in backwards from how they were read.
-	featuregroup->transforms = transforms;
-
-
-// 	printf ("%s: [%s]",name.c._str(),featuregroup.algorithm.c_str());
-// 	if (featuregroup.transforms.size()) printf (" [%s]",featuregroup.transforms[featuregroup.transforms.size()-1].c_str());
-// 	for (int i= featuregroup.transforms.size()-2; i >= 0 ; i--) printf ("->[%s]",featuregroup.transforms[i].c_str());
+// 	printf ("%s: [%s]",name.c._str(),featuregroup->algorithm.c_str());
+// 	if (featuregroup->transforms.size()) printf (" [%s]",featuregroup->transforms[featuregroup->transforms.size()-1].c_str());
+// 	for (int i= featuregroup->transforms.size()-2; i >= 0 ; i--) printf ("->[%s]",featuregroup->transforms[i].c_str());
 // 	printf ("[%d]\n",index);
 
-
-	feature_groups_[name] = featuregroup;
-	return (featuregroup);
+	return (feature_groups[name] = new FeatureGroup (name_norm, algorithm, channel, transforms));
 }
 
 
-const std::string *FeatureNames::oldFeatureNameLookup (const char *oldFeatureName) {
-	ofnm_t::const_iterator ofnm_it = old_features_.find(oldFeatureName);
+const std::string &FeatureNames::oldFeatureNameLookup (const char *oldFeatureName) {
+	static ofnm_t &old_features = old_features_map();
 
-	if (ofnm_it == old_features_.end()) return (NULL);
-	else return (&(ofnm_it->second));
+	ofnm_t::const_iterator ofnm_it = old_features.find(oldFeatureName);
+	const static std::string emptyString = "";
+
+	if (ofnm_it == old_features.end()) return (emptyString);
+	else return (ofnm_it->second);
 }
 
 
 
-const bool FeatureNames::initFeatureAlgorithms() {
-
-	if (!feature_algorithms_.empty()) return (true);
-	feature_algorithms_["Chebyshev Coefficients"]         = new FeatureAlgorithm ("Chebyshev Coefficients",         31);
-	feature_algorithms_["Chebyshev-Fourier Coefficients"] = new FeatureAlgorithm ("Chebyshev-Fourier Coefficients", 31);
-	feature_algorithms_["Color Histogram"]                = new FeatureAlgorithm ("Color Histogram",                18);
-	feature_algorithms_["Comb Moments"]                   = new FeatureAlgorithm ("Comb Moments",                   47);
-	feature_algorithms_["Edge Features"]                  = new FeatureAlgorithm ("Edge Features",                  27);
-	feature_algorithms_["Fractal Features"]               = new FeatureAlgorithm ("Fractal Features",               19);
-	feature_algorithms_["Gabor Textures"]                 = new FeatureAlgorithm ("Gabor Textures",                  6);
-	feature_algorithms_["Haralick Textures"]              = new FeatureAlgorithm ("Haralick Textures",              27);
-	feature_algorithms_["Multiscale Histograms"]          = new FeatureAlgorithm ("Multiscale Histograms",          23);
-	feature_algorithms_["Object Features"]                = new FeatureAlgorithm ("Object Features",                33);
-	feature_algorithms_["Pixel Intensity Statistics"]     = new FeatureAlgorithm ("Pixel Intensity Statistics",      4);
-	feature_algorithms_["Radon Coefficients"]             = new FeatureAlgorithm ("Radon Coefficients",             11);
-	feature_algorithms_["Tamura Textures"]                = new FeatureAlgorithm ("Tamura Textures",                 5);
-	feature_algorithms_["Zernike Coefficients"]           = new FeatureAlgorithm ("Zernike Coefficients",           71);
-	return (true);
+// Storage for class statics
+// This is to avoid the "static initialization order fiasco" (see http://www.parashift.com/c++-faq/static-init-order-on-first-use-members.html)
+FeatureNames::cnm_t  &FeatureNames::channels_map () {
+	static cnm_t* channels_ = new cnm_t();
+	return *channels_;
 }
+FeatureNames::tnm_t  &FeatureNames::transforms_map () {
+	static tnm_t* transforms_ = new tnm_t();
+	return *transforms_;
+}
+FeatureNames::fam_t  &FeatureNames::feature_algorithms_map () {
+	static fam_t* feature_algorithms_ = new fam_t();
+	return *feature_algorithms_;
+}
+FeatureNames::fgnm_t &FeatureNames::feature_groups_map () {
+	static fgnm_t* feature_groups_ = new fgnm_t();
+	return *feature_groups_;
+}
+FeatureNames::fnm_t  &FeatureNames::feature_names_map () {
+	static fnm_t* feature_names_ = new fnm_t();
+	return *feature_names_;
+}
+FeatureNames::ofnm_t &FeatureNames::old_features_map () {
+	static ofnm_t* old_features_ = new ofnm_t();
+	if (!old_features_->empty()) return (*old_features_);
 
-// N.B.: not a class or object method.
-void parseFeatureNameMap(char *buffer, FEATURENAMES_MAP<std::string,std::string> &feature_name_map ) {
-	char *p = buffer;
+	char *p = oldFeatureNamesFileStr;
 	enum {st_eol, st_leading_space, st_ignore_line, st_key, st_val} state = st_eol, new_state = st_eol;
 	std::string key, val;
 
@@ -414,16 +419,11 @@ void parseFeatureNameMap(char *buffer, FEATURENAMES_MAP<std::string,std::string>
 			state = new_state;
 			if (state != st_eol) p++;
 		}
-		if (key.length()) feature_name_map[key] = val;
+		if (key.length()) {
+			(*old_features_)[key] = val;
+		}
 	}
 
-}
-
-
-const bool FeatureNames::initOldFeatureNameLookup () {
-	
-	if (!old_features_.empty()) return (true);
-	parseFeatureNameMap (oldFeatureNamesFileStr, old_features_);
-	return (true);
+	return (*old_features_);
 }
 

@@ -36,7 +36,7 @@
 #include <vector>
 #include <list>
 #include <string>
-#include "FeatureNames.hpp"
+#include "FeatureNames.h"
 
 #include "config.h" // for version info
 

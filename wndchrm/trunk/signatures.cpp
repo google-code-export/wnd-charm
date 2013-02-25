@@ -138,6 +138,20 @@ void signatures::Add(const char *name,double value) {
 	if (count > max_sigs) max_sigs = count;
 }
 
+// void signatures::AddVector(const std::string &name, const std::string &transform, const std::vector<double> &vec) {
+// 	char featuregroup[80], featurename[80];
+// 	sprintf (featuregroup, "%s (%s)", name.c_str(), transform.c_str());
+// 	for (std::vector<double>::size_type idx = 0; idx < vec.size(); idx++) {
+// 		sprintf (featurename, "%s [%u]", featuregroup, (unsigned int)idx);
+// 		Add (featurename, vec[idx]);
+// 	}
+// }
+void signatures::AddVector(const FeatureNames::FeatureGroup *fg, const std::vector<double> &vec) {
+	for (std::vector<double>::size_type idx = 0; idx < vec.size(); idx++) {
+		Add (fg->labels[idx].c_str(), vec[idx]);
+	}
+}
+
 
 void signatures::SetFeatureVectorType () {
 	if (feature_vec_type == fv_unknown) {
@@ -187,419 +201,134 @@ int signatures::IsNeeded(long start_index, long group_length)
    compute_colors -int- 1 to compute color signatures, 0 to ignore color sugnatures   
 */
 
-void signatures::compute(ImageMatrix &matrix, int compute_colors)
-{  char buffer[80];
-   double vec[72];
-   int a,b,c;
-   ImageMatrix FourierTransform,ChebyshevTransform,ChebyshevFourierTransform,WaveletSelector,WaveletFourierSelector;
-   ImageMatrix TempMatrix;
+void signatures::compute(ImageMatrix &matrix, int compute_colors) {
+	ImageMatrix FourierTransform,ChebyshevTransform,ChebyshevFourierTransform,WaveletSelector,WaveletFourierSelector;
 
 	version = CURRENT_FEATURE_VERSION;
 
-   if (verbosity>=2) printf("start processing image...\n");   
-   if (verbosity>3) printf("transforms...\n");
-   if (verbosity>3) printf("...fft2\n");
-   FourierTransform.copy (matrix);
-   FourierTransform.fft2();
-   ChebyshevTransform.copy (matrix);
-   if (verbosity>3) printf("...ChebyshevTransform\n");
-   ChebyshevTransform.ChebyshevTransform(0);
-   ChebyshevFourierTransform.copy (FourierTransform);
-   if (verbosity>3) printf("...ChebyshevFourierTransform\n");
-   ChebyshevFourierTransform.ChebyshevTransform(0);
-   WaveletSelector.copy (matrix);
-   if (verbosity>3) printf("...Symlet5Transform\n");
-   WaveletSelector.Symlet5Transform();
-   WaveletFourierSelector.copy (FourierTransform);
-   if (verbosity>3) printf("...WaveletFourierSelector\n");
-   WaveletFourierSelector.Symlet5Transform();
-   if (verbosity>3) printf("start computing features\n");
-   count=0;      /* start counting signatures from 0 */
-   /* chebyshev fourier transform (signatures 0 - 63) */
-   for (a=0;a<32;a++) vec[a]=0;
-   if (verbosity>3) printf("...ChebyshevFourierCoefficientHistogram\n");
-   matrix.ChebyshevFourierTransform2D(vec);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"ChebyshevFourierCoefficientHistogram Bin%02d",a);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...ChebyshevFourierCoefficientHistogram_FFT\n");
-   FourierTransform.ChebyshevFourierTransform2D(vec);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"ChebyshevFourierCoefficientHistogram_FFT Bin%02d",a);
-      Add(buffer,vec[a]);
-   }
-   /* Chebyshev Statistics (signatures 64 - 127) */
-   TempMatrix.copy (matrix);
-   if (verbosity>3) printf("...ChebyshevCoefficientHistogram\n");
-   TempMatrix.ChebyshevStatistics2D(vec,0,32);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"ChebyshevCoefficientHistogram Bin%02d",a);
-      Add(buffer,vec[a]);
-   }
+	if (verbosity>=2) printf("start processing image...\n");   
+	if (verbosity>3) printf("transforms...\n");
+	if (verbosity>3) printf("...fft2\n");
+	FourierTransform.copy (matrix);
+	FourierTransform.fft2();
+	ChebyshevTransform.copy (matrix);
+	if (verbosity>3) printf("...ChebyshevTransform\n");
+	ChebyshevTransform.ChebyshevTransform(0);
+	ChebyshevFourierTransform.copy (FourierTransform);
+	if (verbosity>3) printf("...ChebyshevFourierTransform\n");
+	ChebyshevFourierTransform.ChebyshevTransform(0);
+	WaveletSelector.copy (matrix);
+	if (verbosity>3) printf("...Symlet5Transform\n");
+	WaveletSelector.Symlet5Transform();
+	WaveletFourierSelector.copy (FourierTransform);
+	if (verbosity>3) printf("...WaveletFourierSelector\n");
+	WaveletFourierSelector.Symlet5Transform();
+	if (verbosity>3) printf("start computing features\n");
 
-   TempMatrix.copy (FourierTransform);
-   if (verbosity>3) printf("...ChebyshevCoefficientHistogram_FFT\n");
-   TempMatrix.ChebyshevStatistics2D(vec,0,32);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"ChebyshevCoefficientHistogram_FFT Bin%02d",a);
-      Add(buffer,vec[a]);
-   }
+	count=0;      // start counting signatures from 0
+	// chebyshev fourier transform (signatures 0 - 63)
+	const FeatureNames::FeatureGroup *fg;
+	fg = FeatureNames::getGroupByName ("Chebyshev-Fourier Coefficients ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Chebyshev-Fourier Coefficients (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
 
-   /* Comb4Moments (signatures 128 - 415) */
-//    char four_moments_names[80][80]={"Minus45_Mean_HistBin00","Minus45_Mean_HistBin01","Minus45_Mean_HistBin02","Minus45_Std_HistBin00","Minus45_Std_HistBin01","Minus45_Std_HistBin02",
-//            "Minus45_Skew_HistBin00","Minus45_Skew_HistBin01","Minus45_Skew_HistBin02","Minus45_Kurt_HistBin00","Minus45_Kurt_HistBin01","Minus45_Kurt_HistBin02",
-// 		   "Plus45_Mean_HistBin00","Plus45_Mean_HistBin01","Plus45_Mean_HistBin02","Plus45_Std_HistBin00","Plus45_Std_HistBin01","Plus45_Std_HistBin02",
-// 		   "Plus45_Skew_HistBin00","Plus45_Skew_HistBin01","Plus45_Skew_HistBin02","Plus45_Kurt_HistBin00","Plus45_Kurt_HistBin01","Plus45_Kurt_HistBin02","90_Mean_HistBin00",
-// 		   "90_Mean_HistBin01","90_Mean_HistBin02","90_Std_HistBin00","90_Std_HistBin01","90_Std_HistBin02","90_Skew_HistBin00","90_Skew_HistBin01","90_Skew_HistBin02",
-// 		   "90_Kurt_HistBin00","90_Kurt_HistBin01","90_Kurt_HistBin02","0_Mean_HistBin00","0_Mean_HistBin01","0_Mean_HistBin02","0_Std_HistBin00","0_Std_HistBin01","0_Std_HistBin02",
-// 		   "0_Skew_HistBin00","0_Skew_HistBin01","0_Skew_HistBin02","0_Kurt_HistBin00","0_Kurt_HistBin01","0_Kurt_HistBin02"};
-	char four_moments_names[80][80]={
-		"Minus45_Mean_HistBin00", "Minus45_Mean_HistBin01", "Minus45_Mean_HistBin02",
-		"Minus45_Std_HistBin00",  "Minus45_Std_HistBin01",  "Minus45_Std_HistBin02",
-		"Minus45_Skew_HistBin00", "Minus45_Skew_HistBin01", "Minus45_Skew_HistBin02",
-		"Minus45_Kurt_HistBin00", "Minus45_Kurt_HistBin01", "Minus45_Kurt_HistBin02",
-		"Plus45_Mean_HistBin00",  "Plus45_Mean_HistBin01",  "Plus45_Mean_HistBin02",
-		"Plus45_Std_HistBin00",   "Plus45_Std_HistBin01",   "Plus45_Std_HistBin02",
-		"Plus45_Skew_HistBin00",  "Plus45_Skew_HistBin01",  "Plus45_Skew_HistBin02",
-		"Plus45_Kurt_HistBin00",  "Plus45_Kurt_HistBin01",  "Plus45_Kurt_HistBin02",
-		"90_Mean_HistBin00",      "90_Mean_HistBin01",      "90_Mean_HistBin02",
-		"90_Std_HistBin00",       "90_Std_HistBin01",       "90_Std_HistBin02",
-		"90_Skew_HistBin00",      "90_Skew_HistBin01",      "90_Skew_HistBin02",
-		"90_Kurt_HistBin00",      "90_Kurt_HistBin01",      "90_Kurt_HistBin02",
-		"0_Mean_HistBin00",       "0_Mean_HistBin01",       "0_Mean_HistBin02",
-		"0_Std_HistBin00",        "0_Std_HistBin01",        "0_Std_HistBin02",
-		"0_Skew_HistBin00",       "0_Skew_HistBin01",       "0_Skew_HistBin02",
-		"0_Kurt_HistBin00",       "0_Kurt_HistBin01",       "0_Kurt_HistBin02"
-	};
+	// Chebyshev Statistics (signatures 64 - 127) */
+	fg = FeatureNames::getGroupByName ("Chebyshev Coefficients ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Chebyshev Coefficients (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
 
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram\n");
-   matrix.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_Chebyshev\n");
-   ChebyshevTransform.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram_Chebyshev %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_ChebyshevFFT\n");
-   ChebyshevFourierTransform.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram_ChebyshevFFT %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_FFT\n");
-   FourierTransform.CombFirstFourMoments2D(vec);  
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram_FFT %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }  
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_Wavelet\n");
-   WaveletSelector.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram_Wavelet %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }       
-   if (verbosity>3) printf("...Comb4Orient4MomentsHistogram_WaveletFFT\n");
-   WaveletFourierSelector.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"Comb4Orient4MomentsHistogram_WaveletFFT %s",four_moments_names[a]);
-      Add(buffer,vec[a]);
-   }
+	// Comb4Moments (signatures 128 - 415)
+	fg = FeatureNames::getGroupByName ("Comb Moments ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Comb Moments (Chebyshev ())");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	fg = FeatureNames::getGroupByName ("Comb Moments (Chebyshev (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	fg = FeatureNames::getGroupByName ("Comb Moments (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	fg = FeatureNames::getGroupByName ("Comb Moments (Wavelet ())");
+	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	fg = FeatureNames::getGroupByName ("Comb Moments (Wavelet (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
 
-   if (verbosity>3) printf("...EdgeStatistics\n");
-   /* edge statistics (signatures 416 - 443) */
-   {  unsigned long EdgeArea;
-      double MagMean, MagMedian, MagVar, MagHist[8], DirecMean, DirecMedian, DirecVar, DirecHist[8], DirecHomogeneity, DiffDirecHist[4];
-      matrix.EdgeStatistics(&EdgeArea, &MagMean, &MagMedian, &MagVar, MagHist, &DirecMean, &DirecMedian, &DirecVar, DirecHist, &DirecHomogeneity, DiffDirecHist, 8);
-      Add("EdgeArea EdgeArea",EdgeArea);
-      for (a=0;a<4;a++)
-      {  sprintf(buffer,"EdgeDiffDirecHist Bin%d",a);
-         Add(buffer,DiffDirecHist[a]);
-      }
-      for (a=0;a<8;a++)
-      {  sprintf(buffer,"EdgeDirecHist Bin%d",a);
-         Add(buffer,DirecHist[a]);
-      }
-      Add("EdgeDirecHomo DirecHomo",DirecHomogeneity);
-      Add("EdgeDirecMean DirecMean",DirecMean);
-      Add("EdgeDirecMedian DirecMedian",DirecMedian);
-      Add("EdgeDirecVar DirecVar",DirecVar);
-      for (a=0;a<8;a++)
-      {  sprintf(buffer,"EdgeMagHist Bin%d",a);
-         Add(buffer,MagHist[a]);
-      }
-      Add("EdgeMagMean MagMean",MagMean);
-      Add("EdgeMagMedian MagMedian",MagMedian);
-      Add("EdgeMagVar MagVar",MagVar);
-   }
+	// edge statistics (signatures 416 - 443)
+	fg = FeatureNames::getGroupByName ("Edge Features ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
  
-   if (verbosity>3) printf("...FeatureStatistics\n");
-   /*feature statistics (signatures 444 - 477) */
-	{
-		unsigned long count, AreaMin, AreaMax;
-		long Euler;
-		unsigned int AreaMedian, area_histogram[10], dist_histogram[10];
-		double centroid_x, centroid_y, AreaMean, AreaVar, DistMin, DistMax, DistMean, DistMedian, DistVar;
+	// feature statistics (signatures 444 - 477)
+	fg = FeatureNames::getGroupByName ("Otsu Object Features ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Inverse-Otsu Object Features ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-		matrix.FeatureStatistics(&count, &Euler, &centroid_x, &centroid_y, &AreaMin, &AreaMax, &AreaMean, &AreaMedian, &AreaVar, area_histogram, &DistMin, &DistMax,
-			&DistMean, &DistMedian, &DistVar, dist_histogram, 10);
-		// area histogram
-		for (a=0;a<10;a++) {
-	      	sprintf(buffer,"Otsu Feature area histogram bin %d",a);
-			Add(buffer,area_histogram[a]);
-		}
-		Add("Otsu Feature AreaMax",AreaMax);
-		Add("Otsu Feature AreaMean",AreaMean);
-		Add("Otsu Feature AreaMedian",AreaMedian);
-		Add("Otsu Feature AreaMin",AreaMin);
-		Add("Otsu Feature AreaVar",AreaVar);
-		Add("Otsu Feature X Centroid",centroid_x);
-		Add("Otsu Feature Y Centroid",centroid_y);
-		Add("Otsu Feature Count",count);
-		for (a=0;a<10;a++) {
-			sprintf(buffer,"Otsu Feature dist histogram bin %d",a);
-			Add(buffer,dist_histogram[a]);
-		}
-		Add("Otsu Feature DistMax",DistMax);
-		Add("Otsu Feature DistMean",DistMean);
-		Add("Otsu Feature DistMedian",DistMedian);
-		Add("Otsu Feature DistMin",DistMin);
-		Add("Otsu Feature DistVar",DistVar);
-		Add("Otsu Feature Euler",Euler);
+	// gabor filters (signatures 478 - 484)
+	fg = FeatureNames::getGroupByName ("Gabor Textures ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-		ImageMatrix matrixInv;
-		matrixInv.copy (matrix);
-		matrixInv.invert();
-		matrixInv.FeatureStatistics(&count, &Euler, &centroid_x, &centroid_y, &AreaMin, &AreaMax, &AreaMean, &AreaMedian, &AreaVar, area_histogram, &DistMin, &DistMax,
-			&DistMean, &DistMedian, &DistVar, dist_histogram, 10);
-		// area histogram
-		for (a=0;a<10;a++) {
-	      	sprintf(buffer,"Inverse Otsu Feature area histogram bin %d",a);
-			Add(buffer,area_histogram[a]);
-		}
-		Add("Inverse Otsu Feature AreaMax",AreaMax);
-		Add("Inverse Otsu Feature AreaMean",AreaMean);
-		Add("Inverse Otsu Feature AreaMedian",AreaMedian);
-		Add("Inverse Otsu Feature AreaMin",AreaMin);
-		Add("Inverse Otsu Feature AreaVar",AreaVar);
-		Add("Inverse Otsu Feature X Centroid",centroid_x);
-		Add("Inverse Otsu Feature Y Centroid",centroid_y);
-		Add("Inverse Otsu Feature Count",count);
-		for (a=0;a<10;a++) {
-			sprintf(buffer,"Inverse Otsu Feature dist histogram bin %d",a);
-			Add(buffer,dist_histogram[a]);
-		}
-		Add("Inverse Otsu Feature DistMax",DistMax);
-		Add("Inverse Otsu Feature DistMean",DistMean);
-		Add("Inverse Otsu Feature DistMedian",DistMedian);
-		Add("Inverse Otsu Feature DistMin",DistMin);
-		Add("Inverse Otsu Feature DistVar",DistVar);
-		Add("Inverse Otsu Feature Euler",Euler);
-   }  
+	// haralick textures (signatures 485 - 652)
+	fg = FeatureNames::getGroupByName ("Haralick Textures ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Haralick Textures (Chebyshev ())");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	fg = FeatureNames::getGroupByName ("Haralick Textures (Chebyshev (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	fg = FeatureNames::getGroupByName ("Haralick Textures (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	fg = FeatureNames::getGroupByName ("Haralick Textures (Wavelet ())");
+	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	fg = FeatureNames::getGroupByName ("Haralick Textures (Wavelet (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+
+	// multi-scale histograms (signatures 653 - 796)
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Chebyshev ())");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Chebyshev (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Wavelet ())");
+	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Wavelet (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+
+	// radon transform (signatures 797 - 844)
+	fg = FeatureNames::getGroupByName ("Radon Coefficients ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Radon Coefficients (Chebyshev ())");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	fg = FeatureNames::getGroupByName ("Radon Coefficients (Chebyshev (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	fg = FeatureNames::getGroupByName ("Radon Coefficients (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+
+	// tamura textures (signatures 845 - 880)
+	fg = FeatureNames::getGroupByName ("Tamura Textures ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Tamura Textures (Chebyshev ())");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	fg = FeatureNames::getGroupByName ("Tamura Textures (Chebyshev (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	fg = FeatureNames::getGroupByName ("Tamura Textures (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	fg = FeatureNames::getGroupByName ("Tamura Textures (Wavelet ())");
+	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	fg = FeatureNames::getGroupByName ("Tamura Textures (Wavelet (Fourier ()))");
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
 
 
-   if (verbosity>3) printf("...GaborTextures\n");
-   /* gabor filters (signatures 478 - 484) */
-   matrix.GaborFilters2D(vec);
-   for (a=0;a<7;a++)
-   {  sprintf(buffer,"GaborTextures Gabor%02d",a+1);
-      Add(buffer,vec[a]);
-   }
-
-   /* haralick textures (signatures 485 - 652) */
-   char haralick_names[80][80]={"CoOcMat_AngularSecondMoment","ASM","CoOcMat_Contrast","Contrast","CoOcMat_Correlation","Correlation","CoOcMat_Variance","Variance","CoOcMat_InverseDifferenceMoment","IDM","CoOcMat_SumAverage" ,"SumAvg",
-           "CoOcMat_SumVariance","SumVar","CoOcMat_SumEntropy", "SumEntropy","CoOcMat_Entropy" ,"Entropy","CoOcMat_DifferenceEntropy","DiffEntropy","CoOcMat_DifferenceVariance","DiffVar","CoOcMat_FirstMeasureOfCorrelation","MeasCorr1",
-		   "CoOcMat_SecondMeasureOfCorrelation","MeasCorr2","CoOcMat_MaximalCorrelationCoefficient" ,"MaxCorrCoef","CoOcMat_AngularSecondMomentDif", "ASM","CoOcMat_ContrastDif" ,"Contrast","CoOcMat_CorrelationDif","Correlation","CoOcMat_VarianceDif","Variance",
-		   "CoOcMat_InverseDifferenceMomentDif","IDM","CoOcMat_SumAverageDif","SumAvg","CoOcMat_SumVarianceDif","SumVar","CoOcMat_SumEntropyDif" ,"SumEntropy","CoOcMat_EntropyDif","Entropy","CoOcMat_DifferenceEntropyDif","DiffEntropy","CoOcMat_DifferenceVarianceDif","DiffVar",
-		   "CoOcMat_FirstMeasureOfCorrelationDif","MeasCorr1","CoOcMat_SecondMeasureOfCorrelationDif","MeasCorr2","CoOcMat_MaximalCorrelationCoefficientDif","MaxCorrCoef"};
-
-   if (verbosity>3) printf("...HaralickTextures\n");
-   matrix.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...HaralickTextures_Chebyshev\n");
-   ChebyshevTransform.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_Chebyshev %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...HaralickTextures_ChebyshevFFT\n");
-   ChebyshevFourierTransform.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_ChebyshevFFT %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...HaralickTextures_FFT\n");
-   FourierTransform.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_FFT %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...HaralickTextures_Wavelet\n");
-   WaveletSelector.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_Wavelet %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...HaralickTextures_WaveletFFT\n");
-   WaveletFourierSelector.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"%s_WaveletFFT %s",haralick_names[a*2],haralick_names[a*2+1]);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram (signatures 653 - 796) */
-   /* ***************************************** */
-   /* multiple histogram of the original image (signatures 653 - 676) */
-   if (verbosity>3) printf("...MultipleScaleHistograms\n");
-   matrix.MultiScaleHistogram(vec);
-   b=3;c=3;
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram of the chebyshev transform (signatures 677 - 700) */
-   if (verbosity>3) printf("...MultipleScaleHistograms_Chebyshev\n");
-   ChebyshevTransform.MultiScaleHistogram(vec);
-   b=3;c=3;
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms_Chebyshev TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram of the Chebushev Fourier transform (signatures 701 - 724) */
-   if (verbosity>3) printf("...MultipleScaleHistograms_ChebyshevFFT\n");
-   ChebyshevFourierTransform.MultiScaleHistogram(vec);
-   b=3;c=3;
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms_ChebyshevFFT TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram of the Fourier transform (signatures 725 - 748) */
-   if (verbosity>3) printf("...MultipleScaleHistograms_FFT\n");
-   FourierTransform.MultiScaleHistogram(vec);
-   b=3;c=3;
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms_FFT TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram of the wavelet transform (signatures 749 - 772) */
-   if (verbosity>3) printf("...MultipleScaleHistograms_Wavelet\n");
-   WaveletSelector.MultiScaleHistogram(vec);
-   b=3;c=3;
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms_Wavelet TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-   /* multiple histogram of the wavelet Fourier transform (signatures 773 - 796) */
-   if (verbosity>3) printf("...MultipleScaleHistograms_WaveletFFT\n");
-   WaveletFourierSelector.MultiScaleHistogram(vec);
-   b=3;c=3;   
-   for (a=0;a<24;a++)
-   {  if (a==b) b+=(c=c+2);
-      sprintf(buffer,"MultipleScaleHistograms_WaveletFFT TBins%d_Bin%02d",c,a+c-b);
-      Add(buffer,vec[a]);
-   }
-
-   /* radon transform (signatures 797 - 844) */
-   if (verbosity>3) printf("...RadonTransformStatistics\n");
-   matrix.RadonTransform2D(vec);
-   for (a=0;a<12;a++)
-   {  sprintf(buffer,"RadonTransformStatistics Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...RadonTransformStatistics_Chebyshev\n");
-   ChebyshevTransform.RadonTransform2D(vec);
-   for (a=0;a<12;a++)
-   {  sprintf(buffer,"RadonTransformStatistics_Chebyshev Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...RadonTransformStatistics_ChebyshevFFT\n");
-   ChebyshevFourierTransform.RadonTransform2D(vec);
-   for (a=0;a<12;a++)
-   {  sprintf(buffer,"RadonTransformStatistics_ChebyshevFFT Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...RadonTransformStatistics_FFT\n");
-   FourierTransform.RadonTransform2D(vec);
-   for (a=0;a<12;a++)
-   {  sprintf(buffer,"RadonTransformStatistics_FFT Orient%d_Bin_%02d",45*(int)(a/3),a % 3);
-      Add(buffer,vec[a]);
-   }
-
-   char tamura_names[80][80]={"Coarseness_Hist_Bin_00","Coarseness_Hist_Bin_01","Coarseness_Hist_Bin_02","Contrast","Directionality","Total_Coarseness"};
-   /* tamura texture (signatures 845 - 880) */
-   if (verbosity>3) printf("...TamuraTextures\n");
-   matrix.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...TamuraTextures_Chebyshev\n");
-   ChebyshevTransform.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures_Chebyshev %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...TamuraTextures_ChebyshevFFT\n");
-   ChebyshevFourierTransform.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures_ChebyshevFFT %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...TamuraTextures_FFT\n");
-   FourierTransform.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures_FFT %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...TamuraTextures_Wavelet\n");
-   WaveletSelector.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures_Wavelet %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-   if (verbosity>3) printf("...TamuraTextures_WaveletFFT\n");
-   WaveletFourierSelector.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"TamuraTextures_WaveletFFT %s",tamura_names[a]);
-      Add(buffer,vec[a]);
-   }
-
-   if (verbosity>3) printf("...ZernikeMoments\n");
-   /* zernike (signatures 881 - 1024) */
-   { long x,y,output_size;   /* output size is normally 72 */
-     matrix.zernike2D(vec,&output_size);
-     x=0;y=0;
-     for (a=0;a<output_size;a++)
-     {  sprintf(buffer,"ZernikeMoments Z_%02d_%02d",(int)y,(int)x);
-        Add(buffer,vec[a]);
-        if (x>=y) x=1-(y++ % 2);
-        else x+=2;
-     }
-    x=0;y=0;
-   if (verbosity>3) printf("...ZernikeMoments_FFT\n");
-    FourierTransform.zernike2D(vec,&output_size);
-    for (a=0;a<output_size;a++)
-    {  sprintf(buffer,"ZernikeMoments_FFT Z_%02d_%02d",(int)y,(int)x);
-       Add(buffer,vec[a]);
-       if (x>=y) x=1-(y++ % 2);
-       else x+=2;
-     }
-   }
+	// zernike (signatures 881 - 1024)
+	fg = FeatureNames::getGroupByName ("Zernike Coefficients ()");
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	fg = FeatureNames::getGroupByName ("Zernike Coefficients (Fourier ())");
+	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
 
 	if (compute_colors) {
 		if (verbosity>3) printf("...ColorFeatures\n");
-		CompGroupD(matrix,"");
+		CompGroupD(matrix);
 		feature_vec_type = fv_short_color;
 	} else {
 		feature_vec_type = fv_short;
@@ -615,107 +344,23 @@ void signatures::compute(ImageMatrix &matrix, int compute_colors)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupA(ImageMatrix &matrix, const char *transform_label)
-{  int a;
-   char buffer[80];
-   double vec[7]={0,0,0,0,0,0,0};
-   /* edge statistics */
-   {  unsigned long EdgeArea=0;
-      double MagMean=0, MagMedian=0, MagVar=0, MagHist[8]={0,0,0,0,0,0,0,0}, DirecMean=0, DirecMedian=0, DirecVar=0, DirecHist[8]={0,0,0,0,0,0,0,0}, DirecHomogeneity=0, DiffDirecHist[4]={0,0,0,0};
+void signatures::CompGroupA (ImageMatrix &matrix, const std::string &transform_label) {
+	std::string featureGroupName;	
+	const FeatureNames::FeatureGroup *fg;
 
-      if (IsNeeded(count,28))  /* check if this group of signatures is needed */
-        matrix.EdgeStatistics(&EdgeArea, &MagMean, &MagMedian, &MagVar, MagHist, &DirecMean, &DirecMedian, &DirecVar, DirecHist, &DirecHomogeneity, DiffDirecHist, 8);
+	// edge statistics
+	fg = FeatureNames::getGroupByName (featureGroupName = "Edge Features " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-      Add("Edge Area",EdgeArea);
-      for (a=0;a<4;a++)
-      {  sprintf(buffer,"Edge DiffDirecHist bin %d",a);
-         Add(buffer,DiffDirecHist[a]);
-      }
-      for (a=0;a<8;a++)
-      {  sprintf(buffer,"Edge Direction Histogram bin %d",a);
-         Add(buffer,DirecHist[a]);
-      }
-      Add("Edge Direction Homogeneity",DirecHomogeneity);
-      Add("Edge Direction Mean",DirecMean);
-      Add("Edge Direction Median",DirecMedian);
-      Add("Edge Direction Variance",DirecVar);
-      for (a=0;a<8;a++)
-      {  sprintf(buffer,"Edge Magnitude Histogram bin %d",a);
-         Add(buffer,MagHist[a]);
-      }
-      Add("Edge Magnitude Mean",MagMean);
-      Add("Edge Magnitude Median",MagMedian);
-      Add("Edge Magnitude Variance",MagVar);
-   }
+	// object statistics
+	fg = FeatureNames::getGroupByName (featureGroupName = "Otsu Object Features " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+	fg = FeatureNames::getGroupByName ("Inverse-Otsu Object Features " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* object statistics */
-   {
-		unsigned long count, AreaMin, AreaMax;
-		long Euler;
-		unsigned int AreaMedian, area_histogram[10], dist_histogram[10];
-		double centroid_x, centroid_y, AreaMean, AreaVar, DistMin, DistMax, DistMean, DistMedian, DistVar;
-
-		matrix.FeatureStatistics(&count, &Euler, &centroid_x, &centroid_y, &AreaMin, &AreaMax, &AreaMean, &AreaMedian, &AreaVar, area_histogram, &DistMin, &DistMax,
-			&DistMean, &DistMedian, &DistVar, dist_histogram, 10);
-		for (a=0;a<10;a++) { /* area histogram */
-	      	sprintf(buffer,"Otsu Feature area histogram bin %d",a);
-			Add(buffer,area_histogram[a]);
-		}
-		Add("Otsu Feature AreaMax",AreaMax);
-		Add("Otsu Feature AreaMean",AreaMean);
-		Add("Otsu Feature AreaMedian",AreaMedian);
-		Add("Otsu Feature AreaMin",AreaMin);
-		Add("Otsu Feature AreaVar",AreaVar);
-		Add("Otsu Feature X Centroid",centroid_x);
-		Add("Otsu Feature Y Centroid",centroid_y);
-		Add("Otsu Feature Count",count);
-		for (a=0;a<10;a++) {
-			sprintf(buffer,"Otsu Feature dist histogram bin %d",a);
-			Add(buffer,dist_histogram[a]);
-		}
-		Add("Otsu Feature DistMax",DistMax);
-		Add("Otsu Feature DistMean",DistMean);
-		Add("Otsu Feature DistMedian",DistMedian);
-		Add("Otsu Feature DistMin",DistMin);
-		Add("Otsu Feature DistVar",DistVar);
-		Add("Otsu Feature Euler",Euler);
-
-		ImageMatrix matrixInv;
-		matrixInv.copy (matrix);
-		matrixInv.invert();
-		matrixInv.FeatureStatistics(&count, &Euler, &centroid_x, &centroid_y, &AreaMin, &AreaMax, &AreaMean, &AreaMedian, &AreaVar, area_histogram, &DistMin, &DistMax,
-			&DistMean, &DistMedian, &DistVar, dist_histogram, 10);
-		for (a=0;a<10;a++) { /* area histogram */
-	      	sprintf(buffer,"Inverse Otsu Feature area histogram bin %d",a);
-			Add(buffer,area_histogram[a]);
-		}
-		Add("Inverse Otsu Feature AreaMax",AreaMax);
-		Add("Inverse Otsu Feature AreaMean",AreaMean);
-		Add("Inverse Otsu Feature AreaMedian",AreaMedian);
-		Add("Inverse Otsu Feature AreaMin",AreaMin);
-		Add("Inverse Otsu Feature AreaVar",AreaVar);
-		Add("Inverse Otsu Feature X Centroid",centroid_x);
-		Add("Inverse Otsu Feature Y Centroid",centroid_y);
-		Add("Inverse Otsu Feature Count",count);
-		for (a=0;a<10;a++) {
-			sprintf(buffer,"Inverse Otsu Feature dist histogram bin %d",a);
-			Add(buffer,dist_histogram[a]);
-		}
-		Add("Inverse Otsu Feature DistMax",DistMax);
-		Add("Inverse Otsu Feature DistMean",DistMean);
-		Add("Inverse Otsu Feature DistMedian",DistMedian);
-		Add("Inverse Otsu Feature DistMin",DistMin);
-		Add("Inverse Otsu Feature DistVar",DistVar);
-		Add("Inverse Otsu Feature Euler",Euler);
-   }
-
-   /* gabor filters */
-   if (IsNeeded(count,7))
-     matrix.GaborFilters2D(vec);
-   for (a=0;a<7;a++)
-   {  sprintf(buffer,"Gabor Filters bin %d",a);
-      Add(buffer,vec[a]);
-   }
+	// gabor filters
+	fg = FeatureNames::getGroupByName ("Gabor Textures " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 }
 
 /* CompGroupB
@@ -724,38 +369,21 @@ void signatures::CompGroupA(ImageMatrix &matrix, const char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupB(ImageMatrix &matrix, const char *transform_label)
-{  int a;
-   double vec[72];
-   char buffer[80];
-   ImageMatrix TempMatrix;
+void signatures::CompGroupB (ImageMatrix &matrix, const std::string &transform_label) {
+	std::string featureGroupName;	
+	const FeatureNames::FeatureGroup *fg;
 
-   /* chebyshev fourier transform (signatures 0 - 63) */
-   for (a=0;a<72;a++) vec[a]=0;
-   if (IsNeeded(count,32))
-     matrix.ChebyshevFourierTransform2D(vec);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"Chebyshev Fourier Transform bin %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// chebyshev fourier coefficients
+	fg = FeatureNames::getGroupByName ("Chebyshev-Fourier Coefficients " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* Chebyshev Statistics (signatures 64 - 127) */
-   TempMatrix.copy (matrix);
-   if (IsNeeded(count,32))
-     TempMatrix.ChebyshevStatistics2D(vec,0,32);
-   for (a=0;a<32;a++)
-   {  sprintf(buffer,"Chebyshev Statistics bin %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// chebyshev coefficients
+	fg = FeatureNames::getGroupByName ("Chebyshev Coefficients " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* zernike (signatures 881 - 1024) */
-   long output_size;   /* output size is normally 72 */
-   if (IsNeeded(count,72))
-     matrix.zernike2D(vec,&output_size);
-   for (a=0;a<72;a++)
-   {  sprintf(buffer,"Zernike %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// zernike
+	fg = FeatureNames::getGroupByName ("Zernike Coefficients " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 }
 
 /* CompGroupC
@@ -764,74 +392,42 @@ void signatures::CompGroupB(ImageMatrix &matrix, const char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupC(ImageMatrix &matrix, const char *transform_label)
-{  int a;
-   double vec[48];
-   char buffer[80];
-   double mean=0, median=0, std=0, min=0, max=0;
+void signatures::CompGroupC (ImageMatrix &matrix, const std::string &transform_label) {
+	std::string featureGroupName;	
+	const FeatureNames::FeatureGroup *fg;
 
-   for (a=0;a<48;a++) vec[a]=0;
-   /* Comb4Moments */
-   if (IsNeeded(count,48))
-     matrix.CombFirstFourMoments2D(vec);
-   for (a=0;a<48;a++)
-   {  sprintf(buffer,"CombFirstFourMoments %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// Comb4Moments
+	fg = FeatureNames::getGroupByName ("Comb Moments " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* haralick textures */
-   if (IsNeeded(count,28))
-     matrix.HaralickTexture2D(0,vec);
-   for (a=0;a<28;a++)
-   {  sprintf(buffer,"Haralick Texture %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// haralick textures
+	fg = FeatureNames::getGroupByName ("Haralick Textures " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* multiscale histogram of the original image */
-   if (IsNeeded(count,24))
-     matrix.MultiScaleHistogram(vec);
-   for (a=0;a<24;a++)
-   {  sprintf(buffer,"MultiScale Histogram bin %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
 
-   /* tamura texture */
-   if (IsNeeded(count,6))
-     matrix.TamuraTexture2D(vec);
-   for (a=0;a<6;a++)
-   {  sprintf(buffer,"Tamura Texture %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// multiscale histogram of the original image
+	fg = FeatureNames::getGroupByName ("Multiscale Histograms " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* radon transform */
-   if (IsNeeded(count,12))
-     matrix.RadonTransform2D(vec);
-   for (a=0;a<12;a++)
-   {  sprintf(buffer,"Radon bin %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// tamura texture
+	fg = FeatureNames::getGroupByName ("Tamura Textures " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
-   /* fractal features */
-   if (IsNeeded(count,20))
-     matrix.fractal2D(20,vec);
-   for (a=0;a<20;a++)
-   {  sprintf(buffer,"Fractal %d (%s)",a,transform_label);
-      Add(buffer,vec[a]);
-   }
+	// radon transform
+	fg = FeatureNames::getGroupByName ("Radon Coefficients " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+
+	// fractal features
+	fg = FeatureNames::getGroupByName ("Fractal Features " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
    
-   /* basic statistics */
-   if (IsNeeded(count,5))
-     matrix.BasicStatistics(&mean, &median, &std, &min, &max, NULL, 10);
-   sprintf(buffer,"mean (%s)",transform_label);
-   Add(buffer,mean);
-   sprintf(buffer,"median (%s)",transform_label);
-   Add(buffer,median);
-   sprintf(buffer,"stddev (%s)",transform_label);
-   Add(buffer,std);
-   sprintf(buffer,"min (%s)",transform_label);
-   Add(buffer,min);
-   sprintf(buffer,"max (%s)",transform_label);
-   Add(buffer,max);
+	// basic statistics
+	fg = FeatureNames::getGroupByName ("Pixel Intensity Statistics " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
+   
+	// Gini Coefficient
+	fg = FeatureNames::getGroupByName ("Gini Coefficient " + transform_label);
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 }
 
 /* CompGroupD
@@ -840,123 +436,124 @@ void signatures::CompGroupC(ImageMatrix &matrix, const char *transform_label)
    input - an image matrix structure.
          - transform_label - the image transform short description (e.g., wavelet-fourier)
 */
-void signatures::CompGroupD(ImageMatrix &matrix, const char *transform_label)
-{  int color_index;
-   char buffer[80];
-   double color_hist[COLORS_NUM+1];
+void signatures::CompGroupD (ImageMatrix &matrix) {
+	std::string featureGroupName;	
+	const FeatureNames::FeatureGroup *fg;
 
-   ImageMatrix ColorTransformMatrix,HueTransformMatrix,HueFFT,HueChebyshev;
+	ImageMatrix ColorTransformMatrix,HueTransformMatrix,HueFFT,HueChebyshev;
 
-   ColorTransformMatrix.copy (matrix);
-   ColorTransformMatrix.ColorTransform(color_hist,0);
-   HueTransformMatrix.copy (matrix);
-   HueTransformMatrix.ColorTransform(NULL,1);
-   HueFFT.copy (HueTransformMatrix);
-   HueFFT.fft2();
-   HueChebyshev.copy (HueTransformMatrix);
-   HueChebyshev.ChebyshevTransform(0);
+	ColorTransformMatrix.copy (matrix);
+	ColorTransformMatrix.ColorTransform();
+	HueTransformMatrix.copy (matrix);
+	HueTransformMatrix.HueTransform();
+	HueFFT.copy (HueTransformMatrix);
+	HueFFT.fft2();
+	HueChebyshev.copy (HueTransformMatrix);
+	HueChebyshev.ChebyshevTransform(0);
 
-   /* color histogram */
-   for (color_index=1;color_index<=COLORS_NUM;color_index++)
-   {  sprintf(buffer,"color histogram bin %d (%s)",color_index,transform_label);
-      Add(buffer,color_hist[color_index]);
-   }
+	// color histogram
+	fg = FeatureNames::getGroupByName ("Color Histogram ()");
+	AddVector (fg, fg->algorithm->calculate (&matrix));
 
    /* now compute the groups */
 //   CompGroupA(ColorTransformMatrix,"Color Transform");
-   CompGroupB(ColorTransformMatrix,"Color Transform");
-   CompGroupC(ColorTransformMatrix,"Color Transform");
+	CompGroupB(ColorTransformMatrix,"(Color Transform ())");
+	CompGroupC(ColorTransformMatrix,"(Color Transform ())");
 
-   CompGroupB(HueTransformMatrix,"Hue Transform");
-   CompGroupC(HueTransformMatrix,"Hue Transform");
+	CompGroupB(HueTransformMatrix,"(Hue ())");
+	CompGroupC(HueTransformMatrix,"(Hue ())");
 
-   CompGroupB(HueFFT,"Hue FFT Transform");
-   CompGroupC(HueFFT,"Hue FFT Transform");
+	CompGroupB(HueFFT,"(Fourier (Hue ()))");
+	CompGroupC(HueFFT,"(Fourier (Hue ()))");
 
-   CompGroupB(HueChebyshev,"Hue Chebyshev Transform");
-   CompGroupC(HueChebyshev,"Hue Chebyshev Transform");
+	CompGroupB(HueChebyshev,"(Chebyshev (Hue ()))");
+	CompGroupC(HueChebyshev,"(Chebyshev (Hue ()))");
 }
 
 /* ComputeGroups
    compute the image features
    input - an image matrix structure.
 */
-void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors)
-{
-  ImageMatrix FourierTransform,ChebyshevTransform,ChebyshevFourierTransform,WaveletSelector,FourierWaveletSelector;
-  ImageMatrix FourierChebyshev,WaveletFourier,ChebyshevWavelet, EdgeTransform, EdgeFourier, EdgeWavelet;
+void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors) {
+	ImageMatrix Fourier,Chebyshev,ChebyshevFourier,Wavelet,FourierWavelet;
+	ImageMatrix FourierChebyshev,WaveletFourier,ChebyshevWavelet, Edge, FourierEdge, WaveletEdge;
 
 	// Set the feature version
 	version = CURRENT_FEATURE_VERSION;
 
-  count=0;      /* start counting signatures from 0 */
+	count=0;      /* start counting signatures from 0 */
 
-  FourierTransform.copy (matrix);
-  FourierTransform.fft2();
-  ChebyshevTransform.copy (matrix);
-  ChebyshevTransform.ChebyshevTransform(0);
-  ChebyshevFourierTransform.copy (FourierTransform);
-  ChebyshevFourierTransform.ChebyshevTransform(0);
-  WaveletSelector.copy (matrix);
-  WaveletSelector.Symlet5Transform();
-  FourierWaveletSelector.copy (FourierTransform);
-  FourierWaveletSelector.Symlet5Transform();
-  FourierChebyshev.copy (ChebyshevTransform);
-  FourierChebyshev.fft2();
-  WaveletFourier.copy (WaveletSelector);
-  WaveletFourier.fft2();
-  ChebyshevWavelet.copy (WaveletSelector);
-  ChebyshevWavelet.ChebyshevTransform(0);
-  EdgeTransform.copy (matrix);
-  EdgeTransform.EdgeTransform();
-  EdgeFourier.copy (EdgeTransform);
-  EdgeFourier.fft2();
-  EdgeWavelet.copy (EdgeTransform);  
-  EdgeWavelet.Symlet5Transform();
+	Fourier.copy (matrix);
+	Fourier.fft2();
+	Chebyshev.copy (matrix);
+	Chebyshev.ChebyshevTransform(0);
+	ChebyshevFourier.copy (Fourier);
+	ChebyshevFourier.ChebyshevTransform(0);
+	Wavelet.copy (matrix);
+	Wavelet.Symlet5Transform();
+	Edge.copy (matrix);
+	Edge.EdgeTransform();
+
+	WaveletFourier.copy (Fourier);
+	WaveletFourier.Symlet5Transform();
+	FourierWavelet.copy (Wavelet);
+	FourierWavelet.fft2();
+	FourierChebyshev.copy (Chebyshev);
+	FourierChebyshev.fft2();
+	ChebyshevWavelet.copy (Wavelet);
+	ChebyshevWavelet.ChebyshevTransform(0);
+	FourierEdge.copy (Edge);
+	FourierEdge.fft2();
+	WaveletEdge.copy (Edge);  
+	WaveletEdge.Symlet5Transform();
 
 
-  CompGroupA(matrix,"");
-  CompGroupB(matrix,"");
-  CompGroupC(matrix,"");
+	CompGroupA(matrix,"()");
+	CompGroupB(matrix,"()");
+	CompGroupC(matrix,"()");
 	if (compute_colors) {
-		CompGroupD(matrix,"");
+		CompGroupD(matrix);
 		feature_vec_type = fv_long_color;
 	} else {
 		feature_vec_type = fv_long;
 	}
 
-  CompGroupB(FourierTransform,"Fourier");
-  CompGroupC(FourierTransform,"Fourier");
+	CompGroupB(Fourier,"(Fourier ())");
+	CompGroupC(Fourier,"(Fourier ())");
 
-  CompGroupB(WaveletSelector,"Wavelet");
-  CompGroupC(WaveletSelector,"Wavelet");
+	CompGroupB(Wavelet,"(Wavelet ())");
+	CompGroupC(Wavelet,"(Wavelet ())");
 
-  CompGroupB(ChebyshevTransform,"Chebyshev");
-  CompGroupC(ChebyshevTransform,"Chebyshev");
-// Fourier, then Chebyshev
-  CompGroupC(ChebyshevFourierTransform,"Chebyshev Fourier");
-// Fourier, then Wavelet
-  CompGroupC(FourierWaveletSelector,"Wavelet Fourier");
-	
-// Wavelet, then Fourier
-  CompGroupB(WaveletFourier,"Fourier Wavelet");
-  CompGroupC(WaveletFourier,"Fourier Wavelet");
+	CompGroupB(Chebyshev,"(Chebyshev ())");
+	CompGroupC(Chebyshev,"(Chebyshev ())");
 
-// Chebyshev, then Fourier
-  CompGroupC(FourierChebyshev,"Fourier Chebyshev");
-// Wavelet, then Chebyshev
-  CompGroupC(ChebyshevWavelet,"Chebyshev Wavelet");
-  CompGroupB(EdgeTransform,"Edge Transform");
-  CompGroupC(EdgeTransform,"Edge Transform");
-// Edge, then fourier - named in wrong order!
-  CompGroupB(EdgeFourier,"Edge Fourier Transform");
-  CompGroupC(EdgeFourier,"Edge Fourier Transform");
+	// Fourier, then Chebyshev
+	CompGroupC(ChebyshevFourier,"(Chebyshev (Fourier ()))");
 
-// Edge, then wavelet - named in wrong order!
-  CompGroupB(EdgeWavelet,"Edge Wavelet Transform");
-//printf("5.5\n");  
-  CompGroupC(EdgeWavelet,"Edge Wavelet Transform");
-//printf("6\n");
+	// Fourier, then Wavelet
+	CompGroupC(WaveletFourier,"(Wavelet (Fourier ()))");
+
+	// Wavelet, then Fourier
+	CompGroupB(FourierWavelet,"(Fourier (Wavelet ()))");
+	CompGroupC(FourierWavelet,"(Fourier (Wavelet ()))");
+
+	// Chebyshev, then Fourier
+	CompGroupC(FourierChebyshev,"(Fourier (Chebyshev ()))");
+
+	// Wavelet, then Chebyshev
+	CompGroupC(ChebyshevWavelet,"(Chebyshev (Wavelet ()))");
+
+	// Edge
+	CompGroupB(Edge,"(Edge ())");
+	CompGroupC(Edge,"(Edge ())");
+
+	// Edge, then Fourier
+	CompGroupB(FourierEdge,"(Fourier (Edge ()))");
+	CompGroupC(FourierEdge,"(Fourier (Edge ()))");
+
+	// Edge, then wavelet
+	CompGroupB(WaveletEdge,"(Wavelet (Edge ()))");
+	CompGroupC(WaveletEdge,"(Wavelet (Edge ()))");
 }
 
 

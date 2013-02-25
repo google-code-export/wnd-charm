@@ -12,7 +12,9 @@ libimfit_a_SOURCES = \
 	signatures.cpp \
 	signatures.h \
 	FeatureNames.cpp \
-	FeatureNames.hpp \
+	FeatureNames.h \
+	FeatureAlgorithms.cpp \
+	FeatureAlgorithms.h \
 	OldFeatureNamesFileStr.h \
 	WORMfile.cpp \
 	WORMfile.h \
