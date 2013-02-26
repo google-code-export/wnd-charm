@@ -1161,9 +1161,10 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset, int skip_sig_comparison_check ) {
 	DIR *class_dir;
 	struct dirent *ent;
-	char img_basenames[MAX_FILES_IN_CLASS][64];
-	char sig_basenames[MAX_FILES_IN_CLASS][64];
-	int res=1,files_in_class_count=0,n_sig_basenames=0,n_img_basenames=0,file_index;
+	typedef OUR_UNORDERED_MAP<std::string, int> base_names_mapType;
+	base_names_mapType base_names_map;
+	vector<std::string> base_names_vec;
+	int res=1,files_in_class_count=0,n_img_basenames=0,file_index;
 	char buffer[512],*char_p,*sig_fullpath = NULL;
 	FILE *sigfile;
 
@@ -1176,7 +1177,6 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 		// In order to ensure we gather all of the specified samples for .sig files,
 		// we need to determine the image name that the sigfiles refer to, and pass this to AddImageFile
 		// We also need to consolidate the img_basename list and the sig_basename list to remove duplicates
-		// Should really be using an std::map for this
 		if ( (char_p = strstr(ent->d_name,".sig")) && *(char_p+4) == '\0') {
 			sprintf (buffer,"%s/%s",path,ent->d_name);
 			WORMfile wf (buffer, true);
@@ -1196,10 +1196,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 					if (!char_p) char_p = sig_fullpath; // in case its just the file
 					else char_p++;
 					chomp (char_p);
-					if (!bsearch (char_p, sig_basenames, n_sig_basenames, sizeof(sig_basenames[0]), comp_strings)) {
-						strcpy(sig_basenames[n_sig_basenames++],char_p);
-						qsort(sig_basenames,n_sig_basenames,sizeof(sig_basenames[0]), comp_strings);
-					}
+					base_names_map[char_p] = 1;
 				} // empty means somebody else is taking care of it.
 			// if it exists and we can't open it, then there's an error.
 			} else if (wf.status == WORMfile::WORM_IO_ERR) {
@@ -1208,33 +1205,24 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 			}
 		// its an image file
 		} else {
-			strcpy(img_basenames[n_img_basenames++],ent->d_name);
+			base_names_map[ent->d_name] = 1;
 		}
 	}
 	closedir(class_dir);
-	qsort(img_basenames,n_img_basenames,sizeof(img_basenames[0]), comp_strings);
-	// remove files from sig_basenames that exist in img_basenames
-	for (file_index = 0; file_index < n_sig_basenames; file_index++) {
-		if (bsearch (sig_basenames[file_index], img_basenames, n_img_basenames, sizeof(img_basenames[0]), comp_strings)) {
-			n_sig_basenames--;
-			if (file_index < n_sig_basenames)
-				memmove( &(sig_basenames[file_index]),&(sig_basenames[file_index+1]),sizeof(img_basenames[0])*(n_sig_basenames-file_index) );
-			file_index--;
-		}
-	}
-	// copy what's left in sig_basenames to img_basenames, and sort it again.
-	for (file_index = 0; file_index < n_sig_basenames; file_index++)
-		strcpy(img_basenames[n_img_basenames++],sig_basenames[file_index]);
-	qsort(img_basenames,n_img_basenames,sizeof(img_basenames[0]), comp_strings);
 
-//for (file_index = 0; file_index < n_img_basenames; file_index++)
-//printf ("final basename: '%s'\n",img_basenames[file_index]);
-	
+	// make a sorted vector out of the map
+	n_img_basenames = base_names_map.size();
+	base_names_vec.reserve (n_img_basenames);
+    for( base_names_mapType::iterator it = base_names_map.begin(); it != base_names_map.end(); ++it ) {
+    	base_names_vec.push_back( it->first );
+    }
+    std::sort (base_names_vec.begin(), base_names_vec.end());
+		
 	// N.B.: A call to AddClass must already have occurred, otherwise AddSample called from AddImageFile will fail.
 
 	// Process the files in sort order
 	for (file_index=0; file_index<n_img_basenames; file_index++) {
-		sprintf(buffer,"%s/%s",path,img_basenames[file_index]);
+		sprintf(buffer,"%s/%s",path,base_names_vec[file_index].c_str());
 		res = AddImageFile(buffer, sample_class, sample_value, save_sigs, featureset, skip_sig_comparison_check);
 		if (res < 0) return (res);
 		else files_in_class_count += res; // May be zero
@@ -1289,8 +1277,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		bool added;
 	} our_sigs[MAX_SAMPLES_PER_IMAGE];
 
-
-	if (verbosity>=2) printf ("Processing image file '%s'.\n",filename);
 
 // pre-determine sig files for this image.
 // Primarily, this lets us pre-lock all the signature files for one image (see below).
@@ -1400,7 +1386,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		// One of these could be reachable if the image is not in the same directory as the sigs.
 		// There is no support for this now though - its an error for the image not to exist together with the sigs
 		// if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
-//	if (verbosity>=2) printf("Loading image %s\n",filename);
 			if ( (res = image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
 				catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
 				res = -1; // make sure its negative for cleanup below

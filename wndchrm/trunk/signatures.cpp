@@ -767,8 +767,12 @@ int signatures::CompareToFile (ImageMatrix &matrix, char *filename, int compute_
 	double vec[72];
 	int i,file_index;
 
-	if (! file_sigs.LoadFromFile (filename) ) return (0);
-	if (verbosity > 1) printf ("compare %s to computed\n",filename);
+	if (! file_sigs.LoadFromFile (filename) ) {
+		// Any errors are ignored
+		errno = 0;
+		return (0);
+	}
+	if (verbosity > 1) printf ("compare %s to computed \n",filename);
 
 	// 20 features long: 323-342, standard: N/A
 	if (large_set) {
