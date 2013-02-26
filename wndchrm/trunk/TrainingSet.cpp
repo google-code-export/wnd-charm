@@ -121,11 +121,7 @@ int IsSupportedFormat(char *filename) {
 	if (!char_p) return (0);
 	
 	if (!strcmp(char_p,".sig")) return(1);  /* ignore files the extension but are actually .sig files */
-#ifdef WIN32	  
-	if (!strcmp(char_p,".bmp") || !strcmp(char_p,".BMP")) return(1);
-#endif  
 	if (!strcmp(char_p,".tif") || !strcmp(char_p,".TIF") || !strcmp(char_p,".tiff") || !strcmp(char_p,".TIFF") || !strcmp(char_p,".ppm") || !strcmp(char_p,".PPM")) return(1);  /* process only image files */
-	if (!strcmp(char_p,".dcm") || !strcmp(char_p,".DCM")) return(1);
   return(0);
 }
 

@@ -198,60 +198,49 @@ int signatures::IsNeeded(long start_index, long group_length)
    resulting values to the "data" attribute of this class
    input - 
    matrix -ImageMatrix*- an image matrix structure.
-   compute_colors -int- 1 to compute color signatures, 0 to ignore color sugnatures   
+   compute_colors -int- 1 to compute color signatures, 0 to ignore color signatures   
 */
 
 void signatures::compute(ImageMatrix &matrix, int compute_colors) {
-	ImageMatrix FourierTransform,ChebyshevTransform,ChebyshevFourierTransform,WaveletSelector,WaveletFourierSelector;
-
 	version = CURRENT_FEATURE_VERSION;
+	ImageTransform::verbosity = FeatureAlgorithm::verbosity = verbosity;
 
-	if (verbosity>=2) printf("start processing image...\n");   
-	if (verbosity>3) printf("transforms...\n");
-	if (verbosity>3) printf("...fft2\n");
-	FourierTransform.copy (matrix);
-	FourierTransform.fft2();
-	ChebyshevTransform.copy (matrix);
-	if (verbosity>3) printf("...ChebyshevTransform\n");
-	ChebyshevTransform.ChebyshevTransform(0);
-	ChebyshevFourierTransform.copy (FourierTransform);
-	if (verbosity>3) printf("...ChebyshevFourierTransform\n");
-	ChebyshevFourierTransform.ChebyshevTransform(0);
-	WaveletSelector.copy (matrix);
-	if (verbosity>3) printf("...Symlet5Transform\n");
-	WaveletSelector.Symlet5Transform();
-	WaveletFourierSelector.copy (FourierTransform);
-	if (verbosity>3) printf("...WaveletFourierSelector\n");
-	WaveletFourierSelector.Symlet5Transform();
-	if (verbosity>3) printf("start computing features\n");
+	if (verbosity > 1) printf("start processing image...\n");   
+	if (verbosity > 2) printf("transforms...\n");
+	ImageMatrix &Fourier          = matrix.transform  (FeatureNames::getTransformByName ("Fourier"));
+	ImageMatrix &Chebyshev        = matrix.transform  (FeatureNames::getTransformByName ("Chebyshev"));
+	ImageMatrix &Wavelet          = matrix.transform  (FeatureNames::getTransformByName ("Wavelet"));
+	ImageMatrix &ChebyshevFourier = Fourier.transform (FeatureNames::getTransformByName ("Chebyshev"));
+	ImageMatrix &WaveletFourier   = Fourier.transform (FeatureNames::getTransformByName ("Wavelet"));
 
+	if (verbosity > 2) printf("start computing features\n");
 	count=0;      // start counting signatures from 0
 	// chebyshev fourier transform (signatures 0 - 63)
 	const FeatureNames::FeatureGroup *fg;
 	fg = FeatureNames::getGroupByName ("Chebyshev-Fourier Coefficients ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Chebyshev-Fourier Coefficients (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 
 	// Chebyshev Statistics (signatures 64 - 127) */
 	fg = FeatureNames::getGroupByName ("Chebyshev Coefficients ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Chebyshev Coefficients (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 
 	// Comb4Moments (signatures 128 - 415)
 	fg = FeatureNames::getGroupByName ("Comb Moments ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Comb Moments (Chebyshev ())");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	AddVector (fg, fg->algorithm->calculate (&Chebyshev));
 	fg = FeatureNames::getGroupByName ("Comb Moments (Chebyshev (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourier));
 	fg = FeatureNames::getGroupByName ("Comb Moments (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 	fg = FeatureNames::getGroupByName ("Comb Moments (Wavelet ())");
-	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	AddVector (fg, fg->algorithm->calculate (&Wavelet));
 	fg = FeatureNames::getGroupByName ("Comb Moments (Wavelet (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourier));
 
 	// edge statistics (signatures 416 - 443)
 	fg = FeatureNames::getGroupByName ("Edge Features ()");
@@ -271,70 +260,69 @@ void signatures::compute(ImageMatrix &matrix, int compute_colors) {
 	fg = FeatureNames::getGroupByName ("Haralick Textures ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Haralick Textures (Chebyshev ())");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	AddVector (fg, fg->algorithm->calculate (&Chebyshev));
 	fg = FeatureNames::getGroupByName ("Haralick Textures (Chebyshev (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourier));
 	fg = FeatureNames::getGroupByName ("Haralick Textures (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 	fg = FeatureNames::getGroupByName ("Haralick Textures (Wavelet ())");
-	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	AddVector (fg, fg->algorithm->calculate (&Wavelet));
 	fg = FeatureNames::getGroupByName ("Haralick Textures (Wavelet (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourier));
 
 	// multi-scale histograms (signatures 653 - 796)
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Chebyshev ())");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	AddVector (fg, fg->algorithm->calculate (&Chebyshev));
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Chebyshev (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourier));
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Wavelet ())");
-	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	AddVector (fg, fg->algorithm->calculate (&Wavelet));
 	fg = FeatureNames::getGroupByName ("Multiscale Histograms (Wavelet (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourier));
 
 	// radon transform (signatures 797 - 844)
 	fg = FeatureNames::getGroupByName ("Radon Coefficients ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Radon Coefficients (Chebyshev ())");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	AddVector (fg, fg->algorithm->calculate (&Chebyshev));
 	fg = FeatureNames::getGroupByName ("Radon Coefficients (Chebyshev (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourier));
 	fg = FeatureNames::getGroupByName ("Radon Coefficients (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 
 	// tamura textures (signatures 845 - 880)
 	fg = FeatureNames::getGroupByName ("Tamura Textures ()");
 	AddVector (fg, fg->algorithm->calculate (&matrix));
 	fg = FeatureNames::getGroupByName ("Tamura Textures (Chebyshev ())");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevTransform));
+	AddVector (fg, fg->algorithm->calculate (&Chebyshev));
 	fg = FeatureNames::getGroupByName ("Tamura Textures (Chebyshev (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&ChebyshevFourier));
 	fg = FeatureNames::getGroupByName ("Tamura Textures (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 	fg = FeatureNames::getGroupByName ("Tamura Textures (Wavelet ())");
-	AddVector (fg, fg->algorithm->calculate (&WaveletSelector));
+	AddVector (fg, fg->algorithm->calculate (&Wavelet));
 	fg = FeatureNames::getGroupByName ("Tamura Textures (Wavelet (Fourier ()))");
-	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourier));
 
 
 	// zernike (signatures 881 - 1024)
 	fg = FeatureNames::getGroupByName ("Zernike Coefficients ()");
-	AddVector (fg, fg->algorithm->calculate (&WaveletFourierSelector));
+	AddVector (fg, fg->algorithm->calculate (&WaveletFourier));
 	fg = FeatureNames::getGroupByName ("Zernike Coefficients (Fourier ())");
-	AddVector (fg, fg->algorithm->calculate (&FourierTransform));
+	AddVector (fg, fg->algorithm->calculate (&Fourier));
 
 	if (compute_colors) {
-		if (verbosity>3) printf("...ColorFeatures\n");
 		CompGroupD(matrix);
 		feature_vec_type = fv_short_color;
 	} else {
 		feature_vec_type = fv_short;
 	}
 
-   return;
+	return;
 }
 
 
@@ -475,38 +463,25 @@ void signatures::CompGroupD (ImageMatrix &matrix) {
    input - an image matrix structure.
 */
 void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors) {
-	ImageMatrix Fourier,Chebyshev,ChebyshevFourier,Wavelet,FourierWavelet;
-	ImageMatrix FourierChebyshev,WaveletFourier,ChebyshevWavelet, Edge, FourierEdge, WaveletEdge;
-
 	// Set the feature version
 	version = CURRENT_FEATURE_VERSION;
+	ImageTransform::verbosity = FeatureAlgorithm::verbosity = verbosity;
 
 	count=0;      /* start counting signatures from 0 */
 
-	Fourier.copy (matrix);
-	Fourier.fft2();
-	Chebyshev.copy (matrix);
-	Chebyshev.ChebyshevTransform(0);
-	ChebyshevFourier.copy (Fourier);
-	ChebyshevFourier.ChebyshevTransform(0);
-	Wavelet.copy (matrix);
-	Wavelet.Symlet5Transform();
-	Edge.copy (matrix);
-	Edge.EdgeTransform();
+	if (verbosity > 1) printf("start processing image...\n");   
+	ImageMatrix &Fourier   = matrix.transform (FeatureNames::getTransformByName ("Fourier"));
+	ImageMatrix &Chebyshev = matrix.transform (FeatureNames::getTransformByName ("Chebyshev"));
+	ImageMatrix &Wavelet   = matrix.transform (FeatureNames::getTransformByName ("Wavelet"));
+	ImageMatrix &Edge      = matrix.transform (FeatureNames::getTransformByName ("Edge"));
 
-	WaveletFourier.copy (Fourier);
-	WaveletFourier.Symlet5Transform();
-	FourierWavelet.copy (Wavelet);
-	FourierWavelet.fft2();
-	FourierChebyshev.copy (Chebyshev);
-	FourierChebyshev.fft2();
-	ChebyshevWavelet.copy (Wavelet);
-	ChebyshevWavelet.ChebyshevTransform(0);
-	FourierEdge.copy (Edge);
-	FourierEdge.fft2();
-	WaveletEdge.copy (Edge);  
-	WaveletEdge.Symlet5Transform();
-
+	ImageMatrix &ChebyshevFourier = Fourier.transform   (FeatureNames::getTransformByName ("Chebyshev"));
+	ImageMatrix &ChebyshevWavelet = Wavelet.transform   (FeatureNames::getTransformByName ("Chebyshev"));
+	ImageMatrix &WaveletFourier   = Fourier.transform   (FeatureNames::getTransformByName ("Wavelet"));
+	ImageMatrix &WaveletEdge      = Edge.transform      (FeatureNames::getTransformByName ("Wavelet"));
+	ImageMatrix &FourierWavelet   = Wavelet.transform   (FeatureNames::getTransformByName ("Fourier"));
+	ImageMatrix &FourierChebyshev = Chebyshev.transform (FeatureNames::getTransformByName ("Fourier"));
+	ImageMatrix &FourierEdge      = Edge.transform      (FeatureNames::getTransformByName ("Fourier"));
 
 	CompGroupA(matrix,"()");
 	CompGroupB(matrix,"()");
@@ -793,7 +768,7 @@ int signatures::CompareToFile (ImageMatrix &matrix, char *filename, int compute_
 	int i,file_index;
 
 	if (! file_sigs.LoadFromFile (filename) ) return (0);
-	if (verbosity>=2) printf ("compare %s to computed\n",filename);
+	if (verbosity > 1) printf ("compare %s to computed\n",filename);
 
 	// 20 features long: 323-342, standard: N/A
 	if (large_set) {
@@ -804,21 +779,21 @@ int signatures::CompareToFile (ImageMatrix &matrix, char *filename, int compute_
 // ,diffUlps(file_sigs.data[file_index+i].value,vec[i])
 // );
 		for (i = 0; i< 20; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-			if (verbosity>=2) printf ("fractal2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+			if (verbosity > 1) printf ("fractal2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 			return (0);
 		}
 	}
-	if (verbosity>=2) printf ("fractal2D match\n");
+	if (verbosity > 1) printf ("fractal2D match\n");
 	
 	// 28 features long: 253-280, standard: 485-512
 	matrix.HaralickTexture2D(0,vec);
 	if (large_set) file_index = 253;
 	else file_index = 485;
 	for (i = 0; i < 28; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-		if (verbosity>=2) printf ("HaralickTexture2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+		if (verbosity > 1) printf ("HaralickTexture2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 		return (0);
 	}
-	if (verbosity>=2) printf ("HaralickTexture2D match\n");
+	if (verbosity > 1) printf ("HaralickTexture2D match\n");
 	
 	// 72 features long: 133-204, standard: 881-952
 // 	long output_size;   /* output size is normally 72 */
@@ -826,12 +801,12 @@ int signatures::CompareToFile (ImageMatrix &matrix, char *filename, int compute_
 // 	if (large_set) file_index = 133;
 // 	else file_index = 881;
 // 	for (i = 0; i < 72; i++) if (!OUR_EQ(file_sigs.data[file_index+i].value,vec[i])) {
-// 		if (verbosity>=2) printf ("zernike2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
+// 		if (verbosity > 1) printf ("zernike2D mismatch computed %15.10f\tfrom file: %15.10f\n",vec[i],file_sigs.data[file_index+i].value);
 // 		return (0);
 // 	}
-// 	if (verbosity>=2) printf ("zernike2D match.\n");
+// 	if (verbosity > 1) printf ("zernike2D match.\n");
 
-	if (verbosity>=2) printf ("Match found.\n");
+	if (verbosity > 1) printf ("Match found.\n");
 	return (1);
 }
 

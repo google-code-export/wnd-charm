@@ -55,7 +55,7 @@
 // 		2-Everything except the confusion and similarity matrices when printing to std out only
 // 		>2-Everything
 
-int verbosity=2;
+int verbosity = 5;
 
 void randomize()
 {
@@ -739,6 +739,7 @@ int main(int argc, char *argv[])
 	int skip_sig_check = 0;
 
 	assert (FeatureAlgorithmInstances::initialized() && "Failed to initialize feature algorithms");
+	assert (ImageTransformInstances::initialized() && "Failed to initialize image transforms");
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));

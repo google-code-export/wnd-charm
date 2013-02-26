@@ -42,6 +42,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define if native unordered_map is present. */
+#undef HAVE_UNORDERED_MAP
+
+/* Define if native unordered_set is present. */
+#undef HAVE_UNORDERED_SET
+
 /* Name of package */
 #undef PACKAGE
 

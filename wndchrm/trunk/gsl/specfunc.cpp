@@ -993,7 +993,7 @@ int gsl_sf_psi_1_e(const double x, gsl_sf_result * result)
   else if(x > -5.0)
   {
     /* Abramowitz + Stegun 6.4.6 */
-    int M = -floor(x);
+    int M = (int)-floor(x);
     double fx = x + M;
     double sum = 0.0;
     int m;

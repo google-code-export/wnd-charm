@@ -64,7 +64,7 @@ public:
 	int read_mode;
 	static int def_read_mode;
 
-
+	WORMfile();
 	WORMfile (const char *p_path, bool readonly = false, bool wait = false);
 
 	// calling the destructor when the file is opened for writing causes the file to be unlinked!

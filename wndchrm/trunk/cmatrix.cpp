@@ -422,6 +422,15 @@ ImageMatrix::~ImageMatrix() {
 	remap_clr_plane (NULL, 0, 0);
 }
 
+// This is a general transform method that returns a new image matrix by applying the specified transform.
+ImageMatrix &ImageMatrix::transform (const ImageTransform *transform) const {
+	ImageMatrix *matrix_OUT = new ImageMatrix;
+
+	transform->execute (this, matrix_OUT);
+	return (*matrix_OUT);
+}
+
+
 /* to8bits
    convert an arbitrary-range matrix to an 8 bit range by scaling the signal range to 0.0 to 255.0
 */

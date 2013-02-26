@@ -5,6 +5,7 @@ am__tar = COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 ${AMTAR} cof - "
 noinst_LIBRARIES = libimfit.a
 
 libimfit_a_SOURCES = \
+	unordered_map_dfn.h \
 	cmatrix.cpp \
 	cmatrix.h \
 	TrainingSet.cpp \
@@ -15,6 +16,8 @@ libimfit_a_SOURCES = \
 	FeatureNames.h \
 	FeatureAlgorithms.cpp \
 	FeatureAlgorithms.h \
+	ImageTransforms.cpp \
+	ImageTransforms.h \
 	OldFeatureNamesFileStr.h \
 	WORMfile.cpp \
 	WORMfile.h \

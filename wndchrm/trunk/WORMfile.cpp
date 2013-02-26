@@ -35,6 +35,10 @@
 #define OPEN_RETRIES 36
 #define MAX_WAIT_MULT 8192 // must be smaller than RAND_MAX, which is a minimum of 32767
 
+WORMfile::WORMfile () :
+	status (WORM_UNDEF), status_errno (0), path (""),
+	_fd (-1), _fp (NULL), _read_mode (def_read_mode) {
+}
 WORMfile::WORMfile (const char *p_path, bool readonly, bool wait) :
 	status (WORM_UNDEF), status_errno (0), path (p_path),
 	_fd (-1), _fp (NULL), _read_mode (def_read_mode) {

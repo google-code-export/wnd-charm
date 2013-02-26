@@ -2,6 +2,7 @@
 #define __FEATURE_NAMES_H__
 
 #include "FeatureAlgorithms.h"
+#include "ImageTransforms.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -17,16 +18,8 @@ std::map:
        -parse    502400 lookups    502400 misses       2.4 secs,    205706 lookups/sec
 */
 
-#include "config.h"
-#ifdef HAVE_UNORDERED_MAP
-# include <unordered_map>
-# define FEATURENAMES_MAP std::unordered_map
-#elif defined ( HAVE_TR1_UNORDERED_MAP )
-# include <tr1/unordered_map>
-# define FEATURENAMES_MAP std::tr1::unordered_map
-#else
-# define FEATURENAMES_MAP std::map
-#endif
+// defines OUR_UNORDERED_MAP based on what's available
+#include "unordered_map_dfn.h"
 
 
 class FeatureNames {
@@ -49,13 +42,9 @@ public:
 //         Transforms
 /////////////////////////////////
 // Instead of a string, this should be a transform object with an execute() method
-	struct Transform {
-		std::string name;
-
-		Transform (const std::string &s) { name = s;}
-		Transform (const char *s) { name = s;}
-	};
-	static const Transform *getTransformByName (const std::string &name);
+// The ImageTransform class is defined in a separate file ImageTransformss.h
+	static const ImageTransform *getTransformByName (const std::string &name);
+	static bool registerImageTransform (const ImageTransform *algorithm);
 
 
 /////////////////////////////////
@@ -76,11 +65,11 @@ public:
 		std::string name;
 		const FeatureAlgorithm *algorithm;
 		const Channel *channel;
-		std::vector<Transform const *> transforms; // these are in order of application
+		std::vector<ImageTransform const *> transforms; // these are in order of application
 		std::vector<std::string> labels;
 
 		FeatureGroup () : algorithm(NULL), channel(NULL) {};
-		FeatureGroup (const std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<Transform const *> t) {
+		FeatureGroup (const std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<ImageTransform const *> &t) {
 			name = s; algorithm = f; channel = c; transforms = t;
 			if (algorithm)
 				for (int i = 0; i < algorithm->n_features; i++) {
@@ -102,16 +91,15 @@ public:
 		const FeatureGroup *group;
 		int index; // within group
 
-		FeatureInfo () : group(NULL), index(-1) {};
+		FeatureInfo () : name (""), group(NULL), index(-1) {};
 		FeatureInfo (const std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
 	};
-	static const FeatureInfo *getFeatureInfoByName (const char *featurename_in);
-	static const FeatureInfo *getFeatureInfoByName (const std::string &featurename_in) { return (getFeatureInfoByName(featurename_in.c_str())); } ;
+	static const FeatureInfo *getFeatureInfoByName (const std::string &featurename_in);
 
 /////////////////////////////////
 // Old-style feature name lookup
 /////////////////////////////////
-	static const std::string &oldFeatureNameLookup (const char *oldFeatureName);
+	static const std::string &oldFeatureNameLookup (const std::string &featurename_in);
 
 
 /////////////////////////////////
@@ -128,22 +116,22 @@ private:
 // Can't store the actual FeatureAlgorithm instance that was instantiated, have to make a copy, which causes a new registration, etc.
 // Why are these declared as static functions with static variables inside?
 // This is to avoid the "static initialization order fiasco" (see http://www.parashift.com/c++-faq/static-init-order-on-first-use-members.html)
-	typedef FEATURENAMES_MAP<std::string, const Channel *> cnm_t;
+	typedef OUR_UNORDERED_MAP<std::string, const Channel *> cnm_t;
 	static cnm_t &channels_map ();
 
-	typedef FEATURENAMES_MAP<std::string, const Transform *> tnm_t;
+	typedef OUR_UNORDERED_MAP<std::string, const ImageTransform *> tnm_t;
 	static tnm_t &transforms_map ();
 
-	typedef FEATURENAMES_MAP<std::string, const FeatureAlgorithm *> fam_t;
+	typedef OUR_UNORDERED_MAP<std::string, const FeatureAlgorithm *> fam_t;
 	static fam_t &feature_algorithms_map ();
 
-	typedef FEATURENAMES_MAP<std::string, const FeatureGroup *> fgnm_t;
+	typedef OUR_UNORDERED_MAP<std::string, const FeatureGroup *> fgnm_t;
 	static fgnm_t &feature_groups_map ();
 
-	typedef FEATURENAMES_MAP<std::string, const FeatureInfo *> fnm_t;
+	typedef OUR_UNORDERED_MAP<std::string, const FeatureInfo *> fnm_t;
 	static fnm_t &feature_names_map ();
 
-	typedef FEATURENAMES_MAP<std::string, std::string> ofnm_t;
+	typedef OUR_UNORDERED_MAP<std::string, std::string> ofnm_t;
 	static ofnm_t &old_features_map ();
 
 	static const bool init_maps_;

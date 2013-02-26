@@ -149,10 +149,8 @@ In the example above, Edge transform first, then Wavelet, then Zernike coefficie
 The feature and group names reported in .name fields are normalized for whitespace as in the example above.
 */
 
-const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const char *featurename_in) {
+const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const std::string &featurename_in) {
 	static fnm_t &feature_names = FeatureNames::feature_names_map();
-
-	if (! (featurename_in && *featurename_in) ) return (NULL);
 
 	fnm_t::const_iterator fnm_it = feature_names.find(featurename_in);
 	if (fnm_it != feature_names.end()) return (fnm_it->second);
@@ -242,16 +240,26 @@ const FeatureNames::Channel *FeatureNames::getChannelByName (const std::string &
 }
 
 // This should return a transform object by string lookup
-const FeatureNames::Transform *FeatureNames::getTransformByName (const std::string &name) {
-	static tnm_t  &transforms = transforms_map ();
+const ImageTransform *FeatureNames::getTransformByName (const std::string &name) {
+	static tnm_t &image_transforms = transforms_map ();
+	tnm_t::const_iterator tnm_it = image_transforms.find(name);
 
-	tnm_t::const_iterator tnm_it = transforms.find(name);
-
-	if (tnm_it == transforms.end()) {
-		return (transforms[name] = new Transform (name));
+	if (tnm_it == image_transforms.end()) {
+		return (image_transforms[name] = new EmptyTransform (name));
 	} else {
 		return (tnm_it->second);
 	}
+}
+
+bool FeatureNames::registerImageTransform (const ImageTransform *algorithm) {
+	static tnm_t &image_transforms = transforms_map ();
+	tnm_t::const_iterator tnm_it = image_transforms.find(algorithm->name);
+
+	if (tnm_it != image_transforms.end())
+		return true;
+
+	image_transforms[algorithm->name] = algorithm;
+	return true;
 }
 
 
@@ -282,8 +290,8 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (const std::strin
 	size_t found_trans_s;
 	size_t found_trans_e;
 	std::string transform_name;
-	std::vector<Transform const *> transforms;
-	const Transform *transform;
+	std::vector<ImageTransform const *> transforms;
+	const ImageTransform *transform;
 
 	found_trans_s = name.find_first_not_of(" ()",found_parens+1);
 	if (found_trans_s != std::string::npos) found_trans_e = name.find_first_of('(',found_trans_s+1);
@@ -345,11 +353,11 @@ const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (const std::strin
 }
 
 
-const std::string &FeatureNames::oldFeatureNameLookup (const char *oldFeatureName) {
+const std::string &FeatureNames::oldFeatureNameLookup (const std::string &featurename_in) {
 	static ofnm_t &old_features = old_features_map();
-
-	ofnm_t::const_iterator ofnm_it = old_features.find(oldFeatureName);
 	const static std::string emptyString = "";
+
+	ofnm_t::const_iterator ofnm_it = old_features.find(featurename_in);
 
 	if (ofnm_it == old_features.end()) return (emptyString);
 	else return (ofnm_it->second);

@@ -75,6 +75,7 @@ am_libimfit_a_OBJECTS = libimfit_a-cmatrix.$(OBJEXT) \
 	libimfit_a-signatures.$(OBJEXT) \
 	libimfit_a-FeatureNames.$(OBJEXT) \
 	libimfit_a-FeatureAlgorithms.$(OBJEXT) \
+	libimfit_a-ImageTransforms.$(OBJEXT) \
 	libimfit_a-WORMfile.$(OBJEXT) \
 	libimfit_a-wndchrm_error.$(OBJEXT) \
 	libimfit_a-specfunc.$(OBJEXT) libimfit_a-FuzzyCalc.$(OBJEXT) \
@@ -243,6 +244,7 @@ EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
 noinst_LIBRARIES = libimfit.a
 libimfit_a_SOURCES = \
+	unordered_map_dfn.h \
 	cmatrix.cpp \
 	cmatrix.h \
 	TrainingSet.cpp \
@@ -253,6 +255,8 @@ libimfit_a_SOURCES = \
 	FeatureNames.h \
 	FeatureAlgorithms.cpp \
 	FeatureAlgorithms.h \
+	ImageTransforms.cpp \
+	ImageTransforms.h \
 	OldFeatureNamesFileStr.h \
 	WORMfile.cpp \
 	WORMfile.h \
@@ -451,6 +455,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-Filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-FilterSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-FuzzyCalc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-ImageTransforms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-Symlet5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-TrainingSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libimfit_a-WORMfile.Po@am__quote@
@@ -598,6 +603,20 @@ libimfit_a-FeatureAlgorithms.obj: FeatureAlgorithms.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FeatureAlgorithms.cpp' object='libimfit_a-FeatureAlgorithms.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-FeatureAlgorithms.obj `if test -f 'FeatureAlgorithms.cpp'; then $(CYGPATH_W) 'FeatureAlgorithms.cpp'; else $(CYGPATH_W) '$(srcdir)/FeatureAlgorithms.cpp'; fi`
+
+libimfit_a-ImageTransforms.o: ImageTransforms.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-ImageTransforms.o -MD -MP -MF $(DEPDIR)/libimfit_a-ImageTransforms.Tpo -c -o libimfit_a-ImageTransforms.o `test -f 'ImageTransforms.cpp' || echo '$(srcdir)/'`ImageTransforms.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-ImageTransforms.Tpo $(DEPDIR)/libimfit_a-ImageTransforms.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ImageTransforms.cpp' object='libimfit_a-ImageTransforms.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-ImageTransforms.o `test -f 'ImageTransforms.cpp' || echo '$(srcdir)/'`ImageTransforms.cpp
+
+libimfit_a-ImageTransforms.obj: ImageTransforms.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-ImageTransforms.obj -MD -MP -MF $(DEPDIR)/libimfit_a-ImageTransforms.Tpo -c -o libimfit_a-ImageTransforms.obj `if test -f 'ImageTransforms.cpp'; then $(CYGPATH_W) 'ImageTransforms.cpp'; else $(CYGPATH_W) '$(srcdir)/ImageTransforms.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libimfit_a-ImageTransforms.Tpo $(DEPDIR)/libimfit_a-ImageTransforms.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ImageTransforms.cpp' object='libimfit_a-ImageTransforms.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -c -o libimfit_a-ImageTransforms.obj `if test -f 'ImageTransforms.cpp'; then $(CYGPATH_W) 'ImageTransforms.cpp'; else $(CYGPATH_W) '$(srcdir)/ImageTransforms.cpp'; fi`
 
 libimfit_a-WORMfile.o: WORMfile.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libimfit_a_CXXFLAGS) $(CXXFLAGS) -MT libimfit_a-WORMfile.o -MD -MP -MF $(DEPDIR)/libimfit_a-WORMfile.Tpo -c -o libimfit_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp

@@ -40,6 +40,7 @@
 #include <vector> // for operations field
 #include <Eigen/Dense>
 #include "colors/FuzzyCalc.h"
+#include "ImageTransforms.h"
 //#define min(a,b) (((a) < (b)) ? (a) : (b))
 //#define max(a,b) (((a) < (b)) ? (b) : (a))
 
@@ -223,6 +224,8 @@ public:
 		init();
 	};
 	virtual ~ImageMatrix();                                 // destructor
+
+	virtual ImageMatrix &transform (const ImageTransform *transform) const;
 
 	void normalize(double min, double max, long range, double mean, double stddev); // normalized an image to either min/max or mean/stddev
 	void to8bits();

@@ -5,9 +5,13 @@
 #include <vector>
 #include <string>
 
+
+class ImageMatrix;
+
 class FeatureAlgorithm {
 	public:
 		std::string name;
+		static int verbosity;
 		int n_features;
 		virtual std::vector<double> calculate( ImageMatrix * IN_matrix ) const { return std::vector<double>(); };
 		void print_info() const;	
@@ -25,6 +29,7 @@ class FeatureAlgorithm {
 //   its probably still a good idea to make a destructor to clean it up.
 class FeatureAlgorithmInstances {
 	public:
+		static int verbosity;
 		static bool initialized ();
 		static bool add (const FeatureAlgorithm *algorithm);
 		static std::vector<const FeatureAlgorithm *> &getInstances ();
@@ -38,7 +43,6 @@ class EmptyFeatureAlgorithm : public FeatureAlgorithm {
 		EmptyFeatureAlgorithm (const std::string &s) : FeatureAlgorithm (s, 0) {};
 		EmptyFeatureAlgorithm (const char *s) : FeatureAlgorithm (s, 0) {};
 };
-
 
 class ChebyshevFourierCoefficients : public FeatureAlgorithm {
 	public:

@@ -9,8 +9,10 @@
 //start #including the functions directly once you start pulling them out of cmatrix
 //#include "transforms/Chebyshev.h"
 
+int FeatureAlgorithm::verbosity = 0;
+
 void FeatureAlgorithm::print_info() const {
-        std::cout << "FeatureAlgorithm: " << name << " (" << n_features << " features) " << std::endl;
+    std::cout << "FeatureAlgorithm: " << name << " (" << n_features << " features) " << std::endl;
 }
 
 FeatureAlgorithm::FeatureAlgorithm (const std::string &s,const int i) {
@@ -26,6 +28,7 @@ FeatureAlgorithm::FeatureAlgorithm (const char *s,const int i) {
 // Done in a static member function holding a static to avoid "static initialization order fiasco"
 // FIXME: although this heap memory will be allocated before main() entry,
 //   its probably still a good idea to make a destructor to clean it up.
+int FeatureAlgorithmInstances::verbosity = 0;
 bool FeatureAlgorithmInstances::initialized () {
 	static std::vector<const FeatureAlgorithm *> &instances = getInstances();
 	return (!instances.empty());
@@ -37,6 +40,7 @@ std::vector<const FeatureAlgorithm *> &FeatureAlgorithmInstances::getInstances (
 bool FeatureAlgorithmInstances::add (const FeatureAlgorithm *algorithm) {
 	static std::vector<const FeatureAlgorithm *> &instances = getInstances();
 
+	if (verbosity > 4) std::cout << "Registering FeatureAlgorithm " << algorithm->name << std::endl;
 	instances.insert (instances.end(), algorithm);
 	FeatureNames::registerFeatureAlgorithm (algorithm);
 	return (true);
@@ -51,7 +55,7 @@ ChebyshevFourierCoefficients::ChebyshevFourierCoefficients() : FeatureAlgorithm 
 
 std::vector<double> ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;	
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -69,7 +73,7 @@ std::vector<double> ChebyshevFourierCoefficients::calculate( ImageMatrix * IN_ma
 namespace FeatureAlgorithmReg {
 	static const bool ChebyshevFourierCoefficientsReg = FeatureAlgorithmInstances::add (new ChebyshevFourierCoefficients);
 }
-	
+
 //===========================================================================
 ChebyshevCoefficients::ChebyshevCoefficients() : FeatureAlgorithm ("Chebyshev Coefficients", 32)  {
 //	cout << "Instantiating new " << name << " object." << endl;
@@ -82,7 +86,7 @@ ChebyshevCoefficients::ChebyshevCoefficients() : FeatureAlgorithm ("Chebyshev Co
  */
 std::vector<double> ChebyshevCoefficients::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -111,7 +115,7 @@ ZernikeCoefficients::ZernikeCoefficients() : FeatureAlgorithm ("Zernike Coeffici
 
 std::vector<double> ZernikeCoefficients::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -140,7 +144,7 @@ HaralickTextures::HaralickTextures() : FeatureAlgorithm ("Haralick Textures", 28
 
 std::vector<double> HaralickTextures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -167,7 +171,7 @@ MultiscaleHistograms::MultiscaleHistograms() : FeatureAlgorithm ("Multiscale His
 
 std::vector<double> MultiscaleHistograms::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -194,7 +198,7 @@ TamuraTextures::TamuraTextures() : FeatureAlgorithm ("Tamura Textures", 6) {
 
 std::vector<double> TamuraTextures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -221,7 +225,7 @@ CombFirstFourMoments::CombFirstFourMoments() : FeatureAlgorithm ("Comb Moments",
 
 std::vector<double> CombFirstFourMoments::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -248,7 +252,7 @@ RadonCoefficients::RadonCoefficients() : FeatureAlgorithm ("Radon Coefficients",
 
 std::vector<double> RadonCoefficients::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -281,7 +285,7 @@ FractalFeatures::FractalFeatures() : FeatureAlgorithm ("Fractal Features", 20) {
 
 std::vector<double> FractalFeatures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -330,7 +334,7 @@ PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("Pixel 
 
 std::vector<double> PixelIntensityStatistics::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -359,7 +363,7 @@ EdgeFeatures::EdgeFeatures() : FeatureAlgorithm ("Edge Features", 28) {
 
 std::vector<double> EdgeFeatures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -414,7 +418,7 @@ ObjectFeatures::ObjectFeatures() : FeatureAlgorithm ("Otsu Object Features", 34)
 
 std::vector<double> ObjectFeatures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -474,7 +478,6 @@ namespace FeatureAlgorithmReg {
 	static const bool ObjectFeaturesReg = FeatureAlgorithmInstances::add (new ObjectFeatures);
 }
 
-
 //===========================================================================
 InverseObjectFeatures::InverseObjectFeatures() : FeatureAlgorithm ("Inverse-Otsu Object Features", 34) {
 	//cout << "Instantiating new " << name << " object." << endl;
@@ -484,8 +487,8 @@ std::vector<double> InverseObjectFeatures::calculate( ImageMatrix * IN_matrix ) 
 	ImageMatrix InvMatrix;
 	InvMatrix.copy (*IN_matrix);
 	InvMatrix.invert();
-	const FeatureAlgorithm *ObjFeatures = FeatureNames::getFeatureAlgorithmByName ("Otsu Object Features");
-	return (ObjFeatures->calculate (&InvMatrix));
+	static ObjectFeatures ObjFeaturesInst;
+	return (ObjFeaturesInst.calculate (&InvMatrix));
 }
 
 // Register a static instance of the class using a namespace for the global bool
@@ -501,7 +504,7 @@ GaborTextures::GaborTextures() : FeatureAlgorithm ("Gabor Textures", 7) {
 
 std::vector<double> GaborTextures::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -535,7 +538,7 @@ GiniCoefficient::GiniCoefficient() : FeatureAlgorithm ("Gini Coefficient", 1) {
 
 std::vector<double> GiniCoefficient::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
@@ -597,7 +600,7 @@ ColorHistogram::ColorHistogram() : FeatureAlgorithm ("Color Histogram", COLORS_N
 
 std::vector<double> ColorHistogram::calculate( ImageMatrix * IN_matrix ) const {
 	std::vector<double> coeffs;
-	std::cout << "calculating " << name << std::endl;
+	if (verbosity > 3) std::cout << "calculating " << name << std::endl;
 	if( IN_matrix == NULL ) {
 		return coeffs;
 	}
