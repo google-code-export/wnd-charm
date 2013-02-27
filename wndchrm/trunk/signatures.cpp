@@ -203,7 +203,6 @@ int signatures::IsNeeded(long start_index, long group_length)
 
 void signatures::compute(ImageMatrix &matrix, int compute_colors) {
 	version = CURRENT_FEATURE_VERSION;
-	ImageTransform::verbosity = FeatureAlgorithm::verbosity = verbosity;
 
 	if (verbosity > 1) printf("start processing image...\n");   
 	if (verbosity > 2) printf("transforms...\n");
@@ -465,7 +464,6 @@ void signatures::CompGroupD (ImageMatrix &matrix) {
 void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors) {
 	// Set the feature version
 	version = CURRENT_FEATURE_VERSION;
-	ImageTransform::verbosity = FeatureAlgorithm::verbosity = verbosity;
 
 	count=0;      /* start counting signatures from 0 */
 

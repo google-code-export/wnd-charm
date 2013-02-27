@@ -1,10 +1,14 @@
+# echo "noinst_HEADERS = $(find Eigen  -not -path '*.svn/*'  -type f | perl -n -e 'chomp;s/^\.\///;push (@foo,$_); END{print join(" \\\n    ",@foo)}')" > Eigen/sources.am 
+include Eigen/sources.am
+
 EXTRA_DIST = SVNREV
 distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
 am__tar = COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 ${AMTAR} cof - "$$tardir"
+AM_CPPFLAGS = -fPIC
 
-noinst_LIBRARIES = libimfit.a
+noinst_LIBRARIES = libchrm.a
 
-libimfit_a_SOURCES = \
+libchrm_a_SOURCES = \
 	unordered_map_dfn.h \
 	cmatrix.cpp \
 	cmatrix.h \
@@ -76,14 +80,13 @@ libimfit_a_SOURCES = \
 	transforms/wavelet/wt.cpp \
 	transforms/wavelet/wt.h
 
-AM_CPPFLAGS = -fPIC
-libimfit_a_CXXFLAGS = -Wall -g -Os
+libchrm_a_CXXFLAGS = -Wall -g -Os
 
 bin_PROGRAMS=wndchrm util/color_deconvolution
 
 wndchrm_SOURCES = wndchrm.cpp
 
-wndchrm_LDADD = libimfit.a -lm -ltiff -L. -limfit -lfftw3
+wndchrm_LDADD = libchrm.a -lm -ltiff -L. -lchrm -lfftw3
 
 util_color_deconvolution_SOURCES = 	\
 	util/readTiffData.c \

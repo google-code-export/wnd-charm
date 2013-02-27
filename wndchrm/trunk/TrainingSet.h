@@ -44,7 +44,6 @@
 
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
-#define MAX_FILES_IN_CLASS 16384
 #define MAX_SAMPLES_PER_IMAGE 4096
 
 #define WNN 0
@@ -139,6 +138,15 @@ typedef struct sort_by_weight_t {
 	bool operator() (feature_stats_t i,feature_stats_t j) { return (j.weight < i.weight);}
 } sort_by_weight_func;
 
+typedef struct {
+	signatures *sig;
+	int rot_index;
+	int tile_index_x;
+	int tile_index_y;
+	bool saved;
+	bool added;
+} feature_vec_info_t;
+
 typedef std::vector<feature_stats_t> features_t;
 
 
@@ -227,7 +235,7 @@ public:
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
-   long report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
+   long report(FILE *output_file, int argc, char **argv, char *output_file_name, std::vector<data_split> &splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
    void Summarize(featureset_t *featureset);  /* class summary to stdout */
 };
 

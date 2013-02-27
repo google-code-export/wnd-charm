@@ -15,7 +15,6 @@ class ImageMatrix; // forward declaration
 class ImageTransform {
 	public:
 		std::string name;
-		static int verbosity;
 		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const = 0;
 		void print_info();
 	protected:
@@ -31,7 +30,6 @@ class ImageTransform {
 //   its probably still a good idea to make a destructor to clean it up.
 class ImageTransformInstances {
 	public:
-		static int verbosity;
 		static bool initialized ();
 		static bool add (const ImageTransform *algorithm);
 		static std::vector<const ImageTransform *> &getInstances ();

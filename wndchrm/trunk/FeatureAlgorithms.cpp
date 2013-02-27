@@ -9,7 +9,8 @@
 //start #including the functions directly once you start pulling them out of cmatrix
 //#include "transforms/Chebyshev.h"
 
-int FeatureAlgorithm::verbosity = 0;
+/* global variable */
+extern int verbosity;
 
 void FeatureAlgorithm::print_info() const {
     std::cout << "FeatureAlgorithm: " << name << " (" << n_features << " features) " << std::endl;
@@ -28,7 +29,6 @@ FeatureAlgorithm::FeatureAlgorithm (const char *s,const int i) {
 // Done in a static member function holding a static to avoid "static initialization order fiasco"
 // FIXME: although this heap memory will be allocated before main() entry,
 //   its probably still a good idea to make a destructor to clean it up.
-int FeatureAlgorithmInstances::verbosity = 0;
 bool FeatureAlgorithmInstances::initialized () {
 	static std::vector<const FeatureAlgorithm *> &instances = getInstances();
 	return (!instances.empty());

@@ -1268,14 +1268,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	char buffer[IMAGE_PATH_LENGTH];
 	int sig_index,n_sigs=0;
 
-	struct siginfo_s {
-		signatures *sig;
-		int rot_index;
-		int tile_index_x;
-		int tile_index_y;
-		bool saved;
-		bool added;
-	} our_sigs[MAX_SAMPLES_PER_IMAGE];
+	std::vector<feature_vec_info_t> our_sigs;
+	feature_vec_info_t null_sig_info = {NULL,-1, -1, -1, false, false};
 
 
 // pre-determine sig files for this image.
@@ -1284,9 +1278,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 // code that does the actual sampling and feature calculation.
 // Eventually, the sampling code would live here, and be generic but the set-up of the parameters would be done elsewhere
 // It seems this would be a good application of functional programming (i.e. closures, functors, etc).
-
-	our_sigs[0].sig = NULL;
-	our_sigs[0].rot_index = our_sigs[0].tile_index_x = our_sigs[0].tile_index_y = -1;
+	our_sigs.push_back (null_sig_info);
 	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
 	// make signature objects for samples
 		ImageSignatures=new signatures ();
@@ -1315,11 +1307,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			our_sigs[n_sigs].rot_index = featureset->samples[sample_index].rot_index;
 			our_sigs[n_sigs].tile_index_x = featureset->samples[sample_index].tile_index_x;
 			our_sigs[n_sigs].tile_index_y = featureset->samples[sample_index].tile_index_y;
-		// Initialize the next one 
+		// Initialize the next one
+			our_sigs.push_back (null_sig_info);
 			n_sigs++;
-			our_sigs[n_sigs].sig = NULL;
-			our_sigs[n_sigs].rot_index = our_sigs[n_sigs].tile_index_x = our_sigs[n_sigs].tile_index_y = -1;
-
 		} else if (res == 0) {
 		// File already has a lock.
 			if (verbosity>=2) printf ("Sig '%s' being processed by someone else\n",ImageSignatures->GetFileName(buffer));
@@ -2966,7 +2956,7 @@ void chomp (char *line) {
 	while (char_p >= line && (*char_p == '\n' || *char_p == '\r')) *char_p-- = '\0';
 }
 
-long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_file_name, data_split *splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities)
+long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_file_name, std::vector<data_split> &splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities)
 {
 	int class_index,class_index2,split_index,test_set_size,train_set_size;
 	double *avg_similarity_matrix,*avg_class_prob_matrix;

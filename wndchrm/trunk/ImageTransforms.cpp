@@ -8,7 +8,8 @@
 #include "colors/FuzzyCalc.h" // for definition of compiler constant COLORS_NUM
 #include "transforms/fft/bcb_fftw3/fftw3.h"
 
-int ImageTransform::verbosity = 0;
+/* global variable */
+extern int verbosity;
 
 void ImageTransform::print_info() {
 
@@ -18,7 +19,6 @@ void ImageTransform::print_info() {
 // Done in a static member function holding a static to avoid "static initialization order fiasco"
 // FIXME: although this heap memory will be allocated before main() entry,
 //   its probably still a good idea to make a destructor to clean it up.
-int ImageTransformInstances::verbosity = 0;
 bool ImageTransformInstances::initialized () {
 	static std::vector<const ImageTransform *> &instances = getInstances();
 	return (!instances.empty());

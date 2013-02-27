@@ -13,6 +13,10 @@
 #include <set>
 #include <algorithm>
 
+
+/* global variable */
+extern int verbosity;
+
 // hopeful pre-main initialization of the featurename lookup map
 const bool FeatureNames::initialized() {
 	static cnm_t  &channels = channels_map ();
@@ -434,4 +438,3 @@ FeatureNames::ofnm_t &FeatureNames::old_features_map () {
 
 	return (*old_features_);
 }
-

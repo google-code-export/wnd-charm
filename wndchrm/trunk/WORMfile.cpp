@@ -139,6 +139,7 @@ void WORMfile::finish (bool reopen) {
 	_fp = NULL;
 	_fd = -1;
 	status = WORM_FINISHED;
+	// FIXME: Could do more detailed error checking, but in principle, the caller does not expect to process errors.
 	errno = 0;
 	// reopen if requested, without waiting.
 	if (reopen) open_r ();

@@ -49,18 +49,13 @@
 #define MAX_SAMPLES 190000
 
 /* global variable */
-// Verbosity levels:
-// 		0-Classification accuracy and similarity and confusion matrices only
-// 		1-Individual
-// 		2-Everything except the confusion and similarity matrices when printing to std out only
-// 		>2-Everything
+extern int verbosity;
 
-int verbosity = 5;
-
-void randomize()
-{
-  time_t t;
-  srand((unsigned) time(&t));
+#include <sys/time.h>
+void randomize() {
+	timeval t1;
+	gettimeofday(&t1, NULL);
+	srand(t1.tv_usec * t1.tv_sec);
 }
 
 void setup_featureset (featureset_t *featureset) {
@@ -233,7 +228,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 	int report,int max_training_images, int exact_training_images, int max_test_images, char *phylib_path,int distance_method, int phylip_algorithm,int export_tsv,
 	long first_n, char *weight_file_buffer, char weight_vector_action, int N, TrainingSet *testset, int ignore_group, int tile_areas, int max_tile, int image_similarities, int random_splits) {
 	TrainingSet *train,*test,**TilesTrainingSets=NULL;
-	data_split splits[MAX_SPLITS];
+	std::vector<data_split> splits;
 	char group_name[64];
 	FILE *output_file;
 	int split_index,tile_index;
@@ -325,6 +320,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		if (split_ratio > 0) printf ("samples per image=%d, UNBALANCED training fraction=%g\n",samples_per_image,split_ratio);
 		else printf ("samples per image=%d, training images: %d, testing images %d\n",samples_per_image,n_train,n_test);
 	}
+	splits.resize(split_num);
 	for (split_index=0;split_index<split_num;split_index++)
 	{
 		double accuracy;
@@ -644,7 +640,7 @@ void ShowHelp()
 	//printf("    All class labels must be interpretable as numbers.\n");
 	
 	printf("\nOutput options:\n===============\n");
-	printf("s - silent mode.\n");
+	printf("s - silent mode. Optionally followed by a verbosity level (higher = more verbose)\n");
 	printf("p[+][k][#][path] - Report options.\n");
 	printf("   'path' is an optional path to a PHYLIP installation root directory for generating dendrograms.\n");
 	printf("   The optinal '+' creates a 'tsv' directory and exports report data into tsv files.\n");
@@ -739,7 +735,7 @@ int main(int argc, char *argv[])
 	int skip_sig_check = 0;
 
 	assert (FeatureAlgorithmInstances::initialized() && "Failed to initialize feature algorithms");
-	assert (ImageTransformInstances::initialized() && "Failed to initialize image transforms");
+	assert (ImageTransformInstances::initialized() && "Failed to initialize image transforms");	
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));
@@ -854,16 +850,13 @@ int main(int argc, char *argv[])
         }
 	    if (strchr(argv[arg_index],'m')) multi_processor=1;
         if (strchr(argv[arg_index],'n')) splits_num=atoi(&(strchr(argv[arg_index],'n')[1]));
-        if( (char_p = strchr( argv[arg_index],'s') ) )
-				{
-					if( isdigit( *(char_p+1) ) )
-					{
-						if( 1 == atoi( char_p+1 ) )
-							verbosity = 1;
-					}
-					else
-						verbosity=0;
-				}
+        if( (char_p = strchr( argv[arg_index],'s') ) ) {
+			if( isdigit( *(char_p+1) ) ) {
+				verbosity = atoi( char_p+1 );
+			} else {
+				verbosity = 0;
+			}
+		}
         if (strchr(argv[arg_index],'o')) overwrite=1;
         if (strchr(argv[arg_index],'O')) skip_sig_check=1;
         if (strchr(argv[arg_index],'l')) feature_opts->large_set=1;

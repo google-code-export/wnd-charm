@@ -9,6 +9,9 @@
 #include "digest/md5.h"
 #include "b64/encode.h"
 
+/* global variable */
+extern int verbosity;
+
 static inline std::string string_format(const std::string &fmt, ...) {
     int size = 256;
     std::string str;
