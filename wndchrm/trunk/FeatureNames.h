@@ -3,6 +3,7 @@
 
 #include "FeatureAlgorithms.h"
 #include "ImageTransforms.h"
+#include <stdio.h>
 #include <string>
 #include <vector>
 #include <map>
