@@ -3,7 +3,7 @@
 
 #include "FeatureAlgorithms.h"
 #include "ImageTransforms.h"
-#include <stdio.h>
+#include <stdio.h> // for sprintf
 #include <string>
 #include <vector>
 #include <map>
