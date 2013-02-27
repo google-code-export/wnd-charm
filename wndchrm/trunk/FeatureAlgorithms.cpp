@@ -298,7 +298,7 @@ std::vector<double> FractalFeatures::calculate( ImageMatrix * IN_matrix ) const 
 	int bins = n_features;
 	int width = IN_matrix->width;
 	int height = IN_matrix->height;
-	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadOnlyPixels();
+	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadablePixels();
 	int x, y, k, bin = 0;
 	int K = ( ( width > height ) ? height : width) / 5; // MIN
 	int step = (int) floor ( K / bins );
@@ -556,7 +556,7 @@ std::vector<double> GiniCoefficient::calculate( ImageMatrix * IN_matrix ) const 
 	num_pixels = IN_matrix->height * IN_matrix->width;
 	pixels = new double[ num_pixels ];
 
-	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadOnlyPixels();
+	readOnlyPixels IN_matrix_pix_plane = IN_matrix->ReadablePixels();
 	for( pixel_index = 0; pixel_index < num_pixels; pixel_index++ ) {
 		val = IN_matrix_pix_plane.array().coeff(pixel_index);
 		if( val > 0 ) {
@@ -611,7 +611,7 @@ std::vector<double> ColorHistogram::calculate( ImageMatrix * IN_matrix ) const {
 	unsigned long color_index=0;   
 	double certainties[COLORS_NUM+1];
 
-	readOnlyColors clr_plane = IN_matrix->ReadOnlyColors();
+	readOnlyColors clr_plane = IN_matrix->ReadableColors();
 
 	// find the colors
 	for( y = 0; y < height; y++ ) {
