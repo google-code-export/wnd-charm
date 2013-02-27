@@ -56,7 +56,7 @@
 
    Read the paper!
 */
-
+#include <errno.h>
 #include <math.h>
 #include <float.h> // for DBL_MAX
 #include <stdint.h>
@@ -67,9 +67,11 @@
 #include "readTIFF.h"
 
 
-
+#define XSTR(s) STR(s)
+#define STR(s) #s
+#define DEF_ITER  5
 typedef struct  {
-	char   *argP;
+	char   *argP; // a non-specified stain has this NULL
 	char   label[256];
 	char   isRGB;
 	double MODx,MODy,MODz;
@@ -81,20 +83,23 @@ void prepare_conversion_vectors(char **stain, double *q);
 void getStainVecs (stain_t *stains, int nstains);
 void getNormStainMODs (stain_t *stains, double *RGBwht, double *cosx, double *cosy, double *cosz);
 void getStainMat(stain_t *stains, double *RGBwht, double *q);
-void color_decon (float *inBuf,float *outBuf,size_t imagesize,double numbits,double *RGBwht,stain_t *stains);
+double color_decon (float *inBuf,float *outBuf,size_t imagesize,double max_pix_val,double *RGBwht,stain_t *stains);
+void getStainMODs (stain_t *stains,int nstains,double *MODx,double *MODy,double *MODz);
+void setStainMODs (stain_t *stains,int nstains,double *MODx,double *MODy,double *MODz);
 void getNewMOD (float *inBuf,float *outBuf,size_t imagesize,double *RGBwht,stain_t *stains, int nstains, double *MODx1,double *MODy1,double *MODz1);
+char pure_integer (const char *p, long *num);
 
 
 int main (int argc, char **argv) 
 {
-int arg,ret;
+int arg,ret, filename_arg;
 TIFF* tif;
 float *inBuf,*outBuf;
 void *img_stain;
 uint16_t bits;
 uint32_t width,height;
 char outfile[256],basename[256],ext[256],error[256],*cp;
-int nstains=0;
+int nstains=0, stain_idx;
 stain_t stains[3];
 size_t i,j;
 size_t imagesize;
@@ -105,9 +110,14 @@ int minbits; // The minimum number of bits to express the maximum RGB value in t
              // Calculated by ReadRGBTIFFDataFlt
 char whtLvl=0;
 double MODx1[3],MODy1[3],MODz1[3];
-double numbits;
+double max_pix_val; // maximum possible value for scaling (2^bits type of number)
 double RGBwht[3];
 double Rin,Gin,Bin;
+int iter_idx, n_iter = 1, best_iter;
+long iter_in;
+double total_stain; // the total stain accounted for in each iteration
+double bestMODx[3],bestMODy[3],bestMODz[3];
+double best_total_stain; // the best total stain accounted for in each iteration
 
 	if (argc < 3) {
 		usage (argv[0],"Insufficient arguments");
@@ -127,11 +137,13 @@ double Rin,Gin,Bin;
          and finally we try to sscanf 3 floats.  If we don't get 3 floats, then the 
          parameter is malformed.
    */
+   memset (stains, 0, sizeof (stains));
   
 	// Get the CLI params
 	for (arg = 1; arg < argc-1; arg++) {
 		// Stain specification (will be parsed/checked later)
 		if ( !strcmp (argv[arg],"-s")  || !strcmp (argv[arg],"-sOD")) {
+			filename_arg = arg + 2; // -s requires a following arg
 			nstains++;
 			if (nstains < 4) {
 				stains[nstains-1].argP = argv[arg+1];
@@ -145,6 +157,7 @@ double Rin,Gin,Bin;
 			}
 		// Get the white-level
 		} else if ( !strcmp (argv[arg],"-w") ) {
+			filename_arg = arg + 2; // -w requires a following arg
 			if ( sscanf (argv[arg+1],"%lf,%lf,%lf",&Rin,&Gin,&Bin) != 3 ) {
 				usage (argv[0],"-w parameter is malformed. Three white levels expected (R,G,B)");
 			} else {
@@ -154,28 +167,36 @@ double Rin,Gin,Bin;
 				RGBwht[2] = Bin;
 				fprintf (stdout,"white-level = (%lf, %lf, %lf)\n",RGBwht[0],RGBwht[1],RGBwht[2]);
 			}
+		} else if ( !strcmp (argv[arg],"-i") ) {
+			filename_arg = arg + 1;
+			if ( pure_integer (argv[arg+1],&iter_in) ) {
+				filename_arg++; // -i has an optional following arg
+				if (iter_in > 0) {
+					n_iter = iter_in;
+				} else {
+					usage (argv[0],"-i parameter is malformed. Must greater than 0");
+				}
+			} else {
+				n_iter = DEF_ITER;
+			}
 		}
 	}
  
-	if (nstains < 2) usage (argv[0],"A minimum of 2 stains are supported");
+	if (nstains < 1) usage (argv[0],"A minimum of 1 stain must be specified");
+	if (filename_arg >= argc) usage (argv[0],"At least one tiff file must be specified");
 	getStainVecs (stains, nstains);
 
 	
   // suppress warnings
   TIFFSetWarningHandler (NULL);
-  for (arg = 1; arg < argc; arg++) 
+  for (arg = filename_arg; arg < argc; arg++) 
   {
-   	// skip any command-line options and their parameters.
-  	if (*(argv[arg]) == '-') {
-  		arg++;
-  		continue;
-  	}
 
     fprintf (stdout,"File: %s\n",argv[arg]);
     tif = TIFFOpen(argv[arg],"r");
     if (!tif) {
-      fprintf (stderr,"Could not open %s\n",argv[arg]);
-      continue;
+      fprintf (stderr,"Could not open %s: %s\n",argv[arg], strerror (errno));
+      exit (-1);
     }
     
     // Check if its proper RGB
@@ -231,24 +252,71 @@ double Rin,Gin,Bin;
 
 	TIFFClose (tif);
 
-	numbits = pow(2, bits) - 1.0;
-	// If white level was not specified, set it to numbits.
-	if (!whtLvl) RGBwht[0] = RGBwht[1] = RGBwht[2] = numbits;
+// 	max_pix_val = pow(2, bits) - 1.0;
+	max_pix_val = pow(2, minbits) - 1.0;
+	// If not specified, the white level is set to the maximum pixel value in all three channels.
+	// This works well for color-balanced images that have at least one white pixel.
+	// If there are no actual white pixels, a better method is to use minbits, i.e. the minimum number of bits that can be used to represent the image pixels
+	if (!whtLvl) {
+// 		double max = -DBL_MAX;
+// 		float *pixP = inBuf, *pixStop = inBuf + (imagesize * 3);
+// 		do {
+// 			if (*pixP > max) max = *pixP;
+// 		} while (pixP++ < pixStop);
+// 		RGBwht[0] = RGBwht[1] = RGBwht[2] = max;
+		RGBwht[0] = RGBwht[1] = RGBwht[2] = max_pix_val;
+	}
 
-	// deconvolve the colors into outBuf
-	color_decon (inBuf, outBuf, imagesize, numbits, RGBwht, stains);
+	// iterate to find the best separation
+	// "best" is defined as the one that has the most total signal in the defined stains
+	best_total_stain = DBL_MAX; // high pixel value is low amount of stain.
+	for (iter_idx = 0; iter_idx < n_iter; iter_idx++) {
+		// deconvolve the colors into outBuf
+		total_stain = color_decon (inBuf, outBuf, imagesize, max_pix_val, RGBwht, stains);
+		if (total_stain < best_total_stain) {
+			best_total_stain = total_stain;
+			best_iter = iter_idx;
+			getStainMODs (stains, nstains, bestMODx, bestMODy, bestMODz);
+		}
 
-	// Get new MOD vectors
-	getNewMOD (inBuf, outBuf, imagesize, RGBwht, stains, nstains, MODx1, MODy1, MODz1);
+		// Stop the iteration if the best_iteration was more than 2 iterations old.
+		if (iter_idx > (best_iter + 2)) {
+			fprintf (stderr,"Iterations terminated prematurely: no improvement in 2 iterations\n");
+			break;
+		}
+
+		// Get new MOD vectors
+		getNewMOD (inBuf, outBuf, imagesize, RGBwht, stains, nstains, MODx1, MODy1, MODz1);
+		
+		// Set the stains for the next round
+		setStainMODs (stains, nstains, MODx1, MODy1, MODz1);
+	}
+
+	if (n_iter > 1) {
+		fprintf (stdout,"Using iteration #%d with:\n", best_iter+1);
+		for (stain_idx = 0; stain_idx < nstains; stain_idx++) {
+			if (!stains[i].argP) continue;
+			fprintf (stdout,"  Stain '%s' ODs: %lf, %lf, %lf\n",stains[stain_idx].label,
+				bestMODx[stain_idx], bestMODy[stain_idx], bestMODz[stain_idx]
+			);
+		}
+	}
+	
+	// if the best one was not the last one, get the best output
+	if (best_iter != iter_idx-1) {
+		setStainMODs (stains, nstains, bestMODx, bestMODy, bestMODz);
+		total_stain = color_decon (inBuf, outBuf, imagesize, max_pix_val, RGBwht, stains);
+	}
 
 
 	// If only two stains specified, a third image will be created the remainder
 	// when the two stains are deconvolved out of the source image.
 	// Create an informative "stain name" for the third image to be used in its
 	// file name
-	if( nstains == 2 )
+	if( nstains < 3 ) {
 		sprintf( stains[2].label, "remainder_%s%s", stains[0].label, stains[1].label );
-	
+	}
+		
 
 
     
@@ -261,6 +329,9 @@ double Rin,Gin,Bin;
 
     // scale and write the deconvolved images.
 		for (i = 0; i < 3; i++) {
+			// with one stain, the middle stain is a copy of the first.
+			// no point in writing the file again.
+			if (nstains == 1 && i == 1) continue;
 			float *pixP = outBuf+(i*imagesize);
 			double output;
 			// Always three files output.
@@ -274,15 +345,15 @@ double Rin,Gin,Bin;
 			// Scale the result depending on bit depth.
 			for (j=0; j<imagesize;j++){
 			// Scale the result based on max stain value
-// 				output = ( (*pixP++) / stains[i].max ) * numbits;
+// 				output = ( (*pixP++) / stains[i].max ) * max_pix_val;
 			// Scale the result to the max possible pixel value
-				output = (*pixP++) * numbits;
-			// The range of the stain is scaled to numbits for defined stains
-// 				if (stains[i].argP) output = ( ((*pixP++) - stains[i].min) / (stains[i].max - stains[i].min) ) * numbits;
+				output = (*pixP++) * max_pix_val;
+			// The range of the stain is scaled to max_pix_val for defined stains
+// 				if (stains[i].argP) output = ( ((*pixP++) - stains[i].min) / (stains[i].max - stains[i].min) ) * max_pix_val;
 			// Scale the result to the max possible pixel value for undefined stains
-//				else output = (*pixP++) * numbits;
+//				else output = (*pixP++) * max_pix_val;
 			// At this point, scaled or not, the result is clipped.
-				if (output > numbits) output = numbits;
+				if (output > max_pix_val) output = max_pix_val;
 				if (output < 0.0) output = 0.0;
 				switch (bits) {
 					case 8:
@@ -317,12 +388,13 @@ double Rin,Gin,Bin;
 }
 
 
-void color_decon (float *inBuf,float *outBuf,size_t imagesize,double numbits,double *RGBwht,stain_t *stains) {
+double color_decon (float *inBuf,float *outBuf,size_t imagesize,double max_pix_val,double *RGBwht,stain_t *stains) {
 	float *Rp, *Gp, *Bp;
 	double R, G, B, Rlog, Glog, Blog, Rscaled, Gscaled, Bscaled, output;
 	size_t i,j;
 	double max[3],min[3];
 	double q[9];
+	double total_stain = 0.0; // total stain accounted for
 
 	Rp = inBuf;
 	Gp = inBuf+imagesize;
@@ -340,9 +412,9 @@ void color_decon (float *inBuf,float *outBuf,size_t imagesize,double numbits,dou
 		G = (double) *Gp++;
 		B = (double) *Bp++;
 // From ImageJ Plug-in.  We're not scaling yet.
-// 		Rlog = -((numbits*log((R+1)/RGBwht[0]))/logNumbits);
-// 		Glog = -((numbits*log((G+1)/RGBwht[1]))/logNumbits);
-// 		Blog = -((numbits*log((B+1)/RGBwht[2]))/logNumbits);
+// 		Rlog = -((max_pix_val*log((R+1)/RGBwht[0]))/log_max_pix_val);
+// 		Glog = -((max_pix_val*log((G+1)/RGBwht[1]))/log_max_pix_val);
+// 		Blog = -((max_pix_val*log((B+1)/RGBwht[2]))/log_max_pix_val);
 
 // Avoid taking a log of 0 when input value is 0.
 // Originally, 1 wasn't added to the white-level making maximum input value come out non-zero
@@ -360,10 +432,12 @@ void color_decon (float *inBuf,float *outBuf,size_t imagesize,double numbits,dou
 			Gscaled = Glog * q[j*3+1];
 			Bscaled = Blog * q[j*3+2];
 // From ImageJ plug-in.  We're not scaling the output yet.
-//			output = exp(-((Rscaled + Gscaled + Bscaled) - 255.0) * logNumbits / numbits);
+//			output = exp(-((Rscaled + Gscaled + Bscaled) - 255.0) * log_max_pix_val / max_pix_val);
 			output = exp( -(Rscaled + Gscaled + Bscaled) );
 // From ImageJ plug-in.  We're not rounding the output yet.
 //			outInt=(int)floor(output+.5);
+			// accumulate the total output stain
+			if (stains[j].argP) total_stain += output;
 
         	*(outBuf+i+(j*imagesize)) = (float)output;
 			if (output > max[j]) max[j] = output;
@@ -384,8 +458,33 @@ void color_decon (float *inBuf,float *outBuf,size_t imagesize,double numbits,dou
 	stains[0].min = min[0];
 	stains[1].min = min[1];
 	stains[2].min = min[2];
+	return (total_stain);
 }
 
+void getStainMODs (stain_t *stains,int nstains,double *MODx,double *MODy,double *MODz) {
+	int stain_idx;
+
+	for (stain_idx = 0; stain_idx < nstains; stain_idx++) {
+		if (!stains[stain_idx].argP) continue;
+		MODx[stain_idx] = stains[stain_idx].MODx;
+		MODy[stain_idx] = stains[stain_idx].MODy;
+		MODz[stain_idx] = stains[stain_idx].MODz;
+	}
+}
+
+void setStainMODs (stain_t *stains,int nstains,double *MODx,double *MODy,double *MODz) {
+	int stain_idx;
+
+	for (stain_idx = 0; stain_idx < nstains; stain_idx++) {
+		if (!stains[stain_idx].argP) continue;
+		stains[stain_idx].isRGB = 0; // these are no longer in RGB if they were before
+		stains[stain_idx].MODx = MODx[stain_idx];
+		stains[stain_idx].MODy = MODy[stain_idx];
+		stains[stain_idx].MODz = MODz[stain_idx];
+		stains[stain_idx].max = 0;
+		stains[stain_idx].min = 0;
+	}
+}
 
 void getNewMOD (float *inBuf,float *outBuf,size_t imagesize,double *RGBwht, stain_t *stains,int nstains,double *MODx1,double *MODy1,double *MODz1) {
 size_t i,j;
@@ -442,11 +541,12 @@ double MODx0[3],MODy0[3],MODz0[3];
 		float Rd = MODx1[i] - MODx0[i];
 		float Gd = MODy1[i] - MODy0[i];
 		float Bd = MODz1[i] - MODz0[i];
-		fprintf (stdout,"%s New RGBs: %lf,%lf,%lf (ODs: %lf,%lf,%lf -> %lf,%lf,%lf) R=%lf\n",stains[i].label,
+		fprintf (stdout,"Stain '%s' New RGBs: %lf,%lf,%lf (ODs: %lf,%lf,%lf -> %lf,%lf,%lf) R=%lf\n",stains[i].label,
 			R, G, B,
 			MODx0[i],MODy0[i],MODz0[i],
 			MODx1[i],MODy1[i],MODz1[i],
-			sqrt ( (Rd*Rd) + (Gd*Gd) + (Bd*Bd) ) );
+			sqrt ( (Rd*Rd) + (Gd*Gd) + (Bd*Bd) )
+		);
 	}
 }
 
@@ -631,6 +731,15 @@ double Rin,Gin,Bin;
 			stains[i].MODy = 0.972178;
 			stains[i].MODz = 0.154589;
 			if (! *(stains[i].label) ) snprintf (stains[i].label,256,"P");
+  		} else if (!strcmp(stainArg,"Nissl")) {
+			/* Nissl matrix */
+// 			stains[i].MODx = 0.75372857;
+// 			stains[i].MODy = 0.5966732;
+// 			stains[i].MODz = 0.275453;
+			stains[i].MODx = 0.697393;
+			stains[i].MODy = 0.626038;
+			stains[i].MODz = 0.348884;
+			if (! *(stains[i].label) ) snprintf (stains[i].label,256,"N");
   		} else if (!strcmp(stainArg,"R")) {
 			/* R */
 			stains[i].MODx = 0.0;
@@ -679,15 +788,31 @@ double Rin,Gin,Bin;
 	}
 }
 
+char pure_integer (const char *p, long *num) {
+	char *p2;
+	long maybe_int;
+	char numeric, pure_numeric;
+
+	errno = 0;
+	maybe_int = strtol(p, &p2, 0);
+	if (errno) {
+		numeric = 0; pure_numeric = 0;
+	} else {
+		numeric = 1; pure_numeric = 1;
+		if (p2 == p || *p2 != '\0') pure_numeric = 0;
+	}
+	if (pure_numeric) *num = maybe_int;
+	return (pure_numeric);
+}
+
 void usage (const char *argv0, const char *message) {
-	if (message && *message) fprintf (stderr,"%s\n",message);
 	fprintf (stderr,"Usage:\n");
 	if (argv0) fprintf (stderr,"%s",argv0);
 	else fprintf (stderr,"colorDecon");
 	
-	fprintf (stderr," -s <stain>[:<label>] [-s <stain>[:<label>]] [-s <stain>[:<label>]] [-w n,n,n]\n"
+	fprintf (stderr," -s <stain>[:<label>] [-s <stain>[:<label>]] [-s <stain>[:<label>]] [-w n,n,n] [-i [num iter]] file1.tiff [fileN.tiff ...]\n"
 					"  <stain> is one of 'H', 'E', 'DAB', 'FastRed', 'FastBlue', 'MethylGreen', 'AnilineBlue','Azocarmine',\n"
-					"    'AlcianBlue', 'PAS', 'R', 'G', 'B', 'C', 'M', 'Y'\n"
+					"    'AlcianBlue', 'PAS', 'Nissl', 'R', 'G', 'B', 'C', 'M', 'Y'\n"
 					"    OR, a set of RGB values separated by commas, for example:\n"
 					"      -s 1.23,4.56,7.89 -s 123,456,789:St1 -s H:Hem\n"
 					"      -sOD may be used instead of -s to specify stains in optical densities instead of RGB pixel values\n"
@@ -698,6 +823,16 @@ void usage (const char *argv0, const char *message) {
 					"    The above example with a 'file.tif' filename will result in:\n"
 					"    file_0.tiff, file_St1.tif and file_Hem.tif\n"
 					"  -w Set white-level by specifying RGB values separated by commas\n"
-	);
+					"  -i Iterate to maximize stain separation. Optionally specify the number of iterations (default=%d, min=1)\n"
+					"Any number of tiff files may be specified at the end.  The tiff files must be RGB format, and may be 8, 16 or 32 bits per channel.\n"
+					"This program uses the method described in:\n"
+					"  Ruifrok AC, Johnston DA. Quantification of histological staining by color deconvolution.\n"
+					"  Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.\n"
+					"This program is a refinement of the implementation for Color Deconvolution in ImageJ/Fiji:\n"
+					"  * Correctly processes high-bit-depth RGB images\n"
+					"  * Iterative refinement of the deconvolution to maximize the signal in the defined stains\n"
+					"  * Deconvolution of many images in batch mode\n"
+	, DEF_ITER);
+	if (message && *message) fprintf (stderr,"Parameter error: %s\n",message);
 	exit (-1);	
 }
