@@ -1415,7 +1415,17 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
 				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1);
 		}
-
+// 
+// 		// Dump the sample as a tiff
+// 		{
+// 		char foo_path [IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1], *char_p;
+// 		ImageSignatures->GetFileName(foo_path);
+// 		if ( (char_p = strrchr (foo_path,'.')) ) *char_p = '\0';
+// 		else char_p = foo_path+strlen(foo_path);
+// 		sprintf (char_p,".tiff");
+// 		tile_matrix->SaveTiff (foo_path);
+// 		}
+// 
 	// last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
 	// a set of sigs that matches a small subset of re-computed sigs.
 		char old_sig_filename[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1], *char_p;
@@ -1423,16 +1433,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
 		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-// 
-// 		// Dump the sample as a tiff
-// 		{
-// 		char foo_path [IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
-// 		strcpy (foo_path,old_sig_filename);
-// 		if ( (char_p = strrchr (foo_path,'.')) ) *char_p = '\0';
-// 		else char_p = foo_path+strlen(foo_path);
-// 		sprintf (char_p,".tiff");
-// 		tile_matrix->SaveTiff (foo_path);
-// 		}
 		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(*tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
 			ImageSignatures->LoadFromFile (old_sig_filename);
 			if (ImageSignatures->count < 1) {
