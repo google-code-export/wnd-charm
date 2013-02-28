@@ -102,7 +102,11 @@ void setup_featureset (featureset_t *featureset) {
 					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s_%d",sampling_opts->rot_base,rot_index);
 				}
 				if ( (tiles_x > 1 || tiles_y > 1) ) {
-					sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d_%d_%d",sampling_opts->tile_base,tiles_x,tile_index_x,tile_index_y);
+					if (tiles_x == tiles_y) {
+						sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%d_%d_%d",sampling_opts->tile_base,tiles_x,tile_index_x,tile_index_y);
+					} else {
+						sample_name_lngth += sprintf (sample_name+sample_name_lngth,"-%s%dx%d_%d_%d",sampling_opts->tile_base,tiles_x,tiles_y,tile_index_x,tile_index_y);
+					}
 				}
 				// feature opts
 				if (feature_opts->compute_colors) {
@@ -608,8 +612,11 @@ void ShowHelp()
 	printf("m - Allow running multiple instances of this program concurrently, save (and re-use) pre-calculated .sig files.\n");
 	printf("    This will save and re-use .sig files, making this option useful for single instances/processors as well\n");
 	printf("R - Add rotations to training images (0,90,180,270 degrees).\n");
-	printf("t[#][^]N - split the image into NxN tiles. The default is 1. If the '#' is specified, each tile location is used as\n");
-	printf("           a seperate dataset (for testing only). If '^' is specified only the closest tile is used. \n");
+	printf("t[#][^]C[xR] - split the image into CxC or CxR tiles if R is specified. The default is 1.\n");
+	printf("    If '#' is specified, each tile location is used as a separate dataset (for testing only!). \n");
+	printf("      - If both '#' and '^' are specified only the closest tile is used. \n");
+	printf("    If only C is specified (e.g. -t2), tiling will be CxC (e.g. 2 columns by 2 rows). \n");
+	printf("      - If both C and R are specified (e.g. -t2x3), tiling will be CxR (e.g. 2 columns by 3 rows). \n");
 	printf("dN - Downsample the images (N percents, where N is 1 to 100)\n");
 	printf("Sx[:y] - normalize the images such that the mean is set to x and (optinally) the stddev is set to y.\n");   
 	printf("Bx,y,w,h - compute features only from the (x,y,w,h) block of the image.\n");      
@@ -887,7 +894,18 @@ int main(int argc, char *argv[])
 					char_p++;
 				}
 			}
-           sampling_opts->tiles_x = sampling_opts->tiles_y = atoi(char_p+1);
+			sampling_opts->tiles_x = strtol(char_p+1, &char_p2, 0);
+			if (*char_p2 == 'x' || *char_p2 == 'X') {
+				char *char_p3;
+				sampling_opts->tiles_y = strtol(char_p2+1, &char_p3, 0);
+				if (char_p3 <= char_p2+1) sampling_opts->tiles_y = sampling_opts->tiles_x;
+			} else if (char_p2 <= char_p+1) { // no t parameter is an error
+				showError(1,"Unspecified tiling scheme (-t switch)\n");
+			}
+			if (! (sampling_opts->tiles_x > 0 && sampling_opts->tiles_y > 0) ) {
+				showError(1,"Badly defined tiling scheme (-t switch). Tiles in both directions must be > 0\n");
+			}
+printf ("tile %d X %d\n", sampling_opts->tiles_x, sampling_opts->tiles_y);
        }
         if ( (char_p = strchr(argv[arg_index],'i')) ) {
 			if (*(char_p+1)=='#') {
