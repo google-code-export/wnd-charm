@@ -169,7 +169,7 @@ int check_split_params (int *n_train_p, int *n_test_p, double *split_ratio, Trai
 		}
 	}
 	max_balanced_i = max_balanced_samples / samples_per_image;
-	if( verbosity >= 2 ) printf ("Max balanced training: %d\n",max_balanced_i);
+	if( verbosity >= 2 ) printf ("Max balanced training images: %d\n",max_balanced_i);
 	// Check provided parameters against balanced testing/training
 	if (max_training_images > 0 && !exact_training_images) { // N.B.: -i overrides -r, except if exact_training_images
 		if (max_training_images > max_balanced_i && testset) {

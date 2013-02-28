@@ -161,7 +161,7 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const std::
 
 	std::string featurename;
 	const std::string &featurename_old = oldFeatureNameLookup (featurename_in);
-	if (featurename_old.empty()) featurename = featurename_old;
+	if (!featurename_old.empty()) featurename = featurename_old;
 	else featurename = featurename_in;
 
 // parse out the group index
@@ -172,7 +172,6 @@ const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const std::
 		index = -1;
 	else
 		index = atoi ( (featurename.substr (found_left+1,found_right-found_left-1)).c_str() );
-
 // parse out the group name
 	size_t found;
 	std::string groupname;
