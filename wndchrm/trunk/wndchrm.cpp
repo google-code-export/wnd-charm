@@ -907,7 +907,6 @@ int main(int argc, char *argv[])
 			if (! (sampling_opts->tiles_x > 0 && sampling_opts->tiles_y > 0) ) {
 				showError(1,"Badly defined tiling scheme (-t switch). Tiles in both directions must be > 0\n");
 			}
-printf ("tile %d X %d\n", sampling_opts->tiles_x, sampling_opts->tiles_y);
        }
         if ( (char_p = strchr(argv[arg_index],'i')) ) {
 			if (*(char_p+1)=='#') {
