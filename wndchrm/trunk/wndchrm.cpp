@@ -899,6 +899,8 @@ int main(int argc, char *argv[])
 				char *char_p3;
 				sampling_opts->tiles_y = strtol(char_p2+1, &char_p3, 0);
 				if (char_p3 <= char_p2+1) sampling_opts->tiles_y = sampling_opts->tiles_x;
+			} else if (char_p2 > char_p+1) { // no 'x', but got a number after -t: y same as x
+				sampling_opts->tiles_y = sampling_opts->tiles_x;
 			} else if (char_p2 <= char_p+1) { // no t parameter is an error
 				showError(1,"Unspecified tiling scheme (-t switch)\n");
 			}
