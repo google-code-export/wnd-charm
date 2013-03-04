@@ -138,7 +138,7 @@ double best_total_stain; // the best total stain accounted for in each iteration
          parameter is malformed.
    */
    memset (stains, 0, sizeof (stains));
-  
+
 	// Get the CLI params
 	for (arg = 1; arg < argc-1; arg++) {
 		// Stain specification (will be parsed/checked later)
@@ -269,7 +269,8 @@ double best_total_stain; // the best total stain accounted for in each iteration
 
 	// iterate to find the best separation
 	// "best" is defined as the one that has the most total signal in the defined stains
-	best_total_stain = DBL_MAX; // high pixel value is low amount of stain.
+	// N.B.: high pixel value is low amount of stain, so we are looking for lowest pixel values.
+	best_total_stain = DBL_MAX;
 	for (iter_idx = 0; iter_idx < n_iter; iter_idx++) {
 		// deconvolve the colors into outBuf
 		total_stain = color_decon (inBuf, outBuf, imagesize, max_pix_val, RGBwht, stains);
@@ -295,7 +296,7 @@ double best_total_stain; // the best total stain accounted for in each iteration
 	if (n_iter > 1) {
 		fprintf (stdout,"Using iteration #%d with:\n", best_iter+1);
 		for (stain_idx = 0; stain_idx < nstains; stain_idx++) {
-			if (!stains[i].argP) continue;
+			if (!stains[stain_idx].argP) continue;
 			fprintf (stdout,"  Stain '%s' ODs: %lf, %lf, %lf\n",stains[stain_idx].label,
 				bestMODx[stain_idx], bestMODy[stain_idx], bestMODz[stain_idx]
 			);
