@@ -77,7 +77,7 @@ using namespace std;
    filename -char *- full path to the image file
 */
 int ImageMatrix::LoadTIFF(char *filename) {
-	unsigned int h,w,x,y;
+	unsigned int h,w,x=0,y=0;
 	unsigned short int spp=0,bps=0;
 	TIFF *tif = NULL;
 	unsigned char *buf8;
@@ -163,7 +163,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
 		// i.e. scale global RGB min-max to 0-255
 		if (spp == 3 && bits > 8) {
 			size_t a, num = width*height;
-			double R_min, G_min, B_min, R_max, G_max, B_max, RGB_min, RGB_max, RGB_scale;
+			double R_min=0, G_min=0, B_min=0, R_max=0, G_max=0, B_max=0, RGB_min=0, RGB_max=0, RGB_scale=0;
 			R_matrix.WriteablePixelsFinish();
 			G_matrix.WriteablePixelsFinish();
 			B_matrix.WriteablePixelsFinish();
