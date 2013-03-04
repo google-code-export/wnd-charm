@@ -267,7 +267,7 @@ double best_total_stain; // the best total stain accounted for in each iteration
 	}
 
 	// reset the stain vectors for each image
-	getStainVecs (stains, nstains);
+	getStainVecs (stains, 3);
 
 	// iterate to find the best separation
 	// "best" is defined as the one that has the most total signal in the defined stains
