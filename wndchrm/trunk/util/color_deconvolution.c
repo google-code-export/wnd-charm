@@ -282,7 +282,7 @@ double best_total_stain; // the best total stain accounted for in each iteration
 
 		// Stop the iteration if the best_iteration was more than 2 iterations old.
 		if (iter_idx > (best_iter + 2)) {
-			fprintf (stderr,"Iterations terminated prematurely: no improvement in 2 iterations\n");
+			fprintf (stdout,"Iterations terminated prematurely: no improvement in 2 iterations\n");
 			break;
 		}
 
