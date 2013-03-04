@@ -184,7 +184,6 @@ double best_total_stain; // the best total stain accounted for in each iteration
  
 	if (nstains < 1) usage (argv[0],"A minimum of 1 stain must be specified");
 	if (filename_arg >= argc) usage (argv[0],"At least one tiff file must be specified");
-	getStainVecs (stains, nstains);
 
 	
   // suppress warnings
@@ -266,6 +265,9 @@ double best_total_stain; // the best total stain accounted for in each iteration
 // 		RGBwht[0] = RGBwht[1] = RGBwht[2] = max;
 		RGBwht[0] = RGBwht[1] = RGBwht[2] = max_pix_val;
 	}
+
+	// reset the stain vectors for each image
+	getStainVecs (stains, nstains);
 
 	// iterate to find the best separation
 	// "best" is defined as the one that has the most total signal in the defined stains
