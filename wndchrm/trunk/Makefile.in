@@ -54,8 +54,7 @@ DIST_COMMON = README $(am__configure_deps) $(noinst_HEADERS) \
 	$(srcdir)/Eigen/sources.am $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	config.guess config.sub depcomp install-sh missing \
-	mkinstalldirs
+	depcomp install-sh missing mkinstalldirs
 bin_PROGRAMS = wndchrm$(EXEEXT) util/color_deconvolution$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
