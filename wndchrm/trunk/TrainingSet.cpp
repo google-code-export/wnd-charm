@@ -1383,26 +1383,20 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 				res = -1; // make sure its negative for cleanup below
 				break;
 			}
-			if (rot_index == 0) {
-				rot_matrix_indx = 0;
-				rot_matrix = image_matrix;
-			}
 		}
 		// Since image opening was lazy, everything else is too.
 		if (rot_matrix_indx != rot_index) {
 			if (rot_matrix_indx != 0 && rot_matrix) delete rot_matrix;
 			rot_matrix = NULL;
 		}
-		if (!rot_matrix) {
-			if (rot_index > 0) { //rotate the image_matrix
-				rot_matrix = image_matrix->Rotate (90.0 * rot_index);
-			} else {
-				rot_matrix = image_matrix;
-			}
+		if (!rot_matrix && rot_index > 0) {
+			rot_matrix = image_matrix->Rotate (90.0 * rot_index);
 			rot_matrix_indx = rot_index;
-			if (tiles == 1) tile_matrix = rot_matrix;
+		} else if (!rot_matrix) {
+			rot_matrix = image_matrix;
+			rot_matrix_indx = 0;
 		}
-		if (!tile_matrix) {
+		if (!tile_matrix && tiles != 1) {
 			long tile_x_size;
 			long tile_y_size;
 			if (rot_index == 1 || rot_index == 3) {
@@ -1416,6 +1410,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			tile_matrix->submatrix (*rot_matrix,
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
 				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1);
+		} else if (!tile_matrix) {
+			tile_matrix = rot_matrix;
 		}
 // 
 // 		// Dump the sample as a tiff
@@ -1486,6 +1482,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		}
 	}
 
+	if (tile_matrix && tile_matrix != rot_matrix) delete tile_matrix;
 	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
 	if (image_matrix) delete image_matrix;
 

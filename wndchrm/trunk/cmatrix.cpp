@@ -70,6 +70,9 @@ using namespace std;
 
 
 
+/* global variable */
+extern int verbosity;
+
 
 
 
@@ -328,12 +331,15 @@ void ImageMatrix::allocate (unsigned int w, unsigned int h) {
 	if ((unsigned int) _pix_plane.cols() != w || (unsigned int)_pix_plane.rows() != h) {
 		// These throw exceptions, which we don't catch (catch in main?)
 		// FIXME: We could check for shrinkage and simply remap instead of allocating.
+		if (verbosity > 7 && _pix_plane.data()) fprintf (stdout, "deallocating grayscale %p ",(void *)_pix_plane.data());
 		if (_pix_plane.data()) Eigen::aligned_allocator<double>().deallocate (_pix_plane.data(), _pix_plane.size());
 		remap_pix_plane (Eigen::aligned_allocator<double>().allocate (w * h), w, h);
+		if (verbosity > 7 && _pix_plane.data()) fprintf (stdout, "allocated grayscale %p\n",(void *)_pix_plane.data());
 	}
 
 	// cleanup the color plane if it changed size, or if we have a gray image.
 	if ( ColorMode == cmGRAY || (_pix_plane.data() && ((unsigned int)_clr_plane.cols() != w || (unsigned int)_clr_plane.rows() != h)) ) {
+		if (verbosity > 7 && _clr_plane.data()) fprintf (stdout, "  deallocating color %p\n",(void *)_clr_plane.data());
 		if (_clr_plane.data()) Eigen::aligned_allocator<HSVcolor>().deallocate (_clr_plane.data(), _clr_plane.size());
 		remap_clr_plane (NULL, 0, 0);
 	}
@@ -343,6 +349,7 @@ void ImageMatrix::allocate (unsigned int w, unsigned int h) {
 		// These throw exceptions, which we don't catch (catch in main?)
 		// FIXME: We could check for shrinkage and simply remap instead of allocating.
 		remap_clr_plane (Eigen::aligned_allocator<HSVcolor>().allocate (w * h), w, h);
+		if (verbosity > 7 && _clr_plane.data()) fprintf (stdout, "  allocated color %p\n",(void *)_clr_plane.data());
 	}
 }
 
@@ -414,20 +421,20 @@ void ImageMatrix::submatrix (const ImageMatrix &matrix, const unsigned int x1, c
 */
 ImageMatrix::~ImageMatrix() {
 	WriteablePixelsFinish();
+	if (verbosity > 7 && _pix_plane.data()) fprintf (stdout, "deallocating grayscale %p\n",(void *)_pix_plane.data());
 	if (_pix_plane.data()) Eigen::aligned_allocator<double>().deallocate (_pix_plane.data(), _pix_plane.size());
 	remap_pix_plane (NULL, 0, 0);
 
 	WriteableColorsFinish();
+	if (verbosity > 7 && _clr_plane.data()) fprintf (stdout, "deallocating color %p\n",(void *)_clr_plane.data());
 	if (_clr_plane.data()) Eigen::aligned_allocator<HSVcolor>().deallocate (_clr_plane.data(), _clr_plane.size());
 	remap_clr_plane (NULL, 0, 0);
 }
 
-// This is a general transform method that returns a new image matrix by applying the specified transform.
-ImageMatrix &ImageMatrix::transform (const ImageTransform *transform) const {
-	ImageMatrix *matrix_OUT = new ImageMatrix;
-
-	transform->execute (this, matrix_OUT);
-	return (*matrix_OUT);
+// This is a general transform method that applies the specified transform to the specified ImageMatrix,
+// storing the result in the ImageMatrix it was called on
+void ImageMatrix::transform (const ImageMatrix &matrix_IN, const ImageTransform *transform) {
+	transform->execute (&matrix_IN, this);
 }
 
 

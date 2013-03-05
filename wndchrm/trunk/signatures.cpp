@@ -203,14 +203,15 @@ int signatures::IsNeeded(long start_index, long group_length)
 
 void signatures::compute(ImageMatrix &matrix, int compute_colors) {
 	version = CURRENT_FEATURE_VERSION;
+	ImageMatrix Fourier, Chebyshev, Wavelet, ChebyshevFourier, WaveletFourier;
 
 	if (verbosity > 1) printf("start processing image...\n");   
 	if (verbosity > 2) printf("transforms...\n");
-	ImageMatrix &Fourier          = matrix.transform  (FeatureNames::getTransformByName ("Fourier"));
-	ImageMatrix &Chebyshev        = matrix.transform  (FeatureNames::getTransformByName ("Chebyshev"));
-	ImageMatrix &Wavelet          = matrix.transform  (FeatureNames::getTransformByName ("Wavelet"));
-	ImageMatrix &ChebyshevFourier = Fourier.transform (FeatureNames::getTransformByName ("Chebyshev"));
-	ImageMatrix &WaveletFourier   = Fourier.transform (FeatureNames::getTransformByName ("Wavelet"));
+	Fourier.transform          (matrix,  FeatureNames::getTransformByName ("Fourier"));
+	Chebyshev.transform        (matrix,  FeatureNames::getTransformByName ("Chebyshev"));
+	Wavelet .transform         (matrix,  FeatureNames::getTransformByName ("Wavelet"));
+	ChebyshevFourier.transform (Fourier, FeatureNames::getTransformByName ("Chebyshev"));
+	WaveletFourier.transform   (Fourier, FeatureNames::getTransformByName ("Wavelet"));
 
 	if (verbosity > 2) printf("start computing features\n");
 	count=0;      // start counting signatures from 0
@@ -462,24 +463,28 @@ void signatures::CompGroupD (ImageMatrix &matrix) {
    input - an image matrix structure.
 */
 void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors) {
+	ImageMatrix Fourier, Chebyshev, Wavelet, Edge;
+	ImageMatrix ChebyshevFourier, ChebyshevWavelet, WaveletFourier, WaveletEdge;
+	ImageMatrix FourierWavelet, FourierChebyshev, FourierEdge;
+	
 	// Set the feature version
 	version = CURRENT_FEATURE_VERSION;
 
 	count=0;      /* start counting signatures from 0 */
 
 	if (verbosity > 1) printf("start processing image...\n");   
-	ImageMatrix &Fourier   = matrix.transform (FeatureNames::getTransformByName ("Fourier"));
-	ImageMatrix &Chebyshev = matrix.transform (FeatureNames::getTransformByName ("Chebyshev"));
-	ImageMatrix &Wavelet   = matrix.transform (FeatureNames::getTransformByName ("Wavelet"));
-	ImageMatrix &Edge      = matrix.transform (FeatureNames::getTransformByName ("Edge"));
+	Fourier.transform   (matrix, FeatureNames::getTransformByName ("Fourier"));
+	Chebyshev.transform (matrix, FeatureNames::getTransformByName ("Chebyshev"));
+	Wavelet.transform   (matrix, FeatureNames::getTransformByName ("Wavelet"));
+	Edge.transform      (matrix, FeatureNames::getTransformByName ("Edge"));
 
-	ImageMatrix &ChebyshevFourier = Fourier.transform   (FeatureNames::getTransformByName ("Chebyshev"));
-	ImageMatrix &ChebyshevWavelet = Wavelet.transform   (FeatureNames::getTransformByName ("Chebyshev"));
-	ImageMatrix &WaveletFourier   = Fourier.transform   (FeatureNames::getTransformByName ("Wavelet"));
-	ImageMatrix &WaveletEdge      = Edge.transform      (FeatureNames::getTransformByName ("Wavelet"));
-	ImageMatrix &FourierWavelet   = Wavelet.transform   (FeatureNames::getTransformByName ("Fourier"));
-	ImageMatrix &FourierChebyshev = Chebyshev.transform (FeatureNames::getTransformByName ("Fourier"));
-	ImageMatrix &FourierEdge      = Edge.transform      (FeatureNames::getTransformByName ("Fourier"));
+	ChebyshevFourier.transform (Fourier,   FeatureNames::getTransformByName ("Chebyshev"));
+	ChebyshevWavelet.transform (Wavelet,   FeatureNames::getTransformByName ("Chebyshev"));
+	WaveletFourier.transform   (Fourier,   FeatureNames::getTransformByName ("Wavelet"));
+	WaveletEdge.transform      (Edge,      FeatureNames::getTransformByName ("Wavelet"));
+	FourierWavelet.transform   (Wavelet,   FeatureNames::getTransformByName ("Fourier"));
+	FourierChebyshev.transform (Chebyshev, FeatureNames::getTransformByName ("Fourier"));
+	FourierEdge.transform      (Edge,      FeatureNames::getTransformByName ("Fourier"));
 
 	CompGroupA(matrix,"()");
 	CompGroupB(matrix,"()");
@@ -527,6 +532,7 @@ void signatures::ComputeGroups(ImageMatrix &matrix, int compute_colors) {
 	// Edge, then wavelet
 	CompGroupB(WaveletEdge,"(Wavelet (Edge ()))");
 	CompGroupC(WaveletEdge,"(Wavelet (Edge ()))");
+
 }
 
 

@@ -225,7 +225,7 @@ public:
 	};
 	virtual ~ImageMatrix();                                 // destructor
 
-	virtual ImageMatrix &transform (const ImageTransform *transform) const;
+	virtual void transform (const ImageMatrix &matrix_IN, const ImageTransform *transform);
 
 	void normalize(double min, double max, long range, double mean, double stddev); // normalized an image to either min/max or mean/stddev
 	void to8bits();
