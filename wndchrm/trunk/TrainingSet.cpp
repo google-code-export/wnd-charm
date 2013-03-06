@@ -1179,7 +1179,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 		// In order to ensure we gather all of the specified samples for .sig files,
 		// we need to determine the image name that the sigfiles refer to, and pass this to AddImageFile
 		// We also need to consolidate the img_basename list and the sig_basename list to remove duplicates
-		if ( (char_p = strstr(ent->d_name,".sig")) && *(char_p+4) == '\0') {
+		if ( ! strcmp(strrchr (ent->d_name,'.'),".sig") ) {
 			sprintf (buffer,"%s/%s",path,ent->d_name);
 			WORMfile wf (buffer, true);
 			if ( wf.status == WORMfile::WORM_RD ) {
@@ -1191,7 +1191,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 					sig_fullpath = fgets (buffer , 512 , sigfile);
 				}
 				wf.finish();
-				if (sig_fullpath && *sig_fullpath) { // not empty
+				if (sig_fullpath && *sig_fullpath && IsSupportedFormat(sig_fullpath)) { // not empty
 				 // the leading paths may not be correct for all sigs (i.e. NFS mounts with different mountpoints)
 				 // The only thing we care about right now is the set of sig files in this directory stemming from the same base image.
 					char_p = strrchr (sig_fullpath,'/');
@@ -1390,7 +1390,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			rot_matrix = NULL;
 		}
 		if (!rot_matrix && rot_index > 0) {
-			rot_matrix = image_matrix->Rotate (90.0 * rot_index);
+			rot_matrix = new ImageMatrix;
+			rot_matrix->Rotate (*image_matrix, 90.0 * rot_index);
 			rot_matrix_indx = rot_index;
 		} else if (!rot_matrix) {
 			rot_matrix = image_matrix;

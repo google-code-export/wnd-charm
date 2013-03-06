@@ -232,8 +232,8 @@ public:
 	void flipV();                                   // flip an image around a vertical axis (left to right)
 	void flipH();                                   // flip an image around a horizontal axis (upside down)
 	void invert();                                  // invert the intensity of an image
-	void Downsample(double x_ratio, double y_ratio);// down sample an image
-	ImageMatrix *Rotate(double angle);              // rotate an image by 90,180,270 degrees
+	void Downsample (const ImageMatrix &matrix_IN, double x_ratio, double y_ratio);// down sample an image
+	void Rotate (const ImageMatrix &matrix_IN, double angle);              // rotate an image by 90,180,270 degrees
 	void convolve(const pixDataMat &filter);
 	void BasicStatistics(double *mean, double *median, double *std, double *min, double *max, double *histogram, int bins);
 	inline double min() {

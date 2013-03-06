@@ -262,7 +262,7 @@ int ImageMatrix::OpenImage(char *image_file_name, int downsample, rect *bounding
 			);
 		}
 		if (downsample>0 && downsample<100)  /* downsample by a given factor */
-			Downsample(((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
+			Downsample(*this, ((double)downsample)/100.0,((double)downsample)/100.0);   /* downsample the image */
 		if (mean>0)  /* normalize to a given mean and standard deviation */
 			normalize(-1,-1,-1,mean,stddev);
 	}
@@ -493,7 +493,7 @@ void ImageMatrix::invert() {
    x_ratio, y_ratio -double- (0 to 1) the size of the new image comparing to the old one
    FIXME: Since this is done in-place, there is potential for aliasing (i.e. new pixel values interfering with old pixel values)
 */
-void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
+void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, double y_ratio) {
 	double x,y,dx,dy,frac;
 	unsigned int new_x,new_y,a;
 	HSVcolor hsv;
@@ -507,15 +507,15 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
 	if (dx == 1 && dy == 1) return;   /* nothing to scale */
 
 	ImageMatrix copy_matrix;
-	copy_matrix.copyFields (*this);
-	copy_matrix.allocate (width, height);
+	copy_matrix.copyFields (matrix_IN);
+	copy_matrix.allocate (matrix_IN.width, matrix_IN.height);
 	writeablePixels copy_pix_x = copy_matrix.WriteablePixels();
 	writeableColors copy_clr_x = copy_matrix.WriteableColors();
 
-	readOnlyPixels pix_plane_x = ReadablePixels();
-	readOnlyColors clr_plane_x = ReadableColors();
- 	unsigned int new_width = (unsigned int)(x_ratio*width), new_height = (unsigned int)(y_ratio*height),
- 		old_width = width, old_height = height;
+	readOnlyPixels pix_plane_x = matrix_IN.ReadablePixels();
+	readOnlyColors clr_plane_x = matrix_IN.ReadableColors();
+ 	unsigned int new_width = (unsigned int)(x_ratio*matrix_IN.width), new_height = (unsigned int)(y_ratio*matrix_IN.height),
+ 		old_width = matrix_IN.width, old_height = matrix_IN.height;
 
 	// first downsample x
 	for (new_y = 0; new_y < old_height; new_y++) {
@@ -640,46 +640,42 @@ void ImageMatrix::Downsample(double x_ratio, double y_ratio) {
    Rotate an image by 90, 120, or 270 degrees
    angle -double- (0 to 360) the degrees of rotation.  Only values of 90, 180, 270 are currently allowed
 */
-ImageMatrix* ImageMatrix::Rotate(double angle) {
-	ImageMatrix *new_matrix;
+void ImageMatrix::Rotate(const ImageMatrix &matrix_IN, double angle) {
 	unsigned int new_width,new_height;
 
 	// Only deal with right angles
-	if (! ( (angle == 90) || (angle == 180) || (angle == 270) ) ) return (this);
+	if (! ( (angle == 90) || (angle == 180) || (angle == 270) ) ) return;
 
 	// switch width/height if 90 or 270
 	if ( (angle == 90) || (angle == 270) ) {
-		new_width = height;
-		new_height = width;
+		new_width = matrix_IN.height;
+		new_height = matrix_IN.width;
 	} else {
-		new_width = width;
-		new_height = height;
+		new_width = matrix_IN.width;
+		new_height = matrix_IN.height;
 	}
 
-	// Make a new image matrix
-	new_matrix = new ImageMatrix;
-	new_matrix->copyFields (*this);
+	// Copy fields from input
+	copyFields (matrix_IN);
 
-	new_matrix->allocate (new_width, new_height);
+	allocate (new_width, new_height);
 
 	// a 180 is simply a reverse of the matrix
 	// a 90 is m.transpose().rowwise.reverse()
 	// a 270 is m.transpose()
 	switch ((int)angle) {
 		case 90:
-			new_matrix->WriteablePixels() = ReadablePixels().transpose().rowwise().reverse();
+			WriteablePixels() = matrix_IN.ReadablePixels().transpose().rowwise().reverse();
 		break;
 
 		case 180:
-			new_matrix->WriteablePixels() = ReadablePixels().reverse();
+			WriteablePixels() = matrix_IN.ReadablePixels().reverse();
 		break;
 
 		case 270:
-			new_matrix->WriteablePixels() = ReadablePixels().transpose();
+			WriteablePixels() = matrix_IN.ReadablePixels().transpose();
 		break;
 	}
-
-	return(new_matrix);
 }
 
 
@@ -1140,7 +1136,7 @@ void ImageMatrix::ChebyshevFourierTransform2D(double *coeff) {
 	if( (width * height) > (300 * 300) ) {
 		matrix = new ImageMatrix;
 		matrix->copy (*this);
-		matrix->Downsample( MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
+		matrix->Downsample(*this, MIN( 300.0/(double)width, 300.0/(double)height ), MIN( 300.0/(double)width, 300.0/(double)height ) );  /* downsample for avoiding memory problems */
 	} else {
 		matrix = this;
 	}
