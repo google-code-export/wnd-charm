@@ -1358,7 +1358,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	// Lazy loading could have been done while generating the sampling parameters above, but this lets us pre-obtain file locks
 	// for all the sigs we will calculate.  The code separation b/w sampling parameter setup and the sampling itself points to
 	// doing this in a more general way with functional programming (or some other technique).
-	ImageMatrix *image_matrix=NULL, *rot_matrix=NULL, *tile_matrix=NULL;
+	ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL;
+	ImageMatrix image_matrix, rot_matrix, tile_matrix;
 	int rot_matrix_indx=0;
 	int tiles_x = featureset->sampling_opts.tiles_x, tiles_y = featureset->sampling_opts.tiles_y, tiles = tiles_x * tiles_y;
 	preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
@@ -1373,49 +1374,42 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		our_sigs[sig_index].added = false; // don't delete if true
 		if (verbosity>=2) printf ("processing '%s' (index %d).\n",ImageSignatures->GetFileName(buffer),sig_index);
 
-		if (!image_matrix) { // for all samples
-			image_matrix = new ImageMatrix;
+		// Open the image once for the first sample
+		if (sig_index == 0) {
 		// any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
 		// One of these could be reachable if the image is not in the same directory as the sigs.
 		// There is no support for this now though - its an error for the image not to exist together with the sigs
 		// if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
-			if ( (res = image_matrix->OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+			if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
 				catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
 				res = -1; // make sure its negative for cleanup below
 				break;
 			}
 		}
-		// Since image opening was lazy, everything else is too.
-		if (rot_matrix_indx != rot_index) {
-			if (rot_matrix != image_matrix && rot_matrix) delete rot_matrix;
-			rot_matrix = NULL;
-		}
-		if (!rot_matrix && rot_index > 0) {
-			rot_matrix = new ImageMatrix;
-			rot_matrix->Rotate (*image_matrix, 90.0 * rot_index);
+		if (rot_index > 0) {
+			rot_matrix.Rotate (image_matrix, 90.0 * rot_index);
 			rot_matrix_indx = rot_index;
-			tile_matrix = NULL;
-		} else if (!rot_matrix) {
-			rot_matrix = image_matrix;
+			rot_matrix_p = &rot_matrix;
+		} else {
+			rot_matrix_p = &image_matrix;
 			rot_matrix_indx = 0;
-			tile_matrix = NULL;
 		}
-		if (!tile_matrix && tiles != 1) {
+		if (tiles != 1) {
 			long tile_x_size;
 			long tile_y_size;
 			if (rot_index == 1 || rot_index == 3) {
-				tile_y_size=(long)(rot_matrix->width/tiles_x);
-				tile_x_size=(long)(rot_matrix->height/tiles_y);
+				tile_y_size=(long)(rot_matrix_p->width/tiles_x);
+				tile_x_size=(long)(rot_matrix_p->height/tiles_y);
 			} else {
-				tile_x_size=(long)(rot_matrix->width/tiles_x);
-				tile_y_size=(long)(rot_matrix->height/tiles_y);
+				tile_x_size=(long)(rot_matrix_p->width/tiles_x);
+				tile_y_size=(long)(rot_matrix_p->height/tiles_y);
 			}
-			tile_matrix = new ImageMatrix();
-			tile_matrix->submatrix (*rot_matrix,
+			tile_matrix.submatrix (*rot_matrix_p,
 				tile_index_x*tile_x_size,tile_index_y*tile_y_size,
 				(tile_index_x+1)*tile_x_size-1,(tile_index_y+1)*tile_y_size-1);
-		} else if (!tile_matrix) {
-			tile_matrix = rot_matrix;
+			tile_matrix_p = &tile_matrix;
+		} else {
+			tile_matrix_p = rot_matrix_p;
 		}
 // 
 // 		// Dump the sample as a tiff
@@ -1425,7 +1419,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 // 		if ( (char_p = strrchr (foo_path,'.')) ) *char_p = '\0';
 // 		else char_p = foo_path+strlen(foo_path);
 // 		sprintf (char_p,".tiff");
-// 		tile_matrix->SaveTiff (foo_path);
+// 		tile_matrix_p->SaveTiff (foo_path);
 // 		}
 // 
 	// last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
@@ -1435,7 +1429,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
 		else char_p = old_sig_filename+strlen(old_sig_filename);
 		sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(*tile_matrix,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
+		if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(*tile_matrix_p,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
 			ImageSignatures->LoadFromFile (old_sig_filename);
 			if (ImageSignatures->count < 1) {
 				catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));
@@ -1452,8 +1446,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	// all hope is lost - compute sigs.
 		if (!res) {
-			if (feature_opts->large_set) ImageSignatures->ComputeGroups(*tile_matrix,feature_opts->compute_colors);
-			else ImageSignatures->compute(*tile_matrix,feature_opts->compute_colors);
+			if (feature_opts->large_set) ImageSignatures->ComputeGroups(*tile_matrix_p,feature_opts->compute_colors);
+			else ImageSignatures->compute(*tile_matrix_p,feature_opts->compute_colors);
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
@@ -1464,11 +1458,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			break;
 		}
 		our_sigs[sig_index].added = true;
-
-		if (tiles > 1) {
-			delete tile_matrix;
-			tile_matrix = NULL;
-		}
 	}
 	
 // don't release any locks until we're done with this image
@@ -1485,10 +1474,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			}
 		}
 	}
-
-	if (tile_matrix && tile_matrix != rot_matrix) delete tile_matrix;
-	if (rot_matrix && rot_matrix != image_matrix) delete rot_matrix;
-	if (image_matrix) delete image_matrix;
 
 	return (res);
 }
