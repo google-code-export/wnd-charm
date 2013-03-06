@@ -1186,6 +1186,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 				sigfile = wf.fp();
 				// first line is classname, second line is full_path
 				*buffer = '\0';
+				sig_fullpath = NULL;
 				if ( fgets (buffer , 512 , sigfile) ) {
 					*buffer = '\0';
 					sig_fullpath = fgets (buffer , 512 , sigfile);
