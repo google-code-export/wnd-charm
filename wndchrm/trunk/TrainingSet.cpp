@@ -1386,16 +1386,18 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 		}
 		// Since image opening was lazy, everything else is too.
 		if (rot_matrix_indx != rot_index) {
-			if (rot_matrix_indx != 0 && rot_matrix) delete rot_matrix;
+			if (rot_matrix != image_matrix && rot_matrix) delete rot_matrix;
 			rot_matrix = NULL;
 		}
 		if (!rot_matrix && rot_index > 0) {
 			rot_matrix = new ImageMatrix;
 			rot_matrix->Rotate (*image_matrix, 90.0 * rot_index);
 			rot_matrix_indx = rot_index;
+			tile_matrix = NULL;
 		} else if (!rot_matrix) {
 			rot_matrix = image_matrix;
 			rot_matrix_indx = 0;
+			tile_matrix = NULL;
 		}
 		if (!tile_matrix && tiles != 1) {
 			long tile_x_size;
