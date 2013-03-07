@@ -1140,6 +1140,7 @@ void ImageMatrix::ChebyshevFourierTransform2D(double *coeff) {
 		matrix = this;
 	}
 	ChebyshevFourier2D(matrix, 0, coeff,32);
+	if (matrix != this) delete matrix;
 }
 
 
@@ -1167,7 +1168,7 @@ void ImageMatrix::Symlet5Transform() {
 			pix_plane (y,x) = grid->getData(x,y,-1);
 		 
 	delete Sym5;
-	delete grid2d;
+	delete grid;
 	WriteablePixelsFinish();
 }
 

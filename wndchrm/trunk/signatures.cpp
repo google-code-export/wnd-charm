@@ -76,7 +76,7 @@ signatures::signatures() {
 //---------------------------------------------------------------------------
 
 signatures::~signatures() {
-	if (data) delete data;
+	if (data) delete [] data;
 	data = NULL;
 	if (wf) delete wf;
 	wf = NULL;
@@ -107,7 +107,7 @@ signatures *signatures::duplicate() {
    nsigs -size_t - number of signatures to preallocate
 */
 void signatures::Allocate(size_t nsigs) {
-	if (data) delete data;
+	if (data) delete [] data;
 	data = new signature[nsigs];
 	if (data) {
 		memset (data,0,sizeof(signature)*nsigs);
@@ -131,7 +131,7 @@ void signatures::Add(const char *name,double value) {
 		data = NULL; // Avoid Allocate calling delete on this
 		Allocate (count + 1024);
 		memcpy (data, old_data, count * sizeof (signature));
-		delete old_data;
+		delete [] old_data;
 	}
 	data[count].value=value;
 	count++;
@@ -178,7 +178,7 @@ void signatures::SetFeatureVectorType () {
    clear all signature values
 */
 void signatures::Clear() {
-	if (data) delete data;
+	if (data) delete [] data;
 	data = NULL;
 	allocated = 0;
 	count = 0;

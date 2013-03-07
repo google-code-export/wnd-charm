@@ -179,11 +179,11 @@ TrainingSet::~TrainingSet()
    for (sample_index=0;sample_index<count;sample_index++)
      if (samples[sample_index]) delete samples[sample_index];
    for (sample_index=0;sample_index<=class_num;sample_index++) {
-     delete class_labels[sample_index];
+     delete [] class_labels[sample_index];
    }
-   delete class_labels;
-   delete samples;
-   delete class_nsamples;
+   delete [] class_labels;
+   delete [] samples;
+   delete [] class_nsamples;
    if (train_class) delete train_class;
 }
 
@@ -408,7 +408,7 @@ int TrainingSet::ReadFromFile(char *filename)
    }
    for (sample_index=0;sample_index<count;sample_index++)
      if (samples[sample_index]) delete samples[sample_index];
-   delete samples;
+   delete [] samples;
    fgets(buffer,sizeof(buffer),file);
 	sscanf (buffer, "%d%*[\t ]%d.%d", &file_class_num, &version_maj, &version_min);
 	// If we did not read a version, then it is 1.0
@@ -439,7 +439,8 @@ int TrainingSet::ReadFromFile(char *filename)
    {  fgets(buffer,sizeof(buffer),file);
       chomp (buffer);
       if ( (res = AddClass(buffer) < 0) ) {
-      	delete samples;
+      	delete [] samples;
+      	samples = NULL;
       	fclose(file);
       	return (res);
       }
@@ -466,7 +467,8 @@ int TrainingSet::ReadFromFile(char *filename)
 		one_sample->version = feature_vec_version;                // Since we are reading sigs from a fit file, the sig version is the same as fit version.
 		if ( (res=AddSample(one_sample)) < 0) {
 			for (sig_index=0;sig_index<sample_index;sig_index++) delete samples[sig_index];
-			delete samples;
+			delete [] samples;
+			samples = NULL;
 			fclose(file);
 			return (res);
 		}
@@ -767,7 +769,7 @@ int TrainingSet::split(int randomize, double ratio,TrainingSet *TrainSet,Trainin
 		}
 	} // end iterating over each image class
 
-	delete class_samples;
+	delete [] class_samples;
 	return (1);
 }
 
@@ -1274,7 +1276,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	std::vector<feature_vec_info_t> our_sigs;
 	feature_vec_info_t null_sig_info = {NULL,-1, -1, -1, false, false};
 
-
 // pre-determine sig files for this image.
 // Primarily, this lets us pre-lock all the signature files for one image (see below).
 // The side-effect is that we separate the code that sets up sampling parameters from the
@@ -1471,10 +1472,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 			}
 			if (!our_sigs[sig_index].added) {
 				delete (our_sigs[sig_index].sig);
+				our_sigs[sig_index].sig = NULL;
 			}
 		}
 	}
-
 	return (res);
 }
 
@@ -2227,9 +2228,9 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 
 	if (used_mrmr>0) SetmRMRScores(used_signatures,used_mrmr);  /* filter the most informative features using mrmr */
 
-   delete class_mean;
-   delete class_var;
-   delete class_count;
+   delete [] class_mean;
+   delete [] class_var;
+   delete [] class_count;
 }
 
 
@@ -2537,8 +2538,8 @@ double TrainingSet::InterpolateValue(signatures *test_sample, int method, int N,
 //printf("%d %f %f\n",close_index,min_dists_values[close_index],min_dists[close_index]);		   
         }
 //printf("%d %f %f %f %f\n",N,min_dists_values[0],min_dists[0],min_dists_values[1],min_dists[1]);		
-      delete min_dists;
-      delete min_dists_values;
+      delete [] min_dists;
+      delete [] min_dists_values;
 //printf("%f %f %f\n",val,sum,val/sum);	  		
       return(val/sum);
    }
@@ -2661,10 +2662,10 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
      if (normalization_factor) *normalization_factor=sum_dists;				
    }
 
-   delete num_samples;
-   delete min_dists;
-   delete min_dists_classes;
-   delete close_samples;
+   delete [] num_samples;
+   delete [] min_dists;
+   delete [] min_dists_classes;
+   delete [] close_samples;
    return(most_probable_class);
 }
 
@@ -3441,8 +3442,8 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
 
 	fprintf(output_file,"<br><br><br><br> \n");
 // deallocate averaging matrixes
-	delete avg_similarity_matrix;
-	delete avg_class_prob_matrix;
+	delete [] avg_similarity_matrix;
+	delete [] avg_class_prob_matrix;
 
    
 //      FILE *dend_file;
@@ -3648,8 +3649,8 @@ long TrainingSet::report(FILE *output_file, int argc, char **argv, char *output_
             strcpy(labels[test_image_index],class_labels[(int)(split->image_similarities[test_image_index])]);
 		 }
          dendrogram(output_file,file_name, phylib_path, test_set_size,(double *)(split->image_similarities), labels,6,phylip_algorithm);	    
-         for (test_image_index=1;test_image_index<=test_set_size;test_image_index++) delete labels[test_image_index];
-         delete labels;
+         for (test_image_index=1;test_image_index<=test_set_size;test_image_index++) delete [] labels[test_image_index];
+         delete [] labels;
       }
 	  
       /* add the sorted features */
