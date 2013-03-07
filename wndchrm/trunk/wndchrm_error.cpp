@@ -35,8 +35,11 @@ void catErrno () {
 
 	if (errno != 0) {
 	// Append any system error string
-
+#ifdef _GNU_SOURCE
+		strncpy (error_buffer, strerror_r(errno, error_buffer, MAX_ERROR_MESSAGE), MAX_ERROR_MESSAGE);
+#else
 		strerror_r(errno, error_buffer, MAX_ERROR_MESSAGE);
+#endif
 
 		if (strlen(error_buffer)) {
 			// clean trailing newlines
