@@ -12,12 +12,10 @@
 
 #include "wndchrm_error.h"
 
-using namespace std;
-
 #define MAX_ERROR_MESSAGE 1024
 
 
-ostringstream error_messages;
+std::ostringstream error_messages;
 
 /* global variable */
 // Verbosity levels:
@@ -105,14 +103,14 @@ size_t found;
 	}
 
 	if (error_messages.str().size()) {
-		cerr << error_messages.str();
+		std::cerr << error_messages.str();
 	// Make sure we print a newline
 		found = error_messages.str().find_last_not_of("\n\r");
-		if ( error_messages.str().find_first_of("\n\r",found) == std::string::npos ) cerr << "\n";
+		if ( error_messages.str().find_first_of("\n\r",found) == std::string::npos ) std::cerr << "\n";
 	}
 
 	if (stop && !error_messages.str().size()) {
-		cerr << "Fatal error - terminating.\n";
+		std::cerr << "Fatal error - terminating.\n";
 	} else if (stop) {
 		exit(0);
 	}
