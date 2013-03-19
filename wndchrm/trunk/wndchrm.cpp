@@ -481,7 +481,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		sort( ts->aggregated_feature_stats->begin(), ts->aggregated_feature_stats->end(), sort_by_mean_weight_func);
 		// Lop off the vector after a threshold
 		// Right now, we only care about the top 50 features
-		ts->aggregated_feature_stats->erase (ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end());
+		ts->aggregated_feature_stats->erase( ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end() );
 	}
 
 	// if( verbosity >= 2 ) printf("\n\n");
@@ -548,7 +548,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		else output_file=stdout;     
 		ts->report(output_file,argc,argv,report_file_name,splits,split_num,featureset,n_train,
 				phylib_path, distance_method, phylip_algorithm,export_tsv,
-				testset,image_similarities);   
+				testset,image_similarities, bool(random_splits) );
 		if (output_file!=stdout) fclose(output_file);
 		// copy the .ps and .jpg of the dendrogram to the output path of the report and also copy the tsv files
 		if (export_tsv || phylib_path) {

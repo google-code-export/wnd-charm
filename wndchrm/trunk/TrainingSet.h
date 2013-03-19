@@ -235,7 +235,7 @@ public:
    double pearson(int tiles,double *avg_abs_dif,double *p_value);                  /* a pearson correlation of the interpolated and the class labels (if all labels are numeric) */
    long PrintConfusion(FILE *output_file, unsigned short *confusion_matrix, double *similarity_matrix);//, unsigned short dend_file, unsigned short method);  /* print a confusion or similarity matrix */
    long dendrogram(FILE *output_file, char *data_set_name, char *phylib_path, int nodes_num,double *similarity_matrix, char **labels,unsigned short sim_method,unsigned short phylip_algorithm);  /* create a dendrogram */
-   long report(FILE *output_file, int argc, char **argv, char *output_file_name, std::vector<data_split> &splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset,int image_similarities);  /* report on few splits */
+	 long report(FILE *output_file, int argc, char **argv, char *output_file_name, std::vector<data_split> &splits, unsigned short split_num, featureset_t *featureset, int max_train_images,char *phylib_path, int distance_method, int phylip_algorithm, int export_tsv, TrainingSet *testset, int image_similarities, bool use_err_bars);
    void Summarize(featureset_t *featureset);  /* class summary to stdout */
 };
 
