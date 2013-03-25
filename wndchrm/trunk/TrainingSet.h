@@ -36,11 +36,8 @@
 #include <vector>
 #include <list>
 #include <string>
-#include "FeatureNames.h"
-
-#include "config.h" // for version info
-
 #include "signatures.h"
+#include "config.h" // for version info
 
 #define MAX_CLASS_NUM 1024
 #define MAX_CLASS_NAME_LENGTH 50
@@ -109,9 +106,11 @@ typedef struct {
 
 
 // Set up our struct for keeping track of per-feature-group statistics.
+class FeatureGroup;
+class FeatureInfo;
 typedef struct {
 	std::string name;
-	const FeatureNames::FeatureGroup *featuregroup_info;
+	const FeatureGroup *featuregroup_info;
 	double min;
 	double max;
 	double sum_weight;
@@ -130,7 +129,7 @@ typedef std::vector<featuregroup_stats_t> featuregroups_t;
 // Set up our struct for keeping track of per-feature stuff.
 typedef struct {
 	std::string name; // N.B.: name as read from file
-	const FeatureNames::FeatureInfo *feature_info;
+	const FeatureInfo *feature_info;
 	double weight;
 } feature_stats_t;
 

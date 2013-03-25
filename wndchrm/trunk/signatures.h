@@ -32,11 +32,11 @@
 #define signaturesH
 //---------------------------------------------------------------------------
 
-#include <stdio.h>
+#include <string>
+#include <vector>
 
 #include "cmatrix.h"
-#include "FeatureNames.h"
-#include "WORMfile.h"
+#include "Tasks.h"
 
 #define MAX_SIGNATURE_NUM 5000
 #define SIGNATURE_NAME_LENGTH 80
@@ -57,33 +57,20 @@
 #define NUM_C_FEATURES   2194
 #define NUM_DEF_FEATURES 1059
 
-#define CURRENT_FEATURE_VERSION 2
-
 #define NO_SIGS_IN_FILE -2
 
 #define MIN_SIG_VAL -FLT_MAX
 #define MAX_SIG_VAL FLT_MAX
 
-struct signature
-{
-  public:
-   double value;
-};
-
+class FeatureGroup;
+class WORMfile;
 class signatures
 {
   private:
     int IsNeeded(long start_index, long group_length);  /* check if the group of signatures is needed */
   public:
-    signature *data;
-    enum feature_vec_types {
-    	fv_unknown = 0,  // this must evaluate to false
-    	fv_short = 1,
-    	fv_long = 2,
-    	fv_short_color = 3,
-    	fv_long_color = 4
-    };
-    int feature_vec_type;              // stores the integer value of the feature_vec_types enum.
+    std::vector<double> data;
+    int feature_vec_type;              // stores the integer value of the StdFeatureComputationPlans::feature_vec_types enum.
     int version;                       // The major version of the sig file (1 for wndchrm versions prior to 1.33 , 2 for wndchrm versions > 1.33).
                                        // The full version designation is version.feature_vec_type
     unsigned short sample_class;        /* the class of the sample             */
@@ -100,17 +87,11 @@ class signatures
     signatures();                       // constructor
     ~signatures();                      // destructor
     signatures *duplicate();            // create an identical signature vector object */
-    void Allocate(size_t nsigs);        // call before adding sigs
+    void Resize(size_t nsigs);          // call before adding sigs
     void Add(const char *name, double value);
-	void AddVector(const FeatureNames::FeatureGroup *fg, const std::vector<double> &vec);
 	void SetFeatureVectorType();
     void Clear();
-    void compute(ImageMatrix &matrix, int compute_colors);
-    void CompGroupA(ImageMatrix &matrix, const std::string &transform_label);
-    void CompGroupB(ImageMatrix &matrix, const std::string &transform_label);
-    void CompGroupC(ImageMatrix &matrix, const std::string &transform_label);
-    void CompGroupD(ImageMatrix &matrix);
-    void ComputeGroups(ImageMatrix &matrix, int compute_colors);
+    void compute_plan (const ImageMatrix &matrix, const FeatureComputationPlan *plan);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void FileClose();
     int SaveToFile(int save_feature_names);
@@ -118,7 +99,7 @@ class signatures
     void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
 	int ReadFromFile (bool wait); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
-	int CompareToFile (ImageMatrix &matrix, char *filename, int compute_colors, int large_set);
+	int CompareToFile (const ImageMatrix &matrix, char *filename, int compute_colors, int large_set);
 };
 
 #endif

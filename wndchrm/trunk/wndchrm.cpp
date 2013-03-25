@@ -43,7 +43,7 @@
 
 #include "TrainingSet.h"
 #include "wndchrm_error.h"
-
+#include "Tasks.h"
 
 #define MAX_SPLITS 10000
 #define MAX_SAMPLES 190000
@@ -481,7 +481,7 @@ int split_and_test(TrainingSet *ts, char *report_file_name, int argc, char **arg
 		sort( ts->aggregated_feature_stats->begin(), ts->aggregated_feature_stats->end(), sort_by_mean_weight_func);
 		// Lop off the vector after a threshold
 		// Right now, we only care about the top 50 features
-		ts->aggregated_feature_stats->erase( ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end() );
+		ts->aggregated_feature_stats->erase (ts->aggregated_feature_stats->begin() + 50, ts->aggregated_feature_stats->end());
 	}
 
 	// if( verbosity >= 2 ) printf("\n\n");
@@ -741,8 +741,7 @@ int main(int argc, char *argv[])
 	int save_sigs=1;
 	int skip_sig_check = 0;
 
-	assert (FeatureAlgorithmInstances::initialized() && "Failed to initialize feature algorithms");
-	assert (ImageTransformInstances::initialized() && "Failed to initialize image transforms");	
+	assert (ComputationTaskInstances::initialized() && "Failed to initialize computation tasks");
 
 	featureset_t featureset;         /* for recording the sampling params for images               */
 	memset (&featureset,0,sizeof(featureset));

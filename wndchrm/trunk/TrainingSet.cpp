@@ -39,6 +39,9 @@
 #include <sstream>
 
 #include <assert.h>
+// defines OUR_UNORDERED_MAP based on what's available
+#include "unordered_map_dfn.h"
+
 #include "FeatureNames.h"
 #include "wndchrm_error.h"
 #include "WORMfile.h"
@@ -352,10 +355,10 @@ int TrainingSet::SaveToFile(char *filename)
    for (sample_index=0;sample_index<count;sample_index++)
    {
       for (sig_index=0;sig_index<signature_count;sig_index++)
-        if (samples[sample_index]->data[sig_index].value==(int)(samples[sample_index]->data[sig_index].value))
-      fprintf(file,"%ld ",(long)(samples[sample_index]->data[sig_index].value));      /* make the file smaller */
-//        else fprintf(file,"%.6f ",samples[sample_index]->data[sig_index].value);
-      else fprintf(file,"%.5e ",samples[sample_index]->data[sig_index].value);
+        if (samples[sample_index]->data[sig_index] == (int)(samples[sample_index]->data[sig_index]))
+      fprintf(file,"%ld ",(long)(samples[sample_index]->data[sig_index]));      /* make the file smaller */
+//        else fprintf(file,"%.6f ",samples[sample_index]->data[sig_index]);
+      else fprintf(file,"%.5e ",samples[sample_index]->data[sig_index]);
       if (is_continuous) fprintf(file,"%f\n",samples[sample_index]->sample_value);  /* if the class is 0, save the continouos value of the sample */
 	  else fprintf(file,"%d\n",samples[sample_index]->sample_class);   /* save the class of the sample */
       fprintf(file,"%s\n",samples[sample_index]->full_path);
@@ -452,7 +455,7 @@ int TrainingSet::ReadFromFile(char *filename)
 	   	char *p_buffer;
 		signatures *one_sample;
 		one_sample=new signatures();
-		one_sample->Allocate (count);
+		one_sample->Resize (count);
 
 		fgets(buffer,sizeof(buffer),file);
 		p_buffer=strtok(buffer," \n");
@@ -1300,6 +1303,23 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	std::vector<feature_vec_info_t> our_sigs;
 	feature_vec_info_t null_sig_info = {NULL,-1, -1, -1, false, false};
+	
+	// get a feature calculation plan based on our featureset
+	const FeatureComputationPlan *feature_plan;
+	if (featureset->feature_opts.large_set) {
+		if (featureset->feature_opts.compute_colors) {
+			feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
+		} else {
+			feature_plan = StdFeatureComputationPlans::getFeatureSetLong();
+		}
+	} else {
+		if (featureset->feature_opts.compute_colors) {
+			feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
+		} else {
+			feature_plan = StdFeatureComputationPlans::getFeatureSet();
+		}
+	}
+
 
 // pre-determine sig files for this image.
 // Primarily, this lets us pre-lock all the signature files for one image (see below).
@@ -1311,7 +1331,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 	for (sample_index=0; sample_index < featureset->n_samples; sample_index++) {
 	// make signature objects for samples
 		ImageSignatures=new signatures ();
-		ImageSignatures->Allocate (featureset->n_features);
+		ImageSignatures->Resize (featureset->n_features);
 
 		ImageSignatures->NamesTrainingSet=this;
 		strcpy(ImageSignatures->full_path,filename);
@@ -1472,8 +1492,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 	// all hope is lost - compute sigs.
 		if (!res) {
-			if (feature_opts->large_set) ImageSignatures->ComputeGroups(*tile_matrix_p,feature_opts->compute_colors);
-			else ImageSignatures->compute(*tile_matrix_p,feature_opts->compute_colors);
+			ImageSignatures->compute_plan (*tile_matrix_p, feature_plan);
 		}
 	// we're saving sigs always now...
 	// But we're not releasing the lock yet - we'll release all the locks for the whole image later.
@@ -2010,7 +2029,7 @@ void TrainingSet::normalize() {
     	sig_min = MAX_SIG_VAL;
     	sig_max = MIN_SIG_VAL;
 		for( samp_index = 0; samp_index < count; samp_index++ ) {
-			sig_val = samples[ samp_index ]->data[ sig_index ].value;
+			sig_val = samples[ samp_index ]->data[ sig_index ];
 			// ignore out of bounds sig values for determining minimum and maximum: They will be clipped later
 			if (std::isnan (sig_val) || sig_val > MAX_SIG_VAL || sig_val < MIN_SIG_VAL) continue;
 
@@ -2026,14 +2045,14 @@ void TrainingSet::normalize() {
 		SignatureMins[ sig_index ] = sig_min;
 		
 		for( samp_index = 0; samp_index < count; samp_index++ ) {
-			sig_val = samples[ samp_index ]->data[ sig_index ].value;
+			sig_val = samples[ samp_index ]->data[ sig_index ];
 
 			if (std::isnan (sig_val) || sig_val < sig_min || (sig_max - sig_min) < DBL_EPSILON) sig_val = 0; 
 			else if( sig_val > sig_max )
 				sig_val = 100;
 			else
 				sig_val = 100 * ( (sig_val - sig_min) / (sig_max - sig_min) );
-			samples[ samp_index ]->data[ sig_index ].value = sig_val;
+			samples[ samp_index ]->data[ sig_index ] = sig_val;
 		}
 	}
 }
@@ -2063,7 +2082,7 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
       for (sample_index=0;sample_index<count;sample_index++)
       {  fprintf(mrmr_file,"%d",samples[sample_index]->sample_class);
 	     for (sig_index=0;sig_index<signature_count;sig_index++)
-           if (SignatureWeights[sig_index]>0) fprintf(mrmr_file,",%.0f",samples[sample_index]->data[sig_index].value);
+           if (SignatureWeights[sig_index]>0) fprintf(mrmr_file,",%.0f",samples[sample_index]->data[sig_index]);
          fprintf(mrmr_file,"\n");
       }
 	  fclose(mrmr_file);
@@ -2107,13 +2126,13 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
    class_count=new double[class_num+1];
    
 // Make a featuregroup map and iterator
-	std::map<std::string, featuregroup_stats_t> featuregroups;
-	std::map<std::string, featuregroup_stats_t>::iterator fg_it;
+	OUR_UNORDERED_MAP<std::string, featuregroup_stats_t> featuregroups;
+	OUR_UNORDERED_MAP<std::string, featuregroup_stats_t>::iterator fg_it;
 // An object instance to collect the stats for each feature + group
 	featuregroup_stats_t featuregroup_stats;
 	feature_stats_t feature_stats;
 // And an object instance of FeatureNames' FeatureInfo class, which has broken-down info about each feature type.
-	FeatureNames::FeatureInfo const *featureinfo;
+	FeatureInfo const *featureinfo;
 
 	if (split) {
 		split->feature_stats.clear();
@@ -2132,7 +2151,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
          mean=var=0.0;
          /* find the means */
          for (sample_index=0;sample_index<count;sample_index++)
-         {  class_mean[samples[sample_index]->sample_class]+=samples[sample_index]->data[sig_index].value;
+         {  class_mean[samples[sample_index]->sample_class]+=samples[sample_index]->data[sig_index];
             class_count[samples[sample_index]->sample_class]+=1;
          }
 
@@ -2142,7 +2161,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 
          /* find the variance */
          for (sample_index=0;sample_index<count;sample_index++)
-           class_var[samples[sample_index]->sample_class]+=pow(samples[sample_index]->data[sig_index].value-class_mean[samples[sample_index]->sample_class],2);
+           class_var[samples[sample_index]->sample_class]+=pow(samples[sample_index]->data[sig_index]-class_mean[samples[sample_index]->sample_class],2);
 
          for (class_index=1;class_index<=class_num;class_index++)
            if (class_count[class_index])
@@ -2180,12 +2199,12 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
            stddev_ground+=pow(samples[sample_index]->sample_value-mean_ground,2);	  
          stddev_ground=sqrt(stddev_ground/count);
          for (sample_index=0;sample_index<count;sample_index++)
-           mean+=(samples[sample_index]->data[sig_index].value/((double)count));
+           mean+=(samples[sample_index]->data[sig_index]/((double)count));
          for (sample_index=0;sample_index<count;sample_index++)  /* compute the stddev of the continouos values */
-           stddev+=pow(samples[sample_index]->data[sig_index].value-mean,2);	  
+           stddev+=pow(samples[sample_index]->data[sig_index]-mean,2);	  
          stddev=sqrt(stddev/count);	
          for (sample_index=0;sample_index<count;sample_index++)
-           if (stddev>0 && stddev_ground>0) z_score_sum+=((samples[sample_index]->sample_value-mean_ground)/stddev_ground)*((samples[sample_index]->data[sig_index].value-mean)/stddev);
+           if (stddev>0 && stddev_ground>0) z_score_sum+=((samples[sample_index]->sample_value-mean_ground)/stddev_ground)*((samples[sample_index]->data[sig_index]-mean)/stddev);
          SignatureWeights[sig_index]=pow(fabs(z_score_sum/count),1);
 //printf("%d Fisher Score: %f\n",class_num,SignatureWeights[sig_index]);		 
 	  } /* end of method 1 (Pearson Correlation) */
@@ -2293,7 +2312,7 @@ double TrainingSet::distance(signatures *sample1, signatures *sample2, double po
 {   double dist=0;
     int sig_index;	
       for (sig_index=0;sig_index<signature_count;sig_index++)
-        dist=dist+pow(SignatureWeights[sig_index],1)*pow(sample1->data[sig_index].value-sample2->data[sig_index].value,power);
+        dist=dist+pow(SignatureWeights[sig_index],1)*pow(sample1->data[sig_index]-sample2->data[sig_index],power);
     return(pow(dist,1/power));
 }
 
@@ -2390,23 +2409,23 @@ long TrainingSet::classify2( char* name, int test_sample_index, signatures *test
 		{
 			// if the feature weight for this feature == 0, skip to next feature
 			if (SignatureWeights[ sig_index ] < DBL_EPSILON) continue;
-			dist = fabs( test_sample->data[ sig_index ].value - samples[ sample_index ]->data[ sig_index ].value );
+			dist = fabs( test_sample->data[ sig_index ] - samples[ sample_index ]->data[ sig_index ] );
 			if( dist < DBL_EPSILON )
-			//if( FLOAT_EQ( test_sample->data[ sig_index ].value, samples[ sample_index ]->data[ sig_index ].value, 100000000 ) )
+			//if( FLOAT_EQ( test_sample->data[ sig_index ], samples[ sample_index ]->data[ sig_index ], 100000000 ) )
 			{
 				
-			  //if( !( FLOAT_EQ( test_sample->data[ sig_index ].value, 0.0, 1) && FLOAT_EQ( samples[ sample_index ]->data[ sig_index ].value, 0, 1) ) )
+			  //if( !( FLOAT_EQ( test_sample->data[ sig_index ], 0.0, 1) && FLOAT_EQ( samples[ sample_index ]->data[ sig_index ], 0, 1) ) )
 				/*	cout << "--- Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
-						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
-							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl;
+						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ]
+							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ] << endl;
 				*/
 				continue;
 			}
 			else
 			{
 				/*	cout << "### Test img " << test_sample_index << ": Train img " << sample_index << " sig_index " 
-						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ].value
-							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ].value << endl; */
+						   << sig_index << " dist " << dist << "\t test sig val " <<  test_sample->data[ sig_index ]
+							 << "\t train sig val " << samples[ sample_index ]->data[ sig_index ] << endl; */
 				dist_sum += pow( SignatureWeights[ sig_index ], 2 ) * pow( dist, 2 );
 			}
 		}
@@ -2630,7 +2649,7 @@ long TrainingSet::classify3(signatures *test_sample, double *probabilities,doubl
         min_dists[dist_index]=INF;
       for (sample_index=0;sample_index<count;sample_index++)
       {
-         dist=fabs(test_sample->data[sig_index].value-samples[sample_index]->data[sig_index].value);
+         dist=fabs(test_sample->data[sig_index]-samples[sample_index]->data[sig_index]);
          /* check if this dist should be in the close list */
          for (close_index=0;close_index<count;close_index++)
          if (dist<min_dists[close_index])

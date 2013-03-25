@@ -1,13 +1,40 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/* Copyright (C) 2007 Open Microscopy Environment                                */
+/*       Massachusetts Institue of Technology,                                   */
+/*       National Institutes of Health,                                          */
+/*       University of Dundee                                                    */
+/*                                                                               */
+/*                                                                               */
+/*                                                                               */
+/*    This library is free software; you can redistribute it and/or              */
+/*    modify it under the terms of the GNU Lesser General Public                 */
+/*    License as published by the Free Software Foundation; either               */
+/*    version 2.1 of the License, or (at your option) any later version.         */
+/*                                                                               */
+/*    This library is distributed in the hope that it will be useful,            */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of             */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU          */
+/*    Lesser General Public License for more details.                            */
+/*                                                                               */
+/*    You should have received a copy of the GNU Lesser General Public           */
+/*    License along with this library; if not, write to the Free Software        */
+/*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA  */
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/* Written by:                                                                   */
+/*      Ilya G. Goldberg <goldbergil [at] mail [dot] nih [dot] gov>              */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 #ifndef __FEATURE_NAMES_H__
 #define __FEATURE_NAMES_H__
 
-#include "FeatureAlgorithms.h"
-#include "ImageTransforms.h"
 #include <stdio.h> // for sprintf
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
+// defines OUR_UNORDERED_MAP based on what's available
+#include "unordered_map_dfn.h"
 
 /*
 map and unordered_map comparison:
@@ -19,22 +46,53 @@ std::map:
        -parse    502400 lookups    502400 misses       2.4 secs,    205706 lookups/sec
 */
 
-// defines OUR_UNORDERED_MAP based on what's available
-#include "unordered_map_dfn.h"
-
-
-class FeatureNames {
-public:
+// Forward declarations
+class ImageTransform;
+class FeatureAlgorithm;
+class ComputationTask;
 /////////////////////////////////
 //         Channels
 /////////////////////////////////
 // Instead of a string, this should be a channel object
-	struct Channel {
-		std::string name;
+class Channel {
+public:
+	std::string name;
 
-		Channel (const std::string &s) { name = s;}
-		Channel (const char *s) { name = s;}
-	};
+	Channel (const std::string &s) { name = s;}
+	Channel (const char *s) { name = s;}
+};
+
+/////////////////////////////////
+//        Feature Groups
+/////////////////////////////////
+// These represent the outputs of a feature algorithm together with all of its transforms
+class FeatureGroup {
+public:
+	std::string name;
+	const FeatureAlgorithm *algorithm;
+	const Channel *channel;
+	std::vector<ImageTransform const *> transforms; // these are in order of application
+	std::vector<std::string> labels;
+
+	FeatureGroup (const std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<ImageTransform const *> &t);
+};
+
+
+/////////////////////////////////
+//          Features
+/////////////////////////////////
+class FeatureInfo {
+public:
+	std::string name;
+	const FeatureGroup *group;
+	int index; // within group
+
+	FeatureInfo () : name (""), group(NULL), index(-1) {};
+	FeatureInfo (const std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
+};
+
+class FeatureNames {
+public:
 // This just returns the string, should return a channel object by string lookup
 	static const Channel *getChannelByName (const std::string &name);
 
@@ -57,44 +115,11 @@ public:
 	static const FeatureAlgorithm *getFeatureAlgorithmByName (const char * name) {return getFeatureAlgorithmByName (std::string (name)); };
 	static bool registerFeatureAlgorithm (const FeatureAlgorithm *algorithm);
 
-
 /////////////////////////////////
 //        Feature Groups
 /////////////////////////////////
-// These represent the outputs of a feature algorithm together with all of its transforms
-	struct FeatureGroup {
-		std::string name;
-		const FeatureAlgorithm *algorithm;
-		const Channel *channel;
-		std::vector<ImageTransform const *> transforms; // these are in order of application
-		std::vector<std::string> labels;
-
-		FeatureGroup () : algorithm(NULL), channel(NULL) {};
-		FeatureGroup (const std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<ImageTransform const *> &t) {
-			name = s; algorithm = f; channel = c; transforms = t;
-			if (algorithm)
-				for (int i = 0; i < algorithm->n_features; i++) {
-					char buf[16];
-					sprintf (buf, " [%d]",i);
-					labels.insert (labels.end(), name + buf);
-				}
-		};
-	};
 // This will store a new group if the name doesn't exist.
 	static const FeatureGroup *getGroupByName (const std::string &name);
-
-
-/////////////////////////////////
-//          Features
-/////////////////////////////////
-	struct FeatureInfo {
-		std::string name;
-		const FeatureGroup *group;
-		int index; // within group
-
-		FeatureInfo () : name (""), group(NULL), index(-1) {};
-		FeatureInfo (const std::string &s, const FeatureGroup *g, int i) { name = s; group = g; index = i;}
-	};
 	static const FeatureInfo *getFeatureInfoByName (const std::string &featurename_in);
 
 /////////////////////////////////

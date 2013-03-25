@@ -1,9 +1,39 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/* Copyright (C) 2007 Open Microscopy Environment                                */
+/*       Massachusetts Institue of Technology,                                   */
+/*       National Institutes of Health,                                          */
+/*       University of Dundee                                                    */
+/*                                                                               */
+/*                                                                               */
+/*                                                                               */
+/*    This library is free software; you can redistribute it and/or              */
+/*    modify it under the terms of the GNU Lesser General Public                 */
+/*    License as published by the Free Software Foundation; either               */
+/*    version 2.1 of the License, or (at your option) any later version.         */
+/*                                                                               */
+/*    This library is distributed in the hope that it will be useful,            */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of             */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU          */
+/*    Lesser General Public License for more details.                            */
+/*                                                                               */
+/*    You should have received a copy of the GNU Lesser General Public           */
+/*    License along with this library; if not, write to the Free Software        */
+/*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA  */
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/* Written by:                                                                   */
+/*      Christopher E. Coletta <colettace [at] mail [dot] nih [dot] gov>         */
+/*      Ilya G. Goldberg <goldbergil [at] mail [dot] nih [dot] gov>              */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 #ifndef __TRANSFORMS_H_
 #define __TRANSFORMS_H_
 
 #include <string>
 #include <vector>
-#include "cmatrix.h"
+#include "Tasks.h"
 
 
 
@@ -12,27 +42,12 @@
  *  Turns any class that inherits this interface into a singleton
  */
 class ImageMatrix; // forward declaration
-class ImageTransform {
+class ImageTransform : public ComputationTask {
 	public:
-		std::string name;
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const = 0;
-		void print_info();
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const = 0;
+		virtual bool register_task() const;
 	protected:
-		ImageTransform (const std::string &s) { name = s;}
-		ImageTransform (const char *s) { name = s;}
-		ImageTransform() {};
-};
-
-// The purpose of this is to hold instances of the transform algorithms below
-// so that we can get references (pointers) to them later for looking them up by name using a map.
-// Done in a static member function holding a static to avoid "static initialization order fiasco"
-// FIXME: although this heap memory will be allocated before main() entry,
-//   its probably still a good idea to make a destructor to clean it up.
-class ImageTransformInstances {
-	public:
-		static bool initialized ();
-		static bool add (const ImageTransform *algorithm);
-		static std::vector<const ImageTransform *> &getInstances ();
+		ImageTransform (const std::string &s) : ComputationTask (s, ImageTransformTask) {};
 };
 
 class EmptyTransform : public ImageTransform {
@@ -40,43 +55,43 @@ class EmptyTransform : public ImageTransform {
 		EmptyTransform () : ImageTransform ("Empty") {};
 		EmptyTransform (const std::string &s) : ImageTransform (s) {};
 		EmptyTransform (const char *s) : ImageTransform (s) {};
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class FourierTransform : public ImageTransform {
 	public:
 		FourierTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class ChebyshevTransform: public ImageTransform {
 	public:
 		ChebyshevTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class WaveletTransform : public ImageTransform {
 	public:
 		WaveletTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class EdgeTransform : public ImageTransform {
 	public:
 		EdgeTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class ColorTransform : public ImageTransform {
 	public:
 		ColorTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 class HueTransform : public ImageTransform {
 	public:
 		HueTransform();
-		virtual void execute( const ImageMatrix * matrix_IN, ImageMatrix * matrix_OUT ) const;
+		virtual void execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const;
 };
 
 #endif

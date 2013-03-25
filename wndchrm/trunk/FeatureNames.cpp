@@ -1,18 +1,49 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/* Copyright (C) 2007 Open Microscopy Environment                                */
+/*       Massachusetts Institue of Technology,                                   */
+/*       National Institutes of Health,                                          */
+/*       University of Dundee                                                    */
+/*                                                                               */
+/*                                                                               */
+/*                                                                               */
+/*    This library is free software; you can redistribute it and/or              */
+/*    modify it under the terms of the GNU Lesser General Public                 */
+/*    License as published by the Free Software Foundation; either               */
+/*    version 2.1 of the License, or (at your option) any later version.         */
+/*                                                                               */
+/*    This library is distributed in the hope that it will be useful,            */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of             */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU          */
+/*    Lesser General Public License for more details.                            */
+/*                                                                               */
+/*    You should have received a copy of the GNU Lesser General Public           */
+/*    License along with this library; if not, write to the Free Software        */
+/*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA  */
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                                               */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/* Written by:                                                                   */
+/*      Ilya G. Goldberg <goldbergil [at] mail [dot] nih [dot] gov>              */
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <assert.h>
 
 // This defines a big C string constant (oldFeatureNamesFileStr) with tab-delimited old_feature new_feature lines.
 // Its defined this way because doing map declarations on the stack takes forever to compile,
 // blows up memory during compilation with optimization, and results in a monstrously huge object file 5x bigger than the rest of the library
 #include "OldFeatureNamesFileStr.h"
-#include "FeatureNames.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
 #include <algorithm>
-
+#include "FeatureAlgorithms.h"
+#include "ImageTransforms.h"
+#include "FeatureNames.h"
 
 /* global variable */
 extern int verbosity;
@@ -153,7 +184,7 @@ In the example above, Edge transform first, then Wavelet, then Zernike coefficie
 The feature and group names reported in .name fields are normalized for whitespace as in the example above.
 */
 
-const FeatureNames::FeatureInfo *FeatureNames::getFeatureInfoByName (const std::string &featurename_in) {
+const FeatureInfo *FeatureNames::getFeatureInfoByName (const std::string &featurename_in) {
 	static fnm_t &feature_names = FeatureNames::feature_names_map();
 
 	fnm_t::const_iterator fnm_it = feature_names.find(featurename_in);
@@ -228,9 +259,8 @@ bool FeatureNames::registerFeatureAlgorithm (const FeatureAlgorithm *algorithm) 
 	return true;
 }
 
-
 // This should return a channel object by string lookup
-const FeatureNames::Channel *FeatureNames::getChannelByName (const std::string &name) {
+const Channel *FeatureNames::getChannelByName (const std::string &name) {
 	static cnm_t  &channels = channels_map ();
 
 	cnm_t::const_iterator cnm_it = channels.find(name);
@@ -265,8 +295,18 @@ bool FeatureNames::registerImageTransform (const ImageTransform *algorithm) {
 	return true;
 }
 
+FeatureGroup::FeatureGroup (const std::string &s, const FeatureAlgorithm *f, const Channel *c, std::vector<ImageTransform const *> &t) {
+	name = s; algorithm = f; channel = c; transforms = t;
+	if (algorithm)
+		for (int i = 0; i < algorithm->n_features; i++) {
+			char buf[16];
+			sprintf (buf, " [%d]",i);
+			labels.insert (labels.end(), name + buf);
+		}
+}
 
-const FeatureNames::FeatureGroup *FeatureNames::getGroupByName (const std::string &name) {
+
+const FeatureGroup *FeatureNames::getGroupByName (const std::string &name) {
 	static fgnm_t &feature_groups = feature_groups_map();
 
 	fgnm_t::const_iterator fgnm_it = feature_groups.find(name);

@@ -76,7 +76,7 @@ am_libchrm_a_OBJECTS = libchrm_a-cmatrix.$(OBJEXT) \
 	libchrm_a-TrainingSet.$(OBJEXT) libchrm_a-signatures.$(OBJEXT) \
 	libchrm_a-FeatureNames.$(OBJEXT) \
 	libchrm_a-FeatureAlgorithms.$(OBJEXT) \
-	libchrm_a-ImageTransforms.$(OBJEXT) \
+	libchrm_a-ImageTransforms.$(OBJEXT) libchrm_a-Tasks.$(OBJEXT) \
 	libchrm_a-WORMfile.$(OBJEXT) libchrm_a-wndchrm_error.$(OBJEXT) \
 	libchrm_a-specfunc.$(OBJEXT) libchrm_a-FuzzyCalc.$(OBJEXT) \
 	libchrm_a-CombFirst4Moments.$(OBJEXT) \
@@ -553,6 +553,8 @@ libchrm_a_SOURCES = \
 	FeatureAlgorithms.h \
 	ImageTransforms.cpp \
 	ImageTransforms.h \
+	Tasks.cpp \
+	Tasks.h \
 	OldFeatureNamesFileStr.h \
 	WORMfile.cpp \
 	WORMfile.h \
@@ -753,6 +755,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-FuzzyCalc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-ImageTransforms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-Symlet5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-Tasks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-TrainingSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-WORMfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchrm_a-Wavelet.Po@am__quote@
@@ -913,6 +916,20 @@ libchrm_a-ImageTransforms.obj: ImageTransforms.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ImageTransforms.cpp' object='libchrm_a-ImageTransforms.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_a-ImageTransforms.obj `if test -f 'ImageTransforms.cpp'; then $(CYGPATH_W) 'ImageTransforms.cpp'; else $(CYGPATH_W) '$(srcdir)/ImageTransforms.cpp'; fi`
+
+libchrm_a-Tasks.o: Tasks.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -MT libchrm_a-Tasks.o -MD -MP -MF $(DEPDIR)/libchrm_a-Tasks.Tpo -c -o libchrm_a-Tasks.o `test -f 'Tasks.cpp' || echo '$(srcdir)/'`Tasks.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libchrm_a-Tasks.Tpo $(DEPDIR)/libchrm_a-Tasks.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Tasks.cpp' object='libchrm_a-Tasks.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_a-Tasks.o `test -f 'Tasks.cpp' || echo '$(srcdir)/'`Tasks.cpp
+
+libchrm_a-Tasks.obj: Tasks.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -MT libchrm_a-Tasks.obj -MD -MP -MF $(DEPDIR)/libchrm_a-Tasks.Tpo -c -o libchrm_a-Tasks.obj `if test -f 'Tasks.cpp'; then $(CYGPATH_W) 'Tasks.cpp'; else $(CYGPATH_W) '$(srcdir)/Tasks.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libchrm_a-Tasks.Tpo $(DEPDIR)/libchrm_a-Tasks.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Tasks.cpp' object='libchrm_a-Tasks.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -c -o libchrm_a-Tasks.obj `if test -f 'Tasks.cpp'; then $(CYGPATH_W) 'Tasks.cpp'; else $(CYGPATH_W) '$(srcdir)/Tasks.cpp'; fi`
 
 libchrm_a-WORMfile.o: WORMfile.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchrm_a_CXXFLAGS) $(CXXFLAGS) -MT libchrm_a-WORMfile.o -MD -MP -MF $(DEPDIR)/libchrm_a-WORMfile.Tpo -c -o libchrm_a-WORMfile.o `test -f 'WORMfile.cpp' || echo '$(srcdir)/'`WORMfile.cpp

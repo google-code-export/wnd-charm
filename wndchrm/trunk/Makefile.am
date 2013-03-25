@@ -22,6 +22,8 @@ libchrm_a_SOURCES = \
 	FeatureAlgorithms.h \
 	ImageTransforms.cpp \
 	ImageTransforms.h \
+	Tasks.cpp \
+	Tasks.h \
 	OldFeatureNamesFileStr.h \
 	WORMfile.cpp \
 	WORMfile.h \
