@@ -112,7 +112,7 @@ void signatures::Resize(size_t nsigs) {
    value -double- the value to add
 */
 void signatures::Add(const char *name,double value) {
-	if (name && NamesTrainingSet) {
+	if (name && *name && NamesTrainingSet) {
 		char *char_p = ((TrainingSet *)(NamesTrainingSet))->SignatureNames[count];
 		if (! *char_p) strcpy(char_p,name);
 	}
@@ -280,8 +280,9 @@ int signatures::LoadFromFile(char *filename) {
 }
 
 void signatures::LoadFromFilep (FILE *value_file) {
-	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer;
+	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer, name[SIGNATURE_NAME_LENGTH];
 	int version_maj = 0, version_min = 0;
+	double val;
 
 	/* read the class or value and version */
 	fgets(buffer,sizeof(buffer),value_file);
@@ -308,13 +309,9 @@ void signatures::LoadFromFilep (FILE *value_file) {
 	p_buffer=fgets(buffer,sizeof(buffer),value_file);
 	chomp (p_buffer);
 	while (p_buffer) {
-		char *p_name;
-		p_name=strchr(buffer,' ');
-		if (p_name) {    /* if there is a feature name in the file */
-			*p_name='\0';
-			p_name++;
-		}
-		Add(p_name,atof(buffer));
+		name[0] = '\0';
+		sscanf (buffer, "%lf%*[\t ]%[^\t\r\n]", &val, name);
+		Add(name,val);
 		p_buffer=fgets(buffer,sizeof(buffer),value_file);
 		chomp (p_buffer);
 	}
