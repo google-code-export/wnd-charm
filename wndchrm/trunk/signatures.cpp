@@ -182,7 +182,7 @@ void signatures::compute_plan (const ImageMatrix &matrix, const FeatureComputati
 		for (int i = 0; i < count; i++) {
 			char *char_p = ((TrainingSet *)(NamesTrainingSet))->SignatureNames[i];
 			if (! *char_p) {
-				strcpy(char_p,plan->getFeatureName(i).c_str());
+				strcpy(char_p,plan->getFeatureNameByIndex(i).c_str());
 			}
 		}
 	}

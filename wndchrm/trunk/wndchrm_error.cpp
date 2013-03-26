@@ -27,7 +27,7 @@ std::ostringstream error_messages;
 //      > 5 - report execution task execution
 //      > 6 - report execution tasks added/removed from queue
 //      > 7 - report memory allocation/deallocation for matrixes
-int verbosity = 2;
+int verbosity = getenv("WNDCHRM_VERBOSITY") ? atoi (getenv("WNDCHRM_VERBOSITY")) : 2;
 
 // appends the system error message for the current errno
 void catErrno () {
