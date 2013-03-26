@@ -47,8 +47,6 @@
 #define INF 10E200
 #define EPSILON 10E-20
 
-using namespace std;
-
 // Forward declarations
 class ImageTransform;
 
