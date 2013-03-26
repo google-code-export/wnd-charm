@@ -1195,7 +1195,7 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 	struct dirent *ent;
 	typedef OUR_UNORDERED_MAP<std::string, int> base_names_mapType;
 	base_names_mapType base_names_map;
-	vector<std::string> base_names_vec;
+	std::vector<std::string> base_names_vec;
 	int res=1,files_in_class_count=0,n_img_basenames=0,file_index;
 	char buffer[512],*char_p,*sig_fullpath = NULL;
 	FILE *sigfile;
@@ -2793,7 +2793,7 @@ long TrainingSet::dendrogram(FILE *output_file, char *dataset_name, char *phylib
 		for (label_index2=1;label_index2<=nodes_num;label_index2++) {
 			switch (sim_method) {
 			case 1: // Maximum of the two dis-similarities
-				dist=max(
+				dist=std::max(
 					1-similarity_matrix[label_index*nodes_num+label_index2],
 					1-similarity_matrix[label_index2*nodes_num+label_index]
 				);
