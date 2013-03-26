@@ -309,6 +309,7 @@ class FeatureComputationPlan : public ComputationPlan {
 		}
 
 		const std::string &getFeatureName (size_t offset) const;
+		const std::vector<const FeatureGroup *> &getFeatureGroups () const { return feature_groups; }
 		FeatureComputationPlan (const std::string &name_in) : ComputationPlan (name_in) {
 			n_features = 0;
 			feature_vec_type = 0;
