@@ -198,6 +198,7 @@ class ComputationPlan {
 			name = name_in;
 			// the root isn't in the maps - this is its one reference.
 			root = new ComputationTaskNode(NULL,NULL);
+			isFinal = false;
 		}
 		~ComputationPlan() {
 			nodemap_t::iterator nodemap_it;
