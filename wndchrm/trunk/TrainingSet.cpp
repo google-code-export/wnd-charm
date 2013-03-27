@@ -1737,7 +1737,7 @@ double TrainingSet::ClassifyImage(TrainingSet *TestSet, int test_sample_index,in
 				// If there's no known ground truth
 				matrix_index = class_index - 1;
 			else
-				matrix_index = (class_num * (sample_class - 1)) + (class_index - 1);
+				matrix_index = (class_num * sample_class + class_index);
 			split->similarity_matrix[ matrix_index ] += probabilities_sum[ class_index ];
 			split->marginal_probabilities[ matrix_index ].push_back( probabilities_sum[ class_index ] ) ;
 		}
@@ -1909,7 +1909,7 @@ double TrainingSet::Test(TrainingSet *TestSet, int method, int tiles, int tile_a
 		 if( !split->marginal_probabilities.empty() )
 			 split->marginal_probabilities.clear();
 		 // marginal_probabilities is a nXn matrix just like the confusion matrix, etc
-		 split->marginal_probabilities.resize( class_num * class_num );
+		 split->marginal_probabilities.resize( (class_num + 1) * (class_num + 1 ) );
 	 }
 
    // perform the actual test
@@ -3398,7 +3398,7 @@ long TrainingSet::report( FILE*                     output_file,
 		for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
 		{
 			double sum = 0.0;
-			int matrix_position = (class_index-1) * class_num + (class_index2-1);
+			int matrix_position = class_index * class_num + class_index2;
 			for( split_index = 0; split_index < split_num; split_index++ )
 				sum += splits[ split_index ].similarity_matrix[ matrix_position ];
 
@@ -3449,7 +3449,7 @@ long TrainingSet::report( FILE*                     output_file,
 		
 		for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
 		{
-			int matrix_position = (class_index-1) * class_num + (class_index2-1);
+			int matrix_position = class_index * class_num + class_index2;
 			// compute standard deviations
 			std::list<float> mp_observations;
 			for( split_index = 0; split_index < split_num; split_index++ )
@@ -3711,7 +3711,7 @@ long TrainingSet::report( FILE*                     output_file,
 				fprintf( output_file,"<tr><th>%s</th>\n", class_labels[ class_index ] );
 				for( class_index2 = 1; class_index2 <= class_num; class_index2++ )
 				{
-					int matrix_position = (class_index-1) * class_num + (class_index2-1);
+					int matrix_position = class_index * class_num + class_index2;
 
 					if (class_index==class_index2)
 						strcpy(bgcolor," bgcolor=#D5D5D5");
@@ -3735,7 +3735,7 @@ long TrainingSet::report( FILE*                     output_file,
 				fprintf(output_file,"<tr><th>%s</th>\n",class_labels[class_index]);
 				for (class_index2=1;class_index2<=class_num;class_index2++)
 				{
-					int matrix_position = (class_index-1) * class_num + (class_index2-1);
+					int matrix_position = class_index * class_num + class_index2;
 					if (class_index==class_index2)
 						strcpy(bgcolor," bgcolor=#D5D5D5");
 					else
