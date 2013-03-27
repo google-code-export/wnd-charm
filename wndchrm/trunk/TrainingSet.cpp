@@ -2033,17 +2033,14 @@ void TrainingSet::normalize() {
 			// ignore out of bounds sig values for determining minimum and maximum: They will be clipped later
 			if (std::isnan (sig_val) || sig_val > MAX_SIG_VAL || sig_val < MIN_SIG_VAL) continue;
 
-			if( sig_val > sig_max ) {
-				sig_max = sig_val;
-			} else if ( sig_val < sig_min ) {
-				sig_min = sig_val;
-			}
+			if (sig_val > sig_max) sig_max = sig_val;
+			if (sig_val < sig_min) sig_min = sig_val;
 		}
 
 		/* these values of min and max can be used for normalizing a test vector */
 		SignatureMaxes[ sig_index ] = sig_max;
 		SignatureMins[ sig_index ] = sig_min;
-		
+
 		for( samp_index = 0; samp_index < count; samp_index++ ) {
 			sig_val = samples[ samp_index ]->data[ sig_index ];
 
@@ -2117,13 +2114,10 @@ void TrainingSet::SetmRMRScores(double used_signatures, double used_mrmr)
 
 void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data_split *split)
 {  int sample_index,sig_index,class_index;
-   double mean,var,class_dev_from_mean,mean_inner_class_var;
-   double *class_mean,*class_var,*class_count;
+   double class_dev_from_mean,mean_inner_class_var;
    double threshold;   
 
-   class_mean=new double[class_num+1];
-   class_var=new double[class_num+1];
-   class_count=new double[class_num+1];
+   Moments2 *class_stats = new Moments2 [class_num+1];
    
 // Make a featuregroup map and iterator
 	OUR_UNORDERED_MAP<std::string, featuregroup_stats_t> featuregroups;
@@ -2139,54 +2133,40 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 		split->featuregroups_stats.clear();
 	}
    /* use Fisher scores (for classes) or correlation scores (for correlations) */
-   for (sig_index=0;sig_index<signature_count;sig_index++)
-   {
-      if (class_num>0)  /* Fisher Scores */
-      {  /* initialize */
-         for (class_index=0;class_index<=class_num;class_index++)
-         {  class_mean[class_index]=0.0;
-            class_var[class_index]=0.0;
-            class_count[class_index]=0.0;
-         }
-         mean=var=0.0;
-         /* find the means */
-         for (sample_index=0;sample_index<count;sample_index++)
-         {  class_mean[samples[sample_index]->sample_class]+=samples[sample_index]->data[sig_index];
-            class_count[samples[sample_index]->sample_class]+=1;
-         }
+	for (sig_index=0;sig_index<signature_count;sig_index++) {
+		// Fischer scores
+		if (class_num>0) {
+			Moments2 feature_stats;
+			double val;
+			// we're re-using the per-class stats class for each feature, so we have to reset them
+			for (class_index = 1; class_index <= class_num; class_index++)
+				class_stats[class_index].reset();
+			// collect per-class stats as well as feature stats.
+			for (sample_index = 0; sample_index < count; sample_index++) {
+				class_index = samples[sample_index]->sample_class;
+				if (class_index) {
+					val = samples[sample_index]->data[sig_index];
+					feature_stats.add (val);
+					class_stats[class_index].add (val);
+				}
+			}
+			// compute fisher score
+			class_dev_from_mean=0;
+         	mean_inner_class_var=0;
+			for (class_index = 1; class_index <= class_num; class_index++) {
+				class_dev_from_mean  += pow(class_stats[class_index].mean() - feature_stats.mean(),2);
+				mean_inner_class_var += class_stats[class_index].var();
+			}
+			if (class_num > 1) {
+				class_dev_from_mean /= (class_num-1);
+				mean_inner_class_var /= class_num;
+			} else {
+				class_dev_from_mean=0;
+			}
+			// avoid division by zero for tiny mean_inner_class_var
+			if (mean_inner_class_var < 0.000001) mean_inner_class_var = 0.000001;
 
-         for (class_index=1;class_index<=class_num;class_index++)
-           if (class_count[class_index])
-             class_mean[class_index]/=class_count[class_index];
-
-         /* find the variance */
-         for (sample_index=0;sample_index<count;sample_index++)
-           class_var[samples[sample_index]->sample_class]+=pow(samples[sample_index]->data[sig_index]-class_mean[samples[sample_index]->sample_class],2);
-
-         for (class_index=1;class_index<=class_num;class_index++)
-           if (class_count[class_index])
-             class_var[class_index]/=class_count[class_index];
-
-         /* compute fisher score */
-
-         /* find the mean of all means */
-         for (class_index=1;class_index<=class_num;class_index++)
-           mean+=class_mean[class_index];
-         mean/=class_num;
-         /* find the variance of all means */
-         class_dev_from_mean=0;
-         for (class_index=1;class_index<=class_num;class_index++)
-           class_dev_from_mean+=pow(class_mean[class_index]-mean,2);
-         if (class_num>1) class_dev_from_mean/=(class_num-1);
-					else class_dev_from_mean=0;
-
-         mean_inner_class_var=0;
-         for (class_index=1;class_index<=class_num;class_index++)
-           mean_inner_class_var+=class_var[class_index];
-         mean_inner_class_var/=class_num;
-         if (mean_inner_class_var==0) mean_inner_class_var+=0.000001;   /* avoid division by zero - and avoid INF values */
-
-         SignatureWeights[sig_index]=class_dev_from_mean/mean_inner_class_var;
+			SignatureWeights[sig_index]=class_dev_from_mean/mean_inner_class_var;
 
       }  /* end of method 0 (Fisher Scores) */
 
@@ -2272,9 +2252,7 @@ void TrainingSet::SetFisherScores(double used_signatures, double used_mrmr, data
 
 	if (used_mrmr>0) SetmRMRScores(used_signatures,used_mrmr);  /* filter the most informative features using mrmr */
 
-   delete [] class_mean;
-   delete [] class_var;
-   delete [] class_count;
+   delete [] class_stats;
 }
 
 
