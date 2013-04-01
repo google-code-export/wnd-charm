@@ -265,8 +265,7 @@ std::cout << "shmem_size: " << shmem_size << std::endl;
 			bits = stored_shmem_data->bits;
 			
 			// The pixels are read-only.
-			WriteablePixelsFinish ();
-			if (ColorMode != cmGRAY) WriteableColorsFinish ();
+			finish ();
 			
 			// Indicate that the object came from cache, and currently has no operation
 			cached_source = shmem_name;
@@ -348,8 +347,7 @@ std::cout <<         "-------- called SharedImageMatrix::Cache on [" << cached_s
 	// This object should now be indistinguishable from a cached object
 	// This is not strictly true because the memory is still mapped with write permissions.
 	// However, attempting a write by calling WriteablePixels or allocate will result in run-time assertions.
-	WriteablePixelsFinish ();
-	if (ColorMode != cmGRAY) WriteableColorsFinish ();
+	finish ();
 	cached_source = shmem_name;
 	operation = "";
 	was_cached = true;
@@ -424,10 +422,8 @@ ImageMatrix &SharedImageMatrix::transform (const ImageTransform *transform) cons
 SharedImageMatrix::~SharedImageMatrix () {
 std::cout << "SharedImageMatrix DESTRUCTOR for " << shmem_name << std::endl;
 
-	WriteablePixelsFinish();
+	finish();
 	remap_pix_plane (NULL, 0, 0);
-
-	if (ColorMode != cmGRAY) WriteableColorsFinish();
 	remap_clr_plane (NULL, 0, 0);
 
 	if (mmap_ptr != MAP_FAILED) munmap (mmap_ptr, shmem_size);
