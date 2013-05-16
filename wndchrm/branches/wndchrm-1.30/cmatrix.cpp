@@ -242,11 +242,11 @@ int ImageMatrix::LoadTIFF(char *filename)
                  {  if (sample_index==0) pix.clr.RGB.red=(unsigned char)(255*(val/max_val));
                     if (sample_index==1) pix.clr.RGB.green=(unsigned char)(255*(val/max_val));
                     if (sample_index==2) pix.clr.RGB.blue=(unsigned char)(255*(val/max_val));
-                    if ( ColorMode==cmHSV ) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
                  }
               }
-              if (spp==3) pix.intensity=COLOR2GRAY(RGB2COLOR(pix.clr.RGB));
-              if (spp==1)
+              if ( ColorMode==cmHSV && spp==3) pix.clr.HSV=RGB2HSV(pix.clr.RGB);
+              else if (spp==3) pix.intensity=COLOR2GRAY(RGB2COLOR(pix.clr.RGB));
+              else if (spp==1)
               {  pix.clr.RGB.red=(unsigned char)(255*(val/max_val));
                  pix.clr.RGB.green=(unsigned char)(255*(val/max_val));
                  pix.clr.RGB.blue=(unsigned char)(255*(val/max_val));
@@ -256,6 +256,8 @@ int ImageMatrix::LoadTIFF(char *filename)
               x++;
               col+=spp;
             }
+                        if (spp==3) printf ("\n");
+
         }
      }
      _TIFFfree(buf8);
