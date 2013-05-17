@@ -256,8 +256,6 @@ int ImageMatrix::LoadTIFF(char *filename)
               x++;
               col+=spp;
             }
-                        if (spp==3) printf ("\n");
-
         }
      }
      _TIFFfree(buf8);
