@@ -86,6 +86,7 @@ my $pairwise_flag = 0;
 my $path_to_phylip = undef;
 my $weighted_nearest_neighbor = undef;
 my $self_set = undef;
+my $no_tiffs = undef;
 my $specify_train_test_split = undef;
 my $phylip_command = undef; # use a separate string for for storing phylip part of wndchrm command
                             # line because we need to keep track of where it is to copy dend files.
@@ -235,6 +236,10 @@ while( <CONFIG_FILE> )
   elsif( $_ =~ /^self_set/ ) {
     $self_set = 1;
     print "\tUsing the entire training set as the test set.\n" if( $DEBUG1 or $verbose or $dryrun );
+  }
+  elsif( $_ =~ /^no_tiffs/ ) {
+    $no_tiffs = 1;
+    print "\tUsing sig files as the samples and disregarding tiffs.\n" if( $DEBUG1 or $verbose or $dryrun );
   }
   else {
     if( $DEBUG1 or $verbose or $dryrun ) {
@@ -482,15 +487,22 @@ sub RunExperiment {
       for($i = 0; $i <= $#full_file_list; $i++ )
       {
         push @tiff_file_list, $full_file_list[$i] if( $full_file_list[$i] =~ /\.tif$/ ) ;
+
+				
         if( $full_file_list[$i] =~ /(.*)\.sig$/ )
         {
-          my $base = $1;
-          $base =~ s/-l//g;
-          #$base =~ s/-S500//g;
-          #$base =~ s/-t4//g;
-          #$base =~ s/_\d_\d//g;
-          $base .= ".tif";
-          push @sig_file_list, $base;
+          if( $no_tiffs ){
+						push @sig_file_list, $full_file_list[$i];
+					}
+					else {
+						my $base = $1;
+						$base =~ s/-l//g;
+						#$base =~ s/-S500//g;
+						#$base =~ s/-t4//g;
+						#$base =~ s/_\d_\d//g;
+						$base .= ".tif";
+						push @sig_file_list, $base;
+					}
         }
       }
       if( $#tiff_file_list == -1 and $#sig_file_list == -1 )
@@ -1086,6 +1098,10 @@ write_fisher_weights
 #    Use the entire training set as the test set
 #    Equivalent of specifying the training set twice on the command line
 self_set
+
+# no_tiffs
+#    Use when there are only .sig files.
+no_tiffs
 
 # additional_test_args <stuff>
 #    Any native wndchrm functionality not implemented above can be passed through
