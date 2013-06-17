@@ -1,2875 +1,2921 @@
-0
-../tests/t1_s01_c05_ij.tif
-9152.000000 Edge Area
-0.023567 Edge DiffDirecHist bin 0
-0.022870 Edge DiffDirecHist bin 1
-0.069859 Edge DiffDirecHist bin 2
-0.019596 Edge DiffDirecHist bin 3
-1759.000000 Edge Direction Histogram bin 0
-1474.000000 Edge Direction Histogram bin 1
-1418.000000 Edge Direction Histogram bin 2
-1601.000000 Edge Direction Histogram bin 3
-1678.000000 Edge Direction Histogram bin 4
-1543.000000 Edge Direction Histogram bin 5
-1631.000000 Edge Direction Histogram bin 6
-1665.000000 Edge Direction Histogram bin 7
-0.253191 Edge Direction Homogeneity
-0.026444 Edge Direction Mean
-0.043337 Edge Direction Median
-3.405367 Edge Direction Variance
-8898.000000 Edge Magnitude Histogram bin 0
-2881.000000 Edge Magnitude Histogram bin 1
-470.000000 Edge Magnitude Histogram bin 2
-72.000000 Edge Magnitude Histogram bin 3
-0.000000 Edge Magnitude Histogram bin 4
-8.000000 Edge Magnitude Histogram bin 5
-90.000000 Edge Magnitude Histogram bin 6
-350.000000 Edge Magnitude Histogram bin 7
-385.613636 Edge Magnitude Mean
-249.755881 Edge Magnitude Median
-276145.783319 Edge Magnitude Variance
-1.000000 Feature area histogram bin 0
-0.000000 Feature area histogram bin 1
-0.000000 Feature area histogram bin 2
-0.000000 Feature area histogram bin 3
-0.000000 Feature area histogram bin 4
-0.000000 Feature area histogram bin 5
-0.000000 Feature area histogram bin 6
-0.000000 Feature area histogram bin 7
-0.000000 Feature area histogram bin 8
-1.000000 Feature area histogram bin 9
-11090.000000 Feature AreaMax
-5545.500000 Feature AreaMean
-11090.000000 Feature AreaMedian
-1.000000 Feature AreaMin
-61482960.500000 Feature AreaVar
-56.906952 Feature X Centroid
-57.013254 Feature Y Centroid
-2.000000 Feature Count
-1.000000 Feature dist histogram bin 0
-0.000000 Feature dist histogram bin 1
-0.000000 Feature dist histogram bin 2
-0.000000 Feature dist histogram bin 3
-0.000000 Feature dist histogram bin 4
-0.000000 Feature dist histogram bin 5
-0.000000 Feature dist histogram bin 6
-0.000000 Feature dist histogram bin 7
-0.000000 Feature dist histogram bin 8
-1.000000 Feature dist histogram bin 9
-26.231041 Feature DistMax
-13.116703 Feature DistMean
-26.231041 Feature DistMedian
-0.002365 Feature DistMin
-343.971724 Feature DistVar
--75.000000 Feature Euler
-0.069246 Gabor Filters bin 0
-0.036190 Gabor Filters bin 1
-0.017703 Gabor Filters bin 2
-0.017390 Gabor Filters bin 3
-0.620006 Gabor Filters bin 4
-0.608256 Gabor Filters bin 5
-0.632226 Gabor Filters bin 6
-465.000000 Chebishev Fourier Transform bin 0 ()
-49.000000 Chebishev Fourier Transform bin 1 ()
-9.000000 Chebishev Fourier Transform bin 2 ()
-1.000000 Chebishev Fourier Transform bin 3 ()
-1.000000 Chebishev Fourier Transform bin 4 ()
-0.000000 Chebishev Fourier Transform bin 5 ()
-0.000000 Chebishev Fourier Transform bin 6 ()
-0.000000 Chebishev Fourier Transform bin 7 ()
-0.000000 Chebishev Fourier Transform bin 8 ()
-0.000000 Chebishev Fourier Transform bin 9 ()
-0.000000 Chebishev Fourier Transform bin 10 ()
-0.000000 Chebishev Fourier Transform bin 11 ()
-1.000000 Chebishev Fourier Transform bin 12 ()
-0.000000 Chebishev Fourier Transform bin 13 ()
-0.000000 Chebishev Fourier Transform bin 14 ()
-0.000000 Chebishev Fourier Transform bin 15 ()
-0.000000 Chebishev Fourier Transform bin 16 ()
-0.000000 Chebishev Fourier Transform bin 17 ()
-0.000000 Chebishev Fourier Transform bin 18 ()
-0.000000 Chebishev Fourier Transform bin 19 ()
-1.000000 Chebishev Fourier Transform bin 20 ()
-0.000000 Chebishev Fourier Transform bin 21 ()
-1.000000 Chebishev Fourier Transform bin 22 ()
-0.000000 Chebishev Fourier Transform bin 23 ()
-0.000000 Chebishev Fourier Transform bin 24 ()
-0.000000 Chebishev Fourier Transform bin 25 ()
-0.000000 Chebishev Fourier Transform bin 26 ()
-0.000000 Chebishev Fourier Transform bin 27 ()
-0.000000 Chebishev Fourier Transform bin 28 ()
-0.000000 Chebishev Fourier Transform bin 29 ()
-0.000000 Chebishev Fourier Transform bin 30 ()
-1.000000 Chebishev Fourier Transform bin 31 ()
-2.000000 Chebishev Statistics bin 0 ()
-0.000000 Chebishev Statistics bin 1 ()
-0.000000 Chebishev Statistics bin 2 ()
-0.000000 Chebishev Statistics bin 3 ()
-0.000000 Chebishev Statistics bin 4 ()
-0.000000 Chebishev Statistics bin 5 ()
-0.000000 Chebishev Statistics bin 6 ()
-0.000000 Chebishev Statistics bin 7 ()
-0.000000 Chebishev Statistics bin 8 ()
-2.000000 Chebishev Statistics bin 9 ()
-0.000000 Chebishev Statistics bin 10 ()
-13.000000 Chebishev Statistics bin 11 ()
-351.000000 Chebishev Statistics bin 12 ()
-28.000000 Chebishev Statistics bin 13 ()
-2.000000 Chebishev Statistics bin 14 ()
-0.000000 Chebishev Statistics bin 15 ()
-0.000000 Chebishev Statistics bin 16 ()
-0.000000 Chebishev Statistics bin 17 ()
-0.000000 Chebishev Statistics bin 18 ()
-0.000000 Chebishev Statistics bin 19 ()
-1.000000 Chebishev Statistics bin 20 ()
-0.000000 Chebishev Statistics bin 21 ()
-0.000000 Chebishev Statistics bin 22 ()
-0.000000 Chebishev Statistics bin 23 ()
-0.000000 Chebishev Statistics bin 24 ()
-0.000000 Chebishev Statistics bin 25 ()
-0.000000 Chebishev Statistics bin 26 ()
-0.000000 Chebishev Statistics bin 27 ()
-0.000000 Chebishev Statistics bin 28 ()
-0.000000 Chebishev Statistics bin 29 ()
-0.000000 Chebishev Statistics bin 30 ()
-1.000000 Chebishev Statistics bin 31 ()
-0.243310 Zernike 0 ()
-0.003942 Zernike 1 ()
-0.014648 Zernike 2 ()
-0.002012 Zernike 3 ()
-0.005617 Zernike 4 ()
-0.005077 Zernike 5 ()
-0.012754 Zernike 6 ()
-0.013886 Zernike 7 ()
-0.001733 Zernike 8 ()
-0.006171 Zernike 9 ()
-0.010507 Zernike 10 ()
-0.001454 Zernike 11 ()
-0.003901 Zernike 12 ()
-0.005586 Zernike 13 ()
-0.003897 Zernike 14 ()
-0.001035 Zernike 15 ()
-0.006548 Zernike 16 ()
-0.009491 Zernike 17 ()
-0.000854 Zernike 18 ()
-0.002618 Zernike 19 ()
-0.005412 Zernike 20 ()
-0.004964 Zernike 21 ()
-0.002825 Zernike 22 ()
-0.002996 Zernike 23 ()
-0.001067 Zernike 24 ()
-0.002462 Zernike 25 ()
-0.005292 Zernike 26 ()
-0.018808 Zernike 27 ()
-0.000341 Zernike 28 ()
-0.002398 Zernike 29 ()
-0.005818 Zernike 30 ()
-0.007018 Zernike 31 ()
-0.018127 Zernike 32 ()
-0.007369 Zernike 33 ()
-0.005406 Zernike 34 ()
-0.001400 Zernike 35 ()
-0.008909 Zernike 36 ()
-0.008955 Zernike 37 ()
-0.014664 Zernike 38 ()
-0.004056 Zernike 39 ()
-0.001239 Zernike 40 ()
-0.001935 Zernike 41 ()
-0.001146 Zernike 42 ()
-0.006885 Zernike 43 ()
-0.010351 Zernike 44 ()
-0.001761 Zernike 45 ()
-0.004090 Zernike 46 ()
-0.002163 Zernike 47 ()
-0.001590 Zernike 48 ()
-0.006459 Zernike 49 ()
-0.006837 Zernike 50 ()
-0.011972 Zernike 51 ()
-0.009713 Zernike 52 ()
-0.003287 Zernike 53 ()
-0.001335 Zernike 54 ()
-0.003038 Zernike 55 ()
-0.001703 Zernike 56 ()
-0.009197 Zernike 57 ()
-0.001705 Zernike 58 ()
-0.006899 Zernike 59 ()
-0.018921 Zernike 60 ()
-0.002688 Zernike 61 ()
-0.000825 Zernike 62 ()
-0.001289 Zernike 63 ()
-0.008356 Zernike 64 ()
-0.005362 Zernike 65 ()
-0.004751 Zernike 66 ()
-0.004939 Zernike 67 ()
-0.004783 Zernike 68 ()
-0.004587 Zernike 69 ()
-0.003610 Zernike 70 ()
-0.000951 Zernike 71 ()
-10.000000 CombFirstFourMoments 0 ()
-4.000000 CombFirstFourMoments 1 ()
-7.000000 CombFirstFourMoments 2 ()
-10.000000 CombFirstFourMoments 3 ()
-0.000000 CombFirstFourMoments 4 ()
-11.000000 CombFirstFourMoments 5 ()
-6.000000 CombFirstFourMoments 6 ()
-13.000000 CombFirstFourMoments 7 ()
-2.000000 CombFirstFourMoments 8 ()
-11.000000 CombFirstFourMoments 9 ()
-6.000000 CombFirstFourMoments 10 ()
-4.000000 CombFirstFourMoments 11 ()
-10.000000 CombFirstFourMoments 12 ()
-1.000000 CombFirstFourMoments 13 ()
-10.000000 CombFirstFourMoments 14 ()
-10.000000 CombFirstFourMoments 15 ()
-0.000000 CombFirstFourMoments 16 ()
-11.000000 CombFirstFourMoments 17 ()
-4.000000 CombFirstFourMoments 18 ()
-12.000000 CombFirstFourMoments 19 ()
-5.000000 CombFirstFourMoments 20 ()
-12.000000 CombFirstFourMoments 21 ()
-1.000000 CombFirstFourMoments 22 ()
-8.000000 CombFirstFourMoments 23 ()
-1.000000 CombFirstFourMoments 24 ()
-10.000000 CombFirstFourMoments 25 ()
-10.000000 CombFirstFourMoments 26 ()
-8.000000 CombFirstFourMoments 27 ()
-9.000000 CombFirstFourMoments 28 ()
-4.000000 CombFirstFourMoments 29 ()
-4.000000 CombFirstFourMoments 30 ()
-16.000000 CombFirstFourMoments 31 ()
-1.000000 CombFirstFourMoments 32 ()
-8.000000 CombFirstFourMoments 33 ()
-4.000000 CombFirstFourMoments 34 ()
-9.000000 CombFirstFourMoments 35 ()
-1.000000 CombFirstFourMoments 36 ()
-13.000000 CombFirstFourMoments 37 ()
-7.000000 CombFirstFourMoments 38 ()
-7.000000 CombFirstFourMoments 39 ()
-12.000000 CombFirstFourMoments 40 ()
-2.000000 CombFirstFourMoments 41 ()
-5.000000 CombFirstFourMoments 42 ()
-9.000000 CombFirstFourMoments 43 ()
-7.000000 CombFirstFourMoments 44 ()
-7.000000 CombFirstFourMoments 45 ()
-8.000000 CombFirstFourMoments 46 ()
-6.000000 CombFirstFourMoments 47 ()
-0.000302 Haarlick Texture 0 ()
-0.000047 Haarlick Texture 1 ()
-311.768681 Haarlick Texture 2 ()
-188.398621 Haarlick Texture 3 ()
-0.841192 Haarlick Texture 4 ()
-0.094881 Haarlick Texture 5 ()
-149.635454 Haarlick Texture 6 ()
-100.234314 Haarlick Texture 7 ()
-5.115810 Haarlick Texture 8 ()
-0.388513 Haarlick Texture 9 ()
-12.375777 Haarlick Texture 10 ()
-0.239787 Haarlick Texture 11 ()
--0.214262 Haarlick Texture 12 ()
-0.032533 Haarlick Texture 13 ()
-0.094785 Haarlick Texture 14 ()
-0.015791 Haarlick Texture 15 ()
-0.009992 Haarlick Texture 16 ()
-0.016282 Haarlick Texture 17 ()
-0.973495 Haarlick Texture 18 ()
-0.011798 Haarlick Texture 19 ()
-229.353260 Haarlick Texture 20 ()
-0.190903 Haarlick Texture 21 ()
-7.856569 Haarlick Texture 22 ()
-0.027917 Haarlick Texture 23 ()
-52671.910156 Haarlick Texture 24 ()
-230.136719 Haarlick Texture 25 ()
-980.722260 Haarlick Texture 26 ()
-7.568787 Haarlick Texture 27 ()
-0.150945 MultiScale Histogram bin 0 ()
-1.000000 MultiScale Histogram bin 1 ()
-0.074369 MultiScale Histogram bin 2 ()
-0.029076 MultiScale Histogram bin 3 ()
-0.258420 MultiScale Histogram bin 4 ()
-0.794454 MultiScale Histogram bin 5 ()
-0.136071 MultiScale Histogram bin 6 ()
-0.007293 MultiScale Histogram bin 7 ()
-0.009596 MultiScale Histogram bin 8 ()
-0.077440 MultiScale Histogram bin 9 ()
-0.285097 MultiScale Histogram bin 10 ()
-0.654544 MultiScale Histogram bin 11 ()
-0.161117 MultiScale Histogram bin 12 ()
-0.035217 MultiScale Histogram bin 13 ()
-0.002303 MultiScale Histogram bin 14 ()
-0.004606 MultiScale Histogram bin 15 ()
-0.035697 MultiScale Histogram bin 16 ()
-0.110642 MultiScale Histogram bin 17 ()
-0.275693 MultiScale Histogram bin 18 ()
-0.549276 MultiScale Histogram bin 19 ()
-0.175031 MultiScale Histogram bin 20 ()
-0.064101 MultiScale Histogram bin 21 ()
-0.008444 MultiScale Histogram bin 22 ()
-0.001823 MultiScale Histogram bin 23 ()
-1.000000 Tamura Texture 0 ()
-0.201572 Tamura Texture 1 ()
-0.366908 Tamura Texture 2 ()
-11935.537814 Tamura Texture 3 ()
-6.332430 Tamura Texture 4 ()
-4.141137 Tamura Texture 5 ()
-50.000000 Radon bin 0 ()
-0.000000 Radon bin 1 ()
-113.000000 Radon bin 2 ()
-54.000000 Radon bin 3 ()
-65.000000 Radon bin 4 ()
-44.000000 Radon bin 5 ()
-55.000000 Radon bin 6 ()
-50.000000 Radon bin 7 ()
-58.000000 Radon bin 8 ()
-50.000000 Radon bin 9 ()
-0.000000 Radon bin 10 ()
-113.000000 Radon bin 11 ()
-46.306179 Fractal 0 ()
-72.627242 Fractal 1 ()
-89.561585 Fractal 2 ()
-101.521474 Fractal 3 ()
-110.452475 Fractal 4 ()
-117.370441 Fractal 5 ()
-122.480840 Fractal 6 ()
-126.714454 Fractal 7 ()
-130.069903 Fractal 8 ()
-132.761062 Fractal 9 ()
-135.069929 Fractal 10 ()
-136.642381 Fractal 11 ()
-137.413451 Fractal 12 ()
-137.870922 Fractal 13 ()
-138.350912 Fractal 14 ()
-139.231868 Fractal 15 ()
-140.455291 Fractal 16 ()
-141.535771 Fractal 17 ()
-142.700056 Fractal 18 ()
-143.614997 Fractal 19 ()
-912.192654 mean ()
-927.000000 median ()
-129.316176 stddev ()
-411.000000 min ()
-1465.000000 max ()
-464.000000 Chebishev Fourier Transform bin 0 (Fourier)
-29.000000 Chebishev Fourier Transform bin 1 (Fourier)
-13.000000 Chebishev Fourier Transform bin 2 (Fourier)
-3.000000 Chebishev Fourier Transform bin 3 (Fourier)
-6.000000 Chebishev Fourier Transform bin 4 (Fourier)
-2.000000 Chebishev Fourier Transform bin 5 (Fourier)
-3.000000 Chebishev Fourier Transform bin 6 (Fourier)
-0.000000 Chebishev Fourier Transform bin 7 (Fourier)
-0.000000 Chebishev Fourier Transform bin 8 (Fourier)
-1.000000 Chebishev Fourier Transform bin 9 (Fourier)
-1.000000 Chebishev Fourier Transform bin 10 (Fourier)
-0.000000 Chebishev Fourier Transform bin 11 (Fourier)
-2.000000 Chebishev Fourier Transform bin 12 (Fourier)
-0.000000 Chebishev Fourier Transform bin 13 (Fourier)
-1.000000 Chebishev Fourier Transform bin 14 (Fourier)
-0.000000 Chebishev Fourier Transform bin 15 (Fourier)
-0.000000 Chebishev Fourier Transform bin 16 (Fourier)
-0.000000 Chebishev Fourier Transform bin 17 (Fourier)
-2.000000 Chebishev Fourier Transform bin 18 (Fourier)
-0.000000 Chebishev Fourier Transform bin 19 (Fourier)
-0.000000 Chebishev Fourier Transform bin 20 (Fourier)
-0.000000 Chebishev Fourier Transform bin 21 (Fourier)
-0.000000 Chebishev Fourier Transform bin 22 (Fourier)
-0.000000 Chebishev Fourier Transform bin 23 (Fourier)
-0.000000 Chebishev Fourier Transform bin 24 (Fourier)
-0.000000 Chebishev Fourier Transform bin 25 (Fourier)
-0.000000 Chebishev Fourier Transform bin 26 (Fourier)
-0.000000 Chebishev Fourier Transform bin 27 (Fourier)
-0.000000 Chebishev Fourier Transform bin 28 (Fourier)
-0.000000 Chebishev Fourier Transform bin 29 (Fourier)
-1.000000 Chebishev Fourier Transform bin 30 (Fourier)
-1.000000 Chebishev Fourier Transform bin 31 (Fourier)
-8.000000 Chebishev Statistics bin 0 (Fourier)
-15.000000 Chebishev Statistics bin 1 (Fourier)
-15.000000 Chebishev Statistics bin 2 (Fourier)
-16.000000 Chebishev Statistics bin 3 (Fourier)
-12.000000 Chebishev Statistics bin 4 (Fourier)
-16.000000 Chebishev Statistics bin 5 (Fourier)
-28.000000 Chebishev Statistics bin 6 (Fourier)
-21.000000 Chebishev Statistics bin 7 (Fourier)
-26.000000 Chebishev Statistics bin 8 (Fourier)
-28.000000 Chebishev Statistics bin 9 (Fourier)
-27.000000 Chebishev Statistics bin 10 (Fourier)
-21.000000 Chebishev Statistics bin 11 (Fourier)
-27.000000 Chebishev Statistics bin 12 (Fourier)
-18.000000 Chebishev Statistics bin 13 (Fourier)
-19.000000 Chebishev Statistics bin 14 (Fourier)
-8.000000 Chebishev Statistics bin 15 (Fourier)
-29.000000 Chebishev Statistics bin 16 (Fourier)
-11.000000 Chebishev Statistics bin 17 (Fourier)
-13.000000 Chebishev Statistics bin 18 (Fourier)
-16.000000 Chebishev Statistics bin 19 (Fourier)
-16.000000 Chebishev Statistics bin 20 (Fourier)
-6.000000 Chebishev Statistics bin 21 (Fourier)
-2.000000 Chebishev Statistics bin 22 (Fourier)
-0.000000 Chebishev Statistics bin 23 (Fourier)
-0.000000 Chebishev Statistics bin 24 (Fourier)
-0.000000 Chebishev Statistics bin 25 (Fourier)
-0.000000 Chebishev Statistics bin 26 (Fourier)
-0.000000 Chebishev Statistics bin 27 (Fourier)
-0.000000 Chebishev Statistics bin 28 (Fourier)
-0.000000 Chebishev Statistics bin 29 (Fourier)
-1.000000 Chebishev Statistics bin 30 (Fourier)
-1.000000 Chebishev Statistics bin 31 (Fourier)
-0.106497 Zernike 0 (Fourier)
-0.032260 Zernike 1 (Fourier)
-0.052239 Zernike 2 (Fourier)
-0.030357 Zernike 3 (Fourier)
-0.001768 Zernike 4 (Fourier)
-0.062451 Zernike 5 (Fourier)
-0.002070 Zernike 6 (Fourier)
-0.001316 Zernike 7 (Fourier)
-0.079677 Zernike 8 (Fourier)
-0.011314 Zernike 9 (Fourier)
-0.008330 Zernike 10 (Fourier)
-0.029053 Zernike 11 (Fourier)
-0.012061 Zernike 12 (Fourier)
-0.003387 Zernike 13 (Fourier)
-0.007261 Zernike 14 (Fourier)
-0.029166 Zernike 15 (Fourier)
-0.004491 Zernike 16 (Fourier)
-0.003416 Zernike 17 (Fourier)
-0.002954 Zernike 18 (Fourier)
-0.027381 Zernike 19 (Fourier)
-0.003525 Zernike 20 (Fourier)
-0.005151 Zernike 21 (Fourier)
-0.002489 Zernike 22 (Fourier)
-0.001475 Zernike 23 (Fourier)
-0.027758 Zernike 24 (Fourier)
-0.003301 Zernike 25 (Fourier)
-0.003384 Zernike 26 (Fourier)
-0.002319 Zernike 27 (Fourier)
-0.007108 Zernike 28 (Fourier)
-0.012801 Zernike 29 (Fourier)
-0.004990 Zernike 30 (Fourier)
-0.004328 Zernike 31 (Fourier)
-0.005619 Zernike 32 (Fourier)
-0.001531 Zernike 33 (Fourier)
-0.011532 Zernike 34 (Fourier)
-0.008093 Zernike 35 (Fourier)
-0.002532 Zernike 36 (Fourier)
-0.005581 Zernike 37 (Fourier)
-0.007778 Zernike 38 (Fourier)
-0.004681 Zernike 39 (Fourier)
-0.004489 Zernike 40 (Fourier)
-0.001844 Zernike 41 (Fourier)
-0.006028 Zernike 42 (Fourier)
-0.003387 Zernike 43 (Fourier)
-0.007063 Zernike 44 (Fourier)
-0.008175 Zernike 45 (Fourier)
-0.008485 Zernike 46 (Fourier)
-0.002344 Zernike 47 (Fourier)
-0.001815 Zernike 48 (Fourier)
-0.002054 Zernike 49 (Fourier)
-0.004935 Zernike 50 (Fourier)
-0.007532 Zernike 51 (Fourier)
-0.004669 Zernike 52 (Fourier)
-0.002757 Zernike 53 (Fourier)
-0.001215 Zernike 54 (Fourier)
-0.005285 Zernike 55 (Fourier)
-0.002579 Zernike 56 (Fourier)
-0.001311 Zernike 57 (Fourier)
-0.002426 Zernike 58 (Fourier)
-0.005839 Zernike 59 (Fourier)
-0.005031 Zernike 60 (Fourier)
-0.006433 Zernike 61 (Fourier)
-0.001346 Zernike 62 (Fourier)
-0.006070 Zernike 63 (Fourier)
-0.003155 Zernike 64 (Fourier)
-0.002426 Zernike 65 (Fourier)
-0.001837 Zernike 66 (Fourier)
-0.006085 Zernike 67 (Fourier)
-0.008201 Zernike 68 (Fourier)
-0.004844 Zernike 69 (Fourier)
-0.005260 Zernike 70 (Fourier)
-0.004802 Zernike 71 (Fourier)
-16.000000 CombFirstFourMoments 0 (Fourier)
-4.000000 CombFirstFourMoments 1 (Fourier)
-1.000000 CombFirstFourMoments 2 (Fourier)
-17.000000 CombFirstFourMoments 3 (Fourier)
-2.000000 CombFirstFourMoments 4 (Fourier)
-2.000000 CombFirstFourMoments 5 (Fourier)
-13.000000 CombFirstFourMoments 6 (Fourier)
-6.000000 CombFirstFourMoments 7 (Fourier)
-2.000000 CombFirstFourMoments 8 (Fourier)
-19.000000 CombFirstFourMoments 9 (Fourier)
-0.000000 CombFirstFourMoments 10 (Fourier)
-2.000000 CombFirstFourMoments 11 (Fourier)
-15.000000 CombFirstFourMoments 12 (Fourier)
-4.000000 CombFirstFourMoments 13 (Fourier)
-2.000000 CombFirstFourMoments 14 (Fourier)
-17.000000 CombFirstFourMoments 15 (Fourier)
-2.000000 CombFirstFourMoments 16 (Fourier)
-2.000000 CombFirstFourMoments 17 (Fourier)
-14.000000 CombFirstFourMoments 18 (Fourier)
-5.000000 CombFirstFourMoments 19 (Fourier)
-2.000000 CombFirstFourMoments 20 (Fourier)
-19.000000 CombFirstFourMoments 21 (Fourier)
-0.000000 CombFirstFourMoments 22 (Fourier)
-2.000000 CombFirstFourMoments 23 (Fourier)
-18.000000 CombFirstFourMoments 24 (Fourier)
-1.000000 CombFirstFourMoments 25 (Fourier)
-2.000000 CombFirstFourMoments 26 (Fourier)
-20.000000 CombFirstFourMoments 27 (Fourier)
-0.000000 CombFirstFourMoments 28 (Fourier)
-1.000000 CombFirstFourMoments 29 (Fourier)
-16.000000 CombFirstFourMoments 30 (Fourier)
-3.000000 CombFirstFourMoments 31 (Fourier)
-2.000000 CombFirstFourMoments 32 (Fourier)
-17.000000 CombFirstFourMoments 33 (Fourier)
-2.000000 CombFirstFourMoments 34 (Fourier)
-2.000000 CombFirstFourMoments 35 (Fourier)
-15.000000 CombFirstFourMoments 36 (Fourier)
-4.000000 CombFirstFourMoments 37 (Fourier)
-2.000000 CombFirstFourMoments 38 (Fourier)
-17.000000 CombFirstFourMoments 39 (Fourier)
-2.000000 CombFirstFourMoments 40 (Fourier)
-2.000000 CombFirstFourMoments 41 (Fourier)
-14.000000 CombFirstFourMoments 42 (Fourier)
-4.000000 CombFirstFourMoments 43 (Fourier)
-3.000000 CombFirstFourMoments 44 (Fourier)
-17.000000 CombFirstFourMoments 45 (Fourier)
-3.000000 CombFirstFourMoments 46 (Fourier)
-1.000000 CombFirstFourMoments 47 (Fourier)
-0.289452 Haarlick Texture 0 (Fourier)
-0.033809 Haarlick Texture 1 (Fourier)
-0.768515 Haarlick Texture 2 (Fourier)
-0.136748 Haarlick Texture 3 (Fourier)
-0.403866 Haarlick Texture 4 (Fourier)
-0.161985 Haarlick Texture 5 (Fourier)
-0.469967 Haarlick Texture 6 (Fourier)
-0.153542 Haarlick Texture 7 (Fourier)
-1.339069 Haarlick Texture 8 (Fourier)
-0.080534 Haarlick Texture 9 (Fourier)
-2.474041 Haarlick Texture 10 (Fourier)
-0.118994 Haarlick Texture 11 (Fourier)
--0.149535 Haarlick Texture 12 (Fourier)
-0.112738 Haarlick Texture 13 (Fourier)
-0.749144 Haarlick Texture 14 (Fourier)
-0.031858 Haarlick Texture 15 (Fourier)
-0.294893 Haarlick Texture 16 (Fourier)
-0.340956 Haarlick Texture 17 (Fourier)
-0.565060 Haarlick Texture 18 (Fourier)
-0.214853 Haarlick Texture 19 (Fourier)
-2.979498 Haarlick Texture 20 (Fourier)
-0.121522 Haarlick Texture 21 (Fourier)
-1.904068 Haarlick Texture 22 (Fourier)
-0.078102 Haarlick Texture 23 (Fourier)
-2.980272 Haarlick Texture 24 (Fourier)
-0.585631 Haarlick Texture 25 (Fourier)
-0.647893 Haarlick Texture 26 (Fourier)
-0.092296 Haarlick Texture 27 (Fourier)
-1.000000 MultiScale Histogram bin 0 (Fourier)
-0.000000 MultiScale Histogram bin 1 (Fourier)
-0.000078 MultiScale Histogram bin 2 (Fourier)
-1.000000 MultiScale Histogram bin 3 (Fourier)
-0.000000 MultiScale Histogram bin 4 (Fourier)
-0.000000 MultiScale Histogram bin 5 (Fourier)
-0.000000 MultiScale Histogram bin 6 (Fourier)
-0.000078 MultiScale Histogram bin 7 (Fourier)
-1.000000 MultiScale Histogram bin 8 (Fourier)
-0.000000 MultiScale Histogram bin 9 (Fourier)
-0.000000 MultiScale Histogram bin 10 (Fourier)
-0.000000 MultiScale Histogram bin 11 (Fourier)
-0.000000 MultiScale Histogram bin 12 (Fourier)
-0.000000 MultiScale Histogram bin 13 (Fourier)
-0.000078 MultiScale Histogram bin 14 (Fourier)
-1.000000 MultiScale Histogram bin 15 (Fourier)
-0.000000 MultiScale Histogram bin 16 (Fourier)
-0.000000 MultiScale Histogram bin 17 (Fourier)
-0.000000 MultiScale Histogram bin 18 (Fourier)
-0.000000 MultiScale Histogram bin 19 (Fourier)
-0.000000 MultiScale Histogram bin 20 (Fourier)
-0.000000 MultiScale Histogram bin 21 (Fourier)
-0.000000 MultiScale Histogram bin 22 (Fourier)
-0.000078 MultiScale Histogram bin 23 (Fourier)
-1.000000 Tamura Texture 0 (Fourier)
-0.082936 Tamura Texture 1 (Fourier)
-0.367757 Tamura Texture 2 (Fourier)
-1022435631.541538 Tamura Texture 3 (Fourier)
-15.904961 Tamura Texture 4 (Fourier)
-4.376010 Tamura Texture 5 (Fourier)
-161.000000 Radon bin 0 (Fourier)
-1.000000 Radon bin 1 (Fourier)
-1.000000 Radon bin 2 (Fourier)
-162.000000 Radon bin 3 (Fourier)
-0.000000 Radon bin 4 (Fourier)
-1.000000 Radon bin 5 (Fourier)
-162.000000 Radon bin 6 (Fourier)
-0.000000 Radon bin 7 (Fourier)
-1.000000 Radon bin 8 (Fourier)
-161.000000 Radon bin 9 (Fourier)
-1.000000 Radon bin 10 (Fourier)
-1.000000 Radon bin 11 (Fourier)
-4689.366131 Fractal 0 (Fourier)
-4691.129782 Fractal 1 (Fourier)
-4655.125976 Fractal 2 (Fourier)
-4780.825356 Fractal 3 (Fourier)
-4720.987806 Fractal 4 (Fourier)
-4876.019884 Fractal 5 (Fourier)
-4879.599254 Fractal 6 (Fourier)
-5016.734266 Fractal 7 (Fourier)
-5147.035441 Fractal 8 (Fourier)
-5255.264310 Fractal 9 (Fourier)
-5409.432147 Fractal 10 (Fourier)
-5488.430068 Fractal 11 (Fourier)
-5613.218137 Fractal 12 (Fourier)
-5709.480682 Fractal 13 (Fourier)
-5840.965182 Fractal 14 (Fourier)
-5928.148643 Fractal 15 (Fourier)
-6069.666618 Fractal 16 (Fourier)
-6174.503596 Fractal 17 (Fourier)
-6303.644080 Fractal 18 (Fourier)
-6424.531914 Fractal 19 (Fourier)
-7506.884095 mean (Fourier)
-3040.759381 median (Fourier)
-103841.383383 stddev (Fourier)
-61.353458 min (Fourier)
-11647788.000000 max (Fourier)
-407.000000 Chebishev Fourier Transform bin 0 (Wavelet)
-39.000000 Chebishev Fourier Transform bin 1 (Wavelet)
-17.000000 Chebishev Fourier Transform bin 2 (Wavelet)
-12.000000 Chebishev Fourier Transform bin 3 (Wavelet)
-14.000000 Chebishev Fourier Transform bin 4 (Wavelet)
-8.000000 Chebishev Fourier Transform bin 5 (Wavelet)
-4.000000 Chebishev Fourier Transform bin 6 (Wavelet)
-4.000000 Chebishev Fourier Transform bin 7 (Wavelet)
-3.000000 Chebishev Fourier Transform bin 8 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 9 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 10 (Wavelet)
-1.000000 Chebishev Fourier Transform bin 11 (Wavelet)
-1.000000 Chebishev Fourier Transform bin 12 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 13 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 14 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 15 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 16 (Wavelet)
-1.000000 Chebishev Fourier Transform bin 17 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 18 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 19 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 20 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 21 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 22 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 23 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 24 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 25 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 26 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 27 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 28 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 29 (Wavelet)
-0.000000 Chebishev Fourier Transform bin 30 (Wavelet)
-2.000000 Chebishev Fourier Transform bin 31 (Wavelet)
-4.000000 Chebishev Statistics bin 0 (Wavelet)
-0.000000 Chebishev Statistics bin 1 (Wavelet)
-0.000000 Chebishev Statistics bin 2 (Wavelet)
-0.000000 Chebishev Statistics bin 3 (Wavelet)
-0.000000 Chebishev Statistics bin 4 (Wavelet)
-4.000000 Chebishev Statistics bin 5 (Wavelet)
-0.000000 Chebishev Statistics bin 6 (Wavelet)
-0.000000 Chebishev Statistics bin 7 (Wavelet)
-0.000000 Chebishev Statistics bin 8 (Wavelet)
-4.000000 Chebishev Statistics bin 9 (Wavelet)
-2.000000 Chebishev Statistics bin 10 (Wavelet)
-9.000000 Chebishev Statistics bin 11 (Wavelet)
-11.000000 Chebishev Statistics bin 12 (Wavelet)
-25.000000 Chebishev Statistics bin 13 (Wavelet)
-150.000000 Chebishev Statistics bin 14 (Wavelet)
-135.000000 Chebishev Statistics bin 15 (Wavelet)
-25.000000 Chebishev Statistics bin 16 (Wavelet)
-11.000000 Chebishev Statistics bin 17 (Wavelet)
-9.000000 Chebishev Statistics bin 18 (Wavelet)
-1.000000 Chebishev Statistics bin 19 (Wavelet)
-2.000000 Chebishev Statistics bin 20 (Wavelet)
-1.000000 Chebishev Statistics bin 21 (Wavelet)
-0.000000 Chebishev Statistics bin 22 (Wavelet)
-0.000000 Chebishev Statistics bin 23 (Wavelet)
-0.000000 Chebishev Statistics bin 24 (Wavelet)
-2.000000 Chebishev Statistics bin 25 (Wavelet)
-0.000000 Chebishev Statistics bin 26 (Wavelet)
-1.000000 Chebishev Statistics bin 27 (Wavelet)
-3.000000 Chebishev Statistics bin 28 (Wavelet)
-0.000000 Chebishev Statistics bin 29 (Wavelet)
-0.000000 Chebishev Statistics bin 30 (Wavelet)
-1.000000 Chebishev Statistics bin 31 (Wavelet)
-0.314778 Zernike 0 (Wavelet)
-0.005692 Zernike 1 (Wavelet)
-0.660754 Zernike 2 (Wavelet)
-0.001434 Zernike 3 (Wavelet)
-0.018066 Zernike 4 (Wavelet)
-0.000832 Zernike 5 (Wavelet)
-0.470510 Zernike 6 (Wavelet)
-0.004552 Zernike 7 (Wavelet)
-0.023590 Zernike 8 (Wavelet)
-0.007917 Zernike 9 (Wavelet)
-0.003924 Zernike 10 (Wavelet)
-0.001993 Zernike 11 (Wavelet)
-0.009416 Zernike 12 (Wavelet)
-0.003851 Zernike 13 (Wavelet)
-0.090500 Zernike 14 (Wavelet)
-0.000819 Zernike 15 (Wavelet)
-0.018738 Zernike 16 (Wavelet)
-0.009505 Zernike 17 (Wavelet)
-0.005515 Zernike 18 (Wavelet)
-0.004253 Zernike 19 (Wavelet)
-0.317129 Zernike 20 (Wavelet)
-0.007804 Zernike 21 (Wavelet)
-0.171459 Zernike 22 (Wavelet)
-0.000637 Zernike 23 (Wavelet)
-0.000383 Zernike 24 (Wavelet)
-0.027752 Zernike 25 (Wavelet)
-0.015280 Zernike 26 (Wavelet)
-0.014100 Zernike 27 (Wavelet)
-0.001250 Zernike 28 (Wavelet)
-0.000365 Zernike 29 (Wavelet)
-0.246458 Zernike 30 (Wavelet)
-0.020135 Zernike 31 (Wavelet)
-0.176767 Zernike 32 (Wavelet)
-0.002509 Zernike 33 (Wavelet)
-0.017034 Zernike 34 (Wavelet)
-0.000640 Zernike 35 (Wavelet)
-0.008543 Zernike 36 (Wavelet)
-0.014452 Zernike 37 (Wavelet)
-0.012051 Zernike 38 (Wavelet)
-0.004342 Zernike 39 (Wavelet)
-0.000872 Zernike 40 (Wavelet)
-0.004901 Zernike 41 (Wavelet)
-0.024189 Zernike 42 (Wavelet)
-0.028044 Zernike 43 (Wavelet)
-0.058067 Zernike 44 (Wavelet)
-0.002492 Zernike 45 (Wavelet)
-0.048382 Zernike 46 (Wavelet)
-0.001612 Zernike 47 (Wavelet)
-0.006115 Zernike 48 (Wavelet)
-0.020158 Zernike 49 (Wavelet)
-0.013266 Zernike 50 (Wavelet)
-0.009193 Zernike 51 (Wavelet)
-0.009588 Zernike 52 (Wavelet)
-0.005018 Zernike 53 (Wavelet)
-0.005229 Zernike 54 (Wavelet)
-0.002808 Zernike 55 (Wavelet)
-0.192580 Zernike 56 (Wavelet)
-0.027772 Zernike 57 (Wavelet)
-0.103974 Zernike 58 (Wavelet)
-0.000727 Zernike 59 (Wavelet)
-0.086191 Zernike 60 (Wavelet)
-0.000323 Zernike 61 (Wavelet)
-0.000828 Zernike 62 (Wavelet)
-0.001471 Zernike 63 (Wavelet)
-0.027281 Zernike 64 (Wavelet)
-0.021837 Zernike 65 (Wavelet)
-0.028079 Zernike 66 (Wavelet)
-0.013517 Zernike 67 (Wavelet)
-0.012446 Zernike 68 (Wavelet)
-0.002229 Zernike 69 (Wavelet)
-0.000435 Zernike 70 (Wavelet)
-0.001110 Zernike 71 (Wavelet)
-16.000000 CombFirstFourMoments 0 (Wavelet)
-1.000000 CombFirstFourMoments 1 (Wavelet)
-4.000000 CombFirstFourMoments 2 (Wavelet)
-17.000000 CombFirstFourMoments 3 (Wavelet)
-0.000000 CombFirstFourMoments 4 (Wavelet)
-4.000000 CombFirstFourMoments 5 (Wavelet)
-16.000000 CombFirstFourMoments 6 (Wavelet)
-0.000000 CombFirstFourMoments 7 (Wavelet)
-5.000000 CombFirstFourMoments 8 (Wavelet)
-17.000000 CombFirstFourMoments 9 (Wavelet)
-0.000000 CombFirstFourMoments 10 (Wavelet)
-4.000000 CombFirstFourMoments 11 (Wavelet)
-16.000000 CombFirstFourMoments 12 (Wavelet)
-2.000000 CombFirstFourMoments 13 (Wavelet)
-3.000000 CombFirstFourMoments 14 (Wavelet)
-17.000000 CombFirstFourMoments 15 (Wavelet)
-0.000000 CombFirstFourMoments 16 (Wavelet)
-4.000000 CombFirstFourMoments 17 (Wavelet)
-16.000000 CombFirstFourMoments 18 (Wavelet)
-0.000000 CombFirstFourMoments 19 (Wavelet)
-5.000000 CombFirstFourMoments 20 (Wavelet)
-17.000000 CombFirstFourMoments 21 (Wavelet)
-0.000000 CombFirstFourMoments 22 (Wavelet)
-4.000000 CombFirstFourMoments 23 (Wavelet)
-12.000000 CombFirstFourMoments 24 (Wavelet)
-5.000000 CombFirstFourMoments 25 (Wavelet)
-4.000000 CombFirstFourMoments 26 (Wavelet)
-14.000000 CombFirstFourMoments 27 (Wavelet)
-2.000000 CombFirstFourMoments 28 (Wavelet)
-5.000000 CombFirstFourMoments 29 (Wavelet)
-8.000000 CombFirstFourMoments 30 (Wavelet)
-7.000000 CombFirstFourMoments 31 (Wavelet)
-6.000000 CombFirstFourMoments 32 (Wavelet)
-12.000000 CombFirstFourMoments 33 (Wavelet)
-1.000000 CombFirstFourMoments 34 (Wavelet)
-8.000000 CombFirstFourMoments 35 (Wavelet)
-17.000000 CombFirstFourMoments 36 (Wavelet)
-3.000000 CombFirstFourMoments 37 (Wavelet)
-1.000000 CombFirstFourMoments 38 (Wavelet)
-14.000000 CombFirstFourMoments 39 (Wavelet)
-2.000000 CombFirstFourMoments 40 (Wavelet)
-5.000000 CombFirstFourMoments 41 (Wavelet)
-10.000000 CombFirstFourMoments 42 (Wavelet)
-6.000000 CombFirstFourMoments 43 (Wavelet)
-5.000000 CombFirstFourMoments 44 (Wavelet)
-12.000000 CombFirstFourMoments 45 (Wavelet)
-3.000000 CombFirstFourMoments 46 (Wavelet)
-6.000000 CombFirstFourMoments 47 (Wavelet)
-0.012264 Haarlick Texture 0 (Wavelet)
-0.001712 Haarlick Texture 1 (Wavelet)
-233.810493 Haarlick Texture 2 (Wavelet)
-144.283600 Haarlick Texture 3 (Wavelet)
-0.947956 Haarlick Texture 4 (Wavelet)
-0.031826 Haarlick Texture 5 (Wavelet)
-184.964241 Haarlick Texture 6 (Wavelet)
-110.800507 Haarlick Texture 7 (Wavelet)
-4.027149 Haarlick Texture 8 (Wavelet)
-0.385355 Haarlick Texture 9 (Wavelet)
-8.704168 Haarlick Texture 10 (Wavelet)
-0.148438 Haarlick Texture 11 (Wavelet)
--0.282595 Haarlick Texture 12 (Wavelet)
-0.024200 Haarlick Texture 13 (Wavelet)
-0.298200 Haarlick Texture 14 (Wavelet)
-0.044454 Haarlick Texture 15 (Wavelet)
-0.008935 Haarlick Texture 16 (Wavelet)
-0.017610 Haarlick Texture 17 (Wavelet)
-0.970893 Haarlick Texture 18 (Wavelet)
-0.006981 Haarlick Texture 19 (Wavelet)
-94.215427 Haarlick Texture 20 (Wavelet)
-0.394875 Haarlick Texture 21 (Wavelet)
-5.682111 Haarlick Texture 22 (Wavelet)
-0.035134 Haarlick Texture 23 (Wavelet)
-16581.452148 Haarlick Texture 24 (Wavelet)
-20.615234 Haarlick Texture 25 (Wavelet)
-2244.270081 Haarlick Texture 26 (Wavelet)
-14.132568 Haarlick Texture 27 (Wavelet)
-1.000000 MultiScale Histogram bin 0 (Wavelet)
-0.128192 MultiScale Histogram bin 1 (Wavelet)
-0.138747 MultiScale Histogram bin 2 (Wavelet)
-0.975911 MultiScale Histogram bin 3 (Wavelet)
-0.024345 MultiScale Histogram bin 4 (Wavelet)
-0.052349 MultiScale Histogram bin 5 (Wavelet)
-0.202417 MultiScale Histogram bin 6 (Wavelet)
-0.011917 MultiScale Histogram bin 7 (Wavelet)
-0.949949 MultiScale Histogram bin 8 (Wavelet)
-0.033538 MultiScale Histogram bin 9 (Wavelet)
-0.017365 MultiScale Histogram bin 10 (Wavelet)
-0.032261 MultiScale Histogram bin 11 (Wavelet)
-0.177392 MultiScale Histogram bin 12 (Wavelet)
-0.054562 MultiScale Histogram bin 13 (Wavelet)
-0.001873 MultiScale Histogram bin 14 (Wavelet)
-0.845165 MultiScale Histogram bin 15 (Wavelet)
-0.135768 MultiScale Histogram bin 16 (Wavelet)
-0.019067 MultiScale Histogram bin 17 (Wavelet)
-0.001702 MultiScale Histogram bin 18 (Wavelet)
-0.022557 MultiScale Histogram bin 19 (Wavelet)
-0.103933 MultiScale Histogram bin 20 (Wavelet)
-0.119169 MultiScale Histogram bin 21 (Wavelet)
-0.018556 MultiScale Histogram bin 22 (Wavelet)
-0.001021 MultiScale Histogram bin 23 (Wavelet)
-1.000000 Tamura Texture 0 (Wavelet)
-0.179572 Tamura Texture 1 (Wavelet)
-0.018432 Tamura Texture 2 (Wavelet)
-421816.741945 Tamura Texture 3 (Wavelet)
-4.802290 Tamura Texture 4 (Wavelet)
-2.283457 Tamura Texture 5 (Wavelet)
-119.000000 Radon bin 0 (Wavelet)
-2.000000 Radon bin 1 (Wavelet)
-56.000000 Radon bin 2 (Wavelet)
-122.000000 Radon bin 3 (Wavelet)
-30.000000 Radon bin 4 (Wavelet)
-25.000000 Radon bin 5 (Wavelet)
-123.000000 Radon bin 6 (Wavelet)
-26.000000 Radon bin 7 (Wavelet)
-28.000000 Radon bin 8 (Wavelet)
-120.000000 Radon bin 9 (Wavelet)
-1.000000 Radon bin 10 (Wavelet)
-56.000000 Radon bin 11 (Wavelet)
-78.207927 Fractal 0 (Wavelet)
-103.974866 Fractal 1 (Wavelet)
-122.718803 Fractal 2 (Wavelet)
-133.251727 Fractal 3 (Wavelet)
-143.262736 Fractal 4 (Wavelet)
-152.315303 Fractal 5 (Wavelet)
-159.821077 Fractal 6 (Wavelet)
-167.853065 Fractal 7 (Wavelet)
-176.575192 Fractal 8 (Wavelet)
-185.146889 Fractal 9 (Wavelet)
-193.182967 Fractal 10 (Wavelet)
-201.137091 Fractal 11 (Wavelet)
-209.032736 Fractal 12 (Wavelet)
-217.642699 Fractal 13 (Wavelet)
-226.676357 Fractal 14 (Wavelet)
-235.436003 Fractal 15 (Wavelet)
-244.841151 Fractal 16 (Wavelet)
-253.121951 Fractal 17 (Wavelet)
-261.556357 Fractal 18 (Wavelet)
-269.890510 Fractal 19 (Wavelet)
-398.524993 mean (Wavelet)
-9.654649 median (Wavelet)
-754.597215 stddev (Wavelet)
--326.487453 min (Wavelet)
-2925.763035 max (Wavelet)
-53.000000 Chebishev Fourier Transform bin 0 (Chebyshev)
-84.000000 Chebishev Fourier Transform bin 1 (Chebyshev)
-86.000000 Chebishev Fourier Transform bin 2 (Chebyshev)
-73.000000 Chebishev Fourier Transform bin 3 (Chebyshev)
-35.000000 Chebishev Fourier Transform bin 4 (Chebyshev)
-48.000000 Chebishev Fourier Transform bin 5 (Chebyshev)
-20.000000 Chebishev Fourier Transform bin 6 (Chebyshev)
-36.000000 Chebishev Fourier Transform bin 7 (Chebyshev)
-8.000000 Chebishev Fourier Transform bin 8 (Chebyshev)
-11.000000 Chebishev Fourier Transform bin 9 (Chebyshev)
-6.000000 Chebishev Fourier Transform bin 10 (Chebyshev)
-13.000000 Chebishev Fourier Transform bin 11 (Chebyshev)
-12.000000 Chebishev Fourier Transform bin 12 (Chebyshev)
-9.000000 Chebishev Fourier Transform bin 13 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 14 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 15 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 16 (Chebyshev)
-9.000000 Chebishev Fourier Transform bin 17 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 18 (Chebyshev)
-3.000000 Chebishev Fourier Transform bin 19 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 20 (Chebyshev)
-6.000000 Chebishev Fourier Transform bin 21 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 22 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 23 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 24 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 25 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 26 (Chebyshev)
-2.000000 Chebishev Fourier Transform bin 27 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 28 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 29 (Chebyshev)
-0.000000 Chebishev Fourier Transform bin 30 (Chebyshev)
-1.000000 Chebishev Fourier Transform bin 31 (Chebyshev)
-5.000000 Chebishev Statistics bin 0 (Chebyshev)
-1.000000 Chebishev Statistics bin 1 (Chebyshev)
-3.000000 Chebishev Statistics bin 2 (Chebyshev)
-3.000000 Chebishev Statistics bin 3 (Chebyshev)
-9.000000 Chebishev Statistics bin 4 (Chebyshev)
-13.000000 Chebishev Statistics bin 5 (Chebyshev)
-12.000000 Chebishev Statistics bin 6 (Chebyshev)
-6.000000 Chebishev Statistics bin 7 (Chebyshev)
-17.000000 Chebishev Statistics bin 8 (Chebyshev)
-19.000000 Chebishev Statistics bin 9 (Chebyshev)
-9.000000 Chebishev Statistics bin 10 (Chebyshev)
-14.000000 Chebishev Statistics bin 11 (Chebyshev)
-25.000000 Chebishev Statistics bin 12 (Chebyshev)
-29.000000 Chebishev Statistics bin 13 (Chebyshev)
-29.000000 Chebishev Statistics bin 14 (Chebyshev)
-19.000000 Chebishev Statistics bin 15 (Chebyshev)
-23.000000 Chebishev Statistics bin 16 (Chebyshev)
-39.000000 Chebishev Statistics bin 17 (Chebyshev)
-17.000000 Chebishev Statistics bin 18 (Chebyshev)
-17.000000 Chebishev Statistics bin 19 (Chebyshev)
-10.000000 Chebishev Statistics bin 20 (Chebyshev)
-16.000000 Chebishev Statistics bin 21 (Chebyshev)
-11.000000 Chebishev Statistics bin 22 (Chebyshev)
-9.000000 Chebishev Statistics bin 23 (Chebyshev)
-19.000000 Chebishev Statistics bin 24 (Chebyshev)
-8.000000 Chebishev Statistics bin 25 (Chebyshev)
-4.000000 Chebishev Statistics bin 26 (Chebyshev)
-2.000000 Chebishev Statistics bin 27 (Chebyshev)
-8.000000 Chebishev Statistics bin 28 (Chebyshev)
-3.000000 Chebishev Statistics bin 29 (Chebyshev)
-0.000000 Chebishev Statistics bin 30 (Chebyshev)
-1.000000 Chebishev Statistics bin 31 (Chebyshev)
-0.231867 Zernike 0 (Chebyshev)
-0.085022 Zernike 1 (Chebyshev)
-0.033302 Zernike 2 (Chebyshev)
-0.018909 Zernike 3 (Chebyshev)
-0.043796 Zernike 4 (Chebyshev)
-0.065355 Zernike 5 (Chebyshev)
-0.130487 Zernike 6 (Chebyshev)
-0.057563 Zernike 7 (Chebyshev)
-0.133494 Zernike 8 (Chebyshev)
-0.206092 Zernike 9 (Chebyshev)
-0.128237 Zernike 10 (Chebyshev)
-0.144508 Zernike 11 (Chebyshev)
-0.243998 Zernike 12 (Chebyshev)
-0.096752 Zernike 13 (Chebyshev)
-0.229487 Zernike 14 (Chebyshev)
-0.027625 Zernike 15 (Chebyshev)
-0.483876 Zernike 16 (Chebyshev)
-0.354786 Zernike 17 (Chebyshev)
-0.210527 Zernike 18 (Chebyshev)
-0.438158 Zernike 19 (Chebyshev)
-0.014222 Zernike 20 (Chebyshev)
-0.081948 Zernike 21 (Chebyshev)
-0.066586 Zernike 22 (Chebyshev)
-0.051355 Zernike 23 (Chebyshev)
-0.043805 Zernike 24 (Chebyshev)
-0.220512 Zernike 25 (Chebyshev)
-0.187749 Zernike 26 (Chebyshev)
-0.100937 Zernike 27 (Chebyshev)
-0.013111 Zernike 28 (Chebyshev)
-0.134606 Zernike 29 (Chebyshev)
-0.364218 Zernike 30 (Chebyshev)
-0.011267 Zernike 31 (Chebyshev)
-0.297660 Zernike 32 (Chebyshev)
-0.138660 Zernike 33 (Chebyshev)
-0.068712 Zernike 34 (Chebyshev)
-0.082756 Zernike 35 (Chebyshev)
-0.182029 Zernike 36 (Chebyshev)
-0.055933 Zernike 37 (Chebyshev)
-0.209822 Zernike 38 (Chebyshev)
-0.298711 Zernike 39 (Chebyshev)
-0.446160 Zernike 40 (Chebyshev)
-0.290023 Zernike 41 (Chebyshev)
-0.029768 Zernike 42 (Chebyshev)
-0.004574 Zernike 43 (Chebyshev)
-0.314276 Zernike 44 (Chebyshev)
-0.120946 Zernike 45 (Chebyshev)
-0.309812 Zernike 46 (Chebyshev)
-0.077620 Zernike 47 (Chebyshev)
-0.528959 Zernike 48 (Chebyshev)
-0.190664 Zernike 49 (Chebyshev)
-0.112099 Zernike 50 (Chebyshev)
-0.151093 Zernike 51 (Chebyshev)
-0.090181 Zernike 52 (Chebyshev)
-0.331135 Zernike 53 (Chebyshev)
-0.563940 Zernike 54 (Chebyshev)
-0.447713 Zernike 55 (Chebyshev)
-0.478121 Zernike 56 (Chebyshev)
-0.038284 Zernike 57 (Chebyshev)
-0.305893 Zernike 58 (Chebyshev)
-0.036787 Zernike 59 (Chebyshev)
-0.528983 Zernike 60 (Chebyshev)
-0.077191 Zernike 61 (Chebyshev)
-0.597220 Zernike 62 (Chebyshev)
-0.049250 Zernike 63 (Chebyshev)
-0.264004 Zernike 64 (Chebyshev)
-0.269864 Zernike 65 (Chebyshev)
-0.280715 Zernike 66 (Chebyshev)
-0.226871 Zernike 67 (Chebyshev)
-0.147789 Zernike 68 (Chebyshev)
-0.240376 Zernike 69 (Chebyshev)
-0.356713 Zernike 70 (Chebyshev)
-0.664722 Zernike 71 (Chebyshev)
-13.000000 CombFirstFourMoments 0 (Chebyshev)
-3.000000 CombFirstFourMoments 1 (Chebyshev)
-5.000000 CombFirstFourMoments 2 (Chebyshev)
-1.000000 CombFirstFourMoments 3 (Chebyshev)
-0.000000 CombFirstFourMoments 4 (Chebyshev)
-20.000000 CombFirstFourMoments 5 (Chebyshev)
-2.000000 CombFirstFourMoments 6 (Chebyshev)
-14.000000 CombFirstFourMoments 7 (Chebyshev)
-5.000000 CombFirstFourMoments 8 (Chebyshev)
-20.000000 CombFirstFourMoments 9 (Chebyshev)
-0.000000 CombFirstFourMoments 10 (Chebyshev)
-1.000000 CombFirstFourMoments 11 (Chebyshev)
-15.000000 CombFirstFourMoments 12 (Chebyshev)
-1.000000 CombFirstFourMoments 13 (Chebyshev)
-5.000000 CombFirstFourMoments 14 (Chebyshev)
-1.000000 CombFirstFourMoments 15 (Chebyshev)
-0.000000 CombFirstFourMoments 16 (Chebyshev)
-20.000000 CombFirstFourMoments 17 (Chebyshev)
-2.000000 CombFirstFourMoments 18 (Chebyshev)
-14.000000 CombFirstFourMoments 19 (Chebyshev)
-5.000000 CombFirstFourMoments 20 (Chebyshev)
-20.000000 CombFirstFourMoments 21 (Chebyshev)
-0.000000 CombFirstFourMoments 22 (Chebyshev)
-1.000000 CombFirstFourMoments 23 (Chebyshev)
-20.000000 CombFirstFourMoments 24 (Chebyshev)
-0.000000 CombFirstFourMoments 25 (Chebyshev)
-1.000000 CombFirstFourMoments 26 (Chebyshev)
-1.000000 CombFirstFourMoments 27 (Chebyshev)
-1.000000 CombFirstFourMoments 28 (Chebyshev)
-19.000000 CombFirstFourMoments 29 (Chebyshev)
-1.000000 CombFirstFourMoments 30 (Chebyshev)
-5.000000 CombFirstFourMoments 31 (Chebyshev)
-15.000000 CombFirstFourMoments 32 (Chebyshev)
-19.000000 CombFirstFourMoments 33 (Chebyshev)
-1.000000 CombFirstFourMoments 34 (Chebyshev)
-1.000000 CombFirstFourMoments 35 (Chebyshev)
-17.000000 CombFirstFourMoments 36 (Chebyshev)
-3.000000 CombFirstFourMoments 37 (Chebyshev)
-1.000000 CombFirstFourMoments 38 (Chebyshev)
-20.000000 CombFirstFourMoments 39 (Chebyshev)
-0.000000 CombFirstFourMoments 40 (Chebyshev)
-1.000000 CombFirstFourMoments 41 (Chebyshev)
-14.000000 CombFirstFourMoments 42 (Chebyshev)
-6.000000 CombFirstFourMoments 43 (Chebyshev)
-1.000000 CombFirstFourMoments 44 (Chebyshev)
-20.000000 CombFirstFourMoments 45 (Chebyshev)
-0.000000 CombFirstFourMoments 46 (Chebyshev)
-1.000000 CombFirstFourMoments 47 (Chebyshev)
-0.239040 Haarlick Texture 0 (Chebyshev)
-0.007260 Haarlick Texture 1 (Chebyshev)
-1.940382 Haarlick Texture 2 (Chebyshev)
-0.287981 Haarlick Texture 3 (Chebyshev)
-0.035041 Haarlick Texture 4 (Chebyshev)
-0.103048 Haarlick Texture 5 (Chebyshev)
-1.457645 Haarlick Texture 6 (Chebyshev)
-0.294498 Haarlick Texture 7 (Chebyshev)
-1.481072 Haarlick Texture 8 (Chebyshev)
-0.039810 Haarlick Texture 9 (Chebyshev)
-2.783995 Haarlick Texture 10 (Chebyshev)
-0.006240 Haarlick Texture 11 (Chebyshev)
--0.046412 Haarlick Texture 12 (Chebyshev)
-0.041793 Haarlick Texture 13 (Chebyshev)
-0.723249 Haarlick Texture 14 (Chebyshev)
-0.027340 Haarlick Texture 15 (Chebyshev)
-0.000000 Haarlick Texture 16 (Chebyshev)
-0.000000 Haarlick Texture 17 (Chebyshev)
-0.341858 Haarlick Texture 18 (Chebyshev)
-0.156042 Haarlick Texture 19 (Chebyshev)
-31.294907 Haarlick Texture 20 (Chebyshev)
-0.020346 Haarlick Texture 21 (Chebyshev)
-1.982754 Haarlick Texture 22 (Chebyshev)
-0.043366 Haarlick Texture 23 (Chebyshev)
-861.289078 Haarlick Texture 24 (Chebyshev)
-2.591125 Haarlick Texture 25 (Chebyshev)
-1.006707 Haarlick Texture 26 (Chebyshev)
-0.137973 Haarlick Texture 27 (Chebyshev)
-0.000313 MultiScale Histogram bin 0 (Chebyshev)
-1.000000 MultiScale Histogram bin 1 (Chebyshev)
-0.000078 MultiScale Histogram bin 2 (Chebyshev)
-0.000157 MultiScale Histogram bin 3 (Chebyshev)
-0.980805 MultiScale Histogram bin 4 (Chebyshev)
-0.019273 MultiScale Histogram bin 5 (Chebyshev)
-0.000078 MultiScale Histogram bin 6 (Chebyshev)
-0.000078 MultiScale Histogram bin 7 (Chebyshev)
-0.000157 MultiScale Histogram bin 8 (Chebyshev)
-0.000000 MultiScale Histogram bin 9 (Chebyshev)
-0.998825 MultiScale Histogram bin 10 (Chebyshev)
-0.001254 MultiScale Histogram bin 11 (Chebyshev)
-0.000078 MultiScale Histogram bin 12 (Chebyshev)
-0.000000 MultiScale Histogram bin 13 (Chebyshev)
-0.000078 MultiScale Histogram bin 14 (Chebyshev)
-0.000157 MultiScale Histogram bin 15 (Chebyshev)
-0.000000 MultiScale Histogram bin 16 (Chebyshev)
-0.000157 MultiScale Histogram bin 17 (Chebyshev)
-0.999373 MultiScale Histogram bin 18 (Chebyshev)
-0.000548 MultiScale Histogram bin 19 (Chebyshev)
-0.000078 MultiScale Histogram bin 20 (Chebyshev)
-0.000000 MultiScale Histogram bin 21 (Chebyshev)
-0.000000 MultiScale Histogram bin 22 (Chebyshev)
-0.000078 MultiScale Histogram bin 23 (Chebyshev)
-1.000000 Tamura Texture 0 (Chebyshev)
-0.072356 Tamura Texture 1 (Chebyshev)
-0.010773 Tamura Texture 2 (Chebyshev)
-1.416469 Tamura Texture 3 (Chebyshev)
-3.082373 Tamura Texture 4 (Chebyshev)
-2.182137 Tamura Texture 5 (Chebyshev)
-3.000000 Radon bin 0 (Chebyshev)
-159.000000 Radon bin 1 (Chebyshev)
-1.000000 Radon bin 2 (Chebyshev)
-1.000000 Radon bin 3 (Chebyshev)
-160.000000 Radon bin 4 (Chebyshev)
-2.000000 Radon bin 5 (Chebyshev)
-162.000000 Radon bin 6 (Chebyshev)
-0.000000 Radon bin 7 (Chebyshev)
-1.000000 Radon bin 8 (Chebyshev)
-3.000000 Radon bin 9 (Chebyshev)
-159.000000 Radon bin 10 (Chebyshev)
-1.000000 Radon bin 11 (Chebyshev)
-0.859529 Fractal 0 (Chebyshev)
-0.831671 Fractal 1 (Chebyshev)
-0.803107 Fractal 2 (Chebyshev)
-0.684786 Fractal 3 (Chebyshev)
-0.785653 Fractal 4 (Chebyshev)
-0.743508 Fractal 5 (Chebyshev)
-0.808932 Fractal 6 (Chebyshev)
-0.750566 Fractal 7 (Chebyshev)
-0.780336 Fractal 8 (Chebyshev)
-0.809524 Fractal 9 (Chebyshev)
-0.794853 Fractal 10 (Chebyshev)
-0.807982 Fractal 11 (Chebyshev)
-0.785590 Fractal 12 (Chebyshev)
-0.810958 Fractal 13 (Chebyshev)
-0.789568 Fractal 14 (Chebyshev)
-0.807975 Fractal 15 (Chebyshev)
-0.786667 Fractal 16 (Chebyshev)
-0.794888 Fractal 17 (Chebyshev)
-0.787960 Fractal 18 (Chebyshev)
-0.770954 Fractal 19 (Chebyshev)
-0.068122 mean (Chebyshev)
-0.053296 median (Chebyshev)
-3.201884 stddev (Chebyshev)
--147.250836 min (Chebyshev)
-228.048164 max (Chebyshev)
-10.000000 CombFirstFourMoments 0 (Chebyshev Fourier)
-0.000000 CombFirstFourMoments 1 (Chebyshev Fourier)
-11.000000 CombFirstFourMoments 2 (Chebyshev Fourier)
-17.000000 CombFirstFourMoments 3 (Chebyshev Fourier)
-3.000000 CombFirstFourMoments 4 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 5 (Chebyshev Fourier)
-4.000000 CombFirstFourMoments 6 (Chebyshev Fourier)
-15.000000 CombFirstFourMoments 7 (Chebyshev Fourier)
-2.000000 CombFirstFourMoments 8 (Chebyshev Fourier)
-13.000000 CombFirstFourMoments 9 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 10 (Chebyshev Fourier)
-7.000000 CombFirstFourMoments 11 (Chebyshev Fourier)
-10.000000 CombFirstFourMoments 12 (Chebyshev Fourier)
-0.000000 CombFirstFourMoments 13 (Chebyshev Fourier)
-11.000000 CombFirstFourMoments 14 (Chebyshev Fourier)
-16.000000 CombFirstFourMoments 15 (Chebyshev Fourier)
-4.000000 CombFirstFourMoments 16 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 17 (Chebyshev Fourier)
-5.000000 CombFirstFourMoments 18 (Chebyshev Fourier)
-15.000000 CombFirstFourMoments 19 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 20 (Chebyshev Fourier)
-13.000000 CombFirstFourMoments 21 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 22 (Chebyshev Fourier)
-7.000000 CombFirstFourMoments 23 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 24 (Chebyshev Fourier)
-18.000000 CombFirstFourMoments 25 (Chebyshev Fourier)
-2.000000 CombFirstFourMoments 26 (Chebyshev Fourier)
-9.000000 CombFirstFourMoments 27 (Chebyshev Fourier)
-6.000000 CombFirstFourMoments 28 (Chebyshev Fourier)
-6.000000 CombFirstFourMoments 29 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 30 (Chebyshev Fourier)
-10.000000 CombFirstFourMoments 31 (Chebyshev Fourier)
-10.000000 CombFirstFourMoments 32 (Chebyshev Fourier)
-2.000000 CombFirstFourMoments 33 (Chebyshev Fourier)
-0.000000 CombFirstFourMoments 34 (Chebyshev Fourier)
-19.000000 CombFirstFourMoments 35 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 36 (Chebyshev Fourier)
-0.000000 CombFirstFourMoments 37 (Chebyshev Fourier)
-20.000000 CombFirstFourMoments 38 (Chebyshev Fourier)
-6.000000 CombFirstFourMoments 39 (Chebyshev Fourier)
-7.000000 CombFirstFourMoments 40 (Chebyshev Fourier)
-8.000000 CombFirstFourMoments 41 (Chebyshev Fourier)
-10.000000 CombFirstFourMoments 42 (Chebyshev Fourier)
-9.000000 CombFirstFourMoments 43 (Chebyshev Fourier)
-2.000000 CombFirstFourMoments 44 (Chebyshev Fourier)
-2.000000 CombFirstFourMoments 45 (Chebyshev Fourier)
-18.000000 CombFirstFourMoments 46 (Chebyshev Fourier)
-1.000000 CombFirstFourMoments 47 (Chebyshev Fourier)
-0.000248 Haarlick Texture 0 (Chebyshev Fourier)
-0.000045 Haarlick Texture 1 (Chebyshev Fourier)
-2965.256741 Haarlick Texture 2 (Chebyshev Fourier)
-5640.226151 Haarlick Texture 3 (Chebyshev Fourier)
--0.007707 Haarlick Texture 4 (Chebyshev Fourier)
-1.916960 Haarlick Texture 5 (Chebyshev Fourier)
-1048.547323 Haarlick Texture 6 (Chebyshev Fourier)
-2014.064053 Haarlick Texture 7 (Chebyshev Fourier)
-5.899139 Haarlick Texture 8 (Chebyshev Fourier)
-2.627687 Haarlick Texture 9 (Chebyshev Fourier)
-12.308821 Haarlick Texture 10 (Chebyshev Fourier)
-0.194163 Haarlick Texture 11 (Chebyshev Fourier)
--0.297473 Haarlick Texture 12 (Chebyshev Fourier)
-0.026993 Haarlick Texture 13 (Chebyshev Fourier)
-0.048273 Haarlick Texture 14 (Chebyshev Fourier)
-0.050622 Haarlick Texture 15 (Chebyshev Fourier)
-0.004828 Haarlick Texture 16 (Chebyshev Fourier)
-0.012523 Haarlick Texture 17 (Chebyshev Fourier)
-0.993086 Haarlick Texture 18 (Chebyshev Fourier)
-0.002714 Haarlick Texture 19 (Chebyshev Fourier)
-180.851097 Haarlick Texture 20 (Chebyshev Fourier)
-0.044128 Haarlick Texture 21 (Chebyshev Fourier)
-6.766081 Haarlick Texture 22 (Chebyshev Fourier)
-2.859155 Haarlick Texture 23 (Chebyshev Fourier)
-33231.392090 Haarlick Texture 24 (Chebyshev Fourier)
-4646.697266 Haarlick Texture 25 (Chebyshev Fourier)
-1472.242920 Haarlick Texture 26 (Chebyshev Fourier)
-2.241943 Haarlick Texture 27 (Chebyshev Fourier)
-0.649784 MultiScale Histogram bin 0 (Chebyshev Fourier)
-1.000000 MultiScale Histogram bin 1 (Chebyshev Fourier)
-0.021332 MultiScale Histogram bin 2 (Chebyshev Fourier)
-0.254548 MultiScale Histogram bin 3 (Chebyshev Fourier)
-0.740086 MultiScale Histogram bin 4 (Chebyshev Fourier)
-0.550190 MultiScale Histogram bin 5 (Chebyshev Fourier)
-0.126031 MultiScale Histogram bin 6 (Chebyshev Fourier)
-0.000262 MultiScale Histogram bin 7 (Chebyshev Fourier)
-0.140034 MultiScale Histogram bin 8 (Chebyshev Fourier)
-0.345243 MultiScale Histogram bin 9 (Chebyshev Fourier)
-0.623740 MultiScale Histogram bin 10 (Chebyshev Fourier)
-0.384505 MultiScale Histogram bin 11 (Chebyshev Fourier)
-0.174977 MultiScale Histogram bin 12 (Chebyshev Fourier)
-0.002356 MultiScale Histogram bin 13 (Chebyshev Fourier)
-0.000262 MultiScale Histogram bin 14 (Chebyshev Fourier)
-0.084544 MultiScale Histogram bin 15 (Chebyshev Fourier)
-0.220390 MultiScale Histogram bin 16 (Chebyshev Fourier)
-0.344850 MultiScale Histogram bin 17 (Chebyshev Fourier)
-0.515901 MultiScale Histogram bin 18 (Chebyshev Fourier)
-0.294333 MultiScale Histogram bin 19 (Chebyshev Fourier)
-0.189766 MultiScale Histogram bin 20 (Chebyshev Fourier)
-0.021071 MultiScale Histogram bin 21 (Chebyshev Fourier)
-0.000000 MultiScale Histogram bin 22 (Chebyshev Fourier)
-0.000262 MultiScale Histogram bin 23 (Chebyshev Fourier)
-1.000000 Tamura Texture 0 (Chebyshev Fourier)
-0.035790 Tamura Texture 1 (Chebyshev Fourier)
-0.007599 Tamura Texture 2 (Chebyshev Fourier)
-159142.242849 Tamura Texture 3 (Chebyshev Fourier)
-5.348966 Tamura Texture 4 (Chebyshev Fourier)
-2.042524 Tamura Texture 5 (Chebyshev Fourier)
-93.000000 Radon bin 0 (Chebyshev Fourier)
-65.000000 Radon bin 1 (Chebyshev Fourier)
-5.000000 Radon bin 2 (Chebyshev Fourier)
-53.000000 Radon bin 3 (Chebyshev Fourier)
-92.000000 Radon bin 4 (Chebyshev Fourier)
-18.000000 Radon bin 5 (Chebyshev Fourier)
-125.000000 Radon bin 6 (Chebyshev Fourier)
-35.000000 Radon bin 7 (Chebyshev Fourier)
-3.000000 Radon bin 8 (Chebyshev Fourier)
-96.000000 Radon bin 9 (Chebyshev Fourier)
-63.000000 Radon bin 10 (Chebyshev Fourier)
-4.000000 Radon bin 11 (Chebyshev Fourier)
-709.554208 Fractal 0 (Chebyshev Fourier)
-143.644732 Fractal 1 (Chebyshev Fourier)
-680.921009 Fractal 2 (Chebyshev Fourier)
-277.347479 Fractal 3 (Chebyshev Fourier)
-631.548301 Fractal 4 (Chebyshev Fourier)
-399.650216 Fractal 5 (Chebyshev Fourier)
-562.244938 Fractal 6 (Chebyshev Fourier)
-506.861862 Fractal 7 (Chebyshev Fourier)
-475.437142 Fractal 8 (Chebyshev Fourier)
-593.897955 Fractal 9 (Chebyshev Fourier)
-370.859132 Fractal 10 (Chebyshev Fourier)
-658.457850 Fractal 11 (Chebyshev Fourier)
-253.257296 Fractal 12 (Chebyshev Fourier)
-698.165938 Fractal 13 (Chebyshev Fourier)
-127.592378 Fractal 14 (Chebyshev Fourier)
-713.097436 Fractal 15 (Chebyshev Fourier)
-52.103107 Fractal 16 (Chebyshev Fourier)
-703.678225 Fractal 17 (Chebyshev Fourier)
-171.107457 Fractal 18 (Chebyshev Fourier)
-671.543263 Fractal 19 (Chebyshev Fourier)
-7.030184 mean (Chebyshev Fourier)
-5.890152 median (Chebyshev Fourier)
-445.635750 stddev (Chebyshev Fourier)
--1084.072168 min (Chebyshev Fourier)
-1876.721024 max (Chebyshev Fourier)
-19.000000 CombFirstFourMoments 0 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 1 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 2 (Wavelet Fourier)
-18.000000 CombFirstFourMoments 3 (Wavelet Fourier)
-2.000000 CombFirstFourMoments 4 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 5 (Wavelet Fourier)
-18.000000 CombFirstFourMoments 6 (Wavelet Fourier)
-2.000000 CombFirstFourMoments 7 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 8 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 9 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 10 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 11 (Wavelet Fourier)
-19.000000 CombFirstFourMoments 12 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 13 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 14 (Wavelet Fourier)
-18.000000 CombFirstFourMoments 15 (Wavelet Fourier)
-2.000000 CombFirstFourMoments 16 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 17 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 18 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 19 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 20 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 21 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 22 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 23 (Wavelet Fourier)
-18.000000 CombFirstFourMoments 24 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 25 (Wavelet Fourier)
-2.000000 CombFirstFourMoments 26 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 27 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 28 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 29 (Wavelet Fourier)
-16.000000 CombFirstFourMoments 30 (Wavelet Fourier)
-4.000000 CombFirstFourMoments 31 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 32 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 33 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 34 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 35 (Wavelet Fourier)
-14.000000 CombFirstFourMoments 36 (Wavelet Fourier)
-6.000000 CombFirstFourMoments 37 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 38 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 39 (Wavelet Fourier)
-0.000000 CombFirstFourMoments 40 (Wavelet Fourier)
-20.000000 CombFirstFourMoments 41 (Wavelet Fourier)
-2.000000 CombFirstFourMoments 42 (Wavelet Fourier)
-13.000000 CombFirstFourMoments 43 (Wavelet Fourier)
-6.000000 CombFirstFourMoments 44 (Wavelet Fourier)
-19.000000 CombFirstFourMoments 45 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 46 (Wavelet Fourier)
-1.000000 CombFirstFourMoments 47 (Wavelet Fourier)
-0.625698 Haarlick Texture 0 (Wavelet Fourier)
-0.013434 Haarlick Texture 1 (Wavelet Fourier)
-0.872435 Haarlick Texture 2 (Wavelet Fourier)
-0.205211 Haarlick Texture 3 (Wavelet Fourier)
-0.291604 Haarlick Texture 4 (Wavelet Fourier)
-0.150669 Haarlick Texture 5 (Wavelet Fourier)
-0.836301 Haarlick Texture 6 (Wavelet Fourier)
-0.194089 Haarlick Texture 7 (Wavelet Fourier)
-0.673877 Haarlick Texture 8 (Wavelet Fourier)
-0.065353 Haarlick Texture 9 (Wavelet Fourier)
-1.381005 Haarlick Texture 10 (Wavelet Fourier)
-0.057340 Haarlick Texture 11 (Wavelet Fourier)
--0.319429 Haarlick Texture 12 (Wavelet Fourier)
-0.062251 Haarlick Texture 13 (Wavelet Fourier)
-0.928908 Haarlick Texture 14 (Wavelet Fourier)
-0.009470 Haarlick Texture 15 (Wavelet Fourier)
-0.000002 Haarlick Texture 16 (Wavelet Fourier)
-0.000008 Haarlick Texture 17 (Wavelet Fourier)
-0.638610 Haarlick Texture 18 (Wavelet Fourier)
-0.045897 Haarlick Texture 19 (Wavelet Fourier)
-28.388236 Haarlick Texture 20 (Wavelet Fourier)
-0.004963 Haarlick Texture 21 (Wavelet Fourier)
-1.163195 Haarlick Texture 22 (Wavelet Fourier)
-0.031461 Haarlick Texture 23 (Wavelet Fourier)
-742.792542 Haarlick Texture 24 (Wavelet Fourier)
-1.409790 Haarlick Texture 25 (Wavelet Fourier)
-0.615509 Haarlick Texture 26 (Wavelet Fourier)
-0.014586 Haarlick Texture 27 (Wavelet Fourier)
-1.000000 MultiScale Histogram bin 0 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 1 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 2 (Wavelet Fourier)
-0.006117 MultiScale Histogram bin 3 (Wavelet Fourier)
-0.993883 MultiScale Histogram bin 4 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 5 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 6 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 7 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 8 (Wavelet Fourier)
-0.999731 MultiScale Histogram bin 9 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 10 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 11 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 12 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 13 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 14 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 15 (Wavelet Fourier)
-0.997580 MultiScale Histogram bin 16 (Wavelet Fourier)
-0.002151 MultiScale Histogram bin 17 (Wavelet Fourier)
-0.000269 MultiScale Histogram bin 18 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 19 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 20 (Wavelet Fourier)
-0.000000 MultiScale Histogram bin 21 (Wavelet Fourier)
-0.000067 MultiScale Histogram bin 22 (Wavelet Fourier)
-0.000202 MultiScale Histogram bin 23 (Wavelet Fourier)
-1.000000 Tamura Texture 0 (Wavelet Fourier)
-0.115488 Tamura Texture 1 (Wavelet Fourier)
-0.064283 Tamura Texture 2 (Wavelet Fourier)
-1281496024.691707 Tamura Texture 3 (Wavelet Fourier)
-15.916630 Tamura Texture 4 (Wavelet Fourier)
-2.439877 Tamura Texture 5 (Wavelet Fourier)
-175.000000 Radon bin 0 (Wavelet Fourier)
-0.000000 Radon bin 1 (Wavelet Fourier)
-2.000000 Radon bin 2 (Wavelet Fourier)
-174.000000 Radon bin 3 (Wavelet Fourier)
-2.000000 Radon bin 4 (Wavelet Fourier)
-1.000000 Radon bin 5 (Wavelet Fourier)
-173.000000 Radon bin 6 (Wavelet Fourier)
-3.000000 Radon bin 7 (Wavelet Fourier)
-1.000000 Radon bin 8 (Wavelet Fourier)
-174.000000 Radon bin 9 (Wavelet Fourier)
-1.000000 Radon bin 10 (Wavelet Fourier)
-2.000000 Radon bin 11 (Wavelet Fourier)
-8774.309796 Fractal 0 (Wavelet Fourier)
-9495.936790 Fractal 1 (Wavelet Fourier)
-8970.993053 Fractal 2 (Wavelet Fourier)
-9092.462219 Fractal 3 (Wavelet Fourier)
-9339.342357 Fractal 4 (Wavelet Fourier)
-9516.331888 Fractal 5 (Wavelet Fourier)
-9695.934524 Fractal 6 (Wavelet Fourier)
-9871.747753 Fractal 7 (Wavelet Fourier)
-10029.416003 Fractal 8 (Wavelet Fourier)
-10226.440963 Fractal 9 (Wavelet Fourier)
-10398.564601 Fractal 10 (Wavelet Fourier)
-10555.773514 Fractal 11 (Wavelet Fourier)
-10722.089850 Fractal 12 (Wavelet Fourier)
-10899.280538 Fractal 13 (Wavelet Fourier)
-11024.036988 Fractal 14 (Wavelet Fourier)
-11206.992888 Fractal 15 (Wavelet Fourier)
-11326.675705 Fractal 16 (Wavelet Fourier)
-11478.227543 Fractal 17 (Wavelet Fourier)
-11608.290102 Fractal 18 (Wavelet Fourier)
-11752.804254 Fractal 19 (Wavelet Fourier)
-4566.219923 mean (Wavelet Fourier)
-527.933288 median (Wavelet Fourier)
-96323.257337 stddev (Wavelet Fourier)
--1518806.958708 min (Wavelet Fourier)
-5957422.048588 max (Wavelet Fourier)
-330.000000 Chebishev Fourier Transform bin 0 (Fourier Wavelet)
-160.000000 Chebishev Fourier Transform bin 1 (Fourier Wavelet)
-20.000000 Chebishev Fourier Transform bin 2 (Fourier Wavelet)
-7.000000 Chebishev Fourier Transform bin 3 (Fourier Wavelet)
-4.000000 Chebishev Fourier Transform bin 4 (Fourier Wavelet)
-3.000000 Chebishev Fourier Transform bin 5 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 6 (Fourier Wavelet)
-1.000000 Chebishev Fourier Transform bin 7 (Fourier Wavelet)
-1.000000 Chebishev Fourier Transform bin 8 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 9 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 10 (Fourier Wavelet)
-1.000000 Chebishev Fourier Transform bin 11 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 12 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 13 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 14 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 15 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 16 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 17 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 18 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 19 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 20 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 21 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 22 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 23 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 24 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 25 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 26 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 27 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 28 (Fourier Wavelet)
-0.000000 Chebishev Fourier Transform bin 29 (Fourier Wavelet)
-1.000000 Chebishev Fourier Transform bin 30 (Fourier Wavelet)
-1.000000 Chebishev Fourier Transform bin 31 (Fourier Wavelet)
-4.000000 Chebishev Statistics bin 0 (Fourier Wavelet)
-8.000000 Chebishev Statistics bin 1 (Fourier Wavelet)
-17.000000 Chebishev Statistics bin 2 (Fourier Wavelet)
-54.000000 Chebishev Statistics bin 3 (Fourier Wavelet)
-64.000000 Chebishev Statistics bin 4 (Fourier Wavelet)
-83.000000 Chebishev Statistics bin 5 (Fourier Wavelet)
-69.000000 Chebishev Statistics bin 6 (Fourier Wavelet)
-11.000000 Chebishev Statistics bin 7 (Fourier Wavelet)
-10.000000 Chebishev Statistics bin 8 (Fourier Wavelet)
-23.000000 Chebishev Statistics bin 9 (Fourier Wavelet)
-6.000000 Chebishev Statistics bin 10 (Fourier Wavelet)
-16.000000 Chebishev Statistics bin 11 (Fourier Wavelet)
-11.000000 Chebishev Statistics bin 12 (Fourier Wavelet)
-3.000000 Chebishev Statistics bin 13 (Fourier Wavelet)
-3.000000 Chebishev Statistics bin 14 (Fourier Wavelet)
-8.000000 Chebishev Statistics bin 15 (Fourier Wavelet)
-6.000000 Chebishev Statistics bin 16 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 17 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 18 (Fourier Wavelet)
-2.000000 Chebishev Statistics bin 19 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 20 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 21 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 22 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 23 (Fourier Wavelet)
-1.000000 Chebishev Statistics bin 24 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 25 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 26 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 27 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 28 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 29 (Fourier Wavelet)
-0.000000 Chebishev Statistics bin 30 (Fourier Wavelet)
-1.000000 Chebishev Statistics bin 31 (Fourier Wavelet)
-0.106760 Zernike 0 (Fourier Wavelet)
-0.036909 Zernike 1 (Fourier Wavelet)
-0.070976 Zernike 2 (Fourier Wavelet)
-0.013467 Zernike 3 (Fourier Wavelet)
-0.019569 Zernike 4 (Fourier Wavelet)
-0.010118 Zernike 5 (Fourier Wavelet)
-0.016362 Zernike 6 (Fourier Wavelet)
-0.001410 Zernike 7 (Fourier Wavelet)
-0.028013 Zernike 8 (Fourier Wavelet)
-0.006300 Zernike 9 (Fourier Wavelet)
-0.011850 Zernike 10 (Fourier Wavelet)
-0.015808 Zernike 11 (Fourier Wavelet)
-0.023409 Zernike 12 (Fourier Wavelet)
-0.000491 Zernike 13 (Fourier Wavelet)
-0.027908 Zernike 14 (Fourier Wavelet)
-0.004771 Zernike 15 (Fourier Wavelet)
-0.024939 Zernike 16 (Fourier Wavelet)
-0.023966 Zernike 17 (Fourier Wavelet)
-0.026236 Zernike 18 (Fourier Wavelet)
-0.016191 Zernike 19 (Fourier Wavelet)
-0.031783 Zernike 20 (Fourier Wavelet)
-0.004469 Zernike 21 (Fourier Wavelet)
-0.036019 Zernike 22 (Fourier Wavelet)
-0.003391 Zernike 23 (Fourier Wavelet)
-0.029442 Zernike 24 (Fourier Wavelet)
-0.018892 Zernike 25 (Fourier Wavelet)
-0.019399 Zernike 26 (Fourier Wavelet)
-0.017641 Zernike 27 (Fourier Wavelet)
-0.019850 Zernike 28 (Fourier Wavelet)
-0.022961 Zernike 29 (Fourier Wavelet)
-0.013423 Zernike 30 (Fourier Wavelet)
-0.001471 Zernike 31 (Fourier Wavelet)
-0.014166 Zernike 32 (Fourier Wavelet)
-0.000382 Zernike 33 (Fourier Wavelet)
-0.012530 Zernike 34 (Fourier Wavelet)
-0.004885 Zernike 35 (Fourier Wavelet)
-0.004149 Zernike 36 (Fourier Wavelet)
-0.003595 Zernike 37 (Fourier Wavelet)
-0.001809 Zernike 38 (Fourier Wavelet)
-0.005684 Zernike 39 (Fourier Wavelet)
-0.002075 Zernike 40 (Fourier Wavelet)
-0.007907 Zernike 41 (Fourier Wavelet)
-0.021563 Zernike 42 (Fourier Wavelet)
-0.002264 Zernike 43 (Fourier Wavelet)
-0.016573 Zernike 44 (Fourier Wavelet)
-0.003847 Zernike 45 (Fourier Wavelet)
-0.019064 Zernike 46 (Fourier Wavelet)
-0.005927 Zernike 47 (Fourier Wavelet)
-0.026439 Zernike 48 (Fourier Wavelet)
-0.023287 Zernike 49 (Fourier Wavelet)
-0.018940 Zernike 50 (Fourier Wavelet)
-0.019576 Zernike 51 (Fourier Wavelet)
-0.020385 Zernike 52 (Fourier Wavelet)
-0.015919 Zernike 53 (Fourier Wavelet)
-0.028682 Zernike 54 (Fourier Wavelet)
-0.026812 Zernike 55 (Fourier Wavelet)
-0.038499 Zernike 56 (Fourier Wavelet)
-0.001345 Zernike 57 (Fourier Wavelet)
-0.027397 Zernike 58 (Fourier Wavelet)
-0.005269 Zernike 59 (Fourier Wavelet)
-0.034269 Zernike 60 (Fourier Wavelet)
-0.008049 Zernike 61 (Fourier Wavelet)
-0.037266 Zernike 62 (Fourier Wavelet)
-0.005180 Zernike 63 (Fourier Wavelet)
-0.022249 Zernike 64 (Fourier Wavelet)
-0.016095 Zernike 65 (Fourier Wavelet)
-0.015125 Zernike 66 (Fourier Wavelet)
-0.015635 Zernike 67 (Fourier Wavelet)
-0.017829 Zernike 68 (Fourier Wavelet)
-0.022997 Zernike 69 (Fourier Wavelet)
-0.028409 Zernike 70 (Fourier Wavelet)
-0.018172 Zernike 71 (Fourier Wavelet)
-14.000000 CombFirstFourMoments 0 (Fourier Wavelet)
-6.000000 CombFirstFourMoments 1 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 2 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 3 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 4 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 5 (Fourier Wavelet)
-12.000000 CombFirstFourMoments 6 (Fourier Wavelet)
-6.000000 CombFirstFourMoments 7 (Fourier Wavelet)
-3.000000 CombFirstFourMoments 8 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 9 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 10 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 11 (Fourier Wavelet)
-14.000000 CombFirstFourMoments 12 (Fourier Wavelet)
-6.000000 CombFirstFourMoments 13 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 14 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 15 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 16 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 17 (Fourier Wavelet)
-12.000000 CombFirstFourMoments 18 (Fourier Wavelet)
-6.000000 CombFirstFourMoments 19 (Fourier Wavelet)
-3.000000 CombFirstFourMoments 20 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 21 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 22 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 23 (Fourier Wavelet)
-18.000000 CombFirstFourMoments 24 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 25 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 26 (Fourier Wavelet)
-20.000000 CombFirstFourMoments 27 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 28 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 29 (Fourier Wavelet)
-9.000000 CombFirstFourMoments 30 (Fourier Wavelet)
-10.000000 CombFirstFourMoments 31 (Fourier Wavelet)
-2.000000 CombFirstFourMoments 32 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 33 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 34 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 35 (Fourier Wavelet)
-15.000000 CombFirstFourMoments 36 (Fourier Wavelet)
-3.000000 CombFirstFourMoments 37 (Fourier Wavelet)
-3.000000 CombFirstFourMoments 38 (Fourier Wavelet)
-19.000000 CombFirstFourMoments 39 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 40 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 41 (Fourier Wavelet)
-10.000000 CombFirstFourMoments 42 (Fourier Wavelet)
-7.000000 CombFirstFourMoments 43 (Fourier Wavelet)
-4.000000 CombFirstFourMoments 44 (Fourier Wavelet)
-20.000000 CombFirstFourMoments 45 (Fourier Wavelet)
-0.000000 CombFirstFourMoments 46 (Fourier Wavelet)
-1.000000 CombFirstFourMoments 47 (Fourier Wavelet)
-0.111589 Haarlick Texture 0 (Fourier Wavelet)
-0.015441 Haarlick Texture 1 (Fourier Wavelet)
-17.276081 Haarlick Texture 2 (Fourier Wavelet)
-7.767240 Haarlick Texture 3 (Fourier Wavelet)
-0.539543 Haarlick Texture 4 (Fourier Wavelet)
-0.242734 Haarlick Texture 5 (Fourier Wavelet)
-12.510627 Haarlick Texture 6 (Fourier Wavelet)
-6.136186 Haarlick Texture 7 (Fourier Wavelet)
-2.709083 Haarlick Texture 8 (Fourier Wavelet)
-0.145478 Haarlick Texture 9 (Fourier Wavelet)
-4.865827 Haarlick Texture 10 (Fourier Wavelet)
-0.074595 Haarlick Texture 11 (Fourier Wavelet)
--0.175297 Haarlick Texture 12 (Fourier Wavelet)
-0.051495 Haarlick Texture 13 (Fourier Wavelet)
-0.545908 Haarlick Texture 14 (Fourier Wavelet)
-0.015563 Haarlick Texture 15 (Fourier Wavelet)
-0.014415 Haarlick Texture 16 (Fourier Wavelet)
-0.055048 Haarlick Texture 17 (Fourier Wavelet)
-0.776521 Haarlick Texture 18 (Fourier Wavelet)
-0.078110 Haarlick Texture 19 (Fourier Wavelet)
-6.573888 Haarlick Texture 20 (Fourier Wavelet)
-0.365885 Haarlick Texture 21 (Fourier Wavelet)
-3.539401 Haarlick Texture 22 (Fourier Wavelet)
-0.086847 Haarlick Texture 23 (Fourier Wavelet)
-67.858921 Haarlick Texture 24 (Fourier Wavelet)
-16.146145 Haarlick Texture 25 (Fourier Wavelet)
-18.976821 Haarlick Texture 26 (Fourier Wavelet)
-1.819725 Haarlick Texture 27 (Fourier Wavelet)
-1.000000 MultiScale Histogram bin 0 (Fourier Wavelet)
-0.000538 MultiScale Histogram bin 1 (Fourier Wavelet)
-0.000067 MultiScale Histogram bin 2 (Fourier Wavelet)
-0.999731 MultiScale Histogram bin 3 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 4 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 5 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 6 (Fourier Wavelet)
-0.000067 MultiScale Histogram bin 7 (Fourier Wavelet)
-0.999193 MultiScale Histogram bin 8 (Fourier Wavelet)
-0.000807 MultiScale Histogram bin 9 (Fourier Wavelet)
-0.000000 MultiScale Histogram bin 10 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 11 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 12 (Fourier Wavelet)
-0.000000 MultiScale Histogram bin 13 (Fourier Wavelet)
-0.000067 MultiScale Histogram bin 14 (Fourier Wavelet)
-0.998924 MultiScale Histogram bin 15 (Fourier Wavelet)
-0.000807 MultiScale Histogram bin 16 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 17 (Fourier Wavelet)
-0.000134 MultiScale Histogram bin 18 (Fourier Wavelet)
-0.000134 MultiScale Histogram bin 19 (Fourier Wavelet)
-0.000269 MultiScale Histogram bin 20 (Fourier Wavelet)
-0.000000 MultiScale Histogram bin 21 (Fourier Wavelet)
-0.000000 MultiScale Histogram bin 22 (Fourier Wavelet)
-0.000067 MultiScale Histogram bin 23 (Fourier Wavelet)
-1.000000 Tamura Texture 0 (Fourier Wavelet)
-0.136669 Tamura Texture 1 (Fourier Wavelet)
-0.559900 Tamura Texture 2 (Fourier Wavelet)
-1703264943.791061 Tamura Texture 3 (Fourier Wavelet)
-15.890094 Tamura Texture 4 (Fourier Wavelet)
-4.811605 Tamura Texture 5 (Fourier Wavelet)
-174.000000 Radon bin 0 (Fourier Wavelet)
-1.000000 Radon bin 1 (Fourier Wavelet)
-2.000000 Radon bin 2 (Fourier Wavelet)
-169.000000 Radon bin 3 (Fourier Wavelet)
-6.000000 Radon bin 4 (Fourier Wavelet)
-2.000000 Radon bin 5 (Fourier Wavelet)
-172.000000 Radon bin 6 (Fourier Wavelet)
-3.000000 Radon bin 7 (Fourier Wavelet)
-2.000000 Radon bin 8 (Fourier Wavelet)
-174.000000 Radon bin 9 (Fourier Wavelet)
-1.000000 Radon bin 10 (Fourier Wavelet)
-2.000000 Radon bin 11 (Fourier Wavelet)
-11085.150065 Fractal 0 (Fourier Wavelet)
-10646.984729 Fractal 1 (Fourier Wavelet)
-12308.139481 Fractal 2 (Fourier Wavelet)
-11730.236435 Fractal 3 (Fourier Wavelet)
-12403.569435 Fractal 4 (Fourier Wavelet)
-12375.729508 Fractal 5 (Fourier Wavelet)
-12664.858260 Fractal 6 (Fourier Wavelet)
-13123.283754 Fractal 7 (Fourier Wavelet)
-12879.058973 Fractal 8 (Fourier Wavelet)
-13615.288405 Fractal 9 (Fourier Wavelet)
-13054.369199 Fractal 10 (Fourier Wavelet)
-14010.241522 Fractal 11 (Fourier Wavelet)
-13394.454101 Fractal 12 (Fourier Wavelet)
-14395.297127 Fractal 13 (Fourier Wavelet)
-13890.111076 Fractal 14 (Fourier Wavelet)
-14695.676160 Fractal 15 (Fourier Wavelet)
-14433.738588 Fractal 16 (Fourier Wavelet)
-15022.538665 Fractal 17 (Fourier Wavelet)
-15017.726066 Fractal 18 (Fourier Wavelet)
-15285.524249 Fractal 19 (Fourier Wavelet)
-18754.917234 mean (Fourier Wavelet)
-7098.853590 median (Fourier Wavelet)
-102408.492993 stddev (Fourier Wavelet)
-74.122812 min (Fourier Wavelet)
-5931645.999973 max (Fourier Wavelet)
-10.000000 CombFirstFourMoments 0 (Fourier Chebyshev)
-0.000000 CombFirstFourMoments 1 (Fourier Chebyshev)
-11.000000 CombFirstFourMoments 2 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 3 (Fourier Chebyshev)
-0.000000 CombFirstFourMoments 4 (Fourier Chebyshev)
-8.000000 CombFirstFourMoments 5 (Fourier Chebyshev)
-6.000000 CombFirstFourMoments 6 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 7 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 8 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 9 (Fourier Chebyshev)
-4.000000 CombFirstFourMoments 10 (Fourier Chebyshev)
-4.000000 CombFirstFourMoments 11 (Fourier Chebyshev)
-10.000000 CombFirstFourMoments 12 (Fourier Chebyshev)
-0.000000 CombFirstFourMoments 13 (Fourier Chebyshev)
-11.000000 CombFirstFourMoments 14 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 15 (Fourier Chebyshev)
-0.000000 CombFirstFourMoments 16 (Fourier Chebyshev)
-8.000000 CombFirstFourMoments 17 (Fourier Chebyshev)
-5.000000 CombFirstFourMoments 18 (Fourier Chebyshev)
-5.000000 CombFirstFourMoments 19 (Fourier Chebyshev)
-11.000000 CombFirstFourMoments 20 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 21 (Fourier Chebyshev)
-1.000000 CombFirstFourMoments 22 (Fourier Chebyshev)
-7.000000 CombFirstFourMoments 23 (Fourier Chebyshev)
-6.000000 CombFirstFourMoments 24 (Fourier Chebyshev)
-11.000000 CombFirstFourMoments 25 (Fourier Chebyshev)
-4.000000 CombFirstFourMoments 26 (Fourier Chebyshev)
-3.000000 CombFirstFourMoments 27 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 28 (Fourier Chebyshev)
-16.000000 CombFirstFourMoments 29 (Fourier Chebyshev)
-16.000000 CombFirstFourMoments 30 (Fourier Chebyshev)
-3.000000 CombFirstFourMoments 31 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 32 (Fourier Chebyshev)
-1.000000 CombFirstFourMoments 33 (Fourier Chebyshev)
-7.000000 CombFirstFourMoments 34 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 35 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 36 (Fourier Chebyshev)
-16.000000 CombFirstFourMoments 37 (Fourier Chebyshev)
-3.000000 CombFirstFourMoments 38 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 39 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 40 (Fourier Chebyshev)
-17.000000 CombFirstFourMoments 41 (Fourier Chebyshev)
-14.000000 CombFirstFourMoments 42 (Fourier Chebyshev)
-5.000000 CombFirstFourMoments 43 (Fourier Chebyshev)
-2.000000 CombFirstFourMoments 44 (Fourier Chebyshev)
-1.000000 CombFirstFourMoments 45 (Fourier Chebyshev)
-7.000000 CombFirstFourMoments 46 (Fourier Chebyshev)
-13.000000 CombFirstFourMoments 47 (Fourier Chebyshev)
-0.000279 Haarlick Texture 0 (Fourier Chebyshev)
-0.000108 Haarlick Texture 1 (Fourier Chebyshev)
-873.027832 Haarlick Texture 2 (Fourier Chebyshev)
-613.351501 Haarlick Texture 3 (Fourier Chebyshev)
-0.777290 Haarlick Texture 4 (Fourier Chebyshev)
-0.160232 Haarlick Texture 5 (Fourier Chebyshev)
-528.668175 Haarlick Texture 6 (Fourier Chebyshev)
-282.460358 Haarlick Texture 7 (Fourier Chebyshev)
-5.555785 Haarlick Texture 8 (Fourier Chebyshev)
-0.732954 Haarlick Texture 9 (Fourier Chebyshev)
-12.316362 Haarlick Texture 10 (Fourier Chebyshev)
-0.444656 Haarlick Texture 11 (Fourier Chebyshev)
--0.325424 Haarlick Texture 12 (Fourier Chebyshev)
-0.062108 Haarlick Texture 13 (Fourier Chebyshev)
-0.112202 Haarlick Texture 14 (Fourier Chebyshev)
-0.068832 Haarlick Texture 15 (Fourier Chebyshev)
-0.015232 Haarlick Texture 16 (Fourier Chebyshev)
-0.013854 Haarlick Texture 17 (Fourier Chebyshev)
-0.995458 Haarlick Texture 18 (Fourier Chebyshev)
-0.004197 Haarlick Texture 19 (Fourier Chebyshev)
-177.402939 Haarlick Texture 20 (Fourier Chebyshev)
-0.209961 Haarlick Texture 21 (Fourier Chebyshev)
-8.272475 Haarlick Texture 22 (Fourier Chebyshev)
-0.067270 Haarlick Texture 23 (Fourier Chebyshev)
-35591.245117 Haarlick Texture 24 (Fourier Chebyshev)
-690.148438 Haarlick Texture 25 (Fourier Chebyshev)
-1964.787262 Haarlick Texture 26 (Fourier Chebyshev)
-36.040283 Haarlick Texture 27 (Fourier Chebyshev)
-0.783893 MultiScale Histogram bin 0 (Fourier Chebyshev)
-1.000000 MultiScale Histogram bin 1 (Fourier Chebyshev)
-0.065614 MultiScale Histogram bin 2 (Fourier Chebyshev)
-0.424392 MultiScale Histogram bin 3 (Fourier Chebyshev)
-0.689455 MultiScale Histogram bin 4 (Fourier Chebyshev)
-0.599652 MultiScale Histogram bin 5 (Fourier Chebyshev)
-0.126883 MultiScale Histogram bin 6 (Fourier Chebyshev)
-0.009125 MultiScale Histogram bin 7 (Fourier Chebyshev)
-0.317207 MultiScale Histogram bin 8 (Fourier Chebyshev)
-0.273465 MultiScale Histogram bin 9 (Fourier Chebyshev)
-0.663094 MultiScale Histogram bin 10 (Fourier Chebyshev)
-0.414832 MultiScale Histogram bin 11 (Fourier Chebyshev)
-0.142816 MultiScale Histogram bin 12 (Fourier Chebyshev)
-0.035052 MultiScale Histogram bin 13 (Fourier Chebyshev)
-0.003042 MultiScale Histogram bin 14 (Fourier Chebyshev)
-0.243337 MultiScale Histogram bin 15 (Fourier Chebyshev)
-0.208864 MultiScale Histogram bin 16 (Fourier Chebyshev)
-0.331692 MultiScale Histogram bin 17 (Fourier Chebyshev)
-0.537080 MultiScale Histogram bin 18 (Fourier Chebyshev)
-0.316049 MultiScale Histogram bin 19 (Fourier Chebyshev)
-0.146871 MultiScale Histogram bin 20 (Fourier Chebyshev)
-0.052433 MultiScale Histogram bin 21 (Fourier Chebyshev)
-0.012167 MultiScale Histogram bin 22 (Fourier Chebyshev)
-0.001014 MultiScale Histogram bin 23 (Fourier Chebyshev)
-1.000000 Tamura Texture 0 (Fourier Chebyshev)
-0.192007 Tamura Texture 1 (Fourier Chebyshev)
-0.140457 Tamura Texture 2 (Fourier Chebyshev)
-20800.056854 Tamura Texture 3 (Fourier Chebyshev)
-3.248982 Tamura Texture 4 (Fourier Chebyshev)
-3.089620 Tamura Texture 5 (Fourier Chebyshev)
-62.000000 Radon bin 0 (Fourier Chebyshev)
-24.000000 Radon bin 1 (Fourier Chebyshev)
-77.000000 Radon bin 2 (Fourier Chebyshev)
-60.000000 Radon bin 3 (Fourier Chebyshev)
-61.000000 Radon bin 4 (Fourier Chebyshev)
-42.000000 Radon bin 5 (Fourier Chebyshev)
-58.000000 Radon bin 6 (Fourier Chebyshev)
-70.000000 Radon bin 7 (Fourier Chebyshev)
-35.000000 Radon bin 8 (Fourier Chebyshev)
-60.000000 Radon bin 9 (Fourier Chebyshev)
-20.000000 Radon bin 10 (Fourier Chebyshev)
-83.000000 Radon bin 11 (Fourier Chebyshev)
-52.816083 Fractal 0 (Fourier Chebyshev)
-74.144489 Fractal 1 (Fourier Chebyshev)
-81.526229 Fractal 2 (Fourier Chebyshev)
-92.025523 Fractal 3 (Fourier Chebyshev)
-100.532369 Fractal 4 (Fourier Chebyshev)
-106.465905 Fractal 5 (Fourier Chebyshev)
-108.484244 Fractal 6 (Fourier Chebyshev)
-110.942334 Fractal 7 (Fourier Chebyshev)
-112.813811 Fractal 8 (Fourier Chebyshev)
-120.718980 Fractal 9 (Fourier Chebyshev)
-126.320794 Fractal 10 (Fourier Chebyshev)
-130.886528 Fractal 11 (Fourier Chebyshev)
-133.479985 Fractal 12 (Fourier Chebyshev)
-136.075485 Fractal 13 (Fourier Chebyshev)
-138.306901 Fractal 14 (Fourier Chebyshev)
-141.171288 Fractal 15 (Fourier Chebyshev)
-143.815795 Fractal 16 (Fourier Chebyshev)
-145.971119 Fractal 17 (Fourier Chebyshev)
-148.251259 Fractal 18 (Fourier Chebyshev)
-150.285095 Fractal 19 (Fourier Chebyshev)
-323.290595 mean (Fourier Chebyshev)
-335.399011 median (Fourier Chebyshev)
-162.612530 stddev (Fourier Chebyshev)
-2.618033 min (Fourier Chebyshev)
-922.261070 max (Fourier Chebyshev)
-12.000000 CombFirstFourMoments 0 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 1 (Chebyshev Wavelet)
-7.000000 CombFirstFourMoments 2 (Chebyshev Wavelet)
-16.000000 CombFirstFourMoments 3 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 4 (Chebyshev Wavelet)
-3.000000 CombFirstFourMoments 5 (Chebyshev Wavelet)
-3.000000 CombFirstFourMoments 6 (Chebyshev Wavelet)
-12.000000 CombFirstFourMoments 7 (Chebyshev Wavelet)
-6.000000 CombFirstFourMoments 8 (Chebyshev Wavelet)
-20.000000 CombFirstFourMoments 9 (Chebyshev Wavelet)
-0.000000 CombFirstFourMoments 10 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 11 (Chebyshev Wavelet)
-12.000000 CombFirstFourMoments 12 (Chebyshev Wavelet)
-3.000000 CombFirstFourMoments 13 (Chebyshev Wavelet)
-6.000000 CombFirstFourMoments 14 (Chebyshev Wavelet)
-16.000000 CombFirstFourMoments 15 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 16 (Chebyshev Wavelet)
-4.000000 CombFirstFourMoments 17 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 18 (Chebyshev Wavelet)
-14.000000 CombFirstFourMoments 19 (Chebyshev Wavelet)
-5.000000 CombFirstFourMoments 20 (Chebyshev Wavelet)
-20.000000 CombFirstFourMoments 21 (Chebyshev Wavelet)
-0.000000 CombFirstFourMoments 22 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 23 (Chebyshev Wavelet)
-11.000000 CombFirstFourMoments 24 (Chebyshev Wavelet)
-6.000000 CombFirstFourMoments 25 (Chebyshev Wavelet)
-4.000000 CombFirstFourMoments 26 (Chebyshev Wavelet)
-20.000000 CombFirstFourMoments 27 (Chebyshev Wavelet)
-0.000000 CombFirstFourMoments 28 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 29 (Chebyshev Wavelet)
-7.000000 CombFirstFourMoments 30 (Chebyshev Wavelet)
-7.000000 CombFirstFourMoments 31 (Chebyshev Wavelet)
-7.000000 CombFirstFourMoments 32 (Chebyshev Wavelet)
-19.000000 CombFirstFourMoments 33 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 34 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 35 (Chebyshev Wavelet)
-18.000000 CombFirstFourMoments 36 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 37 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 38 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 39 (Chebyshev Wavelet)
-15.000000 CombFirstFourMoments 40 (Chebyshev Wavelet)
-5.000000 CombFirstFourMoments 41 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 42 (Chebyshev Wavelet)
-2.000000 CombFirstFourMoments 43 (Chebyshev Wavelet)
-17.000000 CombFirstFourMoments 44 (Chebyshev Wavelet)
-20.000000 CombFirstFourMoments 45 (Chebyshev Wavelet)
-0.000000 CombFirstFourMoments 46 (Chebyshev Wavelet)
-1.000000 CombFirstFourMoments 47 (Chebyshev Wavelet)
-0.202414 Haarlick Texture 0 (Chebyshev Wavelet)
-0.012524 Haarlick Texture 1 (Chebyshev Wavelet)
-8.106034 Haarlick Texture 2 (Chebyshev Wavelet)
-1.934940 Haarlick Texture 3 (Chebyshev Wavelet)
-0.165878 Haarlick Texture 4 (Chebyshev Wavelet)
-0.273713 Haarlick Texture 5 (Chebyshev Wavelet)
-7.143525 Haarlick Texture 6 (Chebyshev Wavelet)
-1.657493 Haarlick Texture 7 (Chebyshev Wavelet)
-1.782007 Haarlick Texture 8 (Chebyshev Wavelet)
-0.172338 Haarlick Texture 9 (Chebyshev Wavelet)
-3.631898 Haarlick Texture 10 (Chebyshev Wavelet)
-0.060336 Haarlick Texture 11 (Chebyshev Wavelet)
--0.133890 Haarlick Texture 12 (Chebyshev Wavelet)
-0.052315 Haarlick Texture 13 (Chebyshev Wavelet)
-0.702540 Haarlick Texture 14 (Chebyshev Wavelet)
-0.049451 Haarlick Texture 15 (Chebyshev Wavelet)
-0.000000 Haarlick Texture 16 (Chebyshev Wavelet)
-0.000000 Haarlick Texture 17 (Chebyshev Wavelet)
-0.634900 Haarlick Texture 18 (Chebyshev Wavelet)
-0.099129 Haarlick Texture 19 (Chebyshev Wavelet)
-77.531210 Haarlick Texture 20 (Chebyshev Wavelet)
-0.013153 Haarlick Texture 21 (Chebyshev Wavelet)
-2.526069 Haarlick Texture 22 (Chebyshev Wavelet)
-0.131661 Haarlick Texture 23 (Chebyshev Wavelet)
-5637.199463 Haarlick Texture 24 (Chebyshev Wavelet)
-17.882812 Haarlick Texture 25 (Chebyshev Wavelet)
-4.882888 Haarlick Texture 26 (Chebyshev Wavelet)
-0.450393 Haarlick Texture 27 (Chebyshev Wavelet)
-0.000942 MultiScale Histogram bin 0 (Chebyshev Wavelet)
-1.000000 MultiScale Histogram bin 1 (Chebyshev Wavelet)
-0.000538 MultiScale Histogram bin 2 (Chebyshev Wavelet)
-0.000538 MultiScale Histogram bin 3 (Chebyshev Wavelet)
-0.001480 MultiScale Histogram bin 4 (Chebyshev Wavelet)
-0.998789 MultiScale Histogram bin 5 (Chebyshev Wavelet)
-0.000202 MultiScale Histogram bin 6 (Chebyshev Wavelet)
-0.000471 MultiScale Histogram bin 7 (Chebyshev Wavelet)
-0.000269 MultiScale Histogram bin 8 (Chebyshev Wavelet)
-0.000269 MultiScale Histogram bin 9 (Chebyshev Wavelet)
-0.003432 MultiScale Histogram bin 10 (Chebyshev Wavelet)
-0.996299 MultiScale Histogram bin 11 (Chebyshev Wavelet)
-0.000740 MultiScale Histogram bin 12 (Chebyshev Wavelet)
-0.000135 MultiScale Histogram bin 13 (Chebyshev Wavelet)
-0.000336 MultiScale Histogram bin 14 (Chebyshev Wavelet)
-0.000269 MultiScale Histogram bin 15 (Chebyshev Wavelet)
-0.000269 MultiScale Histogram bin 16 (Chebyshev Wavelet)
-0.000404 MultiScale Histogram bin 17 (Chebyshev Wavelet)
-0.009218 MultiScale Histogram bin 18 (Chebyshev Wavelet)
-0.989907 MultiScale Histogram bin 19 (Chebyshev Wavelet)
-0.000875 MultiScale Histogram bin 20 (Chebyshev Wavelet)
-0.000067 MultiScale Histogram bin 21 (Chebyshev Wavelet)
-0.000336 MultiScale Histogram bin 22 (Chebyshev Wavelet)
-0.000135 MultiScale Histogram bin 23 (Chebyshev Wavelet)
-1.000000 Tamura Texture 0 (Chebyshev Wavelet)
-0.030868 Tamura Texture 1 (Chebyshev Wavelet)
-0.001595 Tamura Texture 2 (Chebyshev Wavelet)
-2.747548 Tamura Texture 3 (Chebyshev Wavelet)
-2.248228 Tamura Texture 4 (Chebyshev Wavelet)
-1.897778 Tamura Texture 5 (Chebyshev Wavelet)
-3.000000 Radon bin 0 (Chebyshev Wavelet)
-173.000000 Radon bin 1 (Chebyshev Wavelet)
-1.000000 Radon bin 2 (Chebyshev Wavelet)
-1.000000 Radon bin 3 (Chebyshev Wavelet)
-139.000000 Radon bin 4 (Chebyshev Wavelet)
-37.000000 Radon bin 5 (Chebyshev Wavelet)
-22.000000 Radon bin 6 (Chebyshev Wavelet)
-154.000000 Radon bin 7 (Chebyshev Wavelet)
-1.000000 Radon bin 8 (Chebyshev Wavelet)
-3.000000 Radon bin 9 (Chebyshev Wavelet)
-173.000000 Radon bin 10 (Chebyshev Wavelet)
-1.000000 Radon bin 11 (Chebyshev Wavelet)
-0.900600 Fractal 0 (Chebyshev Wavelet)
-1.382439 Fractal 1 (Chebyshev Wavelet)
-1.280798 Fractal 2 (Chebyshev Wavelet)
-0.859226 Fractal 3 (Chebyshev Wavelet)
-0.902794 Fractal 4 (Chebyshev Wavelet)
-1.176542 Fractal 5 (Chebyshev Wavelet)
-1.182222 Fractal 6 (Chebyshev Wavelet)
-0.968786 Fractal 7 (Chebyshev Wavelet)
-0.994998 Fractal 8 (Chebyshev Wavelet)
-1.183292 Fractal 9 (Chebyshev Wavelet)
-1.177891 Fractal 10 (Chebyshev Wavelet)
-0.989124 Fractal 11 (Chebyshev Wavelet)
-0.973440 Fractal 12 (Chebyshev Wavelet)
-1.134014 Fractal 13 (Chebyshev Wavelet)
-1.156853 Fractal 14 (Chebyshev Wavelet)
-1.008716 Fractal 15 (Chebyshev Wavelet)
-0.972852 Fractal 16 (Chebyshev Wavelet)
-1.080984 Fractal 17 (Chebyshev Wavelet)
-1.092382 Fractal 18 (Chebyshev Wavelet)
-0.977157 Fractal 19 (Chebyshev Wavelet)
-0.000039 mean (Chebyshev Wavelet)
--0.001057 median (Chebyshev Wavelet)
-3.634335 stddev (Chebyshev Wavelet)
--110.183541 min (Chebyshev Wavelet)
-125.459116 max (Chebyshev Wavelet)
-235.000000 Chebishev Fourier Transform bin 0 (Edge Transform)
-206.000000 Chebishev Fourier Transform bin 1 (Edge Transform)
-50.000000 Chebishev Fourier Transform bin 2 (Edge Transform)
-21.000000 Chebishev Fourier Transform bin 3 (Edge Transform)
-2.000000 Chebishev Fourier Transform bin 4 (Edge Transform)
-5.000000 Chebishev Fourier Transform bin 5 (Edge Transform)
-6.000000 Chebishev Fourier Transform bin 6 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 7 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 8 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 9 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 10 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 11 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 12 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 13 (Edge Transform)
-1.000000 Chebishev Fourier Transform bin 14 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 15 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 16 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 17 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 18 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 19 (Edge Transform)
-1.000000 Chebishev Fourier Transform bin 20 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 21 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 22 (Edge Transform)
-1.000000 Chebishev Fourier Transform bin 23 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 24 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 25 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 26 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 27 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 28 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 29 (Edge Transform)
-0.000000 Chebishev Fourier Transform bin 30 (Edge Transform)
-1.000000 Chebishev Fourier Transform bin 31 (Edge Transform)
-1.000000 Chebishev Statistics bin 0 (Edge Transform)
-1.000000 Chebishev Statistics bin 1 (Edge Transform)
-0.000000 Chebishev Statistics bin 2 (Edge Transform)
-0.000000 Chebishev Statistics bin 3 (Edge Transform)
-0.000000 Chebishev Statistics bin 4 (Edge Transform)
-0.000000 Chebishev Statistics bin 5 (Edge Transform)
-0.000000 Chebishev Statistics bin 6 (Edge Transform)
-0.000000 Chebishev Statistics bin 7 (Edge Transform)
-0.000000 Chebishev Statistics bin 8 (Edge Transform)
-0.000000 Chebishev Statistics bin 9 (Edge Transform)
-0.000000 Chebishev Statistics bin 10 (Edge Transform)
-0.000000 Chebishev Statistics bin 11 (Edge Transform)
-0.000000 Chebishev Statistics bin 12 (Edge Transform)
-16.000000 Chebishev Statistics bin 13 (Edge Transform)
-124.000000 Chebishev Statistics bin 14 (Edge Transform)
-222.000000 Chebishev Statistics bin 15 (Edge Transform)
-29.000000 Chebishev Statistics bin 16 (Edge Transform)
-2.000000 Chebishev Statistics bin 17 (Edge Transform)
-3.000000 Chebishev Statistics bin 18 (Edge Transform)
-0.000000 Chebishev Statistics bin 19 (Edge Transform)
-0.000000 Chebishev Statistics bin 20 (Edge Transform)
-0.000000 Chebishev Statistics bin 21 (Edge Transform)
-0.000000 Chebishev Statistics bin 22 (Edge Transform)
-0.000000 Chebishev Statistics bin 23 (Edge Transform)
-0.000000 Chebishev Statistics bin 24 (Edge Transform)
-1.000000 Chebishev Statistics bin 25 (Edge Transform)
-0.000000 Chebishev Statistics bin 26 (Edge Transform)
-0.000000 Chebishev Statistics bin 27 (Edge Transform)
-0.000000 Chebishev Statistics bin 28 (Edge Transform)
-0.000000 Chebishev Statistics bin 29 (Edge Transform)
-0.000000 Chebishev Statistics bin 30 (Edge Transform)
-1.000000 Chebishev Statistics bin 31 (Edge Transform)
-0.282896 Zernike 0 (Edge Transform)
-0.010803 Zernike 1 (Edge Transform)
-0.023451 Zernike 2 (Edge Transform)
-0.016183 Zernike 3 (Edge Transform)
-0.024528 Zernike 4 (Edge Transform)
-0.047139 Zernike 5 (Edge Transform)
-0.026414 Zernike 6 (Edge Transform)
-0.004746 Zernike 7 (Edge Transform)
-0.021006 Zernike 8 (Edge Transform)
-0.002228 Zernike 9 (Edge Transform)
-0.055293 Zernike 10 (Edge Transform)
-0.009158 Zernike 11 (Edge Transform)
-0.037584 Zernike 12 (Edge Transform)
-0.018851 Zernike 13 (Edge Transform)
-0.000298 Zernike 14 (Edge Transform)
-0.028187 Zernike 15 (Edge Transform)
-0.022936 Zernike 16 (Edge Transform)
-0.025478 Zernike 17 (Edge Transform)
-0.031378 Zernike 18 (Edge Transform)
-0.019902 Zernike 19 (Edge Transform)
-0.010077 Zernike 20 (Edge Transform)
-0.022416 Zernike 21 (Edge Transform)
-0.034987 Zernike 22 (Edge Transform)
-0.019093 Zernike 23 (Edge Transform)
-0.011595 Zernike 24 (Edge Transform)
-0.006434 Zernike 25 (Edge Transform)
-0.042345 Zernike 26 (Edge Transform)
-0.011921 Zernike 27 (Edge Transform)
-0.010263 Zernike 28 (Edge Transform)
-0.015232 Zernike 29 (Edge Transform)
-0.014706 Zernike 30 (Edge Transform)
-0.028336 Zernike 31 (Edge Transform)
-0.005240 Zernike 32 (Edge Transform)
-0.027080 Zernike 33 (Edge Transform)
-0.009876 Zernike 34 (Edge Transform)
-0.006944 Zernike 35 (Edge Transform)
-0.014304 Zernike 36 (Edge Transform)
-0.018859 Zernike 37 (Edge Transform)
-0.017721 Zernike 38 (Edge Transform)
-0.003140 Zernike 39 (Edge Transform)
-0.020303 Zernike 40 (Edge Transform)
-0.010704 Zernike 41 (Edge Transform)
-0.014302 Zernike 42 (Edge Transform)
-0.019275 Zernike 43 (Edge Transform)
-0.021037 Zernike 44 (Edge Transform)
-0.020894 Zernike 45 (Edge Transform)
-0.017824 Zernike 46 (Edge Transform)
-0.011909 Zernike 47 (Edge Transform)
-0.000860 Zernike 48 (Edge Transform)
-0.016011 Zernike 49 (Edge Transform)
-0.016318 Zernike 50 (Edge Transform)
-0.009018 Zernike 51 (Edge Transform)
-0.022093 Zernike 52 (Edge Transform)
-0.010542 Zernike 53 (Edge Transform)
-0.011684 Zernike 54 (Edge Transform)
-0.008991 Zernike 55 (Edge Transform)
-0.005588 Zernike 56 (Edge Transform)
-0.010699 Zernike 57 (Edge Transform)
-0.025180 Zernike 58 (Edge Transform)
-0.030547 Zernike 59 (Edge Transform)
-0.009832 Zernike 60 (Edge Transform)
-0.016060 Zernike 61 (Edge Transform)
-0.009497 Zernike 62 (Edge Transform)
-0.011969 Zernike 63 (Edge Transform)
-0.008234 Zernike 64 (Edge Transform)
-0.023555 Zernike 65 (Edge Transform)
-0.024309 Zernike 66 (Edge Transform)
-0.034506 Zernike 67 (Edge Transform)
-0.047512 Zernike 68 (Edge Transform)
-0.022532 Zernike 69 (Edge Transform)
-0.004946 Zernike 70 (Edge Transform)
-0.004298 Zernike 71 (Edge Transform)
-10.000000 CombFirstFourMoments 0 (Edge Transform)
-0.000000 CombFirstFourMoments 1 (Edge Transform)
-11.000000 CombFirstFourMoments 2 (Edge Transform)
-11.000000 CombFirstFourMoments 3 (Edge Transform)
-1.000000 CombFirstFourMoments 4 (Edge Transform)
-9.000000 CombFirstFourMoments 5 (Edge Transform)
-10.000000 CombFirstFourMoments 6 (Edge Transform)
-4.000000 CombFirstFourMoments 7 (Edge Transform)
-7.000000 CombFirstFourMoments 8 (Edge Transform)
-11.000000 CombFirstFourMoments 9 (Edge Transform)
-1.000000 CombFirstFourMoments 10 (Edge Transform)
-9.000000 CombFirstFourMoments 11 (Edge Transform)
-11.000000 CombFirstFourMoments 12 (Edge Transform)
-7.000000 CombFirstFourMoments 13 (Edge Transform)
-3.000000 CombFirstFourMoments 14 (Edge Transform)
-12.000000 CombFirstFourMoments 15 (Edge Transform)
-3.000000 CombFirstFourMoments 16 (Edge Transform)
-6.000000 CombFirstFourMoments 17 (Edge Transform)
-14.000000 CombFirstFourMoments 18 (Edge Transform)
-4.000000 CombFirstFourMoments 19 (Edge Transform)
-3.000000 CombFirstFourMoments 20 (Edge Transform)
-12.000000 CombFirstFourMoments 21 (Edge Transform)
-8.000000 CombFirstFourMoments 22 (Edge Transform)
-1.000000 CombFirstFourMoments 23 (Edge Transform)
-8.000000 CombFirstFourMoments 24 (Edge Transform)
-8.000000 CombFirstFourMoments 25 (Edge Transform)
-5.000000 CombFirstFourMoments 26 (Edge Transform)
-4.000000 CombFirstFourMoments 27 (Edge Transform)
-5.000000 CombFirstFourMoments 28 (Edge Transform)
-12.000000 CombFirstFourMoments 29 (Edge Transform)
-4.000000 CombFirstFourMoments 30 (Edge Transform)
-9.000000 CombFirstFourMoments 31 (Edge Transform)
-8.000000 CombFirstFourMoments 32 (Edge Transform)
-7.000000 CombFirstFourMoments 33 (Edge Transform)
-5.000000 CombFirstFourMoments 34 (Edge Transform)
-9.000000 CombFirstFourMoments 35 (Edge Transform)
-2.000000 CombFirstFourMoments 36 (Edge Transform)
-12.000000 CombFirstFourMoments 37 (Edge Transform)
-7.000000 CombFirstFourMoments 38 (Edge Transform)
-4.000000 CombFirstFourMoments 39 (Edge Transform)
-8.000000 CombFirstFourMoments 40 (Edge Transform)
-9.000000 CombFirstFourMoments 41 (Edge Transform)
-3.000000 CombFirstFourMoments 42 (Edge Transform)
-10.000000 CombFirstFourMoments 43 (Edge Transform)
-8.000000 CombFirstFourMoments 44 (Edge Transform)
-8.000000 CombFirstFourMoments 45 (Edge Transform)
-8.000000 CombFirstFourMoments 46 (Edge Transform)
-5.000000 CombFirstFourMoments 47 (Edge Transform)
-0.000320 Haarlick Texture 0 (Edge Transform)
-0.000245 Haarlick Texture 1 (Edge Transform)
-891.936996 Haarlick Texture 2 (Edge Transform)
-344.796143 Haarlick Texture 3 (Edge Transform)
-0.654533 Haarlick Texture 4 (Edge Transform)
-0.133914 Haarlick Texture 5 (Edge Transform)
-454.071083 Haarlick Texture 6 (Edge Transform)
-106.910767 Haarlick Texture 7 (Edge Transform)
-5.759660 Haarlick Texture 8 (Edge Transform)
-0.507670 Haarlick Texture 9 (Edge Transform)
-12.498682 Haarlick Texture 10 (Edge Transform)
-0.512908 Haarlick Texture 11 (Edge Transform)
--0.182523 Haarlick Texture 12 (Edge Transform)
-0.074222 Haarlick Texture 13 (Edge Transform)
-0.122028 Haarlick Texture 14 (Edge Transform)
-0.147126 Haarlick Texture 15 (Edge Transform)
-0.030596 Haarlick Texture 16 (Edge Transform)
-0.079559 Haarlick Texture 17 (Edge Transform)
-0.953687 Haarlick Texture 18 (Edge Transform)
-0.044859 Haarlick Texture 19 (Edge Transform)
-114.423466 Haarlick Texture 20 (Edge Transform)
-0.628059 Haarlick Texture 21 (Edge Transform)
-7.827212 Haarlick Texture 22 (Edge Transform)
-0.007028 Haarlick Texture 23 (Edge Transform)
-15634.979492 Haarlick Texture 24 (Edge Transform)
-216.392578 Haarlick Texture 25 (Edge Transform)
-1291.013794 Haarlick Texture 26 (Edge Transform)
-1.453369 Haarlick Texture 27 (Edge Transform)
-1.000000 MultiScale Histogram bin 0 (Edge Transform)
-0.228530 MultiScale Histogram bin 1 (Edge Transform)
-0.014800 MultiScale Histogram bin 2 (Edge Transform)
-0.644499 MultiScale Histogram bin 3 (Edge Transform)
-0.454041 MultiScale Histogram bin 4 (Edge Transform)
-0.119182 MultiScale Histogram bin 5 (Edge Transform)
-0.021519 MultiScale Histogram bin 6 (Edge Transform)
-0.004090 MultiScale Histogram bin 7 (Edge Transform)
-0.426777 MultiScale Histogram bin 8 (Edge Transform)
-0.471081 MultiScale Histogram bin 9 (Edge Transform)
-0.228822 MultiScale Histogram bin 10 (Edge Transform)
-0.083252 MultiScale Histogram bin 11 (Edge Transform)
-0.023856 MultiScale Histogram bin 12 (Edge Transform)
-0.007400 MultiScale Histogram bin 13 (Edge Transform)
-0.002142 MultiScale Histogram bin 14 (Edge Transform)
-0.293476 MultiScale Histogram bin 15 (Edge Transform)
-0.430964 MultiScale Histogram bin 16 (Edge Transform)
-0.275560 MultiScale Histogram bin 17 (Edge Transform)
-0.142551 MultiScale Histogram bin 18 (Edge Transform)
-0.062025 MultiScale Histogram bin 19 (Edge Transform)
-0.023953 MultiScale Histogram bin 20 (Edge Transform)
-0.009640 MultiScale Histogram bin 21 (Edge Transform)
-0.003797 MultiScale Histogram bin 22 (Edge Transform)
-0.001363 MultiScale Histogram bin 23 (Edge Transform)
-1.000000 Tamura Texture 0 (Edge Transform)
-0.100939 Tamura Texture 1 (Edge Transform)
-0.009216 Tamura Texture 2 (Edge Transform)
-1868.069107 Tamura Texture 3 (Edge Transform)
-1.411158 Tamura Texture 4 (Edge Transform)
-2.197226 Tamura Texture 5 (Edge Transform)
-57.000000 Radon bin 0 (Edge Transform)
-39.000000 Radon bin 1 (Edge Transform)
-67.000000 Radon bin 2 (Edge Transform)
-63.000000 Radon bin 3 (Edge Transform)
-37.000000 Radon bin 4 (Edge Transform)
-63.000000 Radon bin 5 (Edge Transform)
-61.000000 Radon bin 6 (Edge Transform)
-47.000000 Radon bin 7 (Edge Transform)
-55.000000 Radon bin 8 (Edge Transform)
-52.000000 Radon bin 9 (Edge Transform)
-20.000000 Radon bin 10 (Edge Transform)
-91.000000 Radon bin 11 (Edge Transform)
-26.662295 Fractal 0 (Edge Transform)
-38.881846 Fractal 1 (Edge Transform)
-42.390748 Fractal 2 (Edge Transform)
-44.720752 Fractal 3 (Edge Transform)
-46.245739 Fractal 4 (Edge Transform)
-47.306592 Fractal 5 (Edge Transform)
-47.996201 Fractal 6 (Edge Transform)
-48.714749 Fractal 7 (Edge Transform)
-49.203753 Fractal 8 (Edge Transform)
-49.541842 Fractal 9 (Edge Transform)
-50.095480 Fractal 10 (Edge Transform)
-50.899720 Fractal 11 (Edge Transform)
-51.529779 Fractal 12 (Edge Transform)
-51.928488 Fractal 13 (Edge Transform)
-52.104524 Fractal 14 (Edge Transform)
-52.403978 Fractal 15 (Edge Transform)
-52.700221 Fractal 16 (Edge Transform)
-52.934001 Fractal 17 (Edge Transform)
-52.874176 Fractal 18 (Edge Transform)
-53.159007 Fractal 19 (Edge Transform)
-83.130472 mean (Edge Transform)
-71.000000 median (Edge Transform)
-52.782556 stddev (Edge Transform)
-0.000000 min (Edge Transform)
-370.000000 max (Edge Transform)
-454.000000 Chebishev Fourier Transform bin 0 (Edge Fourier Transform)
-55.000000 Chebishev Fourier Transform bin 1 (Edge Fourier Transform)
-5.000000 Chebishev Fourier Transform bin 2 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 3 (Edge Fourier Transform)
-5.000000 Chebishev Fourier Transform bin 4 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 5 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 6 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 7 (Edge Fourier Transform)
-2.000000 Chebishev Fourier Transform bin 8 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 9 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 10 (Edge Fourier Transform)
-2.000000 Chebishev Fourier Transform bin 11 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 12 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 13 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 14 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 15 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 16 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 17 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 18 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 19 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 20 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 21 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 22 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 23 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 24 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 25 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 26 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 27 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 28 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 29 (Edge Fourier Transform)
-0.000000 Chebishev Fourier Transform bin 30 (Edge Fourier Transform)
-1.000000 Chebishev Fourier Transform bin 31 (Edge Fourier Transform)
-2.000000 Chebishev Statistics bin 0 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 1 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 2 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 3 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 4 (Edge Fourier Transform)
-11.000000 Chebishev Statistics bin 5 (Edge Fourier Transform)
-77.000000 Chebishev Statistics bin 6 (Edge Fourier Transform)
-89.000000 Chebishev Statistics bin 7 (Edge Fourier Transform)
-95.000000 Chebishev Statistics bin 8 (Edge Fourier Transform)
-85.000000 Chebishev Statistics bin 9 (Edge Fourier Transform)
-36.000000 Chebishev Statistics bin 10 (Edge Fourier Transform)
-1.000000 Chebishev Statistics bin 11 (Edge Fourier Transform)
-1.000000 Chebishev Statistics bin 12 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 13 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 14 (Edge Fourier Transform)
-1.000000 Chebishev Statistics bin 15 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 16 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 17 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 18 (Edge Fourier Transform)
-1.000000 Chebishev Statistics bin 19 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 20 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 21 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 22 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 23 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 24 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 25 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 26 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 27 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 28 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 29 (Edge Fourier Transform)
-0.000000 Chebishev Statistics bin 30 (Edge Fourier Transform)
-1.000000 Chebishev Statistics bin 31 (Edge Fourier Transform)
-0.165640 Zernike 0 (Edge Fourier Transform)
-0.009688 Zernike 1 (Edge Fourier Transform)
-0.063254 Zernike 2 (Edge Fourier Transform)
-0.010051 Zernike 3 (Edge Fourier Transform)
-0.001399 Zernike 4 (Edge Fourier Transform)
-0.017797 Zernike 5 (Edge Fourier Transform)
-0.001768 Zernike 6 (Edge Fourier Transform)
-0.003122 Zernike 7 (Edge Fourier Transform)
-0.061060 Zernike 8 (Edge Fourier Transform)
-0.004649 Zernike 9 (Edge Fourier Transform)
-0.002768 Zernike 10 (Edge Fourier Transform)
-0.001399 Zernike 11 (Edge Fourier Transform)
-0.007059 Zernike 12 (Edge Fourier Transform)
-0.003227 Zernike 13 (Edge Fourier Transform)
-0.004585 Zernike 14 (Edge Fourier Transform)
-0.008113 Zernike 15 (Edge Fourier Transform)
-0.005628 Zernike 16 (Edge Fourier Transform)
-0.004322 Zernike 17 (Edge Fourier Transform)
-0.000601 Zernike 18 (Edge Fourier Transform)
-0.006080 Zernike 19 (Edge Fourier Transform)
-0.009723 Zernike 20 (Edge Fourier Transform)
-0.003143 Zernike 21 (Edge Fourier Transform)
-0.005660 Zernike 22 (Edge Fourier Transform)
-0.008601 Zernike 23 (Edge Fourier Transform)
-0.002988 Zernike 24 (Edge Fourier Transform)
-0.005127 Zernike 25 (Edge Fourier Transform)
-0.003521 Zernike 26 (Edge Fourier Transform)
-0.006200 Zernike 27 (Edge Fourier Transform)
-0.000573 Zernike 28 (Edge Fourier Transform)
-0.002199 Zernike 29 (Edge Fourier Transform)
-0.009909 Zernike 30 (Edge Fourier Transform)
-0.003482 Zernike 31 (Edge Fourier Transform)
-0.001591 Zernike 32 (Edge Fourier Transform)
-0.005226 Zernike 33 (Edge Fourier Transform)
-0.006049 Zernike 34 (Edge Fourier Transform)
-0.003459 Zernike 35 (Edge Fourier Transform)
-0.003182 Zernike 36 (Edge Fourier Transform)
-0.003438 Zernike 37 (Edge Fourier Transform)
-0.003908 Zernike 38 (Edge Fourier Transform)
-0.000960 Zernike 39 (Edge Fourier Transform)
-0.004521 Zernike 40 (Edge Fourier Transform)
-0.004229 Zernike 41 (Edge Fourier Transform)
-0.010662 Zernike 42 (Edge Fourier Transform)
-0.001569 Zernike 43 (Edge Fourier Transform)
-0.002760 Zernike 44 (Edge Fourier Transform)
-0.002166 Zernike 45 (Edge Fourier Transform)
-0.004428 Zernike 46 (Edge Fourier Transform)
-0.002533 Zernike 47 (Edge Fourier Transform)
-0.003823 Zernike 48 (Edge Fourier Transform)
-0.003082 Zernike 49 (Edge Fourier Transform)
-0.001529 Zernike 50 (Edge Fourier Transform)
-0.000650 Zernike 51 (Edge Fourier Transform)
-0.005254 Zernike 52 (Edge Fourier Transform)
-0.006428 Zernike 53 (Edge Fourier Transform)
-0.009699 Zernike 54 (Edge Fourier Transform)
-0.009509 Zernike 55 (Edge Fourier Transform)
-0.008600 Zernike 56 (Edge Fourier Transform)
-0.005858 Zernike 57 (Edge Fourier Transform)
-0.005574 Zernike 58 (Edge Fourier Transform)
-0.001789 Zernike 59 (Edge Fourier Transform)
-0.007361 Zernike 60 (Edge Fourier Transform)
-0.005074 Zernike 61 (Edge Fourier Transform)
-0.001552 Zernike 62 (Edge Fourier Transform)
-0.003801 Zernike 63 (Edge Fourier Transform)
-0.002927 Zernike 64 (Edge Fourier Transform)
-0.004388 Zernike 65 (Edge Fourier Transform)
-0.002022 Zernike 66 (Edge Fourier Transform)
-0.011053 Zernike 67 (Edge Fourier Transform)
-0.007314 Zernike 68 (Edge Fourier Transform)
-0.003399 Zernike 69 (Edge Fourier Transform)
-0.005987 Zernike 70 (Edge Fourier Transform)
-0.005858 Zernike 71 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 0 (Edge Fourier Transform)
-0.000000 CombFirstFourMoments 1 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 2 (Edge Fourier Transform)
-15.000000 CombFirstFourMoments 3 (Edge Fourier Transform)
-4.000000 CombFirstFourMoments 4 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 5 (Edge Fourier Transform)
-18.000000 CombFirstFourMoments 6 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 7 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 8 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 9 (Edge Fourier Transform)
-0.000000 CombFirstFourMoments 10 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 11 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 12 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 13 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 14 (Edge Fourier Transform)
-15.000000 CombFirstFourMoments 15 (Edge Fourier Transform)
-4.000000 CombFirstFourMoments 16 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 17 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 18 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 19 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 20 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 21 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 22 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 23 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 24 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 25 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 26 (Edge Fourier Transform)
-20.000000 CombFirstFourMoments 27 (Edge Fourier Transform)
-0.000000 CombFirstFourMoments 28 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 29 (Edge Fourier Transform)
-14.000000 CombFirstFourMoments 30 (Edge Fourier Transform)
-6.000000 CombFirstFourMoments 31 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 32 (Edge Fourier Transform)
-13.000000 CombFirstFourMoments 33 (Edge Fourier Transform)
-6.000000 CombFirstFourMoments 34 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 35 (Edge Fourier Transform)
-18.000000 CombFirstFourMoments 36 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 37 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 38 (Edge Fourier Transform)
-19.000000 CombFirstFourMoments 39 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 40 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 41 (Edge Fourier Transform)
-16.000000 CombFirstFourMoments 42 (Edge Fourier Transform)
-3.000000 CombFirstFourMoments 43 (Edge Fourier Transform)
-2.000000 CombFirstFourMoments 44 (Edge Fourier Transform)
-20.000000 CombFirstFourMoments 45 (Edge Fourier Transform)
-0.000000 CombFirstFourMoments 46 (Edge Fourier Transform)
-1.000000 CombFirstFourMoments 47 (Edge Fourier Transform)
-0.225337 Haarlick Texture 0 (Edge Fourier Transform)
-0.024750 Haarlick Texture 1 (Edge Fourier Transform)
-2.235547 Haarlick Texture 2 (Edge Fourier Transform)
-0.253706 Haarlick Texture 3 (Edge Fourier Transform)
-0.544115 Haarlick Texture 4 (Edge Fourier Transform)
-0.061561 Haarlick Texture 5 (Edge Fourier Transform)
-1.584757 Haarlick Texture 6 (Edge Fourier Transform)
-0.198683 Haarlick Texture 7 (Edge Fourier Transform)
-1.754285 Haarlick Texture 8 (Edge Fourier Transform)
-0.089995 Haarlick Texture 9 (Edge Fourier Transform)
-3.320995 Haarlick Texture 10 (Edge Fourier Transform)
-0.104916 Haarlick Texture 11 (Edge Fourier Transform)
--0.126481 Haarlick Texture 12 (Edge Fourier Transform)
-0.009992 Haarlick Texture 13 (Edge Fourier Transform)
-0.701180 Haarlick Texture 14 (Edge Fourier Transform)
-0.017466 Haarlick Texture 15 (Edge Fourier Transform)
-0.028114 Haarlick Texture 16 (Edge Fourier Transform)
-0.055611 Haarlick Texture 17 (Edge Fourier Transform)
-0.601044 Haarlick Texture 18 (Edge Fourier Transform)
-0.025538 Haarlick Texture 19 (Edge Fourier Transform)
-3.650211 Haarlick Texture 20 (Edge Fourier Transform)
-0.107439 Haarlick Texture 21 (Edge Fourier Transform)
-2.473868 Haarlick Texture 22 (Edge Fourier Transform)
-0.070315 Haarlick Texture 23 (Edge Fourier Transform)
-8.979747 Haarlick Texture 24 (Edge Fourier Transform)
-1.452330 Haarlick Texture 25 (Edge Fourier Transform)
-2.457774 Haarlick Texture 26 (Edge Fourier Transform)
-0.343295 Haarlick Texture 27 (Edge Fourier Transform)
-1.000000 MultiScale Histogram bin 0 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 1 (Edge Fourier Transform)
-0.000078 MultiScale Histogram bin 2 (Edge Fourier Transform)
-1.000000 MultiScale Histogram bin 3 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 4 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 5 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 6 (Edge Fourier Transform)
-0.000078 MultiScale Histogram bin 7 (Edge Fourier Transform)
-0.999843 MultiScale Histogram bin 8 (Edge Fourier Transform)
-0.000157 MultiScale Histogram bin 9 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 10 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 11 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 12 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 13 (Edge Fourier Transform)
-0.000078 MultiScale Histogram bin 14 (Edge Fourier Transform)
-0.999843 MultiScale Histogram bin 15 (Edge Fourier Transform)
-0.000157 MultiScale Histogram bin 16 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 17 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 18 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 19 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 20 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 21 (Edge Fourier Transform)
-0.000000 MultiScale Histogram bin 22 (Edge Fourier Transform)
-0.000078 MultiScale Histogram bin 23 (Edge Fourier Transform)
-1.000000 Tamura Texture 0 (Edge Fourier Transform)
-0.082458 Tamura Texture 1 (Edge Fourier Transform)
-0.245295 Tamura Texture 2 (Edge Fourier Transform)
-11474356.578157 Tamura Texture 3 (Edge Fourier Transform)
-12.977736 Tamura Texture 4 (Edge Fourier Transform)
-3.734949 Tamura Texture 5 (Edge Fourier Transform)
-138.000000 Radon bin 0 (Edge Fourier Transform)
-23.000000 Radon bin 1 (Edge Fourier Transform)
-2.000000 Radon bin 2 (Edge Fourier Transform)
-126.000000 Radon bin 3 (Edge Fourier Transform)
-30.000000 Radon bin 4 (Edge Fourier Transform)
-7.000000 Radon bin 5 (Edge Fourier Transform)
-154.000000 Radon bin 6 (Edge Fourier Transform)
-8.000000 Radon bin 7 (Edge Fourier Transform)
-1.000000 Radon bin 8 (Edge Fourier Transform)
-150.000000 Radon bin 9 (Edge Fourier Transform)
-12.000000 Radon bin 10 (Edge Fourier Transform)
-1.000000 Radon bin 11 (Edge Fourier Transform)
-2227.059743 Fractal 0 (Edge Fourier Transform)
-2232.487441 Fractal 1 (Edge Fourier Transform)
-2204.988655 Fractal 2 (Edge Fourier Transform)
-2215.861507 Fractal 3 (Edge Fourier Transform)
-2236.326475 Fractal 4 (Edge Fourier Transform)
-2246.616805 Fractal 5 (Edge Fourier Transform)
-2253.661854 Fractal 6 (Edge Fourier Transform)
-2248.104896 Fractal 7 (Edge Fourier Transform)
-2286.069059 Fractal 8 (Edge Fourier Transform)
-2330.166407 Fractal 9 (Edge Fourier Transform)
-2345.191884 Fractal 10 (Edge Fourier Transform)
-2350.999227 Fractal 11 (Edge Fourier Transform)
-2382.894105 Fractal 12 (Edge Fourier Transform)
-2412.827868 Fractal 13 (Edge Fourier Transform)
-2438.835906 Fractal 14 (Edge Fourier Transform)
-2451.318394 Fractal 15 (Edge Fourier Transform)
-2489.540686 Fractal 16 (Edge Fourier Transform)
-2526.532462 Fractal 17 (Edge Fourier Transform)
-2539.792749 Fractal 18 (Edge Fourier Transform)
-2585.113642 Fractal 19 (Edge Fourier Transform)
-3815.672046 mean (Edge Fourier Transform)
-2638.497731 median (Edge Fourier Transform)
-10452.905948 stddev (Edge Fourier Transform)
-65.361488 min (Edge Fourier Transform)
-1061493.000000 max (Edge Fourier Transform)
-306.000000 Chebishev Fourier Transform bin 0 (Edge Wavelet Transform)
-135.000000 Chebishev Fourier Transform bin 1 (Edge Wavelet Transform)
-28.000000 Chebishev Fourier Transform bin 2 (Edge Wavelet Transform)
-12.000000 Chebishev Fourier Transform bin 3 (Edge Wavelet Transform)
-8.000000 Chebishev Fourier Transform bin 4 (Edge Wavelet Transform)
-4.000000 Chebishev Fourier Transform bin 5 (Edge Wavelet Transform)
-10.000000 Chebishev Fourier Transform bin 6 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 7 (Edge Wavelet Transform)
-1.000000 Chebishev Fourier Transform bin 8 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 9 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 10 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 11 (Edge Wavelet Transform)
-3.000000 Chebishev Fourier Transform bin 12 (Edge Wavelet Transform)
-1.000000 Chebishev Fourier Transform bin 13 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 14 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 15 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 16 (Edge Wavelet Transform)
-3.000000 Chebishev Fourier Transform bin 17 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 18 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 19 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 20 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 21 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 22 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 23 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 24 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 25 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 26 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 27 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 28 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 29 (Edge Wavelet Transform)
-0.000000 Chebishev Fourier Transform bin 30 (Edge Wavelet Transform)
-2.000000 Chebishev Fourier Transform bin 31 (Edge Wavelet Transform)
-4.000000 Chebishev Statistics bin 0 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 1 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 2 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 3 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 4 (Edge Wavelet Transform)
-3.000000 Chebishev Statistics bin 5 (Edge Wavelet Transform)
-1.000000 Chebishev Statistics bin 6 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 7 (Edge Wavelet Transform)
-1.000000 Chebishev Statistics bin 8 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 9 (Edge Wavelet Transform)
-5.000000 Chebishev Statistics bin 10 (Edge Wavelet Transform)
-11.000000 Chebishev Statistics bin 11 (Edge Wavelet Transform)
-23.000000 Chebishev Statistics bin 12 (Edge Wavelet Transform)
-79.000000 Chebishev Statistics bin 13 (Edge Wavelet Transform)
-132.000000 Chebishev Statistics bin 14 (Edge Wavelet Transform)
-91.000000 Chebishev Statistics bin 15 (Edge Wavelet Transform)
-28.000000 Chebishev Statistics bin 16 (Edge Wavelet Transform)
-5.000000 Chebishev Statistics bin 17 (Edge Wavelet Transform)
-4.000000 Chebishev Statistics bin 18 (Edge Wavelet Transform)
-2.000000 Chebishev Statistics bin 19 (Edge Wavelet Transform)
-3.000000 Chebishev Statistics bin 20 (Edge Wavelet Transform)
-1.000000 Chebishev Statistics bin 21 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 22 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 23 (Edge Wavelet Transform)
-1.000000 Chebishev Statistics bin 24 (Edge Wavelet Transform)
-5.000000 Chebishev Statistics bin 25 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 26 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 27 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 28 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 29 (Edge Wavelet Transform)
-0.000000 Chebishev Statistics bin 30 (Edge Wavelet Transform)
-1.000000 Chebishev Statistics bin 31 (Edge Wavelet Transform)
-0.315938 Zernike 0 (Edge Wavelet Transform)
-0.002963 Zernike 1 (Edge Wavelet Transform)
-0.717989 Zernike 2 (Edge Wavelet Transform)
-0.002647 Zernike 3 (Edge Wavelet Transform)
-0.008177 Zernike 4 (Edge Wavelet Transform)
-0.005250 Zernike 5 (Edge Wavelet Transform)
-0.631096 Zernike 6 (Edge Wavelet Transform)
-0.013563 Zernike 7 (Edge Wavelet Transform)
-0.009140 Zernike 8 (Edge Wavelet Transform)
-0.025306 Zernike 9 (Edge Wavelet Transform)
-0.024034 Zernike 10 (Edge Wavelet Transform)
-0.000217 Zernike 11 (Edge Wavelet Transform)
-0.188153 Zernike 12 (Edge Wavelet Transform)
-0.021756 Zernike 13 (Edge Wavelet Transform)
-0.037662 Zernike 14 (Edge Wavelet Transform)
-0.001794 Zernike 15 (Edge Wavelet Transform)
-0.048779 Zernike 16 (Edge Wavelet Transform)
-0.050273 Zernike 17 (Edge Wavelet Transform)
-0.002271 Zernike 18 (Edge Wavelet Transform)
-0.003031 Zernike 19 (Edge Wavelet Transform)
-0.227379 Zernike 20 (Edge Wavelet Transform)
-0.030077 Zernike 21 (Edge Wavelet Transform)
-0.070026 Zernike 22 (Edge Wavelet Transform)
-0.003157 Zernike 23 (Edge Wavelet Transform)
-0.001529 Zernike 24 (Edge Wavelet Transform)
-0.065281 Zernike 25 (Edge Wavelet Transform)
-0.064139 Zernike 26 (Edge Wavelet Transform)
-0.007958 Zernike 27 (Edge Wavelet Transform)
-0.002564 Zernike 28 (Edge Wavelet Transform)
-0.000646 Zernike 29 (Edge Wavelet Transform)
-0.353289 Zernike 30 (Edge Wavelet Transform)
-0.026100 Zernike 31 (Edge Wavelet Transform)
-0.074326 Zernike 32 (Edge Wavelet Transform)
-0.007208 Zernike 33 (Edge Wavelet Transform)
-0.003738 Zernike 34 (Edge Wavelet Transform)
-0.003008 Zernike 35 (Edge Wavelet Transform)
-0.052483 Zernike 36 (Edge Wavelet Transform)
-0.045390 Zernike 37 (Edge Wavelet Transform)
-0.007118 Zernike 38 (Edge Wavelet Transform)
-0.004542 Zernike 39 (Edge Wavelet Transform)
-0.002864 Zernike 40 (Edge Wavelet Transform)
-0.003633 Zernike 41 (Edge Wavelet Transform)
-0.175900 Zernike 42 (Edge Wavelet Transform)
-0.011873 Zernike 43 (Edge Wavelet Transform)
-0.037794 Zernike 44 (Edge Wavelet Transform)
-0.013789 Zernike 45 (Edge Wavelet Transform)
-0.015817 Zernike 46 (Edge Wavelet Transform)
-0.001787 Zernike 47 (Edge Wavelet Transform)
-0.003051 Zernike 48 (Edge Wavelet Transform)
-0.013478 Zernike 49 (Edge Wavelet Transform)
-0.031713 Zernike 50 (Edge Wavelet Transform)
-0.020383 Zernike 51 (Edge Wavelet Transform)
-0.004684 Zernike 52 (Edge Wavelet Transform)
-0.004004 Zernike 53 (Edge Wavelet Transform)
-0.001743 Zernike 54 (Edge Wavelet Transform)
-0.001165 Zernike 55 (Edge Wavelet Transform)
-0.098223 Zernike 56 (Edge Wavelet Transform)
-0.028842 Zernike 57 (Edge Wavelet Transform)
-0.063015 Zernike 58 (Edge Wavelet Transform)
-0.028388 Zernike 59 (Edge Wavelet Transform)
-0.034647 Zernike 60 (Edge Wavelet Transform)
-0.000436 Zernike 61 (Edge Wavelet Transform)
-0.003169 Zernike 62 (Edge Wavelet Transform)
-0.002709 Zernike 63 (Edge Wavelet Transform)
-0.011443 Zernike 64 (Edge Wavelet Transform)
-0.106951 Zernike 65 (Edge Wavelet Transform)
-0.044852 Zernike 66 (Edge Wavelet Transform)
-0.008747 Zernike 67 (Edge Wavelet Transform)
-0.007021 Zernike 68 (Edge Wavelet Transform)
-0.002179 Zernike 69 (Edge Wavelet Transform)
-0.003533 Zernike 70 (Edge Wavelet Transform)
-0.005891 Zernike 71 (Edge Wavelet Transform)
-11.000000 CombFirstFourMoments 0 (Edge Wavelet Transform)
-7.000000 CombFirstFourMoments 1 (Edge Wavelet Transform)
-3.000000 CombFirstFourMoments 2 (Edge Wavelet Transform)
-17.000000 CombFirstFourMoments 3 (Edge Wavelet Transform)
-0.000000 CombFirstFourMoments 4 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 5 (Edge Wavelet Transform)
-1.000000 CombFirstFourMoments 6 (Edge Wavelet Transform)
-14.000000 CombFirstFourMoments 7 (Edge Wavelet Transform)
-6.000000 CombFirstFourMoments 8 (Edge Wavelet Transform)
-17.000000 CombFirstFourMoments 9 (Edge Wavelet Transform)
-0.000000 CombFirstFourMoments 10 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 11 (Edge Wavelet Transform)
-11.000000 CombFirstFourMoments 12 (Edge Wavelet Transform)
-8.000000 CombFirstFourMoments 13 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 14 (Edge Wavelet Transform)
-17.000000 CombFirstFourMoments 15 (Edge Wavelet Transform)
-0.000000 CombFirstFourMoments 16 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 17 (Edge Wavelet Transform)
-14.000000 CombFirstFourMoments 18 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 19 (Edge Wavelet Transform)
-3.000000 CombFirstFourMoments 20 (Edge Wavelet Transform)
-17.000000 CombFirstFourMoments 21 (Edge Wavelet Transform)
-1.000000 CombFirstFourMoments 22 (Edge Wavelet Transform)
-3.000000 CombFirstFourMoments 23 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 24 (Edge Wavelet Transform)
-10.000000 CombFirstFourMoments 25 (Edge Wavelet Transform)
-9.000000 CombFirstFourMoments 26 (Edge Wavelet Transform)
-14.000000 CombFirstFourMoments 27 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 28 (Edge Wavelet Transform)
-5.000000 CombFirstFourMoments 29 (Edge Wavelet Transform)
-8.000000 CombFirstFourMoments 30 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 31 (Edge Wavelet Transform)
-9.000000 CombFirstFourMoments 32 (Edge Wavelet Transform)
-14.000000 CombFirstFourMoments 33 (Edge Wavelet Transform)
-0.000000 CombFirstFourMoments 34 (Edge Wavelet Transform)
-7.000000 CombFirstFourMoments 35 (Edge Wavelet Transform)
-18.000000 CombFirstFourMoments 36 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 37 (Edge Wavelet Transform)
-1.000000 CombFirstFourMoments 38 (Edge Wavelet Transform)
-15.000000 CombFirstFourMoments 39 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 40 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 41 (Edge Wavelet Transform)
-4.000000 CombFirstFourMoments 42 (Edge Wavelet Transform)
-14.000000 CombFirstFourMoments 43 (Edge Wavelet Transform)
-3.000000 CombFirstFourMoments 44 (Edge Wavelet Transform)
-13.000000 CombFirstFourMoments 45 (Edge Wavelet Transform)
-2.000000 CombFirstFourMoments 46 (Edge Wavelet Transform)
-6.000000 CombFirstFourMoments 47 (Edge Wavelet Transform)
-0.004071 Haarlick Texture 0 (Edge Wavelet Transform)
-0.001567 Haarlick Texture 1 (Edge Wavelet Transform)
-241.097912 Haarlick Texture 2 (Edge Wavelet Transform)
-55.004837 Haarlick Texture 3 (Edge Wavelet Transform)
-0.809154 Haarlick Texture 4 (Edge Wavelet Transform)
-0.042222 Haarlick Texture 5 (Edge Wavelet Transform)
-143.335449 Haarlick Texture 6 (Edge Wavelet Transform)
-39.552505 Haarlick Texture 7 (Edge Wavelet Transform)
-4.791689 Haarlick Texture 8 (Edge Wavelet Transform)
-0.087524 Haarlick Texture 9 (Edge Wavelet Transform)
-10.485313 Haarlick Texture 10 (Edge Wavelet Transform)
-0.139981 Haarlick Texture 11 (Edge Wavelet Transform)
--0.186290 Haarlick Texture 12 (Edge Wavelet Transform)
-0.017382 Haarlick Texture 13 (Edge Wavelet Transform)
-0.172698 Haarlick Texture 14 (Edge Wavelet Transform)
-0.023981 Haarlick Texture 15 (Edge Wavelet Transform)
-0.008758 Haarlick Texture 16 (Edge Wavelet Transform)
-0.014808 Haarlick Texture 17 (Edge Wavelet Transform)
-0.939967 Haarlick Texture 18 (Edge Wavelet Transform)
-0.011927 Haarlick Texture 19 (Edge Wavelet Transform)
-107.487301 Haarlick Texture 20 (Edge Wavelet Transform)
-0.180336 Haarlick Texture 21 (Edge Wavelet Transform)
-6.406391 Haarlick Texture 22 (Edge Wavelet Transform)
-0.109589 Haarlick Texture 23 (Edge Wavelet Transform)
-12502.140381 Haarlick Texture 24 (Edge Wavelet Transform)
-25.517578 Haarlick Texture 25 (Edge Wavelet Transform)
-631.471664 Haarlick Texture 26 (Edge Wavelet Transform)
-4.309875 Haarlick Texture 27 (Edge Wavelet Transform)
-1.000000 MultiScale Histogram bin 0 (Edge Wavelet Transform)
-0.201644 MultiScale Histogram bin 1 (Edge Wavelet Transform)
-0.009521 MultiScale Histogram bin 2 (Edge Wavelet Transform)
-0.073724 MultiScale Histogram bin 3 (Edge Wavelet Transform)
-0.997071 MultiScale Histogram bin 4 (Edge Wavelet Transform)
-0.118724 MultiScale Histogram bin 5 (Edge Wavelet Transform)
-0.019774 MultiScale Histogram bin 6 (Edge Wavelet Transform)
-0.001872 MultiScale Histogram bin 7 (Edge Wavelet Transform)
-0.005289 MultiScale Histogram bin 8 (Edge Wavelet Transform)
-0.911954 MultiScale Histogram bin 9 (Edge Wavelet Transform)
-0.179592 MultiScale Histogram bin 10 (Edge Wavelet Transform)
-0.084466 MultiScale Histogram bin 11 (Edge Wavelet Transform)
-0.024331 MultiScale Histogram bin 12 (Edge Wavelet Transform)
-0.004801 MultiScale Histogram bin 13 (Edge Wavelet Transform)
-0.000732 MultiScale Histogram bin 14 (Edge Wavelet Transform)
-0.001465 MultiScale Histogram bin 15 (Edge Wavelet Transform)
-0.206770 MultiScale Histogram bin 16 (Edge Wavelet Transform)
-0.791765 MultiScale Histogram bin 17 (Edge Wavelet Transform)
-0.110668 MultiScale Histogram bin 18 (Edge Wavelet Transform)
-0.064448 MultiScale Histogram bin 19 (Edge Wavelet Transform)
-0.026528 MultiScale Histogram bin 20 (Edge Wavelet Transform)
-0.006835 MultiScale Histogram bin 21 (Edge Wavelet Transform)
-0.002116 MultiScale Histogram bin 22 (Edge Wavelet Transform)
-0.000570 MultiScale Histogram bin 23 (Edge Wavelet Transform)
-1.000000 Tamura Texture 0 (Edge Wavelet Transform)
-0.119026 Tamura Texture 1 (Edge Wavelet Transform)
-0.002940 Tamura Texture 2 (Edge Wavelet Transform)
-4044.228343 Tamura Texture 3 (Edge Wavelet Transform)
-1.329153 Tamura Texture 4 (Edge Wavelet Transform)
-2.077037 Tamura Texture 5 (Edge Wavelet Transform)
-122.000000 Radon bin 0 (Edge Wavelet Transform)
-21.000000 Radon bin 1 (Edge Wavelet Transform)
-34.000000 Radon bin 2 (Edge Wavelet Transform)
-126.000000 Radon bin 3 (Edge Wavelet Transform)
-19.000000 Radon bin 4 (Edge Wavelet Transform)
-32.000000 Radon bin 5 (Edge Wavelet Transform)
-126.000000 Radon bin 6 (Edge Wavelet Transform)
-18.000000 Radon bin 7 (Edge Wavelet Transform)
-33.000000 Radon bin 8 (Edge Wavelet Transform)
-121.000000 Radon bin 9 (Edge Wavelet Transform)
-9.000000 Radon bin 10 (Edge Wavelet Transform)
-47.000000 Radon bin 11 (Edge Wavelet Transform)
-32.008569 Fractal 0 (Edge Wavelet Transform)
-35.342558 Fractal 1 (Edge Wavelet Transform)
-37.934067 Fractal 2 (Edge Wavelet Transform)
-39.042275 Fractal 3 (Edge Wavelet Transform)
-39.667981 Fractal 4 (Edge Wavelet Transform)
-40.662438 Fractal 5 (Edge Wavelet Transform)
-42.076196 Fractal 6 (Edge Wavelet Transform)
-42.646712 Fractal 7 (Edge Wavelet Transform)
-43.418507 Fractal 8 (Edge Wavelet Transform)
-44.083532 Fractal 9 (Edge Wavelet Transform)
-45.143386 Fractal 10 (Edge Wavelet Transform)
-46.061258 Fractal 11 (Edge Wavelet Transform)
-46.738116 Fractal 12 (Edge Wavelet Transform)
-47.411296 Fractal 13 (Edge Wavelet Transform)
-48.115490 Fractal 14 (Edge Wavelet Transform)
-49.060255 Fractal 15 (Edge Wavelet Transform)
-49.692171 Fractal 16 (Edge Wavelet Transform)
-50.431381 Fractal 17 (Edge Wavelet Transform)
-51.231515 Fractal 18 (Edge Wavelet Transform)
-51.967850 Fractal 19 (Edge Wavelet Transform)
-35.985488 mean (Edge Wavelet Transform)
-4.644817 median (Edge Wavelet Transform)
-83.810002 stddev (Edge Wavelet Transform)
--200.882053 min (Edge Wavelet Transform)
-648.345373 max (Edge Wavelet Transform)
+0	2.2
+t1_s01_c05_ij.tif
+4023.000000	Edge Features () [0]
+0.023567	Edge Features () [1]
+0.022870	Edge Features () [2]
+0.069859	Edge Features () [3]
+0.019596	Edge Features () [4]
+1759.000000	Edge Features () [5]
+1474.000000	Edge Features () [6]
+1418.000000	Edge Features () [7]
+1601.000000	Edge Features () [8]
+1678.000000	Edge Features () [9]
+1543.000000	Edge Features () [10]
+1631.000000	Edge Features () [11]
+1665.000000	Edge Features () [12]
+0.253191	Edge Features () [13]
+0.026444	Edge Features () [14]
+0.043337	Edge Features () [15]
+3.405367	Edge Features () [16]
+8898.000000	Edge Features () [17]
+2881.000000	Edge Features () [18]
+470.000000	Edge Features () [19]
+72.000000	Edge Features () [20]
+0.000000	Edge Features () [21]
+8.000000	Edge Features () [22]
+90.000000	Edge Features () [23]
+350.000000	Edge Features () [24]
+385.613636	Edge Features () [25]
+249.755881	Edge Features () [26]
+276145.783319	Edge Features () [27]
+40.000000	Otsu Object Features () [0]
+0.000000	Otsu Object Features () [1]
+0.000000	Otsu Object Features () [2]
+0.000000	Otsu Object Features () [3]
+0.000000	Otsu Object Features () [4]
+1.000000	Otsu Object Features () [5]
+0.000000	Otsu Object Features () [6]
+0.000000	Otsu Object Features () [7]
+0.000000	Otsu Object Features () [8]
+1.000000	Otsu Object Features () [9]
+4921.000000	Otsu Object Features () [10]
+196.500000	Otsu Object Features () [11]
+2.000000	Otsu Object Features () [12]
+1.000000	Otsu Object Features () [13]
+723629.865854	Otsu Object Features () [14]
+58.380468	Otsu Object Features () [15]
+55.241973	Otsu Object Features () [16]
+42.000000	Otsu Object Features () [17]
+3.000000	Otsu Object Features () [18]
+0.000000	Otsu Object Features () [19]
+7.000000	Otsu Object Features () [20]
+9.000000	Otsu Object Features () [21]
+6.000000	Otsu Object Features () [22]
+11.000000	Otsu Object Features () [23]
+1.000000	Otsu Object Features () [24]
+2.000000	Otsu Object Features () [25]
+2.000000	Otsu Object Features () [26]
+1.000000	Otsu Object Features () [27]
+80.358470	Otsu Object Features () [28]
+37.639281	Otsu Object Features () [29]
+38.949538	Otsu Object Features () [30]
+3.858531	Otsu Object Features () [31]
+248.584569	Otsu Object Features () [32]
+-9.000000	Otsu Object Features () [33]
+60.000000	Inverse-Otsu Object Features () [0]
+0.000000	Inverse-Otsu Object Features () [1]
+0.000000	Inverse-Otsu Object Features () [2]
+0.000000	Inverse-Otsu Object Features () [3]
+0.000000	Inverse-Otsu Object Features () [4]
+0.000000	Inverse-Otsu Object Features () [5]
+0.000000	Inverse-Otsu Object Features () [6]
+0.000000	Inverse-Otsu Object Features () [7]
+0.000000	Inverse-Otsu Object Features () [8]
+1.000000	Inverse-Otsu Object Features () [9]
+4106.000000	Inverse-Otsu Object Features () [10]
+74.409836	Inverse-Otsu Object Features () [11]
+2.000000	Inverse-Otsu Object Features () [12]
+1.000000	Inverse-Otsu Object Features () [13]
+276087.579235	Inverse-Otsu Object Features () [14]
+54.440185	Inverse-Otsu Object Features () [15]
+60.215246	Inverse-Otsu Object Features () [16]
+61.000000	Inverse-Otsu Object Features () [17]
+2.000000	Inverse-Otsu Object Features () [18]
+4.000000	Inverse-Otsu Object Features () [19]
+4.000000	Inverse-Otsu Object Features () [20]
+8.000000	Inverse-Otsu Object Features () [21]
+3.000000	Inverse-Otsu Object Features () [22]
+7.000000	Inverse-Otsu Object Features () [23]
+6.000000	Inverse-Otsu Object Features () [24]
+1.000000	Inverse-Otsu Object Features () [25]
+12.000000	Inverse-Otsu Object Features () [26]
+14.000000	Inverse-Otsu Object Features () [27]
+67.608384	Inverse-Otsu Object Features () [28]
+42.711231	Inverse-Otsu Object Features () [29]
+45.595446	Inverse-Otsu Object Features () [30]
+1.772763	Inverse-Otsu Object Features () [31]
+350.244965	Inverse-Otsu Object Features () [32]
+7.000000	Inverse-Otsu Object Features () [33]
+0.069011	Gabor Textures () [0]
+0.036268	Gabor Textures () [1]
+0.017782	Gabor Textures () [2]
+0.017390	Gabor Textures () [3]
+0.608570	Gabor Textures () [4]
+0.585383	Gabor Textures () [5]
+0.613426	Gabor Textures () [6]
+465.000000	Chebyshev-Fourier Coefficients () [0]
+49.000000	Chebyshev-Fourier Coefficients () [1]
+9.000000	Chebyshev-Fourier Coefficients () [2]
+1.000000	Chebyshev-Fourier Coefficients () [3]
+1.000000	Chebyshev-Fourier Coefficients () [4]
+0.000000	Chebyshev-Fourier Coefficients () [5]
+0.000000	Chebyshev-Fourier Coefficients () [6]
+0.000000	Chebyshev-Fourier Coefficients () [7]
+0.000000	Chebyshev-Fourier Coefficients () [8]
+0.000000	Chebyshev-Fourier Coefficients () [9]
+0.000000	Chebyshev-Fourier Coefficients () [10]
+0.000000	Chebyshev-Fourier Coefficients () [11]
+1.000000	Chebyshev-Fourier Coefficients () [12]
+0.000000	Chebyshev-Fourier Coefficients () [13]
+0.000000	Chebyshev-Fourier Coefficients () [14]
+0.000000	Chebyshev-Fourier Coefficients () [15]
+0.000000	Chebyshev-Fourier Coefficients () [16]
+0.000000	Chebyshev-Fourier Coefficients () [17]
+0.000000	Chebyshev-Fourier Coefficients () [18]
+0.000000	Chebyshev-Fourier Coefficients () [19]
+1.000000	Chebyshev-Fourier Coefficients () [20]
+0.000000	Chebyshev-Fourier Coefficients () [21]
+1.000000	Chebyshev-Fourier Coefficients () [22]
+0.000000	Chebyshev-Fourier Coefficients () [23]
+0.000000	Chebyshev-Fourier Coefficients () [24]
+0.000000	Chebyshev-Fourier Coefficients () [25]
+0.000000	Chebyshev-Fourier Coefficients () [26]
+0.000000	Chebyshev-Fourier Coefficients () [27]
+0.000000	Chebyshev-Fourier Coefficients () [28]
+0.000000	Chebyshev-Fourier Coefficients () [29]
+0.000000	Chebyshev-Fourier Coefficients () [30]
+1.000000	Chebyshev-Fourier Coefficients () [31]
+2.000000	Chebyshev Coefficients () [0]
+0.000000	Chebyshev Coefficients () [1]
+0.000000	Chebyshev Coefficients () [2]
+0.000000	Chebyshev Coefficients () [3]
+0.000000	Chebyshev Coefficients () [4]
+0.000000	Chebyshev Coefficients () [5]
+0.000000	Chebyshev Coefficients () [6]
+0.000000	Chebyshev Coefficients () [7]
+0.000000	Chebyshev Coefficients () [8]
+2.000000	Chebyshev Coefficients () [9]
+0.000000	Chebyshev Coefficients () [10]
+13.000000	Chebyshev Coefficients () [11]
+351.000000	Chebyshev Coefficients () [12]
+28.000000	Chebyshev Coefficients () [13]
+2.000000	Chebyshev Coefficients () [14]
+0.000000	Chebyshev Coefficients () [15]
+0.000000	Chebyshev Coefficients () [16]
+0.000000	Chebyshev Coefficients () [17]
+0.000000	Chebyshev Coefficients () [18]
+0.000000	Chebyshev Coefficients () [19]
+1.000000	Chebyshev Coefficients () [20]
+0.000000	Chebyshev Coefficients () [21]
+0.000000	Chebyshev Coefficients () [22]
+0.000000	Chebyshev Coefficients () [23]
+0.000000	Chebyshev Coefficients () [24]
+0.000000	Chebyshev Coefficients () [25]
+0.000000	Chebyshev Coefficients () [26]
+0.000000	Chebyshev Coefficients () [27]
+0.000000	Chebyshev Coefficients () [28]
+0.000000	Chebyshev Coefficients () [29]
+0.000000	Chebyshev Coefficients () [30]
+1.000000	Chebyshev Coefficients () [31]
+0.000587	Zernike Coefficients () [0]
+0.001249	Zernike Coefficients () [1]
+0.002436	Zernike Coefficients () [2]
+0.002183	Zernike Coefficients () [3]
+0.001979	Zernike Coefficients () [4]
+0.037165	Zernike Coefficients () [5]
+0.003548	Zernike Coefficients () [6]
+0.008054	Zernike Coefficients () [7]
+0.000444	Zernike Coefficients () [8]
+0.007898	Zernike Coefficients () [9]
+0.124941	Zernike Coefficients () [10]
+0.000205	Zernike Coefficients () [11]
+0.000941	Zernike Coefficients () [12]
+0.013687	Zernike Coefficients () [13]
+0.001028	Zernike Coefficients () [14]
+0.000291	Zernike Coefficients () [15]
+0.019500	Zernike Coefficients () [16]
+0.157470	Zernike Coefficients () [17]
+0.000867	Zernike Coefficients () [18]
+0.005729	Zernike Coefficients () [19]
+0.003719	Zernike Coefficients () [20]
+0.013726	Zernike Coefficients () [21]
+0.001199	Zernike Coefficients () [22]
+0.001726	Zernike Coefficients () [23]
+0.000192	Zernike Coefficients () [24]
+0.024939	Zernike Coefficients () [25]
+0.043627	Zernike Coefficients () [26]
+0.001401	Zernike Coefficients () [27]
+0.031035	Zernike Coefficients () [28]
+0.000036	Zernike Coefficients () [29]
+0.004566	Zernike Coefficients () [30]
+0.007637	Zernike Coefficients () [31]
+0.006391	Zernike Coefficients () [32]
+0.004666	Zernike Coefficients () [33]
+0.000966	Zernike Coefficients () [34]
+0.000049	Zernike Coefficients () [35]
+0.017271	Zernike Coefficients () [36]
+0.118599	Zernike Coefficients () [37]
+0.000912	Zernike Coefficients () [38]
+0.073290	Zernike Coefficients () [39]
+0.000236	Zernike Coefficients () [40]
+0.001026	Zernike Coefficients () [41]
+0.006994	Zernike Coefficients () [42]
+0.001075	Zernike Coefficients () [43]
+0.011426	Zernike Coefficients () [44]
+0.007074	Zernike Coefficients () [45]
+0.001864	Zernike Coefficients () [46]
+0.000410	Zernike Coefficients () [47]
+0.000059	Zernike Coefficients () [48]
+0.003168	Zernike Coefficients () [49]
+0.139449	Zernike Coefficients () [50]
+0.003464	Zernike Coefficients () [51]
+0.089018	Zernike Coefficients () [52]
+0.000707	Zernike Coefficients () [53]
+0.007629	Zernike Coefficients () [54]
+0.000006	Zernike Coefficients () [55]
+0.010835	Zernike Coefficients () [56]
+0.009509	Zernike Coefficients () [57]
+0.014109	Zernike Coefficients () [58]
+0.005309	Zernike Coefficients () [59]
+0.001328	Zernike Coefficients () [60]
+0.001584	Zernike Coefficients () [61]
+0.000434	Zernike Coefficients () [62]
+0.000010	Zernike Coefficients () [63]
+0.012277	Zernike Coefficients () [64]
+0.006915	Zernike Coefficients () [65]
+0.007340	Zernike Coefficients () [66]
+0.033669	Zernike Coefficients () [67]
+0.001258	Zernike Coefficients () [68]
+0.025922	Zernike Coefficients () [69]
+0.000055	Zernike Coefficients () [70]
+0.000200	Zernike Coefficients () [71]
+9.000000	Comb Moments () [0]
+4.000000	Comb Moments () [1]
+7.000000	Comb Moments () [2]
+9.000000	Comb Moments () [3]
+0.000000	Comb Moments () [4]
+11.000000	Comb Moments () [5]
+6.000000	Comb Moments () [6]
+12.000000	Comb Moments () [7]
+2.000000	Comb Moments () [8]
+10.000000	Comb Moments () [9]
+6.000000	Comb Moments () [10]
+4.000000	Comb Moments () [11]
+9.000000	Comb Moments () [12]
+1.000000	Comb Moments () [13]
+10.000000	Comb Moments () [14]
+9.000000	Comb Moments () [15]
+0.000000	Comb Moments () [16]
+11.000000	Comb Moments () [17]
+4.000000	Comb Moments () [18]
+11.000000	Comb Moments () [19]
+5.000000	Comb Moments () [20]
+11.000000	Comb Moments () [21]
+1.000000	Comb Moments () [22]
+8.000000	Comb Moments () [23]
+2.000000	Comb Moments () [24]
+11.000000	Comb Moments () [25]
+7.000000	Comb Moments () [26]
+8.000000	Comb Moments () [27]
+9.000000	Comb Moments () [28]
+3.000000	Comb Moments () [29]
+19.000000	Comb Moments () [30]
+0.000000	Comb Moments () [31]
+1.000000	Comb Moments () [32]
+19.000000	Comb Moments () [33]
+0.000000	Comb Moments () [34]
+1.000000	Comb Moments () [35]
+4.000000	Comb Moments () [36]
+10.000000	Comb Moments () [37]
+6.000000	Comb Moments () [38]
+7.000000	Comb Moments () [39]
+11.000000	Comb Moments () [40]
+2.000000	Comb Moments () [41]
+19.000000	Comb Moments () [42]
+0.000000	Comb Moments () [43]
+1.000000	Comb Moments () [44]
+19.000000	Comb Moments () [45]
+0.000000	Comb Moments () [46]
+1.000000	Comb Moments () [47]
+0.000302	Haralick Textures () [0]
+0.000047	Haralick Textures () [1]
+311.768683	Haralick Textures () [2]
+188.398625	Haralick Textures () [3]
+0.841192	Haralick Textures () [4]
+0.094881	Haralick Textures () [5]
+149.635454	Haralick Textures () [6]
+100.234321	Haralick Textures () [7]
+5.115810	Haralick Textures () [8]
+0.388513	Haralick Textures () [9]
+12.375777	Haralick Textures () [10]
+0.239788	Haralick Textures () [11]
+-0.214262	Haralick Textures () [12]
+0.032533	Haralick Textures () [13]
+0.094785	Haralick Textures () [14]
+0.015791	Haralick Textures () [15]
+0.009992	Haralick Textures () [16]
+0.016282	Haralick Textures () [17]
+0.973495	Haralick Textures () [18]
+0.011798	Haralick Textures () [19]
+229.353263	Haralick Textures () [20]
+0.190906	Haralick Textures () [21]
+7.856569	Haralick Textures () [22]
+0.027917	Haralick Textures () [23]
+52671.910708	Haralick Textures () [24]
+230.136153	Haralick Textures () [25]
+980.722262	Haralick Textures () [26]
+7.568799	Haralick Textures () [27]
+0.150945	Multiscale Histograms () [0]
+1.000000	Multiscale Histograms () [1]
+0.074369	Multiscale Histograms () [2]
+0.029076	Multiscale Histograms () [3]
+0.258420	Multiscale Histograms () [4]
+0.794454	Multiscale Histograms () [5]
+0.136071	Multiscale Histograms () [6]
+0.007293	Multiscale Histograms () [7]
+0.009596	Multiscale Histograms () [8]
+0.077440	Multiscale Histograms () [9]
+0.285097	Multiscale Histograms () [10]
+0.654544	Multiscale Histograms () [11]
+0.161117	Multiscale Histograms () [12]
+0.035217	Multiscale Histograms () [13]
+0.002303	Multiscale Histograms () [14]
+0.004606	Multiscale Histograms () [15]
+0.035697	Multiscale Histograms () [16]
+0.110642	Multiscale Histograms () [17]
+0.275693	Multiscale Histograms () [18]
+0.549276	Multiscale Histograms () [19]
+0.175031	Multiscale Histograms () [20]
+0.064101	Multiscale Histograms () [21]
+0.008444	Multiscale Histograms () [22]
+0.001823	Multiscale Histograms () [23]
+1.000000	Tamura Textures () [0]
+0.178016	Tamura Textures () [1]
+0.191314	Tamura Textures () [2]
+0.005562	Tamura Textures () [3]
+7.316808	Tamura Textures () [4]
+3.326170	Tamura Textures () [5]
+50.000000	Radon Coefficients () [0]
+0.000000	Radon Coefficients () [1]
+113.000000	Radon Coefficients () [2]
+54.000000	Radon Coefficients () [3]
+65.000000	Radon Coefficients () [4]
+44.000000	Radon Coefficients () [5]
+55.000000	Radon Coefficients () [6]
+50.000000	Radon Coefficients () [7]
+58.000000	Radon Coefficients () [8]
+50.000000	Radon Coefficients () [9]
+0.000000	Radon Coefficients () [10]
+113.000000	Radon Coefficients () [11]
+46.306179	Fractal Features () [0]
+72.627242	Fractal Features () [1]
+89.561585	Fractal Features () [2]
+101.521474	Fractal Features () [3]
+110.452475	Fractal Features () [4]
+117.370441	Fractal Features () [5]
+122.480840	Fractal Features () [6]
+126.714454	Fractal Features () [7]
+130.069903	Fractal Features () [8]
+132.761062	Fractal Features () [9]
+135.069929	Fractal Features () [10]
+136.642381	Fractal Features () [11]
+137.413451	Fractal Features () [12]
+137.870922	Fractal Features () [13]
+138.350912	Fractal Features () [14]
+139.231868	Fractal Features () [15]
+140.455291	Fractal Features () [16]
+141.535771	Fractal Features () [17]
+142.700056	Fractal Features () [18]
+143.614997	Fractal Features () [19]
+912.192654	Pixel Intensity Statistics () [0]
+927.000000	Pixel Intensity Statistics () [1]
+129.316176	Pixel Intensity Statistics () [2]
+411.000000	Pixel Intensity Statistics () [3]
+1465.000000	Pixel Intensity Statistics () [4]
+0.077697	Gini Coefficient () [0]
+464.000000	Chebyshev-Fourier Coefficients (Fourier ()) [0]
+29.000000	Chebyshev-Fourier Coefficients (Fourier ()) [1]
+13.000000	Chebyshev-Fourier Coefficients (Fourier ()) [2]
+3.000000	Chebyshev-Fourier Coefficients (Fourier ()) [3]
+6.000000	Chebyshev-Fourier Coefficients (Fourier ()) [4]
+2.000000	Chebyshev-Fourier Coefficients (Fourier ()) [5]
+3.000000	Chebyshev-Fourier Coefficients (Fourier ()) [6]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [7]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [8]
+1.000000	Chebyshev-Fourier Coefficients (Fourier ()) [9]
+1.000000	Chebyshev-Fourier Coefficients (Fourier ()) [10]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [11]
+2.000000	Chebyshev-Fourier Coefficients (Fourier ()) [12]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [13]
+1.000000	Chebyshev-Fourier Coefficients (Fourier ()) [14]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [15]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [16]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [17]
+2.000000	Chebyshev-Fourier Coefficients (Fourier ()) [18]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [19]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [20]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [21]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [22]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [23]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [24]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [25]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [26]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [27]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [28]
+0.000000	Chebyshev-Fourier Coefficients (Fourier ()) [29]
+1.000000	Chebyshev-Fourier Coefficients (Fourier ()) [30]
+1.000000	Chebyshev-Fourier Coefficients (Fourier ()) [31]
+8.000000	Chebyshev Coefficients (Fourier ()) [0]
+15.000000	Chebyshev Coefficients (Fourier ()) [1]
+15.000000	Chebyshev Coefficients (Fourier ()) [2]
+16.000000	Chebyshev Coefficients (Fourier ()) [3]
+12.000000	Chebyshev Coefficients (Fourier ()) [4]
+16.000000	Chebyshev Coefficients (Fourier ()) [5]
+28.000000	Chebyshev Coefficients (Fourier ()) [6]
+21.000000	Chebyshev Coefficients (Fourier ()) [7]
+26.000000	Chebyshev Coefficients (Fourier ()) [8]
+28.000000	Chebyshev Coefficients (Fourier ()) [9]
+27.000000	Chebyshev Coefficients (Fourier ()) [10]
+21.000000	Chebyshev Coefficients (Fourier ()) [11]
+27.000000	Chebyshev Coefficients (Fourier ()) [12]
+18.000000	Chebyshev Coefficients (Fourier ()) [13]
+19.000000	Chebyshev Coefficients (Fourier ()) [14]
+8.000000	Chebyshev Coefficients (Fourier ()) [15]
+29.000000	Chebyshev Coefficients (Fourier ()) [16]
+11.000000	Chebyshev Coefficients (Fourier ()) [17]
+13.000000	Chebyshev Coefficients (Fourier ()) [18]
+16.000000	Chebyshev Coefficients (Fourier ()) [19]
+16.000000	Chebyshev Coefficients (Fourier ()) [20]
+6.000000	Chebyshev Coefficients (Fourier ()) [21]
+2.000000	Chebyshev Coefficients (Fourier ()) [22]
+0.000000	Chebyshev Coefficients (Fourier ()) [23]
+0.000000	Chebyshev Coefficients (Fourier ()) [24]
+0.000000	Chebyshev Coefficients (Fourier ()) [25]
+0.000000	Chebyshev Coefficients (Fourier ()) [26]
+0.000000	Chebyshev Coefficients (Fourier ()) [27]
+0.000000	Chebyshev Coefficients (Fourier ()) [28]
+0.000000	Chebyshev Coefficients (Fourier ()) [29]
+1.000000	Chebyshev Coefficients (Fourier ()) [30]
+1.000000	Chebyshev Coefficients (Fourier ()) [31]
+0.015984	Zernike Coefficients (Fourier ()) [0]
+0.066263	Zernike Coefficients (Fourier ()) [1]
+0.079245	Zernike Coefficients (Fourier ()) [2]
+0.058159	Zernike Coefficients (Fourier ()) [3]
+0.112533	Zernike Coefficients (Fourier ()) [4]
+0.174340	Zernike Coefficients (Fourier ()) [5]
+0.058917	Zernike Coefficients (Fourier ()) [6]
+0.225932	Zernike Coefficients (Fourier ()) [7]
+0.050346	Zernike Coefficients (Fourier ()) [8]
+0.024441	Zernike Coefficients (Fourier ()) [9]
+0.508063	Zernike Coefficients (Fourier ()) [10]
+0.047505	Zernike Coefficients (Fourier ()) [11]
+0.123982	Zernike Coefficients (Fourier ()) [12]
+0.303990	Zernike Coefficients (Fourier ()) [13]
+0.110240	Zernike Coefficients (Fourier ()) [14]
+0.009605	Zernike Coefficients (Fourier ()) [15]
+0.049707	Zernike Coefficients (Fourier ()) [16]
+0.501914	Zernike Coefficients (Fourier ()) [17]
+0.170562	Zernike Coefficients (Fourier ()) [18]
+0.045073	Zernike Coefficients (Fourier ()) [19]
+0.154882	Zernike Coefficients (Fourier ()) [20]
+0.030922	Zernike Coefficients (Fourier ()) [21]
+0.015683	Zernike Coefficients (Fourier ()) [22]
+0.100659	Zernike Coefficients (Fourier ()) [23]
+0.027484	Zernike Coefficients (Fourier ()) [24]
+0.051107	Zernike Coefficients (Fourier ()) [25]
+0.030432	Zernike Coefficients (Fourier ()) [26]
+0.249807	Zernike Coefficients (Fourier ()) [27]
+0.206285	Zernike Coefficients (Fourier ()) [28]
+0.022541	Zernike Coefficients (Fourier ()) [29]
+0.085230	Zernike Coefficients (Fourier ()) [30]
+0.319918	Zernike Coefficients (Fourier ()) [31]
+0.232977	Zernike Coefficients (Fourier ()) [32]
+0.343406	Zernike Coefficients (Fourier ()) [33]
+0.115261	Zernike Coefficients (Fourier ()) [34]
+0.003790	Zernike Coefficients (Fourier ()) [35]
+0.039884	Zernike Coefficients (Fourier ()) [36]
+0.332262	Zernike Coefficients (Fourier ()) [37]
+0.191223	Zernike Coefficients (Fourier ()) [38]
+0.404925	Zernike Coefficients (Fourier ()) [39]
+0.117369	Zernike Coefficients (Fourier ()) [40]
+0.011920	Zernike Coefficients (Fourier ()) [41]
+0.162028	Zernike Coefficients (Fourier ()) [42]
+0.198402	Zernike Coefficients (Fourier ()) [43]
+0.163991	Zernike Coefficients (Fourier ()) [44]
+0.535610	Zernike Coefficients (Fourier ()) [45]
+0.163047	Zernike Coefficients (Fourier ()) [46]
+0.003851	Zernike Coefficients (Fourier ()) [47]
+0.010429	Zernike Coefficients (Fourier ()) [48]
+0.039007	Zernike Coefficients (Fourier ()) [49]
+0.210156	Zernike Coefficients (Fourier ()) [50]
+0.070998	Zernike Coefficients (Fourier ()) [51]
+0.430502	Zernike Coefficients (Fourier ()) [52]
+0.269209	Zernike Coefficients (Fourier ()) [53]
+0.067642	Zernike Coefficients (Fourier ()) [54]
+0.009099	Zernike Coefficients (Fourier ()) [55]
+0.081745	Zernike Coefficients (Fourier ()) [56]
+0.224874	Zernike Coefficients (Fourier ()) [57]
+0.152602	Zernike Coefficients (Fourier ()) [58]
+0.303287	Zernike Coefficients (Fourier ()) [59]
+0.008949	Zernike Coefficients (Fourier ()) [60]
+0.107346	Zernike Coefficients (Fourier ()) [61]
+0.060295	Zernike Coefficients (Fourier ()) [62]
+0.003742	Zernike Coefficients (Fourier ()) [63]
+0.117103	Zernike Coefficients (Fourier ()) [64]
+0.108895	Zernike Coefficients (Fourier ()) [65]
+0.061599	Zernike Coefficients (Fourier ()) [66]
+0.239305	Zernike Coefficients (Fourier ()) [67]
+0.360434	Zernike Coefficients (Fourier ()) [68]
+0.168036	Zernike Coefficients (Fourier ()) [69]
+0.061097	Zernike Coefficients (Fourier ()) [70]
+0.003910	Zernike Coefficients (Fourier ()) [71]
+15.000000	Comb Moments (Fourier ()) [0]
+4.000000	Comb Moments (Fourier ()) [1]
+1.000000	Comb Moments (Fourier ()) [2]
+16.000000	Comb Moments (Fourier ()) [3]
+2.000000	Comb Moments (Fourier ()) [4]
+2.000000	Comb Moments (Fourier ()) [5]
+12.000000	Comb Moments (Fourier ()) [6]
+6.000000	Comb Moments (Fourier ()) [7]
+2.000000	Comb Moments (Fourier ()) [8]
+18.000000	Comb Moments (Fourier ()) [9]
+0.000000	Comb Moments (Fourier ()) [10]
+2.000000	Comb Moments (Fourier ()) [11]
+14.000000	Comb Moments (Fourier ()) [12]
+4.000000	Comb Moments (Fourier ()) [13]
+2.000000	Comb Moments (Fourier ()) [14]
+16.000000	Comb Moments (Fourier ()) [15]
+2.000000	Comb Moments (Fourier ()) [16]
+2.000000	Comb Moments (Fourier ()) [17]
+13.000000	Comb Moments (Fourier ()) [18]
+5.000000	Comb Moments (Fourier ()) [19]
+2.000000	Comb Moments (Fourier ()) [20]
+18.000000	Comb Moments (Fourier ()) [21]
+0.000000	Comb Moments (Fourier ()) [22]
+2.000000	Comb Moments (Fourier ()) [23]
+18.000000	Comb Moments (Fourier ()) [24]
+0.000000	Comb Moments (Fourier ()) [25]
+2.000000	Comb Moments (Fourier ()) [26]
+19.000000	Comb Moments (Fourier ()) [27]
+0.000000	Comb Moments (Fourier ()) [28]
+1.000000	Comb Moments (Fourier ()) [29]
+19.000000	Comb Moments (Fourier ()) [30]
+0.000000	Comb Moments (Fourier ()) [31]
+1.000000	Comb Moments (Fourier ()) [32]
+17.000000	Comb Moments (Fourier ()) [33]
+2.000000	Comb Moments (Fourier ()) [34]
+1.000000	Comb Moments (Fourier ()) [35]
+14.000000	Comb Moments (Fourier ()) [36]
+4.000000	Comb Moments (Fourier ()) [37]
+2.000000	Comb Moments (Fourier ()) [38]
+17.000000	Comb Moments (Fourier ()) [39]
+2.000000	Comb Moments (Fourier ()) [40]
+1.000000	Comb Moments (Fourier ()) [41]
+19.000000	Comb Moments (Fourier ()) [42]
+0.000000	Comb Moments (Fourier ()) [43]
+1.000000	Comb Moments (Fourier ()) [44]
+19.000000	Comb Moments (Fourier ()) [45]
+0.000000	Comb Moments (Fourier ()) [46]
+1.000000	Comb Moments (Fourier ()) [47]
+0.289452	Haralick Textures (Fourier ()) [0]
+0.033809	Haralick Textures (Fourier ()) [1]
+0.768515	Haralick Textures (Fourier ()) [2]
+0.136748	Haralick Textures (Fourier ()) [3]
+0.403866	Haralick Textures (Fourier ()) [4]
+0.161985	Haralick Textures (Fourier ()) [5]
+0.469967	Haralick Textures (Fourier ()) [6]
+0.153542	Haralick Textures (Fourier ()) [7]
+1.339069	Haralick Textures (Fourier ()) [8]
+0.080534	Haralick Textures (Fourier ()) [9]
+2.474040	Haralick Textures (Fourier ()) [10]
+0.118994	Haralick Textures (Fourier ()) [11]
+-0.149535	Haralick Textures (Fourier ()) [12]
+0.112738	Haralick Textures (Fourier ()) [13]
+0.749144	Haralick Textures (Fourier ()) [14]
+0.031858	Haralick Textures (Fourier ()) [15]
+0.294893	Haralick Textures (Fourier ()) [16]
+0.340956	Haralick Textures (Fourier ()) [17]
+0.565060	Haralick Textures (Fourier ()) [18]
+0.214853	Haralick Textures (Fourier ()) [19]
+2.979498	Haralick Textures (Fourier ()) [20]
+0.121523	Haralick Textures (Fourier ()) [21]
+1.904068	Haralick Textures (Fourier ()) [22]
+0.078102	Haralick Textures (Fourier ()) [23]
+2.980272	Haralick Textures (Fourier ()) [24]
+0.585631	Haralick Textures (Fourier ()) [25]
+0.647893	Haralick Textures (Fourier ()) [26]
+0.092296	Haralick Textures (Fourier ()) [27]
+1.000000	Multiscale Histograms (Fourier ()) [0]
+0.000000	Multiscale Histograms (Fourier ()) [1]
+0.000078	Multiscale Histograms (Fourier ()) [2]
+1.000000	Multiscale Histograms (Fourier ()) [3]
+0.000000	Multiscale Histograms (Fourier ()) [4]
+0.000000	Multiscale Histograms (Fourier ()) [5]
+0.000000	Multiscale Histograms (Fourier ()) [6]
+0.000078	Multiscale Histograms (Fourier ()) [7]
+1.000000	Multiscale Histograms (Fourier ()) [8]
+0.000000	Multiscale Histograms (Fourier ()) [9]
+0.000000	Multiscale Histograms (Fourier ()) [10]
+0.000000	Multiscale Histograms (Fourier ()) [11]
+0.000000	Multiscale Histograms (Fourier ()) [12]
+0.000000	Multiscale Histograms (Fourier ()) [13]
+0.000078	Multiscale Histograms (Fourier ()) [14]
+1.000000	Multiscale Histograms (Fourier ()) [15]
+0.000000	Multiscale Histograms (Fourier ()) [16]
+0.000000	Multiscale Histograms (Fourier ()) [17]
+0.000000	Multiscale Histograms (Fourier ()) [18]
+0.000000	Multiscale Histograms (Fourier ()) [19]
+0.000000	Multiscale Histograms (Fourier ()) [20]
+0.000000	Multiscale Histograms (Fourier ()) [21]
+0.000000	Multiscale Histograms (Fourier ()) [22]
+0.000078	Multiscale Histograms (Fourier ()) [23]
+1.000000	Tamura Textures (Fourier ()) [0]
+0.082907	Tamura Textures (Fourier ()) [1]
+0.367291	Tamura Textures (Fourier ()) [2]
+0.000008	Tamura Textures (Fourier ()) [3]
+7.449277	Tamura Textures (Fourier ()) [4]
+4.374333	Tamura Textures (Fourier ()) [5]
+161.000000	Radon Coefficients (Fourier ()) [0]
+1.000000	Radon Coefficients (Fourier ()) [1]
+1.000000	Radon Coefficients (Fourier ()) [2]
+162.000000	Radon Coefficients (Fourier ()) [3]
+0.000000	Radon Coefficients (Fourier ()) [4]
+1.000000	Radon Coefficients (Fourier ()) [5]
+162.000000	Radon Coefficients (Fourier ()) [6]
+0.000000	Radon Coefficients (Fourier ()) [7]
+1.000000	Radon Coefficients (Fourier ()) [8]
+161.000000	Radon Coefficients (Fourier ()) [9]
+1.000000	Radon Coefficients (Fourier ()) [10]
+1.000000	Radon Coefficients (Fourier ()) [11]
+4689.366131	Fractal Features (Fourier ()) [0]
+4691.129782	Fractal Features (Fourier ()) [1]
+4655.125976	Fractal Features (Fourier ()) [2]
+4780.825356	Fractal Features (Fourier ()) [3]
+4720.987806	Fractal Features (Fourier ()) [4]
+4876.019884	Fractal Features (Fourier ()) [5]
+4879.599254	Fractal Features (Fourier ()) [6]
+5016.734266	Fractal Features (Fourier ()) [7]
+5147.035441	Fractal Features (Fourier ()) [8]
+5255.264310	Fractal Features (Fourier ()) [9]
+5409.432147	Fractal Features (Fourier ()) [10]
+5488.430068	Fractal Features (Fourier ()) [11]
+5613.218137	Fractal Features (Fourier ()) [12]
+5709.480682	Fractal Features (Fourier ()) [13]
+5840.965182	Fractal Features (Fourier ()) [14]
+5928.148643	Fractal Features (Fourier ()) [15]
+6069.666618	Fractal Features (Fourier ()) [16]
+6174.503596	Fractal Features (Fourier ()) [17]
+6303.644080	Fractal Features (Fourier ()) [18]
+6424.531914	Fractal Features (Fourier ()) [19]
+7506.884095	Pixel Intensity Statistics (Fourier ()) [0]
+3040.759381	Pixel Intensity Statistics (Fourier ()) [1]
+103841.383383	Pixel Intensity Statistics (Fourier ()) [2]
+61.353458	Pixel Intensity Statistics (Fourier ()) [3]
+11647788.000000	Pixel Intensity Statistics (Fourier ()) [4]
+0.653224	Gini Coefficient (Fourier ()) [0]
+407.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [0]
+39.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [1]
+17.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [2]
+12.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [3]
+14.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [4]
+8.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [5]
+4.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [6]
+4.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [7]
+3.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [8]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [9]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [10]
+1.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [11]
+1.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [12]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [13]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [14]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [15]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [16]
+1.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [17]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [18]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [19]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [20]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [21]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [22]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [23]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [24]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [25]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [26]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [27]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [28]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [29]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [30]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet ()) [31]
+4.000000	Chebyshev Coefficients (Wavelet ()) [0]
+0.000000	Chebyshev Coefficients (Wavelet ()) [1]
+0.000000	Chebyshev Coefficients (Wavelet ()) [2]
+0.000000	Chebyshev Coefficients (Wavelet ()) [3]
+0.000000	Chebyshev Coefficients (Wavelet ()) [4]
+4.000000	Chebyshev Coefficients (Wavelet ()) [5]
+0.000000	Chebyshev Coefficients (Wavelet ()) [6]
+0.000000	Chebyshev Coefficients (Wavelet ()) [7]
+0.000000	Chebyshev Coefficients (Wavelet ()) [8]
+4.000000	Chebyshev Coefficients (Wavelet ()) [9]
+2.000000	Chebyshev Coefficients (Wavelet ()) [10]
+9.000000	Chebyshev Coefficients (Wavelet ()) [11]
+11.000000	Chebyshev Coefficients (Wavelet ()) [12]
+25.000000	Chebyshev Coefficients (Wavelet ()) [13]
+150.000000	Chebyshev Coefficients (Wavelet ()) [14]
+135.000000	Chebyshev Coefficients (Wavelet ()) [15]
+25.000000	Chebyshev Coefficients (Wavelet ()) [16]
+11.000000	Chebyshev Coefficients (Wavelet ()) [17]
+9.000000	Chebyshev Coefficients (Wavelet ()) [18]
+1.000000	Chebyshev Coefficients (Wavelet ()) [19]
+2.000000	Chebyshev Coefficients (Wavelet ()) [20]
+1.000000	Chebyshev Coefficients (Wavelet ()) [21]
+0.000000	Chebyshev Coefficients (Wavelet ()) [22]
+0.000000	Chebyshev Coefficients (Wavelet ()) [23]
+0.000000	Chebyshev Coefficients (Wavelet ()) [24]
+2.000000	Chebyshev Coefficients (Wavelet ()) [25]
+0.000000	Chebyshev Coefficients (Wavelet ()) [26]
+1.000000	Chebyshev Coefficients (Wavelet ()) [27]
+3.000000	Chebyshev Coefficients (Wavelet ()) [28]
+0.000000	Chebyshev Coefficients (Wavelet ()) [29]
+0.000000	Chebyshev Coefficients (Wavelet ()) [30]
+1.000000	Chebyshev Coefficients (Wavelet ()) [31]
+0.003647	Zernike Coefficients (Wavelet ()) [0]
+0.000489	Zernike Coefficients (Wavelet ()) [1]
+0.014464	Zernike Coefficients (Wavelet ()) [2]
+0.001547	Zernike Coefficients (Wavelet ()) [3]
+0.002055	Zernike Coefficients (Wavelet ()) [4]
+0.003524	Zernike Coefficients (Wavelet ()) [5]
+0.024623	Zernike Coefficients (Wavelet ()) [6]
+0.003280	Zernike Coefficients (Wavelet ()) [7]
+0.000409	Zernike Coefficients (Wavelet ()) [8]
+0.003693	Zernike Coefficients (Wavelet ()) [9]
+0.020952	Zernike Coefficients (Wavelet ()) [10]
+0.000202	Zernike Coefficients (Wavelet ()) [11]
+0.019378	Zernike Coefficients (Wavelet ()) [12]
+0.004815	Zernike Coefficients (Wavelet ()) [13]
+0.001877	Zernike Coefficients (Wavelet ()) [14]
+0.001195	Zernike Coefficients (Wavelet ()) [15]
+0.004309	Zernike Coefficients (Wavelet ()) [16]
+0.062312	Zernike Coefficients (Wavelet ()) [17]
+0.000675	Zernike Coefficients (Wavelet ()) [18]
+0.001327	Zernike Coefficients (Wavelet ()) [19]
+0.005424	Zernike Coefficients (Wavelet ()) [20]
+0.009604	Zernike Coefficients (Wavelet ()) [21]
+0.003053	Zernike Coefficients (Wavelet ()) [22]
+0.005194	Zernike Coefficients (Wavelet ()) [23]
+0.000693	Zernike Coefficients (Wavelet ()) [24]
+0.006293	Zernike Coefficients (Wavelet ()) [25]
+0.126509	Zernike Coefficients (Wavelet ()) [26]
+0.001231	Zernike Coefficients (Wavelet ()) [27]
+0.005998	Zernike Coefficients (Wavelet ()) [28]
+0.000074	Zernike Coefficients (Wavelet ()) [29]
+0.024619	Zernike Coefficients (Wavelet ()) [30]
+0.014463	Zernike Coefficients (Wavelet ()) [31]
+0.001363	Zernike Coefficients (Wavelet ()) [32]
+0.010113	Zernike Coefficients (Wavelet ()) [33]
+0.003287	Zernike Coefficients (Wavelet ()) [34]
+0.000383	Zernike Coefficients (Wavelet ()) [35]
+0.012485	Zernike Coefficients (Wavelet ()) [36]
+0.201115	Zernike Coefficients (Wavelet ()) [37]
+0.001345	Zernike Coefficients (Wavelet ()) [38]
+0.011460	Zernike Coefficients (Wavelet ()) [39]
+0.000615	Zernike Coefficients (Wavelet ()) [40]
+0.000260	Zernike Coefficients (Wavelet ()) [41]
+0.038159	Zernike Coefficients (Wavelet ()) [42]
+0.019942	Zernike Coefficients (Wavelet ()) [43]
+0.005869	Zernike Coefficients (Wavelet ()) [44]
+0.010972	Zernike Coefficients (Wavelet ()) [45]
+0.006973	Zernike Coefficients (Wavelet ()) [46]
+0.002375	Zernike Coefficients (Wavelet ()) [47]
+0.000041	Zernike Coefficients (Wavelet ()) [48]
+0.022412	Zernike Coefficients (Wavelet ()) [49]
+0.269523	Zernike Coefficients (Wavelet ()) [50]
+0.000548	Zernike Coefficients (Wavelet ()) [51]
+0.009646	Zernike Coefficients (Wavelet ()) [52]
+0.001401	Zernike Coefficients (Wavelet ()) [53]
+0.001753	Zernike Coefficients (Wavelet ()) [54]
+0.000043	Zernike Coefficients (Wavelet ()) [55]
+0.044202	Zernike Coefficients (Wavelet ()) [56]
+0.024702	Zernike Coefficients (Wavelet ()) [57]
+0.014135	Zernike Coefficients (Wavelet ()) [58]
+0.006755	Zernike Coefficients (Wavelet ()) [59]
+0.007640	Zernike Coefficients (Wavelet ()) [60]
+0.005530	Zernike Coefficients (Wavelet ()) [61]
+0.000477	Zernike Coefficients (Wavelet ()) [62]
+0.000015	Zernike Coefficients (Wavelet ()) [63]
+0.033503	Zernike Coefficients (Wavelet ()) [64]
+0.312460	Zernike Coefficients (Wavelet ()) [65]
+0.001228	Zernike Coefficients (Wavelet ()) [66]
+0.003108	Zernike Coefficients (Wavelet ()) [67]
+0.001494	Zernike Coefficients (Wavelet ()) [68]
+0.004138	Zernike Coefficients (Wavelet ()) [69]
+0.000060	Zernike Coefficients (Wavelet ()) [70]
+0.000048	Zernike Coefficients (Wavelet ()) [71]
+15.000000	Comb Moments (Wavelet ()) [0]
+1.000000	Comb Moments (Wavelet ()) [1]
+4.000000	Comb Moments (Wavelet ()) [2]
+16.000000	Comb Moments (Wavelet ()) [3]
+0.000000	Comb Moments (Wavelet ()) [4]
+4.000000	Comb Moments (Wavelet ()) [5]
+15.000000	Comb Moments (Wavelet ()) [6]
+0.000000	Comb Moments (Wavelet ()) [7]
+5.000000	Comb Moments (Wavelet ()) [8]
+16.000000	Comb Moments (Wavelet ()) [9]
+0.000000	Comb Moments (Wavelet ()) [10]
+4.000000	Comb Moments (Wavelet ()) [11]
+15.000000	Comb Moments (Wavelet ()) [12]
+2.000000	Comb Moments (Wavelet ()) [13]
+3.000000	Comb Moments (Wavelet ()) [14]
+16.000000	Comb Moments (Wavelet ()) [15]
+0.000000	Comb Moments (Wavelet ()) [16]
+4.000000	Comb Moments (Wavelet ()) [17]
+15.000000	Comb Moments (Wavelet ()) [18]
+0.000000	Comb Moments (Wavelet ()) [19]
+5.000000	Comb Moments (Wavelet ()) [20]
+16.000000	Comb Moments (Wavelet ()) [21]
+0.000000	Comb Moments (Wavelet ()) [22]
+4.000000	Comb Moments (Wavelet ()) [23]
+11.000000	Comb Moments (Wavelet ()) [24]
+5.000000	Comb Moments (Wavelet ()) [25]
+4.000000	Comb Moments (Wavelet ()) [26]
+13.000000	Comb Moments (Wavelet ()) [27]
+2.000000	Comb Moments (Wavelet ()) [28]
+5.000000	Comb Moments (Wavelet ()) [29]
+19.000000	Comb Moments (Wavelet ()) [30]
+0.000000	Comb Moments (Wavelet ()) [31]
+1.000000	Comb Moments (Wavelet ()) [32]
+11.000000	Comb Moments (Wavelet ()) [33]
+1.000000	Comb Moments (Wavelet ()) [34]
+8.000000	Comb Moments (Wavelet ()) [35]
+16.000000	Comb Moments (Wavelet ()) [36]
+3.000000	Comb Moments (Wavelet ()) [37]
+1.000000	Comb Moments (Wavelet ()) [38]
+13.000000	Comb Moments (Wavelet ()) [39]
+2.000000	Comb Moments (Wavelet ()) [40]
+5.000000	Comb Moments (Wavelet ()) [41]
+18.000000	Comb Moments (Wavelet ()) [42]
+1.000000	Comb Moments (Wavelet ()) [43]
+1.000000	Comb Moments (Wavelet ()) [44]
+11.000000	Comb Moments (Wavelet ()) [45]
+3.000000	Comb Moments (Wavelet ()) [46]
+6.000000	Comb Moments (Wavelet ()) [47]
+0.012264	Haralick Textures (Wavelet ()) [0]
+0.001712	Haralick Textures (Wavelet ()) [1]
+233.810490	Haralick Textures (Wavelet ()) [2]
+144.283612	Haralick Textures (Wavelet ()) [3]
+0.947956	Haralick Textures (Wavelet ()) [4]
+0.031826	Haralick Textures (Wavelet ()) [5]
+184.964241	Haralick Textures (Wavelet ()) [6]
+110.800500	Haralick Textures (Wavelet ()) [7]
+4.027149	Haralick Textures (Wavelet ()) [8]
+0.385355	Haralick Textures (Wavelet ()) [9]
+8.704168	Haralick Textures (Wavelet ()) [10]
+0.148437	Haralick Textures (Wavelet ()) [11]
+-0.282595	Haralick Textures (Wavelet ()) [12]
+0.024200	Haralick Textures (Wavelet ()) [13]
+0.298200	Haralick Textures (Wavelet ()) [14]
+0.044454	Haralick Textures (Wavelet ()) [15]
+0.008935	Haralick Textures (Wavelet ()) [16]
+0.017610	Haralick Textures (Wavelet ()) [17]
+0.970893	Haralick Textures (Wavelet ()) [18]
+0.006981	Haralick Textures (Wavelet ()) [19]
+94.215429	Haralick Textures (Wavelet ()) [20]
+0.394876	Haralick Textures (Wavelet ()) [21]
+5.682111	Haralick Textures (Wavelet ()) [22]
+0.035134	Haralick Textures (Wavelet ()) [23]
+16581.452443	Haralick Textures (Wavelet ()) [24]
+20.614449	Haralick Textures (Wavelet ()) [25]
+2244.270042	Haralick Textures (Wavelet ()) [26]
+14.132685	Haralick Textures (Wavelet ()) [27]
+1.000000	Multiscale Histograms (Wavelet ()) [0]
+0.128192	Multiscale Histograms (Wavelet ()) [1]
+0.138747	Multiscale Histograms (Wavelet ()) [2]
+0.975911	Multiscale Histograms (Wavelet ()) [3]
+0.024345	Multiscale Histograms (Wavelet ()) [4]
+0.052349	Multiscale Histograms (Wavelet ()) [5]
+0.202417	Multiscale Histograms (Wavelet ()) [6]
+0.011917	Multiscale Histograms (Wavelet ()) [7]
+0.949949	Multiscale Histograms (Wavelet ()) [8]
+0.033538	Multiscale Histograms (Wavelet ()) [9]
+0.017365	Multiscale Histograms (Wavelet ()) [10]
+0.032261	Multiscale Histograms (Wavelet ()) [11]
+0.177392	Multiscale Histograms (Wavelet ()) [12]
+0.054562	Multiscale Histograms (Wavelet ()) [13]
+0.001873	Multiscale Histograms (Wavelet ()) [14]
+0.845165	Multiscale Histograms (Wavelet ()) [15]
+0.135768	Multiscale Histograms (Wavelet ()) [16]
+0.019067	Multiscale Histograms (Wavelet ()) [17]
+0.001702	Multiscale Histograms (Wavelet ()) [18]
+0.022557	Multiscale Histograms (Wavelet ()) [19]
+0.103933	Multiscale Histograms (Wavelet ()) [20]
+0.119169	Multiscale Histograms (Wavelet ()) [21]
+0.018556	Multiscale Histograms (Wavelet ()) [22]
+0.001021	Multiscale Histograms (Wavelet ()) [23]
+1.000000	Tamura Textures (Wavelet ()) [0]
+0.259437	Tamura Textures (Wavelet ()) [1]
+0.292596	Tamura Textures (Wavelet ()) [2]
+0.049280	Tamura Textures (Wavelet ()) [3]
+7.309780	Tamura Textures (Wavelet ()) [4]
+3.630123	Tamura Textures (Wavelet ()) [5]
+119.000000	Radon Coefficients (Wavelet ()) [0]
+2.000000	Radon Coefficients (Wavelet ()) [1]
+56.000000	Radon Coefficients (Wavelet ()) [2]
+122.000000	Radon Coefficients (Wavelet ()) [3]
+30.000000	Radon Coefficients (Wavelet ()) [4]
+25.000000	Radon Coefficients (Wavelet ()) [5]
+123.000000	Radon Coefficients (Wavelet ()) [6]
+26.000000	Radon Coefficients (Wavelet ()) [7]
+28.000000	Radon Coefficients (Wavelet ()) [8]
+120.000000	Radon Coefficients (Wavelet ()) [9]
+1.000000	Radon Coefficients (Wavelet ()) [10]
+56.000000	Radon Coefficients (Wavelet ()) [11]
+78.207927	Fractal Features (Wavelet ()) [0]
+103.974866	Fractal Features (Wavelet ()) [1]
+122.718803	Fractal Features (Wavelet ()) [2]
+133.251727	Fractal Features (Wavelet ()) [3]
+143.262736	Fractal Features (Wavelet ()) [4]
+152.315303	Fractal Features (Wavelet ()) [5]
+159.821077	Fractal Features (Wavelet ()) [6]
+167.853065	Fractal Features (Wavelet ()) [7]
+176.575192	Fractal Features (Wavelet ()) [8]
+185.146889	Fractal Features (Wavelet ()) [9]
+193.182967	Fractal Features (Wavelet ()) [10]
+201.137091	Fractal Features (Wavelet ()) [11]
+209.032736	Fractal Features (Wavelet ()) [12]
+217.642699	Fractal Features (Wavelet ()) [13]
+226.676357	Fractal Features (Wavelet ()) [14]
+235.436003	Fractal Features (Wavelet ()) [15]
+244.841151	Fractal Features (Wavelet ()) [16]
+253.121951	Fractal Features (Wavelet ()) [17]
+261.556357	Fractal Features (Wavelet ()) [18]
+269.890510	Fractal Features (Wavelet ()) [19]
+398.524993	Pixel Intensity Statistics (Wavelet ()) [0]
+9.652876	Pixel Intensity Statistics (Wavelet ()) [1]
+754.597215	Pixel Intensity Statistics (Wavelet ()) [2]
+-326.487453	Pixel Intensity Statistics (Wavelet ()) [3]
+2925.763035	Pixel Intensity Statistics (Wavelet ()) [4]
+0.657659	Gini Coefficient (Wavelet ()) [0]
+53.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [0]
+84.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [1]
+86.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [2]
+73.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [3]
+35.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [4]
+48.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [5]
+20.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [6]
+36.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [7]
+8.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [8]
+11.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [9]
+6.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [10]
+13.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [11]
+12.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [12]
+9.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [13]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [14]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [15]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [16]
+9.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [17]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [18]
+3.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [19]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [20]
+6.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [21]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [22]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [23]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [24]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [25]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [26]
+2.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [27]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [28]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [29]
+0.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [30]
+1.000000	Chebyshev-Fourier Coefficients (Chebyshev ()) [31]
+5.000000	Chebyshev Coefficients (Chebyshev ()) [0]
+1.000000	Chebyshev Coefficients (Chebyshev ()) [1]
+3.000000	Chebyshev Coefficients (Chebyshev ()) [2]
+3.000000	Chebyshev Coefficients (Chebyshev ()) [3]
+9.000000	Chebyshev Coefficients (Chebyshev ()) [4]
+13.000000	Chebyshev Coefficients (Chebyshev ()) [5]
+12.000000	Chebyshev Coefficients (Chebyshev ()) [6]
+6.000000	Chebyshev Coefficients (Chebyshev ()) [7]
+17.000000	Chebyshev Coefficients (Chebyshev ()) [8]
+19.000000	Chebyshev Coefficients (Chebyshev ()) [9]
+9.000000	Chebyshev Coefficients (Chebyshev ()) [10]
+14.000000	Chebyshev Coefficients (Chebyshev ()) [11]
+25.000000	Chebyshev Coefficients (Chebyshev ()) [12]
+29.000000	Chebyshev Coefficients (Chebyshev ()) [13]
+29.000000	Chebyshev Coefficients (Chebyshev ()) [14]
+19.000000	Chebyshev Coefficients (Chebyshev ()) [15]
+23.000000	Chebyshev Coefficients (Chebyshev ()) [16]
+39.000000	Chebyshev Coefficients (Chebyshev ()) [17]
+17.000000	Chebyshev Coefficients (Chebyshev ()) [18]
+17.000000	Chebyshev Coefficients (Chebyshev ()) [19]
+10.000000	Chebyshev Coefficients (Chebyshev ()) [20]
+16.000000	Chebyshev Coefficients (Chebyshev ()) [21]
+11.000000	Chebyshev Coefficients (Chebyshev ()) [22]
+9.000000	Chebyshev Coefficients (Chebyshev ()) [23]
+19.000000	Chebyshev Coefficients (Chebyshev ()) [24]
+8.000000	Chebyshev Coefficients (Chebyshev ()) [25]
+4.000000	Chebyshev Coefficients (Chebyshev ()) [26]
+2.000000	Chebyshev Coefficients (Chebyshev ()) [27]
+8.000000	Chebyshev Coefficients (Chebyshev ()) [28]
+3.000000	Chebyshev Coefficients (Chebyshev ()) [29]
+0.000000	Chebyshev Coefficients (Chebyshev ()) [30]
+1.000000	Chebyshev Coefficients (Chebyshev ()) [31]
+0.010545	Zernike Coefficients (Chebyshev ()) [0]
+0.000652	Zernike Coefficients (Chebyshev ()) [1]
+0.047513	Zernike Coefficients (Chebyshev ()) [2]
+0.014715	Zernike Coefficients (Chebyshev ()) [3]
+0.001775	Zernike Coefficients (Chebyshev ()) [4]
+0.031184	Zernike Coefficients (Chebyshev ()) [5]
+0.062281	Zernike Coefficients (Chebyshev ()) [6]
+0.042710	Zernike Coefficients (Chebyshev ()) [7]
+0.006289	Zernike Coefficients (Chebyshev ()) [8]
+0.005777	Zernike Coefficients (Chebyshev ()) [9]
+0.091462	Zernike Coefficients (Chebyshev ()) [10]
+0.002263	Zernike Coefficients (Chebyshev ()) [11]
+0.023570	Zernike Coefficients (Chebyshev ()) [12]
+0.023669	Zernike Coefficients (Chebyshev ()) [13]
+0.003629	Zernike Coefficients (Chebyshev ()) [14]
+0.005353	Zernike Coefficients (Chebyshev ()) [15]
+0.006799	Zernike Coefficients (Chebyshev ()) [16]
+0.081577	Zernike Coefficients (Chebyshev ()) [17]
+0.005718	Zernike Coefficients (Chebyshev ()) [18]
+0.006709	Zernike Coefficients (Chebyshev ()) [19]
+0.145169	Zernike Coefficients (Chebyshev ()) [20]
+0.083012	Zernike Coefficients (Chebyshev ()) [21]
+0.054982	Zernike Coefficients (Chebyshev ()) [22]
+0.031981	Zernike Coefficients (Chebyshev ()) [23]
+0.005200	Zernike Coefficients (Chebyshev ()) [24]
+0.014137	Zernike Coefficients (Chebyshev ()) [25]
+0.017056	Zernike Coefficients (Chebyshev ()) [26]
+0.004165	Zernike Coefficients (Chebyshev ()) [27]
+0.030276	Zernike Coefficients (Chebyshev ()) [28]
+0.002726	Zernike Coefficients (Chebyshev ()) [29]
+0.127204	Zernike Coefficients (Chebyshev ()) [30]
+0.166624	Zernike Coefficients (Chebyshev ()) [31]
+0.137112	Zernike Coefficients (Chebyshev ()) [32]
+0.079437	Zernike Coefficients (Chebyshev ()) [33]
+0.023388	Zernike Coefficients (Chebyshev ()) [34]
+0.001094	Zernike Coefficients (Chebyshev ()) [35]
+0.031299	Zernike Coefficients (Chebyshev ()) [36]
+0.018155	Zernike Coefficients (Chebyshev ()) [37]
+0.008371	Zernike Coefficients (Chebyshev ()) [38]
+0.042241	Zernike Coefficients (Chebyshev ()) [39]
+0.014144	Zernike Coefficients (Chebyshev ()) [40]
+0.002261	Zernike Coefficients (Chebyshev ()) [41]
+0.069695	Zernike Coefficients (Chebyshev ()) [42]
+0.030250	Zernike Coefficients (Chebyshev ()) [43]
+0.082752	Zernike Coefficients (Chebyshev ()) [44]
+0.077231	Zernike Coefficients (Chebyshev ()) [45]
+0.028799	Zernike Coefficients (Chebyshev ()) [46]
+0.010610	Zernike Coefficients (Chebyshev ()) [47]
+0.002531	Zernike Coefficients (Chebyshev ()) [48]
+0.019667	Zernike Coefficients (Chebyshev ()) [49]
+0.226235	Zernike Coefficients (Chebyshev ()) [50]
+0.030488	Zernike Coefficients (Chebyshev ()) [51]
+0.042752	Zernike Coefficients (Chebyshev ()) [52]
+0.029371	Zernike Coefficients (Chebyshev ()) [53]
+0.017216	Zernike Coefficients (Chebyshev ()) [54]
+0.001651	Zernike Coefficients (Chebyshev ()) [55]
+0.288518	Zernike Coefficients (Chebyshev ()) [56]
+0.303141	Zernike Coefficients (Chebyshev ()) [57]
+0.174077	Zernike Coefficients (Chebyshev ()) [58]
+0.086132	Zernike Coefficients (Chebyshev ()) [59]
+0.050942	Zernike Coefficients (Chebyshev ()) [60]
+0.047120	Zernike Coefficients (Chebyshev ()) [61]
+0.019576	Zernike Coefficients (Chebyshev ()) [62]
+0.000203	Zernike Coefficients (Chebyshev ()) [63]
+0.090403	Zernike Coefficients (Chebyshev ()) [64]
+0.537530	Zernike Coefficients (Chebyshev ()) [65]
+0.020254	Zernike Coefficients (Chebyshev ()) [66]
+0.261737	Zernike Coefficients (Chebyshev ()) [67]
+0.027653	Zernike Coefficients (Chebyshev ()) [68]
+0.060684	Zernike Coefficients (Chebyshev ()) [69]
+0.013234	Zernike Coefficients (Chebyshev ()) [70]
+0.000520	Zernike Coefficients (Chebyshev ()) [71]
+12.000000	Comb Moments (Chebyshev ()) [0]
+3.000000	Comb Moments (Chebyshev ()) [1]
+5.000000	Comb Moments (Chebyshev ()) [2]
+1.000000	Comb Moments (Chebyshev ()) [3]
+0.000000	Comb Moments (Chebyshev ()) [4]
+19.000000	Comb Moments (Chebyshev ()) [5]
+2.000000	Comb Moments (Chebyshev ()) [6]
+13.000000	Comb Moments (Chebyshev ()) [7]
+5.000000	Comb Moments (Chebyshev ()) [8]
+19.000000	Comb Moments (Chebyshev ()) [9]
+0.000000	Comb Moments (Chebyshev ()) [10]
+1.000000	Comb Moments (Chebyshev ()) [11]
+14.000000	Comb Moments (Chebyshev ()) [12]
+1.000000	Comb Moments (Chebyshev ()) [13]
+5.000000	Comb Moments (Chebyshev ()) [14]
+1.000000	Comb Moments (Chebyshev ()) [15]
+0.000000	Comb Moments (Chebyshev ()) [16]
+19.000000	Comb Moments (Chebyshev ()) [17]
+2.000000	Comb Moments (Chebyshev ()) [18]
+13.000000	Comb Moments (Chebyshev ()) [19]
+5.000000	Comb Moments (Chebyshev ()) [20]
+19.000000	Comb Moments (Chebyshev ()) [21]
+0.000000	Comb Moments (Chebyshev ()) [22]
+1.000000	Comb Moments (Chebyshev ()) [23]
+19.000000	Comb Moments (Chebyshev ()) [24]
+0.000000	Comb Moments (Chebyshev ()) [25]
+1.000000	Comb Moments (Chebyshev ()) [26]
+1.000000	Comb Moments (Chebyshev ()) [27]
+0.000000	Comb Moments (Chebyshev ()) [28]
+19.000000	Comb Moments (Chebyshev ()) [29]
+1.000000	Comb Moments (Chebyshev ()) [30]
+15.000000	Comb Moments (Chebyshev ()) [31]
+4.000000	Comb Moments (Chebyshev ()) [32]
+19.000000	Comb Moments (Chebyshev ()) [33]
+0.000000	Comb Moments (Chebyshev ()) [34]
+1.000000	Comb Moments (Chebyshev ()) [35]
+16.000000	Comb Moments (Chebyshev ()) [36]
+3.000000	Comb Moments (Chebyshev ()) [37]
+1.000000	Comb Moments (Chebyshev ()) [38]
+1.000000	Comb Moments (Chebyshev ()) [39]
+0.000000	Comb Moments (Chebyshev ()) [40]
+19.000000	Comb Moments (Chebyshev ()) [41]
+19.000000	Comb Moments (Chebyshev ()) [42]
+0.000000	Comb Moments (Chebyshev ()) [43]
+1.000000	Comb Moments (Chebyshev ()) [44]
+15.000000	Comb Moments (Chebyshev ()) [45]
+3.000000	Comb Moments (Chebyshev ()) [46]
+2.000000	Comb Moments (Chebyshev ()) [47]
+0.239040	Haralick Textures (Chebyshev ()) [0]
+0.007260	Haralick Textures (Chebyshev ()) [1]
+1.940382	Haralick Textures (Chebyshev ()) [2]
+0.287981	Haralick Textures (Chebyshev ()) [3]
+0.035041	Haralick Textures (Chebyshev ()) [4]
+0.103048	Haralick Textures (Chebyshev ()) [5]
+1.457645	Haralick Textures (Chebyshev ()) [6]
+0.294498	Haralick Textures (Chebyshev ()) [7]
+1.481072	Haralick Textures (Chebyshev ()) [8]
+0.039810	Haralick Textures (Chebyshev ()) [9]
+2.783995	Haralick Textures (Chebyshev ()) [10]
+0.006240	Haralick Textures (Chebyshev ()) [11]
+-0.046412	Haralick Textures (Chebyshev ()) [12]
+0.041793	Haralick Textures (Chebyshev ()) [13]
+0.723249	Haralick Textures (Chebyshev ()) [14]
+0.027340	Haralick Textures (Chebyshev ()) [15]
+0.000000	Haralick Textures (Chebyshev ()) [16]
+0.000000	Haralick Textures (Chebyshev ()) [17]
+0.341858	Haralick Textures (Chebyshev ()) [18]
+0.156042	Haralick Textures (Chebyshev ()) [19]
+31.294907	Haralick Textures (Chebyshev ()) [20]
+0.020345	Haralick Textures (Chebyshev ()) [21]
+1.982754	Haralick Textures (Chebyshev ()) [22]
+0.043366	Haralick Textures (Chebyshev ()) [23]
+861.289071	Haralick Textures (Chebyshev ()) [24]
+2.591078	Haralick Textures (Chebyshev ()) [25]
+1.006707	Haralick Textures (Chebyshev ()) [26]
+0.137973	Haralick Textures (Chebyshev ()) [27]
+0.000313	Multiscale Histograms (Chebyshev ()) [0]
+1.000000	Multiscale Histograms (Chebyshev ()) [1]
+0.000078	Multiscale Histograms (Chebyshev ()) [2]
+0.000157	Multiscale Histograms (Chebyshev ()) [3]
+0.980805	Multiscale Histograms (Chebyshev ()) [4]
+0.019273	Multiscale Histograms (Chebyshev ()) [5]
+0.000078	Multiscale Histograms (Chebyshev ()) [6]
+0.000078	Multiscale Histograms (Chebyshev ()) [7]
+0.000157	Multiscale Histograms (Chebyshev ()) [8]
+0.000000	Multiscale Histograms (Chebyshev ()) [9]
+0.998825	Multiscale Histograms (Chebyshev ()) [10]
+0.001254	Multiscale Histograms (Chebyshev ()) [11]
+0.000078	Multiscale Histograms (Chebyshev ()) [12]
+0.000000	Multiscale Histograms (Chebyshev ()) [13]
+0.000078	Multiscale Histograms (Chebyshev ()) [14]
+0.000157	Multiscale Histograms (Chebyshev ()) [15]
+0.000000	Multiscale Histograms (Chebyshev ()) [16]
+0.000157	Multiscale Histograms (Chebyshev ()) [17]
+0.999373	Multiscale Histograms (Chebyshev ()) [18]
+0.000548	Multiscale Histograms (Chebyshev ()) [19]
+0.000078	Multiscale Histograms (Chebyshev ()) [20]
+0.000000	Multiscale Histograms (Chebyshev ()) [21]
+0.000000	Multiscale Histograms (Chebyshev ()) [22]
+0.000078	Multiscale Histograms (Chebyshev ()) [23]
+0.394535	Tamura Textures (Chebyshev ()) [0]
+0.213449	Tamura Textures (Chebyshev ()) [1]
+1.000000	Tamura Textures (Chebyshev ()) [2]
+0.000027	Tamura Textures (Chebyshev ()) [3]
+7.771888	Tamura Textures (Chebyshev ()) [4]
+7.479195	Tamura Textures (Chebyshev ()) [5]
+3.000000	Radon Coefficients (Chebyshev ()) [0]
+159.000000	Radon Coefficients (Chebyshev ()) [1]
+1.000000	Radon Coefficients (Chebyshev ()) [2]
+1.000000	Radon Coefficients (Chebyshev ()) [3]
+160.000000	Radon Coefficients (Chebyshev ()) [4]
+2.000000	Radon Coefficients (Chebyshev ()) [5]
+162.000000	Radon Coefficients (Chebyshev ()) [6]
+0.000000	Radon Coefficients (Chebyshev ()) [7]
+1.000000	Radon Coefficients (Chebyshev ()) [8]
+3.000000	Radon Coefficients (Chebyshev ()) [9]
+159.000000	Radon Coefficients (Chebyshev ()) [10]
+1.000000	Radon Coefficients (Chebyshev ()) [11]
+0.859529	Fractal Features (Chebyshev ()) [0]
+0.831671	Fractal Features (Chebyshev ()) [1]
+0.803107	Fractal Features (Chebyshev ()) [2]
+0.684786	Fractal Features (Chebyshev ()) [3]
+0.785653	Fractal Features (Chebyshev ()) [4]
+0.743508	Fractal Features (Chebyshev ()) [5]
+0.808932	Fractal Features (Chebyshev ()) [6]
+0.750566	Fractal Features (Chebyshev ()) [7]
+0.780336	Fractal Features (Chebyshev ()) [8]
+0.809524	Fractal Features (Chebyshev ()) [9]
+0.794853	Fractal Features (Chebyshev ()) [10]
+0.807982	Fractal Features (Chebyshev ()) [11]
+0.785590	Fractal Features (Chebyshev ()) [12]
+0.810958	Fractal Features (Chebyshev ()) [13]
+0.789568	Fractal Features (Chebyshev ()) [14]
+0.807975	Fractal Features (Chebyshev ()) [15]
+0.786667	Fractal Features (Chebyshev ()) [16]
+0.794888	Fractal Features (Chebyshev ()) [17]
+0.787960	Fractal Features (Chebyshev ()) [18]
+0.770954	Fractal Features (Chebyshev ()) [19]
+0.068122	Pixel Intensity Statistics (Chebyshev ()) [0]
+0.053296	Pixel Intensity Statistics (Chebyshev ()) [1]
+3.201884	Pixel Intensity Statistics (Chebyshev ()) [2]
+-147.250836	Pixel Intensity Statistics (Chebyshev ()) [3]
+228.048164	Pixel Intensity Statistics (Chebyshev ()) [4]
+0.668940	Gini Coefficient (Chebyshev ()) [0]
+9.000000	Comb Moments (Chebyshev (Fourier ())) [0]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [1]
+11.000000	Comb Moments (Chebyshev (Fourier ())) [2]
+16.000000	Comb Moments (Chebyshev (Fourier ())) [3]
+3.000000	Comb Moments (Chebyshev (Fourier ())) [4]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [5]
+4.000000	Comb Moments (Chebyshev (Fourier ())) [6]
+14.000000	Comb Moments (Chebyshev (Fourier ())) [7]
+2.000000	Comb Moments (Chebyshev (Fourier ())) [8]
+12.000000	Comb Moments (Chebyshev (Fourier ())) [9]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [10]
+7.000000	Comb Moments (Chebyshev (Fourier ())) [11]
+9.000000	Comb Moments (Chebyshev (Fourier ())) [12]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [13]
+11.000000	Comb Moments (Chebyshev (Fourier ())) [14]
+15.000000	Comb Moments (Chebyshev (Fourier ())) [15]
+4.000000	Comb Moments (Chebyshev (Fourier ())) [16]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [17]
+5.000000	Comb Moments (Chebyshev (Fourier ())) [18]
+14.000000	Comb Moments (Chebyshev (Fourier ())) [19]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [20]
+12.000000	Comb Moments (Chebyshev (Fourier ())) [21]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [22]
+7.000000	Comb Moments (Chebyshev (Fourier ())) [23]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [24]
+18.000000	Comb Moments (Chebyshev (Fourier ())) [25]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [26]
+8.000000	Comb Moments (Chebyshev (Fourier ())) [27]
+6.000000	Comb Moments (Chebyshev (Fourier ())) [28]
+6.000000	Comb Moments (Chebyshev (Fourier ())) [29]
+19.000000	Comb Moments (Chebyshev (Fourier ())) [30]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [31]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [32]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [33]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [34]
+19.000000	Comb Moments (Chebyshev (Fourier ())) [35]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [36]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [37]
+19.000000	Comb Moments (Chebyshev (Fourier ())) [38]
+6.000000	Comb Moments (Chebyshev (Fourier ())) [39]
+6.000000	Comb Moments (Chebyshev (Fourier ())) [40]
+8.000000	Comb Moments (Chebyshev (Fourier ())) [41]
+19.000000	Comb Moments (Chebyshev (Fourier ())) [42]
+0.000000	Comb Moments (Chebyshev (Fourier ())) [43]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [44]
+17.000000	Comb Moments (Chebyshev (Fourier ())) [45]
+2.000000	Comb Moments (Chebyshev (Fourier ())) [46]
+1.000000	Comb Moments (Chebyshev (Fourier ())) [47]
+0.000248	Haralick Textures (Chebyshev (Fourier ())) [0]
+0.000045	Haralick Textures (Chebyshev (Fourier ())) [1]
+2965.256678	Haralick Textures (Chebyshev (Fourier ())) [2]
+5640.226045	Haralick Textures (Chebyshev (Fourier ())) [3]
+-0.007707	Haralick Textures (Chebyshev (Fourier ())) [4]
+1.916960	Haralick Textures (Chebyshev (Fourier ())) [5]
+1048.547337	Haralick Textures (Chebyshev (Fourier ())) [6]
+2014.064030	Haralick Textures (Chebyshev (Fourier ())) [7]
+5.899139	Haralick Textures (Chebyshev (Fourier ())) [8]
+2.627687	Haralick Textures (Chebyshev (Fourier ())) [9]
+12.308822	Haralick Textures (Chebyshev (Fourier ())) [10]
+0.194163	Haralick Textures (Chebyshev (Fourier ())) [11]
+-0.297473	Haralick Textures (Chebyshev (Fourier ())) [12]
+0.026993	Haralick Textures (Chebyshev (Fourier ())) [13]
+0.048273	Haralick Textures (Chebyshev (Fourier ())) [14]
+0.050622	Haralick Textures (Chebyshev (Fourier ())) [15]
+0.004828	Haralick Textures (Chebyshev (Fourier ())) [16]
+0.012523	Haralick Textures (Chebyshev (Fourier ())) [17]
+0.993086	Haralick Textures (Chebyshev (Fourier ())) [18]
+0.002713	Haralick Textures (Chebyshev (Fourier ())) [19]
+180.851095	Haralick Textures (Chebyshev (Fourier ())) [20]
+0.044120	Haralick Textures (Chebyshev (Fourier ())) [21]
+6.766081	Haralick Textures (Chebyshev (Fourier ())) [22]
+2.859154	Haralick Textures (Chebyshev (Fourier ())) [23]
+33231.391572	Haralick Textures (Chebyshev (Fourier ())) [24]
+4646.697392	Haralick Textures (Chebyshev (Fourier ())) [25]
+1472.242917	Haralick Textures (Chebyshev (Fourier ())) [26]
+2.241974	Haralick Textures (Chebyshev (Fourier ())) [27]
+0.649784	Multiscale Histograms (Chebyshev (Fourier ())) [0]
+1.000000	Multiscale Histograms (Chebyshev (Fourier ())) [1]
+0.021332	Multiscale Histograms (Chebyshev (Fourier ())) [2]
+0.254548	Multiscale Histograms (Chebyshev (Fourier ())) [3]
+0.740086	Multiscale Histograms (Chebyshev (Fourier ())) [4]
+0.550190	Multiscale Histograms (Chebyshev (Fourier ())) [5]
+0.126031	Multiscale Histograms (Chebyshev (Fourier ())) [6]
+0.000262	Multiscale Histograms (Chebyshev (Fourier ())) [7]
+0.140034	Multiscale Histograms (Chebyshev (Fourier ())) [8]
+0.345243	Multiscale Histograms (Chebyshev (Fourier ())) [9]
+0.623740	Multiscale Histograms (Chebyshev (Fourier ())) [10]
+0.384505	Multiscale Histograms (Chebyshev (Fourier ())) [11]
+0.174977	Multiscale Histograms (Chebyshev (Fourier ())) [12]
+0.002356	Multiscale Histograms (Chebyshev (Fourier ())) [13]
+0.000262	Multiscale Histograms (Chebyshev (Fourier ())) [14]
+0.084544	Multiscale Histograms (Chebyshev (Fourier ())) [15]
+0.220390	Multiscale Histograms (Chebyshev (Fourier ())) [16]
+0.344850	Multiscale Histograms (Chebyshev (Fourier ())) [17]
+0.515901	Multiscale Histograms (Chebyshev (Fourier ())) [18]
+0.294333	Multiscale Histograms (Chebyshev (Fourier ())) [19]
+0.189766	Multiscale Histograms (Chebyshev (Fourier ())) [20]
+0.021071	Multiscale Histograms (Chebyshev (Fourier ())) [21]
+0.000000	Multiscale Histograms (Chebyshev (Fourier ())) [22]
+0.000262	Multiscale Histograms (Chebyshev (Fourier ())) [23]
+1.000000	Tamura Textures (Chebyshev (Fourier ())) [0]
+0.101840	Tamura Textures (Chebyshev (Fourier ())) [1]
+0.115762	Tamura Textures (Chebyshev (Fourier ())) [2]
+0.045188	Tamura Textures (Chebyshev (Fourier ())) [3]
+7.396569	Tamura Textures (Chebyshev (Fourier ())) [4]
+2.857948	Tamura Textures (Chebyshev (Fourier ())) [5]
+93.000000	Radon Coefficients (Chebyshev (Fourier ())) [0]
+65.000000	Radon Coefficients (Chebyshev (Fourier ())) [1]
+5.000000	Radon Coefficients (Chebyshev (Fourier ())) [2]
+53.000000	Radon Coefficients (Chebyshev (Fourier ())) [3]
+92.000000	Radon Coefficients (Chebyshev (Fourier ())) [4]
+18.000000	Radon Coefficients (Chebyshev (Fourier ())) [5]
+125.000000	Radon Coefficients (Chebyshev (Fourier ())) [6]
+35.000000	Radon Coefficients (Chebyshev (Fourier ())) [7]
+3.000000	Radon Coefficients (Chebyshev (Fourier ())) [8]
+96.000000	Radon Coefficients (Chebyshev (Fourier ())) [9]
+63.000000	Radon Coefficients (Chebyshev (Fourier ())) [10]
+4.000000	Radon Coefficients (Chebyshev (Fourier ())) [11]
+709.554208	Fractal Features (Chebyshev (Fourier ())) [0]
+143.644732	Fractal Features (Chebyshev (Fourier ())) [1]
+680.921009	Fractal Features (Chebyshev (Fourier ())) [2]
+277.347479	Fractal Features (Chebyshev (Fourier ())) [3]
+631.548301	Fractal Features (Chebyshev (Fourier ())) [4]
+399.650216	Fractal Features (Chebyshev (Fourier ())) [5]
+562.244938	Fractal Features (Chebyshev (Fourier ())) [6]
+506.861862	Fractal Features (Chebyshev (Fourier ())) [7]
+475.437142	Fractal Features (Chebyshev (Fourier ())) [8]
+593.897955	Fractal Features (Chebyshev (Fourier ())) [9]
+370.859132	Fractal Features (Chebyshev (Fourier ())) [10]
+658.457850	Fractal Features (Chebyshev (Fourier ())) [11]
+253.257296	Fractal Features (Chebyshev (Fourier ())) [12]
+698.165938	Fractal Features (Chebyshev (Fourier ())) [13]
+127.592378	Fractal Features (Chebyshev (Fourier ())) [14]
+713.097436	Fractal Features (Chebyshev (Fourier ())) [15]
+52.103107	Fractal Features (Chebyshev (Fourier ())) [16]
+703.678225	Fractal Features (Chebyshev (Fourier ())) [17]
+171.107457	Fractal Features (Chebyshev (Fourier ())) [18]
+671.543263	Fractal Features (Chebyshev (Fourier ())) [19]
+7.030184	Pixel Intensity Statistics (Chebyshev (Fourier ())) [0]
+5.890152	Pixel Intensity Statistics (Chebyshev (Fourier ())) [1]
+445.635750	Pixel Intensity Statistics (Chebyshev (Fourier ())) [2]
+-1084.072168	Pixel Intensity Statistics (Chebyshev (Fourier ())) [3]
+1876.721024	Pixel Intensity Statistics (Chebyshev (Fourier ())) [4]
+0.420410	Gini Coefficient (Chebyshev (Fourier ())) [0]
+18.000000	Comb Moments (Wavelet (Fourier ())) [0]
+1.000000	Comb Moments (Wavelet (Fourier ())) [1]
+1.000000	Comb Moments (Wavelet (Fourier ())) [2]
+17.000000	Comb Moments (Wavelet (Fourier ())) [3]
+2.000000	Comb Moments (Wavelet (Fourier ())) [4]
+1.000000	Comb Moments (Wavelet (Fourier ())) [5]
+17.000000	Comb Moments (Wavelet (Fourier ())) [6]
+2.000000	Comb Moments (Wavelet (Fourier ())) [7]
+1.000000	Comb Moments (Wavelet (Fourier ())) [8]
+19.000000	Comb Moments (Wavelet (Fourier ())) [9]
+0.000000	Comb Moments (Wavelet (Fourier ())) [10]
+1.000000	Comb Moments (Wavelet (Fourier ())) [11]
+18.000000	Comb Moments (Wavelet (Fourier ())) [12]
+1.000000	Comb Moments (Wavelet (Fourier ())) [13]
+1.000000	Comb Moments (Wavelet (Fourier ())) [14]
+17.000000	Comb Moments (Wavelet (Fourier ())) [15]
+2.000000	Comb Moments (Wavelet (Fourier ())) [16]
+1.000000	Comb Moments (Wavelet (Fourier ())) [17]
+19.000000	Comb Moments (Wavelet (Fourier ())) [18]
+0.000000	Comb Moments (Wavelet (Fourier ())) [19]
+1.000000	Comb Moments (Wavelet (Fourier ())) [20]
+19.000000	Comb Moments (Wavelet (Fourier ())) [21]
+0.000000	Comb Moments (Wavelet (Fourier ())) [22]
+1.000000	Comb Moments (Wavelet (Fourier ())) [23]
+17.000000	Comb Moments (Wavelet (Fourier ())) [24]
+1.000000	Comb Moments (Wavelet (Fourier ())) [25]
+2.000000	Comb Moments (Wavelet (Fourier ())) [26]
+19.000000	Comb Moments (Wavelet (Fourier ())) [27]
+0.000000	Comb Moments (Wavelet (Fourier ())) [28]
+1.000000	Comb Moments (Wavelet (Fourier ())) [29]
+19.000000	Comb Moments (Wavelet (Fourier ())) [30]
+0.000000	Comb Moments (Wavelet (Fourier ())) [31]
+1.000000	Comb Moments (Wavelet (Fourier ())) [32]
+19.000000	Comb Moments (Wavelet (Fourier ())) [33]
+0.000000	Comb Moments (Wavelet (Fourier ())) [34]
+1.000000	Comb Moments (Wavelet (Fourier ())) [35]
+13.000000	Comb Moments (Wavelet (Fourier ())) [36]
+6.000000	Comb Moments (Wavelet (Fourier ())) [37]
+1.000000	Comb Moments (Wavelet (Fourier ())) [38]
+18.000000	Comb Moments (Wavelet (Fourier ())) [39]
+0.000000	Comb Moments (Wavelet (Fourier ())) [40]
+2.000000	Comb Moments (Wavelet (Fourier ())) [41]
+19.000000	Comb Moments (Wavelet (Fourier ())) [42]
+0.000000	Comb Moments (Wavelet (Fourier ())) [43]
+1.000000	Comb Moments (Wavelet (Fourier ())) [44]
+1.000000	Comb Moments (Wavelet (Fourier ())) [45]
+0.000000	Comb Moments (Wavelet (Fourier ())) [46]
+19.000000	Comb Moments (Wavelet (Fourier ())) [47]
+0.625698	Haralick Textures (Wavelet (Fourier ())) [0]
+0.013434	Haralick Textures (Wavelet (Fourier ())) [1]
+0.872435	Haralick Textures (Wavelet (Fourier ())) [2]
+0.205211	Haralick Textures (Wavelet (Fourier ())) [3]
+0.291604	Haralick Textures (Wavelet (Fourier ())) [4]
+0.150669	Haralick Textures (Wavelet (Fourier ())) [5]
+0.836301	Haralick Textures (Wavelet (Fourier ())) [6]
+0.194089	Haralick Textures (Wavelet (Fourier ())) [7]
+0.673877	Haralick Textures (Wavelet (Fourier ())) [8]
+0.065353	Haralick Textures (Wavelet (Fourier ())) [9]
+1.381005	Haralick Textures (Wavelet (Fourier ())) [10]
+0.057340	Haralick Textures (Wavelet (Fourier ())) [11]
+-0.319429	Haralick Textures (Wavelet (Fourier ())) [12]
+0.062251	Haralick Textures (Wavelet (Fourier ())) [13]
+0.928908	Haralick Textures (Wavelet (Fourier ())) [14]
+0.009470	Haralick Textures (Wavelet (Fourier ())) [15]
+0.000002	Haralick Textures (Wavelet (Fourier ())) [16]
+0.000008	Haralick Textures (Wavelet (Fourier ())) [17]
+0.638610	Haralick Textures (Wavelet (Fourier ())) [18]
+0.045897	Haralick Textures (Wavelet (Fourier ())) [19]
+28.388235	Haralick Textures (Wavelet (Fourier ())) [20]
+0.004962	Haralick Textures (Wavelet (Fourier ())) [21]
+1.163195	Haralick Textures (Wavelet (Fourier ())) [22]
+0.031461	Haralick Textures (Wavelet (Fourier ())) [23]
+742.792534	Haralick Textures (Wavelet (Fourier ())) [24]
+1.409803	Haralick Textures (Wavelet (Fourier ())) [25]
+0.615509	Haralick Textures (Wavelet (Fourier ())) [26]
+0.014586	Haralick Textures (Wavelet (Fourier ())) [27]
+1.000000	Multiscale Histograms (Wavelet (Fourier ())) [0]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [1]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [2]
+0.006117	Multiscale Histograms (Wavelet (Fourier ())) [3]
+0.993883	Multiscale Histograms (Wavelet (Fourier ())) [4]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [5]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [6]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [7]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [8]
+0.999731	Multiscale Histograms (Wavelet (Fourier ())) [9]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [10]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [11]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [12]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [13]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [14]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [15]
+0.997580	Multiscale Histograms (Wavelet (Fourier ())) [16]
+0.002151	Multiscale Histograms (Wavelet (Fourier ())) [17]
+0.000269	Multiscale Histograms (Wavelet (Fourier ())) [18]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [19]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [20]
+0.000000	Multiscale Histograms (Wavelet (Fourier ())) [21]
+0.000067	Multiscale Histograms (Wavelet (Fourier ())) [22]
+0.000202	Multiscale Histograms (Wavelet (Fourier ())) [23]
+0.372650	Tamura Textures (Wavelet (Fourier ())) [0]
+0.199050	Tamura Textures (Wavelet (Fourier ())) [1]
+1.000000	Tamura Textures (Wavelet (Fourier ())) [2]
+0.000036	Tamura Textures (Wavelet (Fourier ())) [3]
+8.140978	Tamura Textures (Wavelet (Fourier ())) [4]
+7.159877	Tamura Textures (Wavelet (Fourier ())) [5]
+175.000000	Radon Coefficients (Wavelet (Fourier ())) [0]
+0.000000	Radon Coefficients (Wavelet (Fourier ())) [1]
+2.000000	Radon Coefficients (Wavelet (Fourier ())) [2]
+174.000000	Radon Coefficients (Wavelet (Fourier ())) [3]
+2.000000	Radon Coefficients (Wavelet (Fourier ())) [4]
+1.000000	Radon Coefficients (Wavelet (Fourier ())) [5]
+173.000000	Radon Coefficients (Wavelet (Fourier ())) [6]
+3.000000	Radon Coefficients (Wavelet (Fourier ())) [7]
+1.000000	Radon Coefficients (Wavelet (Fourier ())) [8]
+174.000000	Radon Coefficients (Wavelet (Fourier ())) [9]
+1.000000	Radon Coefficients (Wavelet (Fourier ())) [10]
+2.000000	Radon Coefficients (Wavelet (Fourier ())) [11]
+8774.309796	Fractal Features (Wavelet (Fourier ())) [0]
+9495.936790	Fractal Features (Wavelet (Fourier ())) [1]
+8970.993053	Fractal Features (Wavelet (Fourier ())) [2]
+9092.462219	Fractal Features (Wavelet (Fourier ())) [3]
+9339.342357	Fractal Features (Wavelet (Fourier ())) [4]
+9516.331888	Fractal Features (Wavelet (Fourier ())) [5]
+9695.934524	Fractal Features (Wavelet (Fourier ())) [6]
+9871.747753	Fractal Features (Wavelet (Fourier ())) [7]
+10029.416003	Fractal Features (Wavelet (Fourier ())) [8]
+10226.440963	Fractal Features (Wavelet (Fourier ())) [9]
+10398.564601	Fractal Features (Wavelet (Fourier ())) [10]
+10555.773514	Fractal Features (Wavelet (Fourier ())) [11]
+10722.089850	Fractal Features (Wavelet (Fourier ())) [12]
+10899.280538	Fractal Features (Wavelet (Fourier ())) [13]
+11024.036988	Fractal Features (Wavelet (Fourier ())) [14]
+11206.992888	Fractal Features (Wavelet (Fourier ())) [15]
+11326.675705	Fractal Features (Wavelet (Fourier ())) [16]
+11478.227543	Fractal Features (Wavelet (Fourier ())) [17]
+11608.290102	Fractal Features (Wavelet (Fourier ())) [18]
+11752.804254	Fractal Features (Wavelet (Fourier ())) [19]
+4566.219923	Pixel Intensity Statistics (Wavelet (Fourier ())) [0]
+527.816723	Pixel Intensity Statistics (Wavelet (Fourier ())) [1]
+96323.257337	Pixel Intensity Statistics (Wavelet (Fourier ())) [2]
+-1518806.958708	Pixel Intensity Statistics (Wavelet (Fourier ())) [3]
+5957422.048588	Pixel Intensity Statistics (Wavelet (Fourier ())) [4]
+0.802183	Gini Coefficient (Wavelet (Fourier ())) [0]
+330.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [0]
+160.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [1]
+20.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [2]
+7.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [3]
+4.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [4]
+3.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [5]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [6]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [7]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [8]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [9]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [10]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [11]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [12]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [13]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [14]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [15]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [16]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [17]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [18]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [19]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [20]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [21]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [22]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [23]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [24]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [25]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [26]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [27]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [28]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [29]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [30]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Wavelet ())) [31]
+4.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [0]
+8.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [1]
+17.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [2]
+54.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [3]
+64.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [4]
+83.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [5]
+69.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [6]
+11.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [7]
+10.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [8]
+23.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [9]
+6.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [10]
+16.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [11]
+11.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [12]
+3.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [13]
+3.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [14]
+8.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [15]
+6.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [16]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [17]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [18]
+2.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [19]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [20]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [21]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [22]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [23]
+1.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [24]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [25]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [26]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [27]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [28]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [29]
+0.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [30]
+1.000000	Chebyshev Coefficients (Fourier (Wavelet ())) [31]
+0.013865	Zernike Coefficients (Fourier (Wavelet ())) [0]
+0.011177	Zernike Coefficients (Fourier (Wavelet ())) [1]
+0.069277	Zernike Coefficients (Fourier (Wavelet ())) [2]
+0.044310	Zernike Coefficients (Fourier (Wavelet ())) [3]
+0.030230	Zernike Coefficients (Fourier (Wavelet ())) [4]
+0.173164	Zernike Coefficients (Fourier (Wavelet ())) [5]
+0.050614	Zernike Coefficients (Fourier (Wavelet ())) [6]
+0.156872	Zernike Coefficients (Fourier (Wavelet ())) [7]
+0.048038	Zernike Coefficients (Fourier (Wavelet ())) [8]
+0.044157	Zernike Coefficients (Fourier (Wavelet ())) [9]
+0.476535	Zernike Coefficients (Fourier (Wavelet ())) [10]
+0.012966	Zernike Coefficients (Fourier (Wavelet ())) [11]
+0.115585	Zernike Coefficients (Fourier (Wavelet ())) [12]
+0.175626	Zernike Coefficients (Fourier (Wavelet ())) [13]
+0.102513	Zernike Coefficients (Fourier (Wavelet ())) [14]
+0.016585	Zernike Coefficients (Fourier (Wavelet ())) [15]
+0.020557	Zernike Coefficients (Fourier (Wavelet ())) [16]
+0.385664	Zernike Coefficients (Fourier (Wavelet ())) [17]
+0.039823	Zernike Coefficients (Fourier (Wavelet ())) [18]
+0.050217	Zernike Coefficients (Fourier (Wavelet ())) [19]
+0.150475	Zernike Coefficients (Fourier (Wavelet ())) [20]
+0.053223	Zernike Coefficients (Fourier (Wavelet ())) [21]
+0.025927	Zernike Coefficients (Fourier (Wavelet ())) [22]
+0.110451	Zernike Coefficients (Fourier (Wavelet ())) [23]
+0.031034	Zernike Coefficients (Fourier (Wavelet ())) [24]
+0.071432	Zernike Coefficients (Fourier (Wavelet ())) [25]
+0.137894	Zernike Coefficients (Fourier (Wavelet ())) [26]
+0.057305	Zernike Coefficients (Fourier (Wavelet ())) [27]
+0.229004	Zernike Coefficients (Fourier (Wavelet ())) [28]
+0.011644	Zernike Coefficients (Fourier (Wavelet ())) [29]
+0.067193	Zernike Coefficients (Fourier (Wavelet ())) [30]
+0.267860	Zernike Coefficients (Fourier (Wavelet ())) [31]
+0.236391	Zernike Coefficients (Fourier (Wavelet ())) [32]
+0.292319	Zernike Coefficients (Fourier (Wavelet ())) [33]
+0.135564	Zernike Coefficients (Fourier (Wavelet ())) [34]
+0.002879	Zernike Coefficients (Fourier (Wavelet ())) [35]
+0.094911	Zernike Coefficients (Fourier (Wavelet ())) [36]
+0.391005	Zernike Coefficients (Fourier (Wavelet ())) [37]
+0.082852	Zernike Coefficients (Fourier (Wavelet ())) [38]
+0.431849	Zernike Coefficients (Fourier (Wavelet ())) [39]
+0.054285	Zernike Coefficients (Fourier (Wavelet ())) [40]
+0.012725	Zernike Coefficients (Fourier (Wavelet ())) [41]
+0.162470	Zernike Coefficients (Fourier (Wavelet ())) [42]
+0.092314	Zernike Coefficients (Fourier (Wavelet ())) [43]
+0.134639	Zernike Coefficients (Fourier (Wavelet ())) [44]
+0.353075	Zernike Coefficients (Fourier (Wavelet ())) [45]
+0.209430	Zernike Coefficients (Fourier (Wavelet ())) [46]
+0.038076	Zernike Coefficients (Fourier (Wavelet ())) [47]
+0.012763	Zernike Coefficients (Fourier (Wavelet ())) [48]
+0.079493	Zernike Coefficients (Fourier (Wavelet ())) [49]
+0.087938	Zernike Coefficients (Fourier (Wavelet ())) [50]
+0.104941	Zernike Coefficients (Fourier (Wavelet ())) [51]
+0.387236	Zernike Coefficients (Fourier (Wavelet ())) [52]
+0.104864	Zernike Coefficients (Fourier (Wavelet ())) [53]
+0.075787	Zernike Coefficients (Fourier (Wavelet ())) [54]
+0.006752	Zernike Coefficients (Fourier (Wavelet ())) [55]
+0.024650	Zernike Coefficients (Fourier (Wavelet ())) [56]
+0.239561	Zernike Coefficients (Fourier (Wavelet ())) [57]
+0.219612	Zernike Coefficients (Fourier (Wavelet ())) [58]
+0.071241	Zernike Coefficients (Fourier (Wavelet ())) [59]
+0.038642	Zernike Coefficients (Fourier (Wavelet ())) [60]
+0.172666	Zernike Coefficients (Fourier (Wavelet ())) [61]
+0.079372	Zernike Coefficients (Fourier (Wavelet ())) [62]
+0.000763	Zernike Coefficients (Fourier (Wavelet ())) [63]
+0.181789	Zernike Coefficients (Fourier (Wavelet ())) [64]
+0.226879	Zernike Coefficients (Fourier (Wavelet ())) [65]
+0.002557	Zernike Coefficients (Fourier (Wavelet ())) [66]
+0.069691	Zernike Coefficients (Fourier (Wavelet ())) [67]
+0.114261	Zernike Coefficients (Fourier (Wavelet ())) [68]
+0.198600	Zernike Coefficients (Fourier (Wavelet ())) [69]
+0.043644	Zernike Coefficients (Fourier (Wavelet ())) [70]
+0.003360	Zernike Coefficients (Fourier (Wavelet ())) [71]
+13.000000	Comb Moments (Fourier (Wavelet ())) [0]
+6.000000	Comb Moments (Fourier (Wavelet ())) [1]
+1.000000	Comb Moments (Fourier (Wavelet ())) [2]
+18.000000	Comb Moments (Fourier (Wavelet ())) [3]
+0.000000	Comb Moments (Fourier (Wavelet ())) [4]
+2.000000	Comb Moments (Fourier (Wavelet ())) [5]
+11.000000	Comb Moments (Fourier (Wavelet ())) [6]
+6.000000	Comb Moments (Fourier (Wavelet ())) [7]
+3.000000	Comb Moments (Fourier (Wavelet ())) [8]
+18.000000	Comb Moments (Fourier (Wavelet ())) [9]
+0.000000	Comb Moments (Fourier (Wavelet ())) [10]
+2.000000	Comb Moments (Fourier (Wavelet ())) [11]
+13.000000	Comb Moments (Fourier (Wavelet ())) [12]
+6.000000	Comb Moments (Fourier (Wavelet ())) [13]
+1.000000	Comb Moments (Fourier (Wavelet ())) [14]
+18.000000	Comb Moments (Fourier (Wavelet ())) [15]
+0.000000	Comb Moments (Fourier (Wavelet ())) [16]
+2.000000	Comb Moments (Fourier (Wavelet ())) [17]
+11.000000	Comb Moments (Fourier (Wavelet ())) [18]
+6.000000	Comb Moments (Fourier (Wavelet ())) [19]
+3.000000	Comb Moments (Fourier (Wavelet ())) [20]
+18.000000	Comb Moments (Fourier (Wavelet ())) [21]
+0.000000	Comb Moments (Fourier (Wavelet ())) [22]
+2.000000	Comb Moments (Fourier (Wavelet ())) [23]
+17.000000	Comb Moments (Fourier (Wavelet ())) [24]
+2.000000	Comb Moments (Fourier (Wavelet ())) [25]
+1.000000	Comb Moments (Fourier (Wavelet ())) [26]
+19.000000	Comb Moments (Fourier (Wavelet ())) [27]
+0.000000	Comb Moments (Fourier (Wavelet ())) [28]
+1.000000	Comb Moments (Fourier (Wavelet ())) [29]
+19.000000	Comb Moments (Fourier (Wavelet ())) [30]
+0.000000	Comb Moments (Fourier (Wavelet ())) [31]
+1.000000	Comb Moments (Fourier (Wavelet ())) [32]
+18.000000	Comb Moments (Fourier (Wavelet ())) [33]
+1.000000	Comb Moments (Fourier (Wavelet ())) [34]
+1.000000	Comb Moments (Fourier (Wavelet ())) [35]
+14.000000	Comb Moments (Fourier (Wavelet ())) [36]
+3.000000	Comb Moments (Fourier (Wavelet ())) [37]
+3.000000	Comb Moments (Fourier (Wavelet ())) [38]
+19.000000	Comb Moments (Fourier (Wavelet ())) [39]
+0.000000	Comb Moments (Fourier (Wavelet ())) [40]
+1.000000	Comb Moments (Fourier (Wavelet ())) [41]
+19.000000	Comb Moments (Fourier (Wavelet ())) [42]
+0.000000	Comb Moments (Fourier (Wavelet ())) [43]
+1.000000	Comb Moments (Fourier (Wavelet ())) [44]
+19.000000	Comb Moments (Fourier (Wavelet ())) [45]
+0.000000	Comb Moments (Fourier (Wavelet ())) [46]
+1.000000	Comb Moments (Fourier (Wavelet ())) [47]
+0.111589	Haralick Textures (Fourier (Wavelet ())) [0]
+0.015441	Haralick Textures (Fourier (Wavelet ())) [1]
+17.276081	Haralick Textures (Fourier (Wavelet ())) [2]
+7.767240	Haralick Textures (Fourier (Wavelet ())) [3]
+0.539543	Haralick Textures (Fourier (Wavelet ())) [4]
+0.242734	Haralick Textures (Fourier (Wavelet ())) [5]
+12.510627	Haralick Textures (Fourier (Wavelet ())) [6]
+6.136186	Haralick Textures (Fourier (Wavelet ())) [7]
+2.709083	Haralick Textures (Fourier (Wavelet ())) [8]
+0.145478	Haralick Textures (Fourier (Wavelet ())) [9]
+4.865827	Haralick Textures (Fourier (Wavelet ())) [10]
+0.074596	Haralick Textures (Fourier (Wavelet ())) [11]
+-0.175297	Haralick Textures (Fourier (Wavelet ())) [12]
+0.051495	Haralick Textures (Fourier (Wavelet ())) [13]
+0.545908	Haralick Textures (Fourier (Wavelet ())) [14]
+0.015563	Haralick Textures (Fourier (Wavelet ())) [15]
+0.014415	Haralick Textures (Fourier (Wavelet ())) [16]
+0.055048	Haralick Textures (Fourier (Wavelet ())) [17]
+0.776521	Haralick Textures (Fourier (Wavelet ())) [18]
+0.078110	Haralick Textures (Fourier (Wavelet ())) [19]
+6.573888	Haralick Textures (Fourier (Wavelet ())) [20]
+0.365885	Haralick Textures (Fourier (Wavelet ())) [21]
+3.539401	Haralick Textures (Fourier (Wavelet ())) [22]
+0.086847	Haralick Textures (Fourier (Wavelet ())) [23]
+67.858920	Haralick Textures (Fourier (Wavelet ())) [24]
+16.146145	Haralick Textures (Fourier (Wavelet ())) [25]
+18.976821	Haralick Textures (Fourier (Wavelet ())) [26]
+1.819725	Haralick Textures (Fourier (Wavelet ())) [27]
+1.000000	Multiscale Histograms (Fourier (Wavelet ())) [0]
+0.000538	Multiscale Histograms (Fourier (Wavelet ())) [1]
+0.000067	Multiscale Histograms (Fourier (Wavelet ())) [2]
+0.999731	Multiscale Histograms (Fourier (Wavelet ())) [3]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [4]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [5]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [6]
+0.000067	Multiscale Histograms (Fourier (Wavelet ())) [7]
+0.999193	Multiscale Histograms (Fourier (Wavelet ())) [8]
+0.000807	Multiscale Histograms (Fourier (Wavelet ())) [9]
+0.000000	Multiscale Histograms (Fourier (Wavelet ())) [10]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [11]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [12]
+0.000000	Multiscale Histograms (Fourier (Wavelet ())) [13]
+0.000067	Multiscale Histograms (Fourier (Wavelet ())) [14]
+0.998924	Multiscale Histograms (Fourier (Wavelet ())) [15]
+0.000807	Multiscale Histograms (Fourier (Wavelet ())) [16]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [17]
+0.000134	Multiscale Histograms (Fourier (Wavelet ())) [18]
+0.000134	Multiscale Histograms (Fourier (Wavelet ())) [19]
+0.000269	Multiscale Histograms (Fourier (Wavelet ())) [20]
+0.000000	Multiscale Histograms (Fourier (Wavelet ())) [21]
+0.000000	Multiscale Histograms (Fourier (Wavelet ())) [22]
+0.000067	Multiscale Histograms (Fourier (Wavelet ())) [23]
+1.000000	Tamura Textures (Fourier (Wavelet ())) [0]
+0.136395	Tamura Textures (Fourier (Wavelet ())) [1]
+0.559594	Tamura Textures (Fourier (Wavelet ())) [2]
+0.000048	Tamura Textures (Fourier (Wavelet ())) [3]
+7.410967	Tamura Textures (Fourier (Wavelet ())) [4]
+4.810988	Tamura Textures (Fourier (Wavelet ())) [5]
+174.000000	Radon Coefficients (Fourier (Wavelet ())) [0]
+1.000000	Radon Coefficients (Fourier (Wavelet ())) [1]
+2.000000	Radon Coefficients (Fourier (Wavelet ())) [2]
+169.000000	Radon Coefficients (Fourier (Wavelet ())) [3]
+6.000000	Radon Coefficients (Fourier (Wavelet ())) [4]
+2.000000	Radon Coefficients (Fourier (Wavelet ())) [5]
+172.000000	Radon Coefficients (Fourier (Wavelet ())) [6]
+3.000000	Radon Coefficients (Fourier (Wavelet ())) [7]
+2.000000	Radon Coefficients (Fourier (Wavelet ())) [8]
+174.000000	Radon Coefficients (Fourier (Wavelet ())) [9]
+1.000000	Radon Coefficients (Fourier (Wavelet ())) [10]
+2.000000	Radon Coefficients (Fourier (Wavelet ())) [11]
+11085.150065	Fractal Features (Fourier (Wavelet ())) [0]
+10646.984729	Fractal Features (Fourier (Wavelet ())) [1]
+12308.139481	Fractal Features (Fourier (Wavelet ())) [2]
+11730.236435	Fractal Features (Fourier (Wavelet ())) [3]
+12403.569435	Fractal Features (Fourier (Wavelet ())) [4]
+12375.729508	Fractal Features (Fourier (Wavelet ())) [5]
+12664.858260	Fractal Features (Fourier (Wavelet ())) [6]
+13123.283754	Fractal Features (Fourier (Wavelet ())) [7]
+12879.058973	Fractal Features (Fourier (Wavelet ())) [8]
+13615.288405	Fractal Features (Fourier (Wavelet ())) [9]
+13054.369199	Fractal Features (Fourier (Wavelet ())) [10]
+14010.241522	Fractal Features (Fourier (Wavelet ())) [11]
+13394.454101	Fractal Features (Fourier (Wavelet ())) [12]
+14395.297127	Fractal Features (Fourier (Wavelet ())) [13]
+13890.111076	Fractal Features (Fourier (Wavelet ())) [14]
+14695.676160	Fractal Features (Fourier (Wavelet ())) [15]
+14433.738588	Fractal Features (Fourier (Wavelet ())) [16]
+15022.538665	Fractal Features (Fourier (Wavelet ())) [17]
+15017.726066	Fractal Features (Fourier (Wavelet ())) [18]
+15285.524249	Fractal Features (Fourier (Wavelet ())) [19]
+18754.917234	Pixel Intensity Statistics (Fourier (Wavelet ())) [0]
+7098.853590	Pixel Intensity Statistics (Fourier (Wavelet ())) [1]
+102408.492993	Pixel Intensity Statistics (Fourier (Wavelet ())) [2]
+74.122812	Pixel Intensity Statistics (Fourier (Wavelet ())) [3]
+5931645.999973	Pixel Intensity Statistics (Fourier (Wavelet ())) [4]
+0.679424	Gini Coefficient (Fourier (Wavelet ())) [0]
+9.000000	Comb Moments (Fourier (Chebyshev ())) [0]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [1]
+11.000000	Comb Moments (Fourier (Chebyshev ())) [2]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [3]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [4]
+8.000000	Comb Moments (Fourier (Chebyshev ())) [5]
+6.000000	Comb Moments (Fourier (Chebyshev ())) [6]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [7]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [8]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [9]
+4.000000	Comb Moments (Fourier (Chebyshev ())) [10]
+4.000000	Comb Moments (Fourier (Chebyshev ())) [11]
+9.000000	Comb Moments (Fourier (Chebyshev ())) [12]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [13]
+11.000000	Comb Moments (Fourier (Chebyshev ())) [14]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [15]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [16]
+8.000000	Comb Moments (Fourier (Chebyshev ())) [17]
+5.000000	Comb Moments (Fourier (Chebyshev ())) [18]
+5.000000	Comb Moments (Fourier (Chebyshev ())) [19]
+10.000000	Comb Moments (Fourier (Chebyshev ())) [20]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [21]
+1.000000	Comb Moments (Fourier (Chebyshev ())) [22]
+7.000000	Comb Moments (Fourier (Chebyshev ())) [23]
+11.000000	Comb Moments (Fourier (Chebyshev ())) [24]
+5.000000	Comb Moments (Fourier (Chebyshev ())) [25]
+4.000000	Comb Moments (Fourier (Chebyshev ())) [26]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [27]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [28]
+16.000000	Comb Moments (Fourier (Chebyshev ())) [29]
+19.000000	Comb Moments (Fourier (Chebyshev ())) [30]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [31]
+1.000000	Comb Moments (Fourier (Chebyshev ())) [32]
+1.000000	Comb Moments (Fourier (Chebyshev ())) [33]
+12.000000	Comb Moments (Fourier (Chebyshev ())) [34]
+7.000000	Comb Moments (Fourier (Chebyshev ())) [35]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [36]
+16.000000	Comb Moments (Fourier (Chebyshev ())) [37]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [38]
+1.000000	Comb Moments (Fourier (Chebyshev ())) [39]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [40]
+17.000000	Comb Moments (Fourier (Chebyshev ())) [41]
+19.000000	Comb Moments (Fourier (Chebyshev ())) [42]
+0.000000	Comb Moments (Fourier (Chebyshev ())) [43]
+1.000000	Comb Moments (Fourier (Chebyshev ())) [44]
+2.000000	Comb Moments (Fourier (Chebyshev ())) [45]
+11.000000	Comb Moments (Fourier (Chebyshev ())) [46]
+7.000000	Comb Moments (Fourier (Chebyshev ())) [47]
+0.000279	Haralick Textures (Fourier (Chebyshev ())) [0]
+0.000108	Haralick Textures (Fourier (Chebyshev ())) [1]
+873.027844	Haralick Textures (Fourier (Chebyshev ())) [2]
+613.351550	Haralick Textures (Fourier (Chebyshev ())) [3]
+0.777290	Haralick Textures (Fourier (Chebyshev ())) [4]
+0.160232	Haralick Textures (Fourier (Chebyshev ())) [5]
+528.668166	Haralick Textures (Fourier (Chebyshev ())) [6]
+282.460334	Haralick Textures (Fourier (Chebyshev ())) [7]
+5.555785	Haralick Textures (Fourier (Chebyshev ())) [8]
+0.732954	Haralick Textures (Fourier (Chebyshev ())) [9]
+12.316362	Haralick Textures (Fourier (Chebyshev ())) [10]
+0.444656	Haralick Textures (Fourier (Chebyshev ())) [11]
+-0.325424	Haralick Textures (Fourier (Chebyshev ())) [12]
+0.062108	Haralick Textures (Fourier (Chebyshev ())) [13]
+0.112202	Haralick Textures (Fourier (Chebyshev ())) [14]
+0.068832	Haralick Textures (Fourier (Chebyshev ())) [15]
+0.015232	Haralick Textures (Fourier (Chebyshev ())) [16]
+0.013854	Haralick Textures (Fourier (Chebyshev ())) [17]
+0.995458	Haralick Textures (Fourier (Chebyshev ())) [18]
+0.004197	Haralick Textures (Fourier (Chebyshev ())) [19]
+177.402936	Haralick Textures (Fourier (Chebyshev ())) [20]
+0.209959	Haralick Textures (Fourier (Chebyshev ())) [21]
+8.272475	Haralick Textures (Fourier (Chebyshev ())) [22]
+0.067271	Haralick Textures (Fourier (Chebyshev ())) [23]
+35591.245276	Haralick Textures (Fourier (Chebyshev ())) [24]
+690.149898	Haralick Textures (Fourier (Chebyshev ())) [25]
+1964.787239	Haralick Textures (Fourier (Chebyshev ())) [26]
+36.040229	Haralick Textures (Fourier (Chebyshev ())) [27]
+0.783893	Multiscale Histograms (Fourier (Chebyshev ())) [0]
+1.000000	Multiscale Histograms (Fourier (Chebyshev ())) [1]
+0.065614	Multiscale Histograms (Fourier (Chebyshev ())) [2]
+0.424392	Multiscale Histograms (Fourier (Chebyshev ())) [3]
+0.689455	Multiscale Histograms (Fourier (Chebyshev ())) [4]
+0.599652	Multiscale Histograms (Fourier (Chebyshev ())) [5]
+0.126883	Multiscale Histograms (Fourier (Chebyshev ())) [6]
+0.009125	Multiscale Histograms (Fourier (Chebyshev ())) [7]
+0.317207	Multiscale Histograms (Fourier (Chebyshev ())) [8]
+0.273465	Multiscale Histograms (Fourier (Chebyshev ())) [9]
+0.663094	Multiscale Histograms (Fourier (Chebyshev ())) [10]
+0.414832	Multiscale Histograms (Fourier (Chebyshev ())) [11]
+0.142816	Multiscale Histograms (Fourier (Chebyshev ())) [12]
+0.035052	Multiscale Histograms (Fourier (Chebyshev ())) [13]
+0.003042	Multiscale Histograms (Fourier (Chebyshev ())) [14]
+0.243337	Multiscale Histograms (Fourier (Chebyshev ())) [15]
+0.208864	Multiscale Histograms (Fourier (Chebyshev ())) [16]
+0.331692	Multiscale Histograms (Fourier (Chebyshev ())) [17]
+0.537080	Multiscale Histograms (Fourier (Chebyshev ())) [18]
+0.316049	Multiscale Histograms (Fourier (Chebyshev ())) [19]
+0.146871	Multiscale Histograms (Fourier (Chebyshev ())) [20]
+0.052433	Multiscale Histograms (Fourier (Chebyshev ())) [21]
+0.012167	Multiscale Histograms (Fourier (Chebyshev ())) [22]
+0.001014	Multiscale Histograms (Fourier (Chebyshev ())) [23]
+1.000000	Tamura Textures (Fourier (Chebyshev ())) [0]
+0.191727	Tamura Textures (Fourier (Chebyshev ())) [1]
+0.138793	Tamura Textures (Fourier (Chebyshev ())) [2]
+0.024456	Tamura Textures (Fourier (Chebyshev ())) [3]
+7.335661	Tamura Textures (Fourier (Chebyshev ())) [4]
+3.081085	Tamura Textures (Fourier (Chebyshev ())) [5]
+62.000000	Radon Coefficients (Fourier (Chebyshev ())) [0]
+24.000000	Radon Coefficients (Fourier (Chebyshev ())) [1]
+77.000000	Radon Coefficients (Fourier (Chebyshev ())) [2]
+60.000000	Radon Coefficients (Fourier (Chebyshev ())) [3]
+61.000000	Radon Coefficients (Fourier (Chebyshev ())) [4]
+42.000000	Radon Coefficients (Fourier (Chebyshev ())) [5]
+58.000000	Radon Coefficients (Fourier (Chebyshev ())) [6]
+70.000000	Radon Coefficients (Fourier (Chebyshev ())) [7]
+35.000000	Radon Coefficients (Fourier (Chebyshev ())) [8]
+60.000000	Radon Coefficients (Fourier (Chebyshev ())) [9]
+20.000000	Radon Coefficients (Fourier (Chebyshev ())) [10]
+83.000000	Radon Coefficients (Fourier (Chebyshev ())) [11]
+52.816083	Fractal Features (Fourier (Chebyshev ())) [0]
+74.144489	Fractal Features (Fourier (Chebyshev ())) [1]
+81.526229	Fractal Features (Fourier (Chebyshev ())) [2]
+92.025523	Fractal Features (Fourier (Chebyshev ())) [3]
+100.532369	Fractal Features (Fourier (Chebyshev ())) [4]
+106.465905	Fractal Features (Fourier (Chebyshev ())) [5]
+108.484244	Fractal Features (Fourier (Chebyshev ())) [6]
+110.942334	Fractal Features (Fourier (Chebyshev ())) [7]
+112.813811	Fractal Features (Fourier (Chebyshev ())) [8]
+120.718980	Fractal Features (Fourier (Chebyshev ())) [9]
+126.320794	Fractal Features (Fourier (Chebyshev ())) [10]
+130.886528	Fractal Features (Fourier (Chebyshev ())) [11]
+133.479985	Fractal Features (Fourier (Chebyshev ())) [12]
+136.075485	Fractal Features (Fourier (Chebyshev ())) [13]
+138.306901	Fractal Features (Fourier (Chebyshev ())) [14]
+141.171288	Fractal Features (Fourier (Chebyshev ())) [15]
+143.815795	Fractal Features (Fourier (Chebyshev ())) [16]
+145.971119	Fractal Features (Fourier (Chebyshev ())) [17]
+148.251259	Fractal Features (Fourier (Chebyshev ())) [18]
+150.285095	Fractal Features (Fourier (Chebyshev ())) [19]
+323.290595	Pixel Intensity Statistics (Fourier (Chebyshev ())) [0]
+335.399011	Pixel Intensity Statistics (Fourier (Chebyshev ())) [1]
+162.612530	Pixel Intensity Statistics (Fourier (Chebyshev ())) [2]
+2.618033	Pixel Intensity Statistics (Fourier (Chebyshev ())) [3]
+922.261070	Pixel Intensity Statistics (Fourier (Chebyshev ())) [4]
+0.284687	Gini Coefficient (Fourier (Chebyshev ())) [0]
+11.000000	Comb Moments (Chebyshev (Wavelet ())) [0]
+2.000000	Comb Moments (Chebyshev (Wavelet ())) [1]
+7.000000	Comb Moments (Chebyshev (Wavelet ())) [2]
+15.000000	Comb Moments (Chebyshev (Wavelet ())) [3]
+2.000000	Comb Moments (Chebyshev (Wavelet ())) [4]
+3.000000	Comb Moments (Chebyshev (Wavelet ())) [5]
+3.000000	Comb Moments (Chebyshev (Wavelet ())) [6]
+11.000000	Comb Moments (Chebyshev (Wavelet ())) [7]
+6.000000	Comb Moments (Chebyshev (Wavelet ())) [8]
+19.000000	Comb Moments (Chebyshev (Wavelet ())) [9]
+0.000000	Comb Moments (Chebyshev (Wavelet ())) [10]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [11]
+11.000000	Comb Moments (Chebyshev (Wavelet ())) [12]
+3.000000	Comb Moments (Chebyshev (Wavelet ())) [13]
+6.000000	Comb Moments (Chebyshev (Wavelet ())) [14]
+15.000000	Comb Moments (Chebyshev (Wavelet ())) [15]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [16]
+4.000000	Comb Moments (Chebyshev (Wavelet ())) [17]
+2.000000	Comb Moments (Chebyshev (Wavelet ())) [18]
+13.000000	Comb Moments (Chebyshev (Wavelet ())) [19]
+5.000000	Comb Moments (Chebyshev (Wavelet ())) [20]
+19.000000	Comb Moments (Chebyshev (Wavelet ())) [21]
+0.000000	Comb Moments (Chebyshev (Wavelet ())) [22]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [23]
+10.000000	Comb Moments (Chebyshev (Wavelet ())) [24]
+6.000000	Comb Moments (Chebyshev (Wavelet ())) [25]
+4.000000	Comb Moments (Chebyshev (Wavelet ())) [26]
+19.000000	Comb Moments (Chebyshev (Wavelet ())) [27]
+0.000000	Comb Moments (Chebyshev (Wavelet ())) [28]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [29]
+8.000000	Comb Moments (Chebyshev (Wavelet ())) [30]
+7.000000	Comb Moments (Chebyshev (Wavelet ())) [31]
+5.000000	Comb Moments (Chebyshev (Wavelet ())) [32]
+19.000000	Comb Moments (Chebyshev (Wavelet ())) [33]
+0.000000	Comb Moments (Chebyshev (Wavelet ())) [34]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [35]
+17.000000	Comb Moments (Chebyshev (Wavelet ())) [36]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [37]
+2.000000	Comb Moments (Chebyshev (Wavelet ())) [38]
+18.000000	Comb Moments (Chebyshev (Wavelet ())) [39]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [40]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [41]
+19.000000	Comb Moments (Chebyshev (Wavelet ())) [42]
+0.000000	Comb Moments (Chebyshev (Wavelet ())) [43]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [44]
+1.000000	Comb Moments (Chebyshev (Wavelet ())) [45]
+8.000000	Comb Moments (Chebyshev (Wavelet ())) [46]
+11.000000	Comb Moments (Chebyshev (Wavelet ())) [47]
+0.202414	Haralick Textures (Chebyshev (Wavelet ())) [0]
+0.012524	Haralick Textures (Chebyshev (Wavelet ())) [1]
+8.106034	Haralick Textures (Chebyshev (Wavelet ())) [2]
+1.934941	Haralick Textures (Chebyshev (Wavelet ())) [3]
+0.165878	Haralick Textures (Chebyshev (Wavelet ())) [4]
+0.273713	Haralick Textures (Chebyshev (Wavelet ())) [5]
+7.143525	Haralick Textures (Chebyshev (Wavelet ())) [6]
+1.657493	Haralick Textures (Chebyshev (Wavelet ())) [7]
+1.782007	Haralick Textures (Chebyshev (Wavelet ())) [8]
+0.172338	Haralick Textures (Chebyshev (Wavelet ())) [9]
+3.631898	Haralick Textures (Chebyshev (Wavelet ())) [10]
+0.060336	Haralick Textures (Chebyshev (Wavelet ())) [11]
+-0.133890	Haralick Textures (Chebyshev (Wavelet ())) [12]
+0.052315	Haralick Textures (Chebyshev (Wavelet ())) [13]
+0.702540	Haralick Textures (Chebyshev (Wavelet ())) [14]
+0.049451	Haralick Textures (Chebyshev (Wavelet ())) [15]
+0.000000	Haralick Textures (Chebyshev (Wavelet ())) [16]
+0.000000	Haralick Textures (Chebyshev (Wavelet ())) [17]
+0.634900	Haralick Textures (Chebyshev (Wavelet ())) [18]
+0.099129	Haralick Textures (Chebyshev (Wavelet ())) [19]
+77.531211	Haralick Textures (Chebyshev (Wavelet ())) [20]
+0.013149	Haralick Textures (Chebyshev (Wavelet ())) [21]
+2.526069	Haralick Textures (Chebyshev (Wavelet ())) [22]
+0.131661	Haralick Textures (Chebyshev (Wavelet ())) [23]
+5637.199500	Haralick Textures (Chebyshev (Wavelet ())) [24]
+17.882769	Haralick Textures (Chebyshev (Wavelet ())) [25]
+4.882888	Haralick Textures (Chebyshev (Wavelet ())) [26]
+0.450393	Haralick Textures (Chebyshev (Wavelet ())) [27]
+0.000942	Multiscale Histograms (Chebyshev (Wavelet ())) [0]
+1.000000	Multiscale Histograms (Chebyshev (Wavelet ())) [1]
+0.000538	Multiscale Histograms (Chebyshev (Wavelet ())) [2]
+0.000538	Multiscale Histograms (Chebyshev (Wavelet ())) [3]
+0.001480	Multiscale Histograms (Chebyshev (Wavelet ())) [4]
+0.998789	Multiscale Histograms (Chebyshev (Wavelet ())) [5]
+0.000202	Multiscale Histograms (Chebyshev (Wavelet ())) [6]
+0.000471	Multiscale Histograms (Chebyshev (Wavelet ())) [7]
+0.000269	Multiscale Histograms (Chebyshev (Wavelet ())) [8]
+0.000269	Multiscale Histograms (Chebyshev (Wavelet ())) [9]
+0.003432	Multiscale Histograms (Chebyshev (Wavelet ())) [10]
+0.996299	Multiscale Histograms (Chebyshev (Wavelet ())) [11]
+0.000740	Multiscale Histograms (Chebyshev (Wavelet ())) [12]
+0.000135	Multiscale Histograms (Chebyshev (Wavelet ())) [13]
+0.000336	Multiscale Histograms (Chebyshev (Wavelet ())) [14]
+0.000269	Multiscale Histograms (Chebyshev (Wavelet ())) [15]
+0.000269	Multiscale Histograms (Chebyshev (Wavelet ())) [16]
+0.000404	Multiscale Histograms (Chebyshev (Wavelet ())) [17]
+0.009218	Multiscale Histograms (Chebyshev (Wavelet ())) [18]
+0.989907	Multiscale Histograms (Chebyshev (Wavelet ())) [19]
+0.000875	Multiscale Histograms (Chebyshev (Wavelet ())) [20]
+0.000067	Multiscale Histograms (Chebyshev (Wavelet ())) [21]
+0.000336	Multiscale Histograms (Chebyshev (Wavelet ())) [22]
+0.000135	Multiscale Histograms (Chebyshev (Wavelet ())) [23]
+0.696546	Tamura Textures (Chebyshev (Wavelet ())) [0]
+0.228690	Tamura Textures (Chebyshev (Wavelet ())) [1]
+1.000000	Tamura Textures (Chebyshev (Wavelet ())) [2]
+0.000175	Tamura Textures (Chebyshev (Wavelet ())) [3]
+6.923142	Tamura Textures (Chebyshev (Wavelet ())) [4]
+6.276667	Tamura Textures (Chebyshev (Wavelet ())) [5]
+3.000000	Radon Coefficients (Chebyshev (Wavelet ())) [0]
+173.000000	Radon Coefficients (Chebyshev (Wavelet ())) [1]
+1.000000	Radon Coefficients (Chebyshev (Wavelet ())) [2]
+1.000000	Radon Coefficients (Chebyshev (Wavelet ())) [3]
+139.000000	Radon Coefficients (Chebyshev (Wavelet ())) [4]
+37.000000	Radon Coefficients (Chebyshev (Wavelet ())) [5]
+22.000000	Radon Coefficients (Chebyshev (Wavelet ())) [6]
+154.000000	Radon Coefficients (Chebyshev (Wavelet ())) [7]
+1.000000	Radon Coefficients (Chebyshev (Wavelet ())) [8]
+3.000000	Radon Coefficients (Chebyshev (Wavelet ())) [9]
+173.000000	Radon Coefficients (Chebyshev (Wavelet ())) [10]
+1.000000	Radon Coefficients (Chebyshev (Wavelet ())) [11]
+0.900600	Fractal Features (Chebyshev (Wavelet ())) [0]
+1.382439	Fractal Features (Chebyshev (Wavelet ())) [1]
+1.280798	Fractal Features (Chebyshev (Wavelet ())) [2]
+0.859226	Fractal Features (Chebyshev (Wavelet ())) [3]
+0.902794	Fractal Features (Chebyshev (Wavelet ())) [4]
+1.176542	Fractal Features (Chebyshev (Wavelet ())) [5]
+1.182222	Fractal Features (Chebyshev (Wavelet ())) [6]
+0.968786	Fractal Features (Chebyshev (Wavelet ())) [7]
+0.994998	Fractal Features (Chebyshev (Wavelet ())) [8]
+1.183292	Fractal Features (Chebyshev (Wavelet ())) [9]
+1.177891	Fractal Features (Chebyshev (Wavelet ())) [10]
+0.989124	Fractal Features (Chebyshev (Wavelet ())) [11]
+0.973440	Fractal Features (Chebyshev (Wavelet ())) [12]
+1.134014	Fractal Features (Chebyshev (Wavelet ())) [13]
+1.156853	Fractal Features (Chebyshev (Wavelet ())) [14]
+1.008716	Fractal Features (Chebyshev (Wavelet ())) [15]
+0.972852	Fractal Features (Chebyshev (Wavelet ())) [16]
+1.080984	Fractal Features (Chebyshev (Wavelet ())) [17]
+1.092382	Fractal Features (Chebyshev (Wavelet ())) [18]
+0.977157	Fractal Features (Chebyshev (Wavelet ())) [19]
+0.000039	Pixel Intensity Statistics (Chebyshev (Wavelet ())) [0]
+-0.001119	Pixel Intensity Statistics (Chebyshev (Wavelet ())) [1]
+3.634335	Pixel Intensity Statistics (Chebyshev (Wavelet ())) [2]
+-110.183541	Pixel Intensity Statistics (Chebyshev (Wavelet ())) [3]
+125.459116	Pixel Intensity Statistics (Chebyshev (Wavelet ())) [4]
+0.704825	Gini Coefficient (Chebyshev (Wavelet ())) [0]
+235.000000	Chebyshev-Fourier Coefficients (Edge ()) [0]
+206.000000	Chebyshev-Fourier Coefficients (Edge ()) [1]
+50.000000	Chebyshev-Fourier Coefficients (Edge ()) [2]
+21.000000	Chebyshev-Fourier Coefficients (Edge ()) [3]
+2.000000	Chebyshev-Fourier Coefficients (Edge ()) [4]
+5.000000	Chebyshev-Fourier Coefficients (Edge ()) [5]
+6.000000	Chebyshev-Fourier Coefficients (Edge ()) [6]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [7]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [8]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [9]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [10]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [11]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [12]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [13]
+1.000000	Chebyshev-Fourier Coefficients (Edge ()) [14]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [15]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [16]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [17]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [18]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [19]
+1.000000	Chebyshev-Fourier Coefficients (Edge ()) [20]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [21]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [22]
+1.000000	Chebyshev-Fourier Coefficients (Edge ()) [23]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [24]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [25]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [26]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [27]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [28]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [29]
+0.000000	Chebyshev-Fourier Coefficients (Edge ()) [30]
+1.000000	Chebyshev-Fourier Coefficients (Edge ()) [31]
+1.000000	Chebyshev Coefficients (Edge ()) [0]
+1.000000	Chebyshev Coefficients (Edge ()) [1]
+0.000000	Chebyshev Coefficients (Edge ()) [2]
+0.000000	Chebyshev Coefficients (Edge ()) [3]
+0.000000	Chebyshev Coefficients (Edge ()) [4]
+0.000000	Chebyshev Coefficients (Edge ()) [5]
+0.000000	Chebyshev Coefficients (Edge ()) [6]
+0.000000	Chebyshev Coefficients (Edge ()) [7]
+0.000000	Chebyshev Coefficients (Edge ()) [8]
+0.000000	Chebyshev Coefficients (Edge ()) [9]
+0.000000	Chebyshev Coefficients (Edge ()) [10]
+0.000000	Chebyshev Coefficients (Edge ()) [11]
+0.000000	Chebyshev Coefficients (Edge ()) [12]
+16.000000	Chebyshev Coefficients (Edge ()) [13]
+124.000000	Chebyshev Coefficients (Edge ()) [14]
+222.000000	Chebyshev Coefficients (Edge ()) [15]
+29.000000	Chebyshev Coefficients (Edge ()) [16]
+2.000000	Chebyshev Coefficients (Edge ()) [17]
+3.000000	Chebyshev Coefficients (Edge ()) [18]
+0.000000	Chebyshev Coefficients (Edge ()) [19]
+0.000000	Chebyshev Coefficients (Edge ()) [20]
+0.000000	Chebyshev Coefficients (Edge ()) [21]
+0.000000	Chebyshev Coefficients (Edge ()) [22]
+0.000000	Chebyshev Coefficients (Edge ()) [23]
+0.000000	Chebyshev Coefficients (Edge ()) [24]
+1.000000	Chebyshev Coefficients (Edge ()) [25]
+0.000000	Chebyshev Coefficients (Edge ()) [26]
+0.000000	Chebyshev Coefficients (Edge ()) [27]
+0.000000	Chebyshev Coefficients (Edge ()) [28]
+0.000000	Chebyshev Coefficients (Edge ()) [29]
+0.000000	Chebyshev Coefficients (Edge ()) [30]
+1.000000	Chebyshev Coefficients (Edge ()) [31]
+0.006204	Zernike Coefficients (Edge ()) [0]
+0.005518	Zernike Coefficients (Edge ()) [1]
+0.023157	Zernike Coefficients (Edge ()) [2]
+0.009594	Zernike Coefficients (Edge ()) [3]
+0.016033	Zernike Coefficients (Edge ()) [4]
+0.015354	Zernike Coefficients (Edge ()) [5]
+0.041319	Zernike Coefficients (Edge ()) [6]
+0.033075	Zernike Coefficients (Edge ()) [7]
+0.001177	Zernike Coefficients (Edge ()) [8]
+0.019164	Zernike Coefficients (Edge ()) [9]
+0.051746	Zernike Coefficients (Edge ()) [10]
+0.000670	Zernike Coefficients (Edge ()) [11]
+0.041453	Zernike Coefficients (Edge ()) [12]
+0.046516	Zernike Coefficients (Edge ()) [13]
+0.004118	Zernike Coefficients (Edge ()) [14]
+0.000143	Zernike Coefficients (Edge ()) [15]
+0.010977	Zernike Coefficients (Edge ()) [16]
+0.065477	Zernike Coefficients (Edge ()) [17]
+0.004187	Zernike Coefficients (Edge ()) [18]
+0.002235	Zernike Coefficients (Edge ()) [19]
+0.015506	Zernike Coefficients (Edge ()) [20]
+0.019783	Zernike Coefficients (Edge ()) [21]
+0.007296	Zernike Coefficients (Edge ()) [22]
+0.001016	Zernike Coefficients (Edge ()) [23]
+0.000195	Zernike Coefficients (Edge ()) [24]
+0.021903	Zernike Coefficients (Edge ()) [25]
+0.027647	Zernike Coefficients (Edge ()) [26]
+0.013074	Zernike Coefficients (Edge ()) [27]
+0.012187	Zernike Coefficients (Edge ()) [28]
+0.000046	Zernike Coefficients (Edge ()) [29]
+0.022375	Zernike Coefficients (Edge ()) [30]
+0.049643	Zernike Coefficients (Edge ()) [31]
+0.018342	Zernike Coefficients (Edge ()) [32]
+0.004120	Zernike Coefficients (Edge ()) [33]
+0.000972	Zernike Coefficients (Edge ()) [34]
+0.000033	Zernike Coefficients (Edge ()) [35]
+0.038811	Zernike Coefficients (Edge ()) [36]
+0.068867	Zernike Coefficients (Edge ()) [37]
+0.026669	Zernike Coefficients (Edge ()) [38]
+0.029043	Zernike Coefficients (Edge ()) [39]
+0.000311	Zernike Coefficients (Edge ()) [40]
+0.000382	Zernike Coefficients (Edge ()) [41]
+0.039446	Zernike Coefficients (Edge ()) [42]
+0.107994	Zernike Coefficients (Edge ()) [43]
+0.035736	Zernike Coefficients (Edge ()) [44]
+0.011231	Zernike Coefficients (Edge ()) [45]
+0.001657	Zernike Coefficients (Edge ()) [46]
+0.000264	Zernike Coefficients (Edge ()) [47]
+0.000055	Zernike Coefficients (Edge ()) [48]
+0.040085	Zernike Coefficients (Edge ()) [49]
+0.083880	Zernike Coefficients (Edge ()) [50]
+0.038283	Zernike Coefficients (Edge ()) [51]
+0.035972	Zernike Coefficients (Edge ()) [52]
+0.001045	Zernike Coefficients (Edge ()) [53]
+0.002866	Zernike Coefficients (Edge ()) [54]
+0.000013	Zernike Coefficients (Edge ()) [55]
+0.036211	Zernike Coefficients (Edge ()) [56]
+0.100794	Zernike Coefficients (Edge ()) [57]
+0.041666	Zernike Coefficients (Edge ()) [58]
+0.021454	Zernike Coefficients (Edge ()) [59]
+0.000609	Zernike Coefficients (Edge ()) [60]
+0.001049	Zernike Coefficients (Edge ()) [61]
+0.000415	Zernike Coefficients (Edge ()) [62]
+0.000003	Zernike Coefficients (Edge ()) [63]
+0.025702	Zernike Coefficients (Edge ()) [64]
+0.040093	Zernike Coefficients (Edge ()) [65]
+0.037635	Zernike Coefficients (Edge ()) [66]
+0.018465	Zernike Coefficients (Edge ()) [67]
+0.002355	Zernike Coefficients (Edge ()) [68]
+0.009833	Zernike Coefficients (Edge ()) [69]
+0.000109	Zernike Coefficients (Edge ()) [70]
+0.000071	Zernike Coefficients (Edge ()) [71]
+9.000000	Comb Moments (Edge ()) [0]
+0.000000	Comb Moments (Edge ()) [1]
+11.000000	Comb Moments (Edge ()) [2]
+10.000000	Comb Moments (Edge ()) [3]
+1.000000	Comb Moments (Edge ()) [4]
+9.000000	Comb Moments (Edge ()) [5]
+9.000000	Comb Moments (Edge ()) [6]
+4.000000	Comb Moments (Edge ()) [7]
+7.000000	Comb Moments (Edge ()) [8]
+10.000000	Comb Moments (Edge ()) [9]
+1.000000	Comb Moments (Edge ()) [10]
+9.000000	Comb Moments (Edge ()) [11]
+10.000000	Comb Moments (Edge ()) [12]
+7.000000	Comb Moments (Edge ()) [13]
+3.000000	Comb Moments (Edge ()) [14]
+11.000000	Comb Moments (Edge ()) [15]
+3.000000	Comb Moments (Edge ()) [16]
+6.000000	Comb Moments (Edge ()) [17]
+13.000000	Comb Moments (Edge ()) [18]
+4.000000	Comb Moments (Edge ()) [19]
+3.000000	Comb Moments (Edge ()) [20]
+11.000000	Comb Moments (Edge ()) [21]
+8.000000	Comb Moments (Edge ()) [22]
+1.000000	Comb Moments (Edge ()) [23]
+6.000000	Comb Moments (Edge ()) [24]
+8.000000	Comb Moments (Edge ()) [25]
+6.000000	Comb Moments (Edge ()) [26]
+3.000000	Comb Moments (Edge ()) [27]
+5.000000	Comb Moments (Edge ()) [28]
+12.000000	Comb Moments (Edge ()) [29]
+19.000000	Comb Moments (Edge ()) [30]
+0.000000	Comb Moments (Edge ()) [31]
+1.000000	Comb Moments (Edge ()) [32]
+6.000000	Comb Moments (Edge ()) [33]
+5.000000	Comb Moments (Edge ()) [34]
+9.000000	Comb Moments (Edge ()) [35]
+1.000000	Comb Moments (Edge ()) [36]
+12.000000	Comb Moments (Edge ()) [37]
+7.000000	Comb Moments (Edge ()) [38]
+4.000000	Comb Moments (Edge ()) [39]
+7.000000	Comb Moments (Edge ()) [40]
+9.000000	Comb Moments (Edge ()) [41]
+19.000000	Comb Moments (Edge ()) [42]
+0.000000	Comb Moments (Edge ()) [43]
+1.000000	Comb Moments (Edge ()) [44]
+6.000000	Comb Moments (Edge ()) [45]
+10.000000	Comb Moments (Edge ()) [46]
+4.000000	Comb Moments (Edge ()) [47]
+0.000320	Haralick Textures (Edge ()) [0]
+0.000245	Haralick Textures (Edge ()) [1]
+891.936979	Haralick Textures (Edge ()) [2]
+344.796081	Haralick Textures (Edge ()) [3]
+0.654533	Haralick Textures (Edge ()) [4]
+0.133914	Haralick Textures (Edge ()) [5]
+454.071087	Haralick Textures (Edge ()) [6]
+106.910781	Haralick Textures (Edge ()) [7]
+5.759660	Haralick Textures (Edge ()) [8]
+0.507670	Haralick Textures (Edge ()) [9]
+12.498683	Haralick Textures (Edge ()) [10]
+0.512908	Haralick Textures (Edge ()) [11]
+-0.182523	Haralick Textures (Edge ()) [12]
+0.074222	Haralick Textures (Edge ()) [13]
+0.122028	Haralick Textures (Edge ()) [14]
+0.147126	Haralick Textures (Edge ()) [15]
+0.030596	Haralick Textures (Edge ()) [16]
+0.079559	Haralick Textures (Edge ()) [17]
+0.953687	Haralick Textures (Edge ()) [18]
+0.044859	Haralick Textures (Edge ()) [19]
+114.423466	Haralick Textures (Edge ()) [20]
+0.628057	Haralick Textures (Edge ()) [21]
+7.827213	Haralick Textures (Edge ()) [22]
+0.007028	Haralick Textures (Edge ()) [23]
+15634.979303	Haralick Textures (Edge ()) [24]
+216.392608	Haralick Textures (Edge ()) [25]
+1291.013778	Haralick Textures (Edge ()) [26]
+1.453440	Haralick Textures (Edge ()) [27]
+1.000000	Multiscale Histograms (Edge ()) [0]
+0.228530	Multiscale Histograms (Edge ()) [1]
+0.014800	Multiscale Histograms (Edge ()) [2]
+0.644499	Multiscale Histograms (Edge ()) [3]
+0.454041	Multiscale Histograms (Edge ()) [4]
+0.119182	Multiscale Histograms (Edge ()) [5]
+0.021519	Multiscale Histograms (Edge ()) [6]
+0.004090	Multiscale Histograms (Edge ()) [7]
+0.426777	Multiscale Histograms (Edge ()) [8]
+0.471081	Multiscale Histograms (Edge ()) [9]
+0.228822	Multiscale Histograms (Edge ()) [10]
+0.083252	Multiscale Histograms (Edge ()) [11]
+0.023856	Multiscale Histograms (Edge ()) [12]
+0.007400	Multiscale Histograms (Edge ()) [13]
+0.002142	Multiscale Histograms (Edge ()) [14]
+0.293476	Multiscale Histograms (Edge ()) [15]
+0.430964	Multiscale Histograms (Edge ()) [16]
+0.275560	Multiscale Histograms (Edge ()) [17]
+0.142551	Multiscale Histograms (Edge ()) [18]
+0.062025	Multiscale Histograms (Edge ()) [19]
+0.023953	Multiscale Histograms (Edge ()) [20]
+0.009640	Multiscale Histograms (Edge ()) [21]
+0.003797	Multiscale Histograms (Edge ()) [22]
+0.001363	Multiscale Histograms (Edge ()) [23]
+1.000000	Tamura Textures (Edge ()) [0]
+0.102569	Tamura Textures (Edge ()) [1]
+0.009229	Tamura Textures (Edge ()) [2]
+0.013647	Tamura Textures (Edge ()) [3]
+7.339692	Tamura Textures (Edge ()) [4]
+2.199817	Tamura Textures (Edge ()) [5]
+57.000000	Radon Coefficients (Edge ()) [0]
+39.000000	Radon Coefficients (Edge ()) [1]
+67.000000	Radon Coefficients (Edge ()) [2]
+63.000000	Radon Coefficients (Edge ()) [3]
+37.000000	Radon Coefficients (Edge ()) [4]
+63.000000	Radon Coefficients (Edge ()) [5]
+61.000000	Radon Coefficients (Edge ()) [6]
+47.000000	Radon Coefficients (Edge ()) [7]
+55.000000	Radon Coefficients (Edge ()) [8]
+52.000000	Radon Coefficients (Edge ()) [9]
+20.000000	Radon Coefficients (Edge ()) [10]
+91.000000	Radon Coefficients (Edge ()) [11]
+26.662295	Fractal Features (Edge ()) [0]
+38.881846	Fractal Features (Edge ()) [1]
+42.390748	Fractal Features (Edge ()) [2]
+44.720752	Fractal Features (Edge ()) [3]
+46.245739	Fractal Features (Edge ()) [4]
+47.306592	Fractal Features (Edge ()) [5]
+47.996201	Fractal Features (Edge ()) [6]
+48.714749	Fractal Features (Edge ()) [7]
+49.203753	Fractal Features (Edge ()) [8]
+49.541842	Fractal Features (Edge ()) [9]
+50.095480	Fractal Features (Edge ()) [10]
+50.899720	Fractal Features (Edge ()) [11]
+51.529779	Fractal Features (Edge ()) [12]
+51.928488	Fractal Features (Edge ()) [13]
+52.104524	Fractal Features (Edge ()) [14]
+52.403978	Fractal Features (Edge ()) [15]
+52.700221	Fractal Features (Edge ()) [16]
+52.934001	Fractal Features (Edge ()) [17]
+52.874176	Fractal Features (Edge ()) [18]
+53.159007	Fractal Features (Edge ()) [19]
+83.130472	Pixel Intensity Statistics (Edge ()) [0]
+71.000000	Pixel Intensity Statistics (Edge ()) [1]
+52.782556	Pixel Intensity Statistics (Edge ()) [2]
+0.000000	Pixel Intensity Statistics (Edge ()) [3]
+370.000000	Pixel Intensity Statistics (Edge ()) [4]
+0.340787	Gini Coefficient (Edge ()) [0]
+454.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [0]
+55.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [1]
+5.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [2]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [3]
+5.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [4]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [5]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [6]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [7]
+2.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [8]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [9]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [10]
+2.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [11]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [12]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [13]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [14]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [15]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [16]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [17]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [18]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [19]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [20]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [21]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [22]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [23]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [24]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [25]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [26]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [27]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [28]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [29]
+0.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [30]
+1.000000	Chebyshev-Fourier Coefficients (Fourier (Edge ())) [31]
+2.000000	Chebyshev Coefficients (Fourier (Edge ())) [0]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [1]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [2]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [3]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [4]
+11.000000	Chebyshev Coefficients (Fourier (Edge ())) [5]
+77.000000	Chebyshev Coefficients (Fourier (Edge ())) [6]
+89.000000	Chebyshev Coefficients (Fourier (Edge ())) [7]
+95.000000	Chebyshev Coefficients (Fourier (Edge ())) [8]
+85.000000	Chebyshev Coefficients (Fourier (Edge ())) [9]
+36.000000	Chebyshev Coefficients (Fourier (Edge ())) [10]
+1.000000	Chebyshev Coefficients (Fourier (Edge ())) [11]
+1.000000	Chebyshev Coefficients (Fourier (Edge ())) [12]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [13]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [14]
+1.000000	Chebyshev Coefficients (Fourier (Edge ())) [15]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [16]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [17]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [18]
+1.000000	Chebyshev Coefficients (Fourier (Edge ())) [19]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [20]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [21]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [22]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [23]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [24]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [25]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [26]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [27]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [28]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [29]
+0.000000	Chebyshev Coefficients (Fourier (Edge ())) [30]
+1.000000	Chebyshev Coefficients (Fourier (Edge ())) [31]
+0.002347	Zernike Coefficients (Fourier (Edge ())) [0]
+0.022167	Zernike Coefficients (Fourier (Edge ())) [1]
+0.010176	Zernike Coefficients (Fourier (Edge ())) [2]
+0.017703	Zernike Coefficients (Fourier (Edge ())) [3]
+0.038939	Zernike Coefficients (Fourier (Edge ())) [4]
+0.116728	Zernike Coefficients (Fourier (Edge ())) [5]
+0.014108	Zernike Coefficients (Fourier (Edge ())) [6]
+0.054038	Zernike Coefficients (Fourier (Edge ())) [7]
+0.005195	Zernike Coefficients (Fourier (Edge ())) [8]
+0.003590	Zernike Coefficients (Fourier (Edge ())) [9]
+0.368003	Zernike Coefficients (Fourier (Edge ())) [10]
+0.010230	Zernike Coefficients (Fourier (Edge ())) [11]
+0.002369	Zernike Coefficients (Fourier (Edge ())) [12]
+0.060394	Zernike Coefficients (Fourier (Edge ())) [13]
+0.015002	Zernike Coefficients (Fourier (Edge ())) [14]
+0.006650	Zernike Coefficients (Fourier (Edge ())) [15]
+0.034660	Zernike Coefficients (Fourier (Edge ())) [16]
+0.413483	Zernike Coefficients (Fourier (Edge ())) [17]
+0.040911	Zernike Coefficients (Fourier (Edge ())) [18]
+0.027879	Zernike Coefficients (Fourier (Edge ())) [19]
+0.014403	Zernike Coefficients (Fourier (Edge ())) [20]
+0.011268	Zernike Coefficients (Fourier (Edge ())) [21]
+0.010930	Zernike Coefficients (Fourier (Edge ())) [22]
+0.035016	Zernike Coefficients (Fourier (Edge ())) [23]
+0.002340	Zernike Coefficients (Fourier (Edge ())) [24]
+0.013476	Zernike Coefficients (Fourier (Edge ())) [25]
+0.071146	Zernike Coefficients (Fourier (Edge ())) [26]
+0.064272	Zernike Coefficients (Fourier (Edge ())) [27]
+0.143903	Zernike Coefficients (Fourier (Edge ())) [28]
+0.003347	Zernike Coefficients (Fourier (Edge ())) [29]
+0.017266	Zernike Coefficients (Fourier (Edge ())) [30]
+0.041370	Zernike Coefficients (Fourier (Edge ())) [31]
+0.011762	Zernike Coefficients (Fourier (Edge ())) [32]
+0.080380	Zernike Coefficients (Fourier (Edge ())) [33]
+0.010881	Zernike Coefficients (Fourier (Edge ())) [34]
+0.001978	Zernike Coefficients (Fourier (Edge ())) [35]
+0.023547	Zernike Coefficients (Fourier (Edge ())) [36]
+0.266406	Zernike Coefficients (Fourier (Edge ())) [37]
+0.037873	Zernike Coefficients (Fourier (Edge ())) [38]
+0.317953	Zernike Coefficients (Fourier (Edge ())) [39]
+0.020370	Zernike Coefficients (Fourier (Edge ())) [40]
+0.006639	Zernike Coefficients (Fourier (Edge ())) [41]
+0.012498	Zernike Coefficients (Fourier (Edge ())) [42]
+0.031788	Zernike Coefficients (Fourier (Edge ())) [43]
+0.021574	Zernike Coefficients (Fourier (Edge ())) [44]
+0.094128	Zernike Coefficients (Fourier (Edge ())) [45]
+0.018338	Zernike Coefficients (Fourier (Edge ())) [46]
+0.014847	Zernike Coefficients (Fourier (Edge ())) [47]
+0.000892	Zernike Coefficients (Fourier (Edge ())) [48]
+0.001840	Zernike Coefficients (Fourier (Edge ())) [49]
+0.178413	Zernike Coefficients (Fourier (Edge ())) [50]
+0.017216	Zernike Coefficients (Fourier (Edge ())) [51]
+0.350280	Zernike Coefficients (Fourier (Edge ())) [52]
+0.054895	Zernike Coefficients (Fourier (Edge ())) [53]
+0.047540	Zernike Coefficients (Fourier (Edge ())) [54]
+0.000995	Zernike Coefficients (Fourier (Edge ())) [55]
+0.004877	Zernike Coefficients (Fourier (Edge ())) [56]
+0.017050	Zernike Coefficients (Fourier (Edge ())) [57]
+0.004582	Zernike Coefficients (Fourier (Edge ())) [58]
+0.032416	Zernike Coefficients (Fourier (Edge ())) [59]
+0.005703	Zernike Coefficients (Fourier (Edge ())) [60]
+0.051082	Zernike Coefficients (Fourier (Edge ())) [61]
+0.005849	Zernike Coefficients (Fourier (Edge ())) [62]
+0.000534	Zernike Coefficients (Fourier (Edge ())) [63]
+0.029454	Zernike Coefficients (Fourier (Edge ())) [64]
+0.123111	Zernike Coefficients (Fourier (Edge ())) [65]
+0.027260	Zernike Coefficients (Fourier (Edge ())) [66]
+0.103134	Zernike Coefficients (Fourier (Edge ())) [67]
+0.080863	Zernike Coefficients (Fourier (Edge ())) [68]
+0.154279	Zernike Coefficients (Fourier (Edge ())) [69]
+0.008081	Zernike Coefficients (Fourier (Edge ())) [70]
+0.001581	Zernike Coefficients (Fourier (Edge ())) [71]
+18.000000	Comb Moments (Fourier (Edge ())) [0]
+0.000000	Comb Moments (Fourier (Edge ())) [1]
+2.000000	Comb Moments (Fourier (Edge ())) [2]
+14.000000	Comb Moments (Fourier (Edge ())) [3]
+4.000000	Comb Moments (Fourier (Edge ())) [4]
+2.000000	Comb Moments (Fourier (Edge ())) [5]
+17.000000	Comb Moments (Fourier (Edge ())) [6]
+1.000000	Comb Moments (Fourier (Edge ())) [7]
+2.000000	Comb Moments (Fourier (Edge ())) [8]
+18.000000	Comb Moments (Fourier (Edge ())) [9]
+0.000000	Comb Moments (Fourier (Edge ())) [10]
+2.000000	Comb Moments (Fourier (Edge ())) [11]
+18.000000	Comb Moments (Fourier (Edge ())) [12]
+1.000000	Comb Moments (Fourier (Edge ())) [13]
+1.000000	Comb Moments (Fourier (Edge ())) [14]
+14.000000	Comb Moments (Fourier (Edge ())) [15]
+4.000000	Comb Moments (Fourier (Edge ())) [16]
+2.000000	Comb Moments (Fourier (Edge ())) [17]
+18.000000	Comb Moments (Fourier (Edge ())) [18]
+1.000000	Comb Moments (Fourier (Edge ())) [19]
+1.000000	Comb Moments (Fourier (Edge ())) [20]
+18.000000	Comb Moments (Fourier (Edge ())) [21]
+1.000000	Comb Moments (Fourier (Edge ())) [22]
+1.000000	Comb Moments (Fourier (Edge ())) [23]
+18.000000	Comb Moments (Fourier (Edge ())) [24]
+1.000000	Comb Moments (Fourier (Edge ())) [25]
+1.000000	Comb Moments (Fourier (Edge ())) [26]
+19.000000	Comb Moments (Fourier (Edge ())) [27]
+0.000000	Comb Moments (Fourier (Edge ())) [28]
+1.000000	Comb Moments (Fourier (Edge ())) [29]
+19.000000	Comb Moments (Fourier (Edge ())) [30]
+0.000000	Comb Moments (Fourier (Edge ())) [31]
+1.000000	Comb Moments (Fourier (Edge ())) [32]
+19.000000	Comb Moments (Fourier (Edge ())) [33]
+0.000000	Comb Moments (Fourier (Edge ())) [34]
+1.000000	Comb Moments (Fourier (Edge ())) [35]
+17.000000	Comb Moments (Fourier (Edge ())) [36]
+1.000000	Comb Moments (Fourier (Edge ())) [37]
+2.000000	Comb Moments (Fourier (Edge ())) [38]
+19.000000	Comb Moments (Fourier (Edge ())) [39]
+0.000000	Comb Moments (Fourier (Edge ())) [40]
+1.000000	Comb Moments (Fourier (Edge ())) [41]
+19.000000	Comb Moments (Fourier (Edge ())) [42]
+0.000000	Comb Moments (Fourier (Edge ())) [43]
+1.000000	Comb Moments (Fourier (Edge ())) [44]
+19.000000	Comb Moments (Fourier (Edge ())) [45]
+0.000000	Comb Moments (Fourier (Edge ())) [46]
+1.000000	Comb Moments (Fourier (Edge ())) [47]
+0.225337	Haralick Textures (Fourier (Edge ())) [0]
+0.024750	Haralick Textures (Fourier (Edge ())) [1]
+2.235547	Haralick Textures (Fourier (Edge ())) [2]
+0.253706	Haralick Textures (Fourier (Edge ())) [3]
+0.544115	Haralick Textures (Fourier (Edge ())) [4]
+0.061561	Haralick Textures (Fourier (Edge ())) [5]
+1.584757	Haralick Textures (Fourier (Edge ())) [6]
+0.198683	Haralick Textures (Fourier (Edge ())) [7]
+1.754285	Haralick Textures (Fourier (Edge ())) [8]
+0.089995	Haralick Textures (Fourier (Edge ())) [9]
+3.320995	Haralick Textures (Fourier (Edge ())) [10]
+0.104916	Haralick Textures (Fourier (Edge ())) [11]
+-0.126481	Haralick Textures (Fourier (Edge ())) [12]
+0.009992	Haralick Textures (Fourier (Edge ())) [13]
+0.701180	Haralick Textures (Fourier (Edge ())) [14]
+0.017466	Haralick Textures (Fourier (Edge ())) [15]
+0.028114	Haralick Textures (Fourier (Edge ())) [16]
+0.055611	Haralick Textures (Fourier (Edge ())) [17]
+0.601044	Haralick Textures (Fourier (Edge ())) [18]
+0.025538	Haralick Textures (Fourier (Edge ())) [19]
+3.650212	Haralick Textures (Fourier (Edge ())) [20]
+0.107439	Haralick Textures (Fourier (Edge ())) [21]
+2.473868	Haralick Textures (Fourier (Edge ())) [22]
+0.070315	Haralick Textures (Fourier (Edge ())) [23]
+8.979747	Haralick Textures (Fourier (Edge ())) [24]
+1.452329	Haralick Textures (Fourier (Edge ())) [25]
+2.457774	Haralick Textures (Fourier (Edge ())) [26]
+0.343295	Haralick Textures (Fourier (Edge ())) [27]
+1.000000	Multiscale Histograms (Fourier (Edge ())) [0]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [1]
+0.000078	Multiscale Histograms (Fourier (Edge ())) [2]
+1.000000	Multiscale Histograms (Fourier (Edge ())) [3]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [4]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [5]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [6]
+0.000078	Multiscale Histograms (Fourier (Edge ())) [7]
+0.999843	Multiscale Histograms (Fourier (Edge ())) [8]
+0.000157	Multiscale Histograms (Fourier (Edge ())) [9]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [10]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [11]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [12]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [13]
+0.000078	Multiscale Histograms (Fourier (Edge ())) [14]
+0.999843	Multiscale Histograms (Fourier (Edge ())) [15]
+0.000157	Multiscale Histograms (Fourier (Edge ())) [16]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [17]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [18]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [19]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [20]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [21]
+0.000000	Multiscale Histograms (Fourier (Edge ())) [22]
+0.000078	Multiscale Histograms (Fourier (Edge ())) [23]
+1.000000	Tamura Textures (Fourier (Edge ())) [0]
+0.082441	Tamura Textures (Fourier (Edge ())) [1]
+0.245036	Tamura Textures (Fourier (Edge ())) [2]
+0.000010	Tamura Textures (Fourier (Edge ())) [3]
+7.400654	Tamura Textures (Fourier (Edge ())) [4]
+3.733577	Tamura Textures (Fourier (Edge ())) [5]
+138.000000	Radon Coefficients (Fourier (Edge ())) [0]
+23.000000	Radon Coefficients (Fourier (Edge ())) [1]
+2.000000	Radon Coefficients (Fourier (Edge ())) [2]
+126.000000	Radon Coefficients (Fourier (Edge ())) [3]
+30.000000	Radon Coefficients (Fourier (Edge ())) [4]
+7.000000	Radon Coefficients (Fourier (Edge ())) [5]
+154.000000	Radon Coefficients (Fourier (Edge ())) [6]
+8.000000	Radon Coefficients (Fourier (Edge ())) [7]
+1.000000	Radon Coefficients (Fourier (Edge ())) [8]
+150.000000	Radon Coefficients (Fourier (Edge ())) [9]
+12.000000	Radon Coefficients (Fourier (Edge ())) [10]
+1.000000	Radon Coefficients (Fourier (Edge ())) [11]
+2227.059743	Fractal Features (Fourier (Edge ())) [0]
+2232.487441	Fractal Features (Fourier (Edge ())) [1]
+2204.988655	Fractal Features (Fourier (Edge ())) [2]
+2215.861507	Fractal Features (Fourier (Edge ())) [3]
+2236.326475	Fractal Features (Fourier (Edge ())) [4]
+2246.616805	Fractal Features (Fourier (Edge ())) [5]
+2253.661854	Fractal Features (Fourier (Edge ())) [6]
+2248.104896	Fractal Features (Fourier (Edge ())) [7]
+2286.069059	Fractal Features (Fourier (Edge ())) [8]
+2330.166407	Fractal Features (Fourier (Edge ())) [9]
+2345.191884	Fractal Features (Fourier (Edge ())) [10]
+2350.999227	Fractal Features (Fourier (Edge ())) [11]
+2382.894105	Fractal Features (Fourier (Edge ())) [12]
+2412.827868	Fractal Features (Fourier (Edge ())) [13]
+2438.835906	Fractal Features (Fourier (Edge ())) [14]
+2451.318394	Fractal Features (Fourier (Edge ())) [15]
+2489.540686	Fractal Features (Fourier (Edge ())) [16]
+2526.532462	Fractal Features (Fourier (Edge ())) [17]
+2539.792749	Fractal Features (Fourier (Edge ())) [18]
+2585.113642	Fractal Features (Fourier (Edge ())) [19]
+3815.672046	Pixel Intensity Statistics (Fourier (Edge ())) [0]
+2638.497731	Pixel Intensity Statistics (Fourier (Edge ())) [1]
+10452.905948	Pixel Intensity Statistics (Fourier (Edge ())) [2]
+65.361488	Pixel Intensity Statistics (Fourier (Edge ())) [3]
+1061493.000000	Pixel Intensity Statistics (Fourier (Edge ())) [4]
+0.461281	Gini Coefficient (Fourier (Edge ())) [0]
+306.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [0]
+135.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [1]
+28.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [2]
+12.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [3]
+8.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [4]
+4.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [5]
+10.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [6]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [7]
+1.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [8]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [9]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [10]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [11]
+3.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [12]
+1.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [13]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [14]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [15]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [16]
+3.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [17]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [18]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [19]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [20]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [21]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [22]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [23]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [24]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [25]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [26]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [27]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [28]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [29]
+0.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [30]
+2.000000	Chebyshev-Fourier Coefficients (Wavelet (Edge ())) [31]
+4.000000	Chebyshev Coefficients (Wavelet (Edge ())) [0]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [1]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [2]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [3]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [4]
+3.000000	Chebyshev Coefficients (Wavelet (Edge ())) [5]
+1.000000	Chebyshev Coefficients (Wavelet (Edge ())) [6]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [7]
+1.000000	Chebyshev Coefficients (Wavelet (Edge ())) [8]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [9]
+5.000000	Chebyshev Coefficients (Wavelet (Edge ())) [10]
+11.000000	Chebyshev Coefficients (Wavelet (Edge ())) [11]
+23.000000	Chebyshev Coefficients (Wavelet (Edge ())) [12]
+79.000000	Chebyshev Coefficients (Wavelet (Edge ())) [13]
+132.000000	Chebyshev Coefficients (Wavelet (Edge ())) [14]
+91.000000	Chebyshev Coefficients (Wavelet (Edge ())) [15]
+28.000000	Chebyshev Coefficients (Wavelet (Edge ())) [16]
+5.000000	Chebyshev Coefficients (Wavelet (Edge ())) [17]
+4.000000	Chebyshev Coefficients (Wavelet (Edge ())) [18]
+2.000000	Chebyshev Coefficients (Wavelet (Edge ())) [19]
+3.000000	Chebyshev Coefficients (Wavelet (Edge ())) [20]
+1.000000	Chebyshev Coefficients (Wavelet (Edge ())) [21]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [22]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [23]
+1.000000	Chebyshev Coefficients (Wavelet (Edge ())) [24]
+5.000000	Chebyshev Coefficients (Wavelet (Edge ())) [25]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [26]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [27]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [28]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [29]
+0.000000	Chebyshev Coefficients (Wavelet (Edge ())) [30]
+1.000000	Chebyshev Coefficients (Wavelet (Edge ())) [31]
+0.005740	Zernike Coefficients (Wavelet (Edge ())) [0]
+0.002227	Zernike Coefficients (Wavelet (Edge ())) [1]
+0.018386	Zernike Coefficients (Wavelet (Edge ())) [2]
+0.000927	Zernike Coefficients (Wavelet (Edge ())) [3]
+0.008270	Zernike Coefficients (Wavelet (Edge ())) [4]
+0.001150	Zernike Coefficients (Wavelet (Edge ())) [5]
+0.032404	Zernike Coefficients (Wavelet (Edge ())) [6]
+0.006906	Zernike Coefficients (Wavelet (Edge ())) [7]
+0.001512	Zernike Coefficients (Wavelet (Edge ())) [8]
+0.018336	Zernike Coefficients (Wavelet (Edge ())) [9]
+0.004843	Zernike Coefficients (Wavelet (Edge ())) [10]
+0.001124	Zernike Coefficients (Wavelet (Edge ())) [11]
+0.046803	Zernike Coefficients (Wavelet (Edge ())) [12]
+0.025825	Zernike Coefficients (Wavelet (Edge ())) [13]
+0.001683	Zernike Coefficients (Wavelet (Edge ())) [14]
+0.001183	Zernike Coefficients (Wavelet (Edge ())) [15]
+0.031516	Zernike Coefficients (Wavelet (Edge ())) [16]
+0.024058	Zernike Coefficients (Wavelet (Edge ())) [17]
+0.002452	Zernike Coefficients (Wavelet (Edge ())) [18]
+0.001060	Zernike Coefficients (Wavelet (Edge ())) [19]
+0.066996	Zernike Coefficients (Wavelet (Edge ())) [20]
+0.046952	Zernike Coefficients (Wavelet (Edge ())) [21]
+0.001775	Zernike Coefficients (Wavelet (Edge ())) [22]
+0.003288	Zernike Coefficients (Wavelet (Edge ())) [23]
+0.000831	Zernike Coefficients (Wavelet (Edge ())) [24]
+0.043245	Zernike Coefficients (Wavelet (Edge ())) [25]
+0.051292	Zernike Coefficients (Wavelet (Edge ())) [26]
+0.004299	Zernike Coefficients (Wavelet (Edge ())) [27]
+0.002498	Zernike Coefficients (Wavelet (Edge ())) [28]
+0.000498	Zernike Coefficients (Wavelet (Edge ())) [29]
+0.089945	Zernike Coefficients (Wavelet (Edge ())) [30]
+0.068997	Zernike Coefficients (Wavelet (Edge ())) [31]
+0.002230	Zernike Coefficients (Wavelet (Edge ())) [32]
+0.005353	Zernike Coefficients (Wavelet (Edge ())) [33]
+0.001673	Zernike Coefficients (Wavelet (Edge ())) [34]
+0.000182	Zernike Coefficients (Wavelet (Edge ())) [35]
+0.045408	Zernike Coefficients (Wavelet (Edge ())) [36]
+0.082589	Zernike Coefficients (Wavelet (Edge ())) [37]
+0.002292	Zernike Coefficients (Wavelet (Edge ())) [38]
+0.003219	Zernike Coefficients (Wavelet (Edge ())) [39]
+0.000999	Zernike Coefficients (Wavelet (Edge ())) [40]
+0.000051	Zernike Coefficients (Wavelet (Edge ())) [41]
+0.099753	Zernike Coefficients (Wavelet (Edge ())) [42]
+0.088705	Zernike Coefficients (Wavelet (Edge ())) [43]
+0.003745	Zernike Coefficients (Wavelet (Edge ())) [44]
+0.001983	Zernike Coefficients (Wavelet (Edge ())) [45]
+0.001695	Zernike Coefficients (Wavelet (Edge ())) [46]
+0.001684	Zernike Coefficients (Wavelet (Edge ())) [47]
+0.000145	Zernike Coefficients (Wavelet (Edge ())) [48]
+0.037290	Zernike Coefficients (Wavelet (Edge ())) [49]
+0.111936	Zernike Coefficients (Wavelet (Edge ())) [50]
+0.006771	Zernike Coefficients (Wavelet (Edge ())) [51]
+0.001288	Zernike Coefficients (Wavelet (Edge ())) [52]
+0.002132	Zernike Coefficients (Wavelet (Edge ())) [53]
+0.002209	Zernike Coefficients (Wavelet (Edge ())) [54]
+0.000233	Zernike Coefficients (Wavelet (Edge ())) [55]
+0.095124	Zernike Coefficients (Wavelet (Edge ())) [56]
+0.096070	Zernike Coefficients (Wavelet (Edge ())) [57]
+0.006927	Zernike Coefficients (Wavelet (Edge ())) [58]
+0.004490	Zernike Coefficients (Wavelet (Edge ())) [59]
+0.004763	Zernike Coefficients (Wavelet (Edge ())) [60]
+0.005889	Zernike Coefficients (Wavelet (Edge ())) [61]
+0.001810	Zernike Coefficients (Wavelet (Edge ())) [62]
+0.000306	Zernike Coefficients (Wavelet (Edge ())) [63]
+0.027270	Zernike Coefficients (Wavelet (Edge ())) [64]
+0.127753	Zernike Coefficients (Wavelet (Edge ())) [65]
+0.010714	Zernike Coefficients (Wavelet (Edge ())) [66]
+0.003801	Zernike Coefficients (Wavelet (Edge ())) [67]
+0.002653	Zernike Coefficients (Wavelet (Edge ())) [68]
+0.008485	Zernike Coefficients (Wavelet (Edge ())) [69]
+0.000869	Zernike Coefficients (Wavelet (Edge ())) [70]
+0.000341	Zernike Coefficients (Wavelet (Edge ())) [71]
+10.000000	Comb Moments (Wavelet (Edge ())) [0]
+7.000000	Comb Moments (Wavelet (Edge ())) [1]
+3.000000	Comb Moments (Wavelet (Edge ())) [2]
+16.000000	Comb Moments (Wavelet (Edge ())) [3]
+0.000000	Comb Moments (Wavelet (Edge ())) [4]
+4.000000	Comb Moments (Wavelet (Edge ())) [5]
+1.000000	Comb Moments (Wavelet (Edge ())) [6]
+13.000000	Comb Moments (Wavelet (Edge ())) [7]
+6.000000	Comb Moments (Wavelet (Edge ())) [8]
+16.000000	Comb Moments (Wavelet (Edge ())) [9]
+0.000000	Comb Moments (Wavelet (Edge ())) [10]
+4.000000	Comb Moments (Wavelet (Edge ())) [11]
+10.000000	Comb Moments (Wavelet (Edge ())) [12]
+8.000000	Comb Moments (Wavelet (Edge ())) [13]
+2.000000	Comb Moments (Wavelet (Edge ())) [14]
+16.000000	Comb Moments (Wavelet (Edge ())) [15]
+0.000000	Comb Moments (Wavelet (Edge ())) [16]
+4.000000	Comb Moments (Wavelet (Edge ())) [17]
+13.000000	Comb Moments (Wavelet (Edge ())) [18]
+4.000000	Comb Moments (Wavelet (Edge ())) [19]
+3.000000	Comb Moments (Wavelet (Edge ())) [20]
+16.000000	Comb Moments (Wavelet (Edge ())) [21]
+1.000000	Comb Moments (Wavelet (Edge ())) [22]
+3.000000	Comb Moments (Wavelet (Edge ())) [23]
+1.000000	Comb Moments (Wavelet (Edge ())) [24]
+10.000000	Comb Moments (Wavelet (Edge ())) [25]
+9.000000	Comb Moments (Wavelet (Edge ())) [26]
+13.000000	Comb Moments (Wavelet (Edge ())) [27]
+2.000000	Comb Moments (Wavelet (Edge ())) [28]
+5.000000	Comb Moments (Wavelet (Edge ())) [29]
+7.000000	Comb Moments (Wavelet (Edge ())) [30]
+4.000000	Comb Moments (Wavelet (Edge ())) [31]
+9.000000	Comb Moments (Wavelet (Edge ())) [32]
+13.000000	Comb Moments (Wavelet (Edge ())) [33]
+0.000000	Comb Moments (Wavelet (Edge ())) [34]
+7.000000	Comb Moments (Wavelet (Edge ())) [35]
+17.000000	Comb Moments (Wavelet (Edge ())) [36]
+2.000000	Comb Moments (Wavelet (Edge ())) [37]
+1.000000	Comb Moments (Wavelet (Edge ())) [38]
+14.000000	Comb Moments (Wavelet (Edge ())) [39]
+2.000000	Comb Moments (Wavelet (Edge ())) [40]
+4.000000	Comb Moments (Wavelet (Edge ())) [41]
+4.000000	Comb Moments (Wavelet (Edge ())) [42]
+13.000000	Comb Moments (Wavelet (Edge ())) [43]
+3.000000	Comb Moments (Wavelet (Edge ())) [44]
+13.000000	Comb Moments (Wavelet (Edge ())) [45]
+1.000000	Comb Moments (Wavelet (Edge ())) [46]
+6.000000	Comb Moments (Wavelet (Edge ())) [47]
+0.004071	Haralick Textures (Wavelet (Edge ())) [0]
+0.001567	Haralick Textures (Wavelet (Edge ())) [1]
+241.097910	Haralick Textures (Wavelet (Edge ())) [2]
+55.004827	Haralick Textures (Wavelet (Edge ())) [3]
+0.809154	Haralick Textures (Wavelet (Edge ())) [4]
+0.042222	Haralick Textures (Wavelet (Edge ())) [5]
+143.335447	Haralick Textures (Wavelet (Edge ())) [6]
+39.552501	Haralick Textures (Wavelet (Edge ())) [7]
+4.791689	Haralick Textures (Wavelet (Edge ())) [8]
+0.087524	Haralick Textures (Wavelet (Edge ())) [9]
+10.485314	Haralick Textures (Wavelet (Edge ())) [10]
+0.139981	Haralick Textures (Wavelet (Edge ())) [11]
+-0.186290	Haralick Textures (Wavelet (Edge ())) [12]
+0.017382	Haralick Textures (Wavelet (Edge ())) [13]
+0.172698	Haralick Textures (Wavelet (Edge ())) [14]
+0.023981	Haralick Textures (Wavelet (Edge ())) [15]
+0.008758	Haralick Textures (Wavelet (Edge ())) [16]
+0.014808	Haralick Textures (Wavelet (Edge ())) [17]
+0.939967	Haralick Textures (Wavelet (Edge ())) [18]
+0.011927	Haralick Textures (Wavelet (Edge ())) [19]
+107.487301	Haralick Textures (Wavelet (Edge ())) [20]
+0.180333	Haralick Textures (Wavelet (Edge ())) [21]
+6.406391	Haralick Textures (Wavelet (Edge ())) [22]
+0.109589	Haralick Textures (Wavelet (Edge ())) [23]
+12502.140415	Haralick Textures (Wavelet (Edge ())) [24]
+25.516950	Haralick Textures (Wavelet (Edge ())) [25]
+631.471667	Haralick Textures (Wavelet (Edge ())) [26]
+4.309880	Haralick Textures (Wavelet (Edge ())) [27]
+1.000000	Multiscale Histograms (Wavelet (Edge ())) [0]
+0.201644	Multiscale Histograms (Wavelet (Edge ())) [1]
+0.009521	Multiscale Histograms (Wavelet (Edge ())) [2]
+0.073724	Multiscale Histograms (Wavelet (Edge ())) [3]
+0.997071	Multiscale Histograms (Wavelet (Edge ())) [4]
+0.118724	Multiscale Histograms (Wavelet (Edge ())) [5]
+0.019774	Multiscale Histograms (Wavelet (Edge ())) [6]
+0.001872	Multiscale Histograms (Wavelet (Edge ())) [7]
+0.005289	Multiscale Histograms (Wavelet (Edge ())) [8]
+0.911954	Multiscale Histograms (Wavelet (Edge ())) [9]
+0.179592	Multiscale Histograms (Wavelet (Edge ())) [10]
+0.084466	Multiscale Histograms (Wavelet (Edge ())) [11]
+0.024331	Multiscale Histograms (Wavelet (Edge ())) [12]
+0.004801	Multiscale Histograms (Wavelet (Edge ())) [13]
+0.000732	Multiscale Histograms (Wavelet (Edge ())) [14]
+0.001465	Multiscale Histograms (Wavelet (Edge ())) [15]
+0.206770	Multiscale Histograms (Wavelet (Edge ())) [16]
+0.791765	Multiscale Histograms (Wavelet (Edge ())) [17]
+0.110668	Multiscale Histograms (Wavelet (Edge ())) [18]
+0.064448	Multiscale Histograms (Wavelet (Edge ())) [19]
+0.026528	Multiscale Histograms (Wavelet (Edge ())) [20]
+0.006835	Multiscale Histograms (Wavelet (Edge ())) [21]
+0.002116	Multiscale Histograms (Wavelet (Edge ())) [22]
+0.000570	Multiscale Histograms (Wavelet (Edge ())) [23]
+1.000000	Tamura Textures (Wavelet (Edge ())) [0]
+0.169472	Tamura Textures (Wavelet (Edge ())) [1]
+0.254017	Tamura Textures (Wavelet (Edge ())) [2]
+0.009622	Tamura Textures (Wavelet (Edge ())) [3]
+7.311101	Tamura Textures (Wavelet (Edge ())) [4]
+3.483210	Tamura Textures (Wavelet (Edge ())) [5]
+122.000000	Radon Coefficients (Wavelet (Edge ())) [0]
+21.000000	Radon Coefficients (Wavelet (Edge ())) [1]
+34.000000	Radon Coefficients (Wavelet (Edge ())) [2]
+126.000000	Radon Coefficients (Wavelet (Edge ())) [3]
+19.000000	Radon Coefficients (Wavelet (Edge ())) [4]
+32.000000	Radon Coefficients (Wavelet (Edge ())) [5]
+126.000000	Radon Coefficients (Wavelet (Edge ())) [6]
+18.000000	Radon Coefficients (Wavelet (Edge ())) [7]
+33.000000	Radon Coefficients (Wavelet (Edge ())) [8]
+121.000000	Radon Coefficients (Wavelet (Edge ())) [9]
+9.000000	Radon Coefficients (Wavelet (Edge ())) [10]
+47.000000	Radon Coefficients (Wavelet (Edge ())) [11]
+32.008569	Fractal Features (Wavelet (Edge ())) [0]
+35.342558	Fractal Features (Wavelet (Edge ())) [1]
+37.934067	Fractal Features (Wavelet (Edge ())) [2]
+39.042275	Fractal Features (Wavelet (Edge ())) [3]
+39.667981	Fractal Features (Wavelet (Edge ())) [4]
+40.662438	Fractal Features (Wavelet (Edge ())) [5]
+42.076196	Fractal Features (Wavelet (Edge ())) [6]
+42.646712	Fractal Features (Wavelet (Edge ())) [7]
+43.418507	Fractal Features (Wavelet (Edge ())) [8]
+44.083532	Fractal Features (Wavelet (Edge ())) [9]
+45.143386	Fractal Features (Wavelet (Edge ())) [10]
+46.061258	Fractal Features (Wavelet (Edge ())) [11]
+46.738116	Fractal Features (Wavelet (Edge ())) [12]
+47.411296	Fractal Features (Wavelet (Edge ())) [13]
+48.115490	Fractal Features (Wavelet (Edge ())) [14]
+49.060255	Fractal Features (Wavelet (Edge ())) [15]
+49.692171	Fractal Features (Wavelet (Edge ())) [16]
+50.431381	Fractal Features (Wavelet (Edge ())) [17]
+51.231515	Fractal Features (Wavelet (Edge ())) [18]
+51.967850	Fractal Features (Wavelet (Edge ())) [19]
+35.985488	Pixel Intensity Statistics (Wavelet (Edge ())) [0]
+4.644073	Pixel Intensity Statistics (Wavelet (Edge ())) [1]
+83.810002	Pixel Intensity Statistics (Wavelet (Edge ())) [2]
+-200.882053	Pixel Intensity Statistics (Wavelet (Edge ())) [3]
+648.345373	Pixel Intensity Statistics (Wavelet (Edge ())) [4]
+0.647769	Gini Coefficient (Wavelet (Edge ())) [0]
