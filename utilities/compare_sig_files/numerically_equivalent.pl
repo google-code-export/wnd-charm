@@ -11,7 +11,7 @@ sub main;
 sub Comparison_Of_Rank_Ordered_Group_Values($$$);
 
 # Globals
-my %old_featurenames_mapped_to_new;
+our %old_featurenames_mapped_to_new;
 my %unrecognized_feature_names;
 
 &LoadOldToNewHash;
@@ -193,7 +193,7 @@ sub ParseSigFile($$) {
 		++$line_count;
 		if( $line_count != 1 and $line_count != 2)
 		{
-			if( /^(-?\d+\.\d+) (.+)$/ ) 
+			if( /^(-?\d+\.\d+)\s(.+)$/ ) 
 			{
 				$value = $1;
 				$feature = $2;
@@ -6544,3 +6544,5 @@ sub LoadOldToNewHash {
 	$old_featurenames_mapped_to_new{"Zernike 71 (Edge Wavelet Transform)"}                               = "Zernike Coefficients (Wavelet (Edge ())) [71]";
 
 }
+
+1;
