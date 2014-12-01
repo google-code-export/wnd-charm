@@ -1,4 +1,4 @@
-0	2.2
+0	3.2
 t1_s01_c05_ij.tif
 4023.000000	Edge Features () [0]
 0.023567	Edge Features () [1]
