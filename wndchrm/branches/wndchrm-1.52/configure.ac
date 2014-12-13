@@ -21,7 +21,7 @@ CXXFLAGS=$MY_CXXFLAGS
 AM_CXXFLAGS="-Wall -g -O2"
 
 SVNREV=`( svnversion $srcdir | sed 's/:/_/' ) 2>/dev/null`
-if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported"; } ;
+if { ! ( svnversion ) >/dev/null 2>&1 || ! expr "X$SVNREV" : 'X.*[0-9].*' ; } ;
 	then SVNREV=`cat $srcdir/SVNREV`
 	else echo $SVNREV>$srcdir/SVNREV
 fi
